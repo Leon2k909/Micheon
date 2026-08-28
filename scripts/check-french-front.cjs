@@ -10,9 +10,10 @@
  * two points either way.
  *
  * So this measures the only thing that decides what a learner actually sees:
- * position in the queue the app serves. The front is floored at everything,
- * because those are the commonest things in the language and there is no
- * argument for shipping them bare.
+ * position in the queue the app serves. The depth each language reaches is
+ * reported by queue position; what fails the build is a COUNT of translated
+ * entries — see TRANSLATED_QUEUE_FLOORS below for why it stopped being a
+ * percentage of the front.
  *
  * The queue is built the way the app builds it — blueprint packs merged with
  * the curated phrasebank, filtered for the course — because reading
@@ -74,22 +75,33 @@ M.primeTranslations("fr", M.FRENCH_BY_GERMAN);
 M.primeTranslations("pl", M.POLISH_BY_GERMAN);
 
 /**
- * How far in each band reaches, and how much of it must be translated.
+ * The bands REPORT how deep each language reaches; the floor that fails the
+ * build is a COUNT of translated queue entries per language, below.
  *
- * The bands used to stop at 2,000 because that was as far as the coverage
- * went. The first five thousand are complete now — a real course, not a
- * sampler — so the floor follows, and the bands past it hold the ground
- * that was won rather than the ground that was there.
+ * The bands used to be the floor, at 100% for the first five thousand. That
+ * shape had the fault the other translation floors were already moved off in
+ * v1.2.631: the denominator is the German queue, so a block of new German
+ * sentences pushed the front percentage down with no translation lost — and
+ * the only way back was to translate the new German at once, making German
+ * growth conditional on French. Since the courses started DROPPING what their
+ * table cannot answer (frenchParts/polishParts), a learner in those courses
+ * never meets a bare German card anyway: their front is simply the foremost
+ * translated entries, and a new untranslated sentence changes it not at all.
+ *
+ * What must still fail the build is loss: a translation that existed and is
+ * gone. The count catches exactly that — deleting French shrinks it, adding
+ * German cannot move it. Raise each floor as coverage grows; never lower it.
  */
 const BANDS = [
-  { upTo: 500, floor: 100 },
-  { upTo: 1000, floor: 100 },
-  { upTo: 2000, floor: 100 },
-  { upTo: 5000, floor: 100 },
-  { upTo: 8000, floor: 82 },
-  { upTo: 12000, floor: 68 },
-  { upTo: 16000, floor: 60 },
+  { upTo: 500 },
+  { upTo: 1000 },
+  { upTo: 2000 },
+  { upTo: 5000 },
+  { upTo: 8000 },
+  { upTo: 12000 },
+  { upTo: 16000 },
 ];
+const TRANSLATED_QUEUE_FLOORS = { fr: 17300, pl: 18700 };
 
 /**
  * How much of the word tracker the French course is allowed to be missing.
@@ -143,20 +155,25 @@ for (const language of TRANSLATION_LANGUAGES) {
     const inBand = queue.slice(0, band.upTo).filter((item) => item.de).length;
     const missing = missingAt.filter((m) => m.at <= band.upTo);
     const covered = ((inBand - missing.length) / inBand) * 100;
-    assert.ok(covered >= band.floor,
-      `${name} covers ${covered.toFixed(1)}% of the first ${band.upTo} items a learner meets, `
-      + `and the floor is ${band.floor}%. ${missing.length} are bare, starting with:\n`
-      + missing.slice(0, 8).map((m) => `    ${m.at}  ${m.de}  (${m.en})`).join("\n")
-      + "\n  These are the commonest things in the language — a learner opening the course "
-      + "in this language meets them before anything else.");
     // Report how DEEP the language reaches rather than the first band alone.
     // "100% of the first 500" said the same thing when the five hundredth card
     // was the last one translated and when the five thousandth was.
     if (covered >= 100) complete = band.upTo;
   }
-  summary.push(complete
+  const queueEntries = queue.filter((item) => item.de).length;
+  const translatedInQueue = queueEntries - missingAt.length;
+  const queueFloor = TRANSLATED_QUEUE_FLOORS[language];
+  assert.ok(typeof queueFloor === "number",
+    `${name} has a translation table but no queue floor in check-french-front`);
+  assert.ok(translatedInQueue >= queueFloor,
+    `${name} can translate ${translatedInQueue.toLocaleString("en-GB")} of the ${queueEntries.toLocaleString("en-GB")} `
+    + `queue entries, and the floor is ${queueFloor.toLocaleString("en-GB")} — `
+    + `${(queueFloor - translatedInQueue).toLocaleString("en-GB")} translations have gone missing. This is a count: `
+    + "adding German cannot trip it, so a sentence that was translated no longer is.");
+  summary.push((complete
     ? `${name} 100% of the first ${complete.toLocaleString("en-GB")}`
-    : `${name} has gaps in its first ${BANDS[0].upTo}`);
+    : `${name} has gaps in its first ${BANDS[0].upTo}`)
+    + `, ${translatedInQueue.toLocaleString("en-GB")} translated in the queue (floor ${queueFloor.toLocaleString("en-GB")})`);
 }
 
 // The word tracker is its own catalogue — the queue above mixes sentences and

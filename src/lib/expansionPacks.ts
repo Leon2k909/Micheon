@@ -336,6 +336,14 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "Was kostet das pro Kilo?", en: "How much is that per kilo?", use: "The standard question when a sign shows no clear unit price." },
       { de: "Ist das der Stückpreis oder der Kilopreis?", en: "Is that the price per item or per kilo?", use: "A precise way to clarify a handwritten or ambiguous market sign." },
       { de: "Ich habe kein Bargeld dabei. Nehmen Sie auch Kartenzahlung?", en: "I don't have any cash on me. Do you take card payments as well?", use: "'Bargeld dabeihaben' means having cash with you; 'Nehmen Sie Kartenzahlung?' is useful at smaller stalls." },
+      { de: "Vier Brötchen und ein Vollkornbrot, bitte.", en: "Four rolls and one wholemeal loaf, please.", use: "The bakery order, verbless; das Brötchen — the little bread, Germany's daily plural." },
+      { de: "Darf es sonst noch etwas sein?", en: "Anything else?", use: "The counter question verbatim: may it be anything else — you answer Nein, danke, das ist alles." },
+      { de: "Ich hätte gern zweihundert Gramm von dem Käse da.", en: "I'd like two hundred grams of that cheese there.", use: "ich hätte gern — the polite ordering formula; von dem ... da points at the counter display." },
+      { de: "Ein Stück von der Quiche, aber nur ein kleines.", en: "A slice of the quiche — but only a small one.", use: "ein kleines stands alone: the adjective carries the elided Stück with its -es ending." },
+      { de: "Was kostet der Blumenkohl heute?", en: "How much is the cauliflower today?", use: "was kostet = what does it cost — was, not wie viel, is what people actually say at the market." },
+      { de: "Die Erdbeeren sehen heute richtig gut aus.", en: "The strawberries look really good today.", use: "aussehen splits: sehen ... aus; richtig as an intensifier = really." },
+      { de: "Geben Sie mir bitte die reifen Tomaten.", en: "Please give me the ripe ones — the tomatoes.", use: "geben + mir (dative) + accusative object; reif = ripe, the market word." },
+      { de: "Haben Sie das Brot auch geschnitten?", en: "Do you have the bread sliced as well?", use: "geschnitten as an adjective — sliced; auch = as well. Still a present-tense question about stock." },
     ],
     dialogues: [
       { title: "Sunday morning at the bakery", lines: [
@@ -530,6 +538,14 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "Hast du wieder was angestellt?", en: "Have you been up to something again? / What have you done this time?", use: "'etwas anstellen' is the everyday phrase for doing something naughty. The pet's guilty look supplies the context.", group: "pet-routine" },
       { de: "Wo warst du denn schon wieder?", en: "Where have you been this time?", use: "'schon wieder' conveys that the disappearing act has happened before; 'denn' keeps the question conversational.", group: "pet-routine" },
       { de: "Du bist ja klatschnass!", en: "You're absolutely soaked!", use: "'klatschnass' is a vivid everyday word for completely wet. 'ja' marks the obvious surprise when the pet comes back in.", group: "pet-routine" },
+      { de: "Sitz! Braver Hund.", en: "Sit! Good dog.", use: "The dog commands are bare imperatives: Sitz! Platz! Aus! brav = well-behaved — for dogs and children." },
+      { de: "Wo ist dein Ball? Such!", en: "Where's your ball? Find it!", use: "Such! — the bare imperative of suchen; German drops the object when the dog knows the game." },
+      { de: "Die Katze will schon wieder raus.", en: "The cat wants out again already.", use: "wollen + direction word, no verb: will raus. schon wieder = yet again, with an eye-roll." },
+      { de: "Nicht auf das Sofa, du!", en: "Not on the sofa, you!", use: "A verbless prohibition — nicht + place; the trailing du names the culprit." },
+      { de: "Sie frisst nur das teure Futter.", en: "She only eats the expensive food.", use: "fressen is eating for animals — essen would sound odd; das Futter = pet food." },
+      { de: "Komm her, ich mache dir das Geschirr ab.", en: "Come here, I'll take your harness off.", use: "abmachen splits; dir dative — off you; das Geschirr is the harness here, not the dishes." },
+      { de: "Der Kleine haart im Moment furchtbar.", en: "The little one is shedding terribly at the moment.", use: "haaren = to shed hair — a verb made from the noun; der Kleine, the nominalised adjective as a pet name." },
+      { de: "Ruhig, das ist nur der Postbote.", en: "Easy — it's just the postman.", use: "ruhig as a calming word on its own; nur der Postbote — the daily drama of every German dog." },
     ],
     dialogues: [
       { title: "Getting ready for a walk", lines: [
@@ -651,6 +667,14 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "Ich weiß nicht, wie ich das sagen soll.", en: "I don't know how to say this.", use: "Useful both when you lack a word and when a thought is emotionally difficult to express.", group: "repair-and-clarifying" },
       { de: "Du hast mich falsch verstanden.", en: "You misunderstood me.", use: "A clear correction when the listener took a different meaning. Follow it with what you actually meant to keep the tone constructive.", group: "repair-and-clarifying" },
       { de: "Das ist nicht das, was ich gesagt habe.", en: "That's not what I said.", use: "This is the natural complete sentence. German needs 'das' before the part beginning with 'was'.", group: "repair-and-clarifying" },
+      { de: "Na, alles klar bei dir?", en: "Hey, everything all right with you?", use: "Na is the opener that expects no answer; bei dir = with you/at your end." },
+      { de: "Guten Rutsch, wir sehen uns nächstes Jahr!", en: "Happy New Year — see you next year!", use: "Guten Rutsch — the New Year's Eve wish, literally a good slide over; nächstes Jahr, bare accusative of time." },
+      { de: "Bis dann, und danke nochmal!", en: "See you then — and thanks again!", use: "bis dann — the vaguest of the bis-farewells; nochmal = once more, the repeated thanks." },
+      { de: "Ach so, jetzt ergibt das Sinn.", en: "Oh right — now that makes sense.", use: "Sinn ergeben = to make sense — ergeben, not machen; Ach so marks the penny dropping." },
+      { de: "Das macht doch nichts.", en: "That doesn't matter at all.", use: "das macht nichts = no harm done; doch softens and reassures — the polite wave-away." },
+      { de: "Bin in fünf Minuten zurück.", en: "Back in five minutes.", use: "Spoken German drops the ich: Bin ... zurück. in + minutes for how soon." },
+      { de: "Störe ich gerade?", en: "Am I interrupting?", use: "stören = to disturb; gerade = right now. The polite two-word knock on a busy person's attention." },
+      { de: "Von mir aus können wir los.", en: "Fine by me — we can head off.", use: "von mir aus = as far as I'm concerned; los alone = off/away, the verb gehen is understood." },
     ],
     dialogues: [
       { title: "Nearly ready", lines: [
@@ -995,6 +1019,14 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "Das klären wir später.", en: "We'll sort that out later. / We'll clear that up later.", use: "Postpones a detail or disagreement while promising that it will still be dealt with.", group: "timing-messages-and-plans" },
       { de: "Wir sprechen später darüber.", en: "We'll talk about it later.", use: "Moves a conversation to a later time. Tone matters: calm delivery sounds practical, while a sharp delivery can sound ominous.", group: "timing-messages-and-plans" },
       { de: "Ich melde mich morgen.", en: "I'll get in touch tomorrow. / I'll message you tomorrow.", use: "A common promise to contact someone again the next day without specifying whether by call or message.", group: "timing-messages-and-plans" },
+      { de: "Passt es dir am Freitag?", en: "Does Friday work for you?", use: "passen + dative = to suit someone; am + weekday. The scheduling question in five words." },
+      { de: "Freitag passt mir super.", en: "Friday works great for me.", use: "The answer mirrors the question — passen + mir; super as a bare adverb of approval." },
+      { de: "Ich melde mich morgen bei dir.", en: "I'll get back to you tomorrow.", use: "sich melden bei = to get in touch with — the all-purpose promise of German scheduling." },
+      { de: "Wollen wir uns um vier treffen?", en: "Shall we meet at four?", use: "wollen wir ...? = shall we; sich treffen again, um + clock time." },
+      { de: "Ich schaffe es heute leider nicht.", en: "I'm afraid I can't make it today.", use: "es schaffen = to make it; leider = unfortunately, softening the no." },
+      { de: "Klappt es bei dir am Wochenende?", en: "Does the weekend work at your end?", use: "klappen again for plans; bei dir = on your side. am Wochenende — the weekend takes am." },
+      { de: "Bis wann bist du im Büro?", en: "Until when are you at the office?", use: "bis wann = until when; im Büro — in + dative for being at a place." },
+      { de: "Dann sage ich einfach kurz Bescheid.", en: "Then I'll just let you know briefly.", use: "Bescheid sagen = to let someone know; einfach kurz — the particle pair that shrinks the task." },
     ],
     dialogues: [
       { title: "Catching up", lines: [
@@ -1119,6 +1151,14 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "Wie siehst du das?", en: "How do you see it? / What's your view?", use: "A natural way to ask for someone's view on an issue or situation.", group: "common-follow-up-questions" },
       { de: "Warum denn?", en: "Why? / How come?", use: "The little 'denn' makes this sound more conversational and curious than a bare, potentially challenging 'Warum?'.", group: "common-follow-up-questions" },
       { de: "Was ist denn passiert?", en: "What happened? / So what happened?", use: "A concerned or curious follow-up after noticing that something is wrong or unexpected.", group: "common-follow-up-questions" },
+      { de: "Ich nehme lieber das kleine Menü.", en: "I'd rather have the small set meal.", use: "lieber + verb = prefer to; das kleine — adjective between article and noun takes -e." },
+      { de: "Ohne mich, ich bleibe heute zu Hause.", en: "Count me out — I'm staying home today.", use: "Ohne mich = without me, the two-word refusal; then a plain main clause explains." },
+      { de: "Das ist mir zu teuer.", en: "That's too expensive for me.", use: "mir + zu + adjective — the dative names whose limit is crossed; the everyday no to a price." },
+      { de: "Entschuldige bitte, das ist mein Fehler.", en: "I'm sorry — that's my mistake.", use: "entschuldige — the du-apology without Sie; owning the mistake with a plain ist beats any excuse." },
+      { de: "Schon gut, vergiss es einfach.", en: "It's fine — just forget it.", use: "schon gut = it's all right, the acceptance; vergiss — the du-imperative of vergessen with its vowel change." },
+      { de: "Ich frage lieber vorher nach dem Preis.", en: "I'd rather ask about the price beforehand.", use: "nach dem Preis fragen — you ask AFTER the price in German; vorher = beforehand." },
+      { de: "Das geht leider nicht, tut mir leid.", en: "That's not possible, I'm sorry.", use: "das geht nicht = that won't work; tut mir leid — the leid is felt in the dative mir." },
+      { de: "Bitte nur bis zehn Uhr, dann schlafe ich.", en: "Only until ten, please — then I'll be asleep.", use: "The boundary sentence: bis + time, then a plain statement of consequence. No threat needed." },
     ],
     dialogues: [
       { title: "Choosing between two options", lines: [
@@ -1255,6 +1295,14 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "Das könnte was für mich sein.", long: "Das könnte etwas für mich sein.", en: "That might be my kind of thing. / That could be for me.", use: "A cautiously positive reaction when a recommendation sounds suited to your interests. Spoken German usually uses 'was' here.", group: "recommendation-reactions" },
       { de: "Da bin ich gespannt.", en: "I'm curious to see how that turns out. / I'm looking forward to finding out.", use: "Use this when you are interested in the result, next part or someone's later opinion. Here 'gespannt' expresses interested anticipation.", group: "recommendation-reactions" },
       { de: "Jetzt bin ich neugierig.", en: "Now I'm curious. / Now you've got me curious.", use: "An encouraging reaction that invites the other person to explain or show you more.", group: "recommendation-reactions" },
+      { de: "Und was machst du so?", en: "So what do you do?", use: "The so makes the question casual — 'what do you do, generally?' The small-talk classic." },
+      { de: "Ich spiele seit einem Jahr Tennis.", en: "I've been playing tennis for a year.", use: "seit + dative again with present tense: seit einem Jahr — the em shows the dative." },
+      { de: "Kennst du das Café am Markt?", en: "Do you know the café on the market square?", use: "kennen for places you're familiar with; am Markt places it. The recommendation opener." },
+      { de: "Das klingt gut, da komme ich mit.", en: "That sounds good — I'll come along.", use: "mitkommen splits: komme ... mit; da picks up the plan just mentioned." },
+      { de: "Wie findest du die neue Ausstellung?", en: "What do you think of the new exhibition?", use: "wie findest du = how do you find — German asks HOW, not WHAT, for opinions." },
+      { de: "Wir haben denselben Musikgeschmack.", en: "We have the same taste in music.", use: "denselben — the same, accusative masculine in one word; der Musikgeschmack, one compound." },
+      { de: "Gib mir mal deine Nummer.", en: "Give me your number.", use: "gib — du-imperative of geben with vowel change; mal keeps it casual, not bossy." },
+      { de: "Grüß deine Frau von mir.", en: "Say hi to your wife from me.", use: "grüßen + accusative; von mir = from me. The standing goodbye add-on." },
     ],
     dialogues: [
       { title: "Meeting someone at an event", lines: [
@@ -1373,6 +1421,14 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "Beim nächsten Mal mache ich es anders.", en: "I'll do it differently next time.", use: "A practical response after noticing what did not work. German uses the present naturally for this future intention.", group: "looking-back-and-next-time" },
       { de: "Das müssen wir unbedingt wiederholen.", en: "We definitely have to do that again. / We must do that again sometime.", use: "An enthusiastic response after a good evening, trip or shared activity. Here 'wiederholen' means repeating the experience.", group: "looking-back-and-next-time" },
       { de: "Beim nächsten Mal bin ich dabei.", en: "Count me in next time. / I'll join you next time.", use: "Use this when you missed the current occasion but want to take part when it happens again.", group: "looking-back-and-next-time" },
+      { de: "Ich probiere das heute zum ersten Mal.", en: "I'm trying this for the first time today.", use: "zum ersten Mal = for the first time; present tense carries the experiment as it happens." },
+      { de: "So etwas esse ich sonst nie.", en: "I never normally eat anything like this.", use: "so etwas = something like this; sonst nie = otherwise never — the exception marked twice." },
+      { de: "Das kenne ich nur aus dem Fernsehen.", en: "I only know that from TV.", use: "kennen aus = to know FROM a source; aus dem Fernsehen — the screen as origin." },
+      { de: "Ich bin zum ersten Mal in Deutschland.", en: "It's my first time in Germany.", use: "German states it as being: I am here for the first time — no 'time' noun phrase needed beyond zum ersten Mal." },
+      { de: "Das ist mein drittes Mal hier.", en: "This is my third time here.", use: "das Mal = the time/occasion; mein drittes Mal — ordinal plus Mal counts experiences." },
+      { de: "Erst seit gestern, alles ist noch neu.", en: "Only since yesterday — everything's still new.", use: "erst seit = only since, the fresh-arrival answer; noch neu = still new." },
+      { de: "Das passiert mir ständig.", en: "That happens to me all the time.", use: "passieren + dative — things happen TO people in the dative; ständig = constantly." },
+      { de: "Beim ersten Besuch sieht alles größer aus.", en: "On a first visit, everything looks bigger.", use: "beim ersten Besuch — bei + noun for 'on/during'; aussehen splits around größer." },
     ],
     dialogues: [
       { title: "Talking about travel experience", lines: [
@@ -1489,6 +1545,14 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "Jetzt weiß ich, was du meinst.", en: "Now I know what you mean. / Now I see what you mean.", use: "Confirms that you now understand the other person's point after further explanation.", group: "understanding-the-explanation" },
       { de: "Das war also der Grund.", en: "So that was the reason. / So that's what caused it.", use: "A brief conclusion when the real reason has finally become clear.", group: "understanding-the-explanation" },
       { de: "Kein Wunder, dass du müde bist.", en: "No wonder you're tired.", use: "A sympathetic reaction after hearing a reason such as little sleep, a long journey or a difficult day.", group: "understanding-the-explanation" },
+      { de: "Ich bleibe heute drin, denn es regnet.", en: "I'm staying in today, because it's raining.", use: "denn joins two MAIN clauses — the verb stays second: denn es regnet. The A1 way to give reasons." },
+      { de: "Der Kurs fällt aus, der Lehrer ist krank.", en: "The class is cancelled — the teacher is ill.", use: "ausfallen splits: fällt ... aus; the reason follows as a second plain clause, no conjunction at all." },
+      { de: "Darum bin ich heute so früh wach.", en: "That's why I'm awake so early today.", use: "darum = that's why; it takes first position and the verb follows — bin ich." },
+      { de: "Ich spare, denn die Reise ist teuer.", en: "I'm saving up, because the trip is expensive.", use: "sparen = to save money; denn again keeping both clauses main clauses." },
+      { de: "Zum Lernen brauche ich Ruhe.", en: "I need quiet for studying.", use: "zum + nominalised verb = for X-ing: zum Lernen, zum Kochen; die Ruhe = peace and quiet." },
+      { de: "Deshalb frage ich lieber zweimal.", en: "That's why I'd rather ask twice.", use: "deshalb — the twin of darum, same inversion; zweimal = twice, one word." },
+      { de: "Der Grund ist einfach: keine Zeit.", en: "The reason is simple: no time.", use: "The colon delivers the reason as a bare noun phrase — keine Zeit; no clause needed." },
+      { de: "Ich nehme das Rad, das Auto steht in der Werkstatt.", en: "I'm taking the bike — the car's in the garage.", use: "stehen for parked vehicles; the second clause explains without denn — juxtaposition does the work." },
     ],
     dialogues: [
       { title: "Explaining why you are late", lines: [
@@ -1605,6 +1669,14 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "Ich versuche, konsequent zu bleiben.", en: "I try to stay consistent. / I'm trying to stick with it.", use: "Use this when you want to keep following a new habit even on days when motivation is low.", group: "patterns-and-exceptions" },
       { de: "Heute mache ich mal eine Ausnahme.", en: "I'll make an exception today. / Today I'm making an exception.", use: "A natural way to pause a usual rule or habit for one occasion. 'mal' keeps the tone relaxed.", group: "patterns-and-exceptions" },
       { de: "Das ist jede Woche anders.", en: "It's different every week. / That changes from week to week.", use: "Useful when work shifts, plans or free time do not follow one stable weekly routine.", group: "patterns-and-exceptions" },
+      { de: "Ich trinke morgens immer zuerst ein Glas Wasser.", en: "In the morning I always drink a glass of water first.", use: "morgens = every morning, the -s habit form; immer zuerst stack before the object." },
+      { de: "Sonntags schlafen wir lange.", en: "On Sundays we sleep in.", use: "sonntags with -s = every Sunday; lange schlafen = to sleep in — no special verb." },
+      { de: "Normalerweise koche ich selbst.", en: "Normally I cook for myself.", use: "normalerweise fronts, verb follows; selbst after the verb = myself, doing it in person." },
+      { de: "Zweimal pro Woche gehe ich schwimmen.", en: "I go swimming twice a week.", use: "zweimal pro Woche fronts as one block; gehen + bare infinitive: schwimmen gehen." },
+      { de: "Ich esse fast nie Fleisch.", en: "I hardly ever eat meat.", use: "fast nie = almost never — the frequency ladder from immer to nie, walked in one step." },
+      { de: "Ab und zu gönne ich mir ein Eis.", en: "Every now and then I treat myself to an ice cream.", use: "ab und zu = now and then; sich (Dativ) etwas gönnen = to treat oneself — mir again." },
+      { de: "Ohne Kaffee geht bei mir gar nichts.", en: "Nothing works for me without coffee.", use: "gar nichts = nothing at all; bei mir = in my case. The national truth, A1 grammar." },
+      { de: "Meistens bin ich vor sieben wach.", en: "Most of the time I'm awake before seven.", use: "meistens = mostly; vor + time = before. Habit stated with sein alone." },
     ],
     dialogues: [
       { title: "An almost-daily habit", lines: [
@@ -1722,6 +1794,14 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "Kann das weg?", en: "Can this go? / Can I throw this away?", use: "A very common short question while clearing up. It asks whether the object may be thrown out or removed.", group: "putting-things-away" },
       { de: "Wirf das bitte nicht weg.", en: "Please don't throw that away.", use: "The 'du' instruction from 'wegwerfen'. Use it when an item still matters or is needed later.", group: "putting-things-away" },
       { de: "Heb das bitte für mich auf.", en: "Please keep that for me. / Please put that aside for me.", use: "'aufheben' can mean keeping something rather than discarding it; the situation distinguishes it from picking something up.", group: "putting-things-away" },
+      { de: "Wo ist schon wieder die Fernbedienung?", en: "Where's the remote gone again?", use: "schon wieder — the exasperated 'yet again'; German asks where it IS, not where it went." },
+      { de: "Leihst du mir kurz deinen Stift?", en: "Will you lend me your pen a sec?", use: "leihen + dative person + accusative thing; kurz = briefly — the tiny borrow." },
+      { de: "Klar, hier bitte.", en: "Sure — here you go.", use: "klar = sure; hier bitte hands the thing over. Both halves verbless, both natural." },
+      { de: "Die Schere liegt in der zweiten Schublade.", en: "The scissors are in the second drawer.", use: "die Schere is singular in German; liegen + in der — dative for where it rests." },
+      { de: "Das gehört mir nicht, das gehört Paul.", en: "That's not mine — it's Paul's.", use: "gehören + dative shows ownership: gehört mir, gehört Paul. No possessive needed." },
+      { de: "Stell die Flasche bitte zurück in den Kühlschrank.", en: "Put the bottle back in the fridge, please.", use: "stellen for upright things; zurück + in den — accusative, because it's moving there." },
+      { de: "Wir teilen uns den Drucker.", en: "We share the printer.", use: "sich (Dativ) etwas teilen = to share something between us — the uns is the sharing pair." },
+      { de: "Alles hat hier seinen festen Platz.", en: "Everything here has its fixed place.", use: "seinen festen Platz — sein for 'its' with alles; fest = fixed/permanent." },
     ],
     dialogues: [
       { title: "Finding a phone", lines: [
@@ -1839,6 +1919,14 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "Gibt es das auch eine Nummer kleiner?", en: "Do you have this in a smaller size? / Does this come one size smaller?", use: "A very common shopping question. 'eine Nummer kleiner' means one size down, not a smaller serial number.", group: "checking-and-comparing" },
       { de: "Das sieht in echt anders aus.", en: "It looks different in real life.", use: "Use 'in echt' when something differs from how it appeared in a photo, video or description.", group: "checking-and-comparing" },
       { de: "Ja, das müsste es sein.", en: "Yes, that should be it.", use: "A common confirmation when the evidence fits, although you are not claiming absolute certainty.", group: "checking-and-comparing" },
+      { de: "Welche Tasse ist meine? Die blaue.", en: "Which mug is mine? The blue one.", use: "welche asks the choice; die blaue answers with article + adjective, noun understood." },
+      { de: "Der Mann da drüben winkt dir.", en: "That man over there is waving at you.", use: "da drüben = over there; winken + dative — you wave TO someone in German." },
+      { de: "Meinst du den mit der Brille?", en: "Do you mean the one with the glasses?", use: "den stands alone as 'the one' in the accusative; mit der Brille identifies him." },
+      { de: "Meine Jacke ist die rote mit der Kapuze.", en: "My jacket is the red one with the hood.", use: "die rote — the adjective carries the noun again; mit adds the telling detail." },
+      { de: "Das Haus an der Ecke steht leer.", en: "The house on the corner is empty.", use: "an der Ecke = on the corner; leer stehen = to stand empty — buildings stand in German." },
+      { de: "Ist das deiner oder meiner?", en: "Is that yours or mine?", use: "deiner/meiner — the standalone possessives take -er for masculine things; the fridge-shelf question." },
+      { de: "Ich suche einen Schlüssel mit einem roten Band.", en: "I'm looking for a key with a red ribbon.", use: "suchen + accusative, no 'for'; mit einem roten Band — dative after mit, adjective takes -en." },
+      { de: "Du meinst bestimmt die andere Anna.", en: "You must mean the other Anna.", use: "bestimmt = surely/must; die andere + name — even people get identified this way." },
     ],
     dialogues: [
       { title: "Choosing the right mug", lines: [
@@ -1956,6 +2044,14 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "Das kommt ungefähr hin.", en: "That's about right.", use: "A very useful spoken phrase for saying an estimate, total or amount is close enough.", group: "estimating-and-adjusting" },
       { de: "Das passt von der Menge her.", en: "That's the right amount.", use: "'von der Menge her' makes clear that you are judging the amount rather than another feature.", group: "estimating-and-adjusting" },
       { de: "Nimm erst mal weniger.", en: "Take less to start with.", use: "'erst mal' suggests beginning with a smaller amount and adding more later if needed.", group: "estimating-and-adjusting" },
+      { de: "Der Zucker ist fast alle.", en: "The sugar is almost gone.", use: "alle as a predicate = used up/empty — spoken German's shortest way to report an empty jar." },
+      { de: "Das ist zu viel für mich allein.", en: "That's too much for me on my own.", use: "zu viel = too much; für mich allein — allein trails the pronoun it belongs to." },
+      { de: "Vom Kuchen ist nur noch ein Stück da.", en: "There's only one piece of the cake left.", use: "vom = von dem — OF the cake; nur noch = only ... left; da sein = to be there/left." },
+      { de: "Nimm dir ruhig mehr.", en: "Go ahead and take more.", use: "ruhig as a particle = feel free; nimm dir — the dative dir makes it 'for yourself'." },
+      { de: "Der Rest ist für morgen.", en: "The rest is for tomorrow.", use: "der Rest = the remainder; für + time claims it. Fridge diplomacy in five words." },
+      { de: "Wir teilen einfach: Jeder bekommt die Hälfte.", en: "Let's just split it: everyone gets half.", use: "jeder + singular verb; die Hälfte = the half. The colon does the maths." },
+      { de: "Ein halber Liter reicht völlig.", en: "Half a litre is plenty.", use: "ein halber Liter — halb declines like an adjective; reichen = to be enough, völlig = completely." },
+      { de: "Mehr geht heute leider nicht.", en: "I'm afraid that's all I can do today.", use: "mehr geht nicht = more isn't possible — gehen as 'to be possible' once more; leider softens." },
     ],
     dialogues: [
       { title: "Serving rice", lines: [
