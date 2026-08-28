@@ -213,6 +213,35 @@ function cancelAudioIdleSuspend() {
   audioIdleTimer = null;
 }
 
+/**
+ * Wake the audio hardware while the clip is still being fetched.
+ *
+ * Suspending the context between sounds is what keeps the app cheap while
+ * idle — that stays. What could not stay is WHERE the wake-up was paid:
+ * playback awaited context.resume() immediately before play(), so every clip
+ * that began after four quiet seconds put the audio device's spin-up (tens to
+ * hundreds of milliseconds on Windows) on the critical path, and a graph woken
+ * at the same instant it is asked to carry sound can garble its opening
+ * samples. Heard as: speech that is sometimes a little late and croaks at the
+ * start — only sometimes, because only the clip after a gap pays it.
+ *
+ * So the resume is kicked off when the clip is REQUESTED, fire-and-forget,
+ * and overlaps the fetch. attachAudioAnalysis still awaits the resume before
+ * routing anything through the context, so this changes when the wake starts,
+ * never whether playback waits for it to finish.
+ *
+ * Deliberately never CREATES a context: before the first sound there is
+ * nothing to wake, and creating one outside a playback path is how autoplay
+ * policy hands back a context that will never run.
+ */
+function prewarmSpeechAudio() {
+  cancelAudioIdleSuspend();
+  const context = sharedAudioContext;
+  if (context && context.state === "suspended") {
+    void context.resume().catch(() => { /* the analyser path retries and guards */ });
+  }
+}
+
 /** Called when playback stops. The context sleeps unless something else starts. */
 function scheduleAudioIdleSuspend() {
   if (typeof window === "undefined") return;
@@ -221,6 +250,13 @@ function scheduleAudioIdleSuspend() {
     audioIdleTimer = null;
     const context = sharedAudioContext;
     if (!context || context.state !== "running") return;
+    // A stale timer must never silence a clip. Timers are re-armed from the
+    // end of sequences as well as the end of clips, and an interrupted
+    // sequence's re-arm can land after its successor has already started —
+    // suspending then would cut the successor off mid-word, through the very
+    // graph it is being heard on. If something is audibly playing, do nothing:
+    // that clip's own finish re-arms the suspend.
+    if (currentAudio || currentUtterance) return;
     void context.suspend().catch(() => {});
   }, AUDIO_IDLE_SUSPEND_MS);
 }
@@ -528,6 +564,9 @@ async function playOne(item: SeqItem, token: number, signal?: AbortSignal): Prom
   const text = firstSpokenAlternative(item.text);
   const rate = effectiveRate(item.rate ?? DEFAULT_RATE, lang, text);
   if (!text || getTtsAudioVolume(lang) <= 0) return;
+  // Wake the hardware now, so the spin-up runs under the fetch instead of
+  // after it. See prewarmSpeechAudio for why this is where the croak lived.
+  prewarmSpeechAudio();
   let announced = false;
   const announceStart = () => {
     if (announced) return;
@@ -568,6 +607,12 @@ export function tts(text: string, rate = DEFAULT_RATE, lang = "de-DE"): Promise<
   const fetchController = new AbortController();
   currentFetchController = fetchController;
   return playOne({ text, rate, lang }, token, fetchController.signal).finally(() => {
+    // Re-arm the idle suspend however this playback ended. The prewarm and
+    // the pause hold cancel the timer, and an abort mid-fetch or mid-pause
+    // finishes without reaching the clip-end path that normally re-arms it —
+    // without this, one interrupted playback leaves the audio thread awake
+    // for good, which is the idle cost the suspend exists to remove.
+    scheduleAudioIdleSuspend();
     if (token === playSeq) {
       currentFetchController = null;
       emitAudioLevel(0, false);
@@ -613,6 +658,13 @@ export function ttsSequence(items: SeqItem[]): Promise<void> {
       // Only ahead of a clip that is going to be heard. Holding a five-second
       // gap for a muted voice is just five seconds of nothing.
       if (item.pauseBeforeMs && getTtsAudioVolume(item.lang) > 0) {
+        // A held pause is the learner's turn to speak, not the app going
+        // idle: the sequence is still in flight and the next clip is coming.
+        // Without this, the idle timer from the LAST clip's end fired four
+        // seconds into the pause, suspended the context mid-sequence, and the
+        // clip after the learner's turn paid the hardware wake-up — the one
+        // moment in Listen where a late, croaky start is most noticeable.
+        cancelAudioIdleSuspend();
         try { item.onPause?.(true); } catch { /* captions must never break audio */ }
         await silence(item.pauseBeforeMs, fetchController.signal);
         try { item.onPause?.(false); } catch { /* nor on the way out */ }
@@ -621,6 +673,12 @@ export function ttsSequence(items: SeqItem[]): Promise<void> {
       await playOne(item, token, fetchController.signal);
     }
   })().finally(() => {
+    // Re-arm the idle suspend however this playback ended. The prewarm and
+    // the pause hold cancel the timer, and an abort mid-fetch or mid-pause
+    // finishes without reaching the clip-end path that normally re-arms it —
+    // without this, one interrupted playback leaves the audio thread awake
+    // for good, which is the idle cost the suspend exists to remove.
+    scheduleAudioIdleSuspend();
     if (token === playSeq) {
       currentFetchController = null;
       emitAudioLevel(0, false);
