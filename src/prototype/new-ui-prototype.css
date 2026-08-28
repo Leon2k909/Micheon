@@ -1938,6 +1938,13 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   display: flex;
   align-items: center;
   overflow: hidden;
+  /* Shaped for what is in it. 250px on a box this wide is 4.6 to 1 — the
+     shape of the panorama this was built for, and nothing else. The scenery
+     is 2:1, so cover scaled each picture to the width and dropped 57% of its
+     height. At 3.4 to 1 it keeps 59% instead, and the aspect ratio means a
+     wider window gets a taller banner rather than a thinner slice of the
+     same picture. The min-height stays as the floor for narrow ones. */
+  aspect-ratio: 3.4 / 1;
   min-height: 250px;
   border: 1px solid var(--np-line);
   border-radius: 28px;
@@ -2023,10 +2030,14 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   font-style: normal;
 }
 
+/* A flex row rather than the auto-fit grid it was. A folded card has to be
+   allowed to be 74px wide while the other takes everything left over, and
+   auto-fit gives every column the same width by definition. Wrapping at the
+   same 340px keeps the narrow layout it already had. */
 .np-home-choices {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  display: flex;
   align-items: stretch;
+  flex-wrap: wrap;
   gap: 20px;
 }
 
@@ -2034,10 +2045,142 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   position: relative;
   display: flex;
   overflow: hidden;
+  flex: 1 1 340px;
   flex-direction: column;
+  /* Only the basis moves. The other card grows into the space frame by frame
+     on its own, which is smoother than animating both. */
+  transition: flex-basis 260ms ease;
   border: 1px solid var(--np-line);
   border-radius: 26px;
   isolation: isolate;
+}
+
+/* ── folding ───────────────────────────────────────────────────────────────
+   "sodass sprachenlernen nach links zuklappbar ist. und landeskunde nach
+   rechts." Each card folds towards the edge it sits at, leaving a rail there
+   and handing the room to the other one. */
+.np-home-choice.is-folded {
+  flex: 0 0 74px;
+}
+
+/* Folded, this one lives at the right edge whatever else is on the row.
+   It already did while the language card was open — an open card takes the
+   space and pushes it there — but with both folded there was nothing doing
+   the pushing, and the two rails stood together at the left with the width
+   of the page empty beside them. The auto margin eats the free space when
+   there is any and is worth nothing when there is not, so the open case is
+   untouched. */
+.np-home-choice--country.is-folded {
+  margin-left: auto;
+}
+
+/* Everything but the picture, the handle and the rail's own label. Written as
+   an exclusion so it keeps working when the card gains a part: the failure of
+   naming them one by one is a new section that stays visible in a 74px rail. */
+.np-home-choice.is-folded > :not(.np-home-choice-hero):not(.np-home-choice-fold):not(.np-home-choice-spine),
+.np-home-choice.is-folded .np-home-choice-body {
+  display: none;
+}
+
+/* The picture fills the rail, so a folded card matches the height of the one
+   beside it instead of standing short. */
+.np-home-choice.is-folded .np-home-choice-hero {
+  flex: 1;
+}
+
+.np-home-choice-fold {
+  position: absolute;
+  top: 14px;
+  z-index: 4;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--np-line) 80%, transparent);
+  border-radius: 999px;
+  color: var(--text-1);
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  cursor: pointer;
+  transition: background 160ms ease;
+}
+
+/* Each in the corner it folds towards. */
+.np-home-choice--language .np-home-choice-fold { left: 14px; }
+.np-home-choice--country .np-home-choice-fold { right: 14px; }
+
+.np-home-choice-fold:hover {
+  background: var(--surface);
+}
+
+.np-home-choice-fold svg {
+  width: 17px;
+  height: 17px;
+  transition: transform 200ms ease;
+}
+
+/* One icon for both states: folded, it points back the way out. */
+.np-home-choice.is-folded .np-home-choice-fold svg {
+  transform: rotate(180deg);
+}
+
+.np-home-choice-spine {
+  position: absolute;
+  z-index: 3;
+  inset: 58px 0 20px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 14px;
+  pointer-events: none;
+}
+
+.np-home-choice-spine-flag {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  place-items: center;
+}
+
+.np-home-choice-spine b {
+  writing-mode: vertical-rl;
+  color: var(--text-1);
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+  /* The rail is a slice of artwork, and the wash below is built for a block
+     of copy rather than one line down the middle. */
+  text-shadow: 0 1px 10px color-mix(in srgb, var(--surface) 90%, transparent);
+}
+
+/* Stacked, there is no side to fold to: the card becomes a bar across the top
+   of the space rather than a tall thin strip on its own. */
+@media (max-width: 719px) {
+  .np-home-choice.is-folded {
+    flex: 1 1 100%;
+  }
+
+  .np-home-choice.is-folded .np-home-choice-hero {
+    min-height: 74px;
+  }
+
+  .np-home-choice.is-folded .np-home-choice-spine {
+    inset: 0 58px;
+    align-items: center;
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .np-home-choice.is-folded .np-home-choice-spine b {
+    writing-mode: horizontal-tb;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .np-home-choice,
+  .np-home-choice-fold svg {
+    transition: none;
+  }
 }
 
 /* The picture is the card, not a strip at the top of it. The wash keeps text
@@ -2459,6 +2602,23 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   width: 100%;
   object-fit: cover;
   object-position: center 58%;
+}
+
+/*
+ * The Polish painting hangs its flag at the very edge of the canvas, with
+ * forty pixels of sky after it and nothing beyond. object-fit: cover trims
+ * from BOTH sides, so a card even slightly narrower than the picture eats
+ * that sky and then the flag, and the cut lands mid-stripe.
+ *
+ * Anchoring this one to the right means the trim comes off the left only.
+ * The flag keeps its sky at every card size instead of at some of them, and
+ * the left gives up more of the river — which is empty mist there anyway.
+ *
+ * Per-language and not a general rule: the other three paintings hold their
+ * flags well inside, and centring is the better framing for them.
+ */
+.np-course-art[data-course="pl"] {
+  object-position: 100% 58%;
 }
 
 .np-course-shade {

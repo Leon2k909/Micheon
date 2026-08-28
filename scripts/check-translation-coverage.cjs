@@ -100,13 +100,13 @@ assert.ok(entries.length > 20000, `only found ${entries.length} taught entries â
  * is a failure rather than a silent zero.
  */
 const FLOORS = {
-  fr: 14500,
+  fr: 14800,
   // Polish reads lower than French and means something different: it covers
   // the opening stretch of the curriculum in full rather than a spread of all
   // of it. What the learner actually meets is floored by check-polish-course,
   // which counts the cards the course serves and requires every one of them to
   // have an answer.
-  pl: 10500,
+  pl: 12700,
 };
 
 // The percentage is still reported, because it is the honest measure of how

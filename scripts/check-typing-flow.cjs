@@ -161,22 +161,25 @@ assert.ok(effect.includes("window.clearTimeout"),
 
 // ── and a finished answer does not wait at all ──────────────────────────────
 // The pause is for one case: a correct short answer that is the opening of a
-// longer correct one. Writing out a whole dictated line is the opposite — the
-// answer is already as long as any accepted answer can be, so waiting protects
-// nothing and reads as the app hesitating over something it has accepted.
-const longest = /const longestAcceptedAnswer = useMemo\(\(\) => \{([\s\S]{0,400}?)\}, \[/.exec(session);
-assert.ok(longest, "nothing works out how long an accepted answer can be, so completeness cannot be judged");
+// longer correct one. That is a question about prefixes. Asking it as a
+// question about LENGTH — is this at least as long as the longest answer the
+// card takes — gives the same answer only on a card that takes exactly one,
+// and the two cases that matter most are not that: a card that also accepts a
+// fuller written form, and a line typed without its full stop on a stage that
+// dictates one. Both are finished, and both used to sit out the wait.
+const forms = /const acceptedAnswers = useMemo\(([\s\S]{0,400}?)\n    \[/.exec(session);
+assert.ok(forms, "nothing collects the answers a card accepts, so a finished one cannot be recognised");
 for (const [form, why] of [
   ["item.de", "the card's own line"],
-  ["item.long", "the written-out form, which is longer than the spoken one it is compared against"],
+  ["item.long", "the written-out form, which a short answer can still be growing towards"],
   ["item.synonyms", "the siblings of a combined synonym card, any of which may be the longer answer"],
 ]) {
-  assert.ok(longest[1].includes(form),
-    `${why} is not counted, so an answer still being typed towards it would be cut off`);
+  assert.ok(forms[1].includes(form),
+    `${why} is not collected, so an answer still being typed towards it would be cut off`);
 }
-assert.ok(/typed\.trim\(\)\.length >= longestAcceptedAnswer/.test(effect),
-  "completeness is not measured against the longest accepted answer — with > rather than >=, an "
-  + "answer of exactly the right length waits for a pause that can never help it");
+assert.ok(/shape\.length > typedKey\.length && shape\.startsWith\(typedKey\)/.test(effect),
+  "completeness is not decided by whether the answer is the beginning of a longer one, which is "
+  + "the only thing the pause was ever protecting");
 assert.ok(/if \(complete\) \{\s*go\(\);/.test(effect),
   "a finished answer still goes through the timer, so it waits to be told what it already showed");
 // The pause must survive for everything else, or this is a removal wearing a
@@ -185,6 +188,31 @@ assert.ok(effect.includes("AUTO_CHECK_PAUSE_MS"),
   "the pause is gone entirely, so a short answer that is the start of a longer one is cut off");
 assert.ok(/const complete = finishable/.test(effect),
   "completeness is assumed rather than established for the stage being answered");
+
+// The rule itself, run rather than read. answerShape is lifted out of the
+// source so this cannot drift from the comparison the app actually makes.
+const shapeSrc = /function answerShape\(text: string\): string \{([\s\S]*?)\n\}/.exec(session);
+assert.ok(shapeSrc, "answerShape is gone, so nothing decides what two answers have in common");
+const answerShape = new Function("text", shapeSrc[1]);
+const finished = (typed, accepted) => {
+  const key = answerShape(typed);
+  return key.length > 0 && !accepted.some((form) => {
+    const shape = answerShape(form);
+    return shape.length > key.length && shape.startsWith(key);
+  });
+};
+for (const [typed, accepted, want, why] of [
+  ["Ich hab das.", ["Ich hab das."], true, "the line typed exactly"],
+  ["Ich hab das", ["Ich hab das."], true, "the line typed without its full stop, which is most of them"],
+  ["Ich hab die Jacke.", ["Ich hab die Jacke.", "Ich habe die braune Jacke genommen."], true,
+    "the shorter of two accepted forms, a whole answer rather than a prefix of the other"],
+  ["Ich hab", ["Ich hab das."], false, "an answer that really is still being typed"],
+  ["Ich hab das", ["Ich hab das.", "Ich hab das gemacht."], false,
+    "an answer that really is the opening of a longer accepted one"],
+]) {
+  assert.strictEqual(finished(typed, accepted), want,
+    `${why}: expected ${want ? "no wait" : "the pause"}`);
+}
 
 console.log(
   `check-typing-flow: the clitic is accepted written either way, ${catalog.length} catalogue items `

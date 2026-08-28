@@ -25,6 +25,11 @@ export interface VocabSeed {
 
 export interface DialogueLine {
   speaker: string;
+  /** Same dial as Phrase.lessonPriority, and already read by the session
+   *  builder: positive values demote a line in pack and queue order.
+   *  Capstone scenes use it so their lines rank behind the sentences
+   *  that taught their language. */
+  lessonPriority?: number;
   de: string;
   en: string;
   fr?: string;

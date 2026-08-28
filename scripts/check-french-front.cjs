@@ -186,8 +186,14 @@ assert.ok(wordParity >= WORD_PARITY_FLOOR,
  * today quietly disappearing because a translation was deleted or a German
  * word reworded out from under its key. So the floor is the number of German
  * word cards that have Polish. Raise it as each block lands; never lower it.
+ *
+ * As of this floor the narrowing narrows nothing: all 9,000 have Polish, so
+ * the two trackers hold the same list, exactly as French does. The count stays
+ * a count anyway. French is a parity language by decision and Polish is not,
+ * and the day a German block ships ahead of its Polish the percentage rule
+ * would stop the release while this one asks only that nothing was lost.
  */
-const POLISH_WORD_FLOOR = 7050;
+const POLISH_WORD_FLOOR = 8990;
 const withPolish = germanWords.filter((word) => translate(String(word.de), "pl", null));
 assert.ok(withPolish.length >= POLISH_WORD_FLOOR,
   `${withPolish.length.toLocaleString("en-GB")} of the ${germanWords.length.toLocaleString("en-GB")} `
@@ -196,11 +202,66 @@ assert.ok(withPolish.length >= POLISH_WORD_FLOOR,
   + "count, so adding German cannot trip it: a card the Polish course used to teach no longer has "
   + "an answer in POLISH_BY_GERMAN.");
 
+/**
+ * And the two counts that are actually on screen: what each course BUILDS.
+ *
+ * The floors above ask whether a card has an answer, and that is not the same
+ * question. Polish read 9,000 of 9,000 while its tracker showed 8,997, and
+ * French sat at 100% parity while teaching 9,454 words against the German
+ * 9,715. Both gaps were a level below a card. Several SEEDS share one lemma,
+ * only the winner becomes a card, and a losing seed the table cannot answer for
+ * is dropped by the narrowing — so a different seed wins the lemma, or a
+ * synonym stops folding, and the tracker comes up short with every card it does
+ * show fully translated.
+ *
+ * Two numbers, because they fail differently: CARDS is the list length a
+ * learner scrolls, TAUGHT counts the synonyms folded behind those cards, and a
+ * lost seed usually moves only the second. Both are counts, for the reason
+ * given above — German may run ahead, nothing already written may be lost.
+ *
+ * Only vocab is narrowed here. buildWordCatalog reads nothing else that
+ * frenchPart or polishPart rewrites, and running either over every phrase and
+ * dialogue costs minutes rather than half a second.
+ */
+const BUILT_FLOORS = {
+  fr: { cards: 8990, taught: 9700 },
+  pl: { cards: 8990, taught: 9700 },
+};
+const germanTaught = germanWords.reduce((count, word) => count + 1 + (word.synonyms?.length ?? 0), 0);
+const builtCounts = {};
+for (const [language, floor] of Object.entries(BUILT_FLOORS)) {
+  const name = TRANSLATION_LANGUAGE_NAMES[language] ?? language;
+  const narrowed = Object.fromEntries(Object.entries(parts).map(([key, part]) => [
+    key,
+    {
+      ...part,
+      vocab: (part.vocab ?? []).filter((word) => translate(
+        String(word.de ?? ""), language, language === "fr" ? (word.fr ?? null) : null
+      )),
+    },
+  ]));
+  const cards = buildWordCatalog(narrowed);
+  const taught = cards.reduce((count, word) => count + 1 + (word.synonyms?.length ?? 0), 0);
+  builtCounts[language] = { cards: cards.length, taught };
+  assert.ok(cards.length >= floor.cards,
+    `the ${name} word tracker builds ${cards.length.toLocaleString("en-GB")} cards against the German `
+    + `${germanWords.length.toLocaleString("en-GB")}, and the floor is ${floor.cards.toLocaleString("en-GB")}. `
+    + "Every card having an answer is not enough: a seed that loses its lemma to another seed still has "
+    + "to be in the table, or dropping it moves the fold and the tracker comes up short.");
+  assert.ok(taught >= floor.taught,
+    `the ${name} course teaches ${taught.toLocaleString("en-GB")} words across those cards and the floor `
+    + `is ${floor.taught.toLocaleString("en-GB")}. The cards are still there; what went missing is a word `
+    + "folded behind one of them as a synonym, which is a seed with no translation.");
+}
+
 console.log(`check-french-front: ${summary.join("; ")} — measured by queue position, `
   + "because that is what decides which cards a learner actually meets. "
   + `Word tracker: ${wordParity.toFixed(1)}% of ${germanWords.length.toLocaleString("en-GB")} words `
-  + `have French, ${withPolish.length.toLocaleString("en-GB")} have Polish `
-  + `(floor ${POLISH_WORD_FLOOR.toLocaleString("en-GB")})`);
+  + `have French, ${withPolish.length.toLocaleString("en-GB")} have Polish. `
+  + `Built: French ${builtCounts.fr.cards.toLocaleString("en-GB")} cards teaching `
+  + `${builtCounts.fr.taught.toLocaleString("en-GB")} words, Polish ${builtCounts.pl.cards.toLocaleString("en-GB")} `
+  + `cards teaching ${builtCounts.pl.taught.toLocaleString("en-GB")} — against the German `
+  + `${germanWords.length.toLocaleString("en-GB")} and ${germanTaught.toLocaleString("en-GB")}`);
 // esbuild's service keeps sockets open after buildSync returns; say the check
 // is finished rather than letting the event loop decide.
 process.exit(0);

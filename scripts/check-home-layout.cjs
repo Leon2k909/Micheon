@@ -60,10 +60,63 @@ function pinPicture(file, binding) {
 for (const [file, binding, className] of PICTURES) {
   pinPicture(file, binding);
   assert.ok(
-    new RegExp(`className="${className}"[^>]*src=\\{${binding}\\}|src=\\{${binding}\\}[^>]*className="${className}"`).test(shell),
+    new RegExp(`className="${className}"[^>]*src=\\{${binding}\\}|src=\\{${binding}\\}[^>]*className="${className}"`).test(shell)
+      // The banner draws the chosen scenery and falls back to this one.
+      || (className === "np-home-banner-sky" && /className="np-home-banner-sky"[\s\S]{0,160}src=\{scenery\.src\}/.test(shell)
+        && shell.includes(`?? { src: ${binding} };`)),
     `${binding} is imported but not drawn as ${className}`
   );
 }
+
+/**
+ * The banner wears the scenery chosen for a lesson.
+ *
+ * "aber der banner wechselt sich nicht. das müsste sich wechseln." Four scenes
+ * lend it their picture; plain canvas and monkey world do not — the first
+ * because it is the option for having no scenery, the second because the
+ * mascot is painted into that artwork and he was taken off this banner at her
+ * word. Pinned as a mapping, since the failure worth catching is a banner that
+ * has stopped following the choice, not a missing file.
+ */
+for (const [scene, binding] of [
+  ["bubbles", "scenerySpeechBubbles"],
+  ["atlas", "sceneryFlightPath"],
+  ["garden", "sceneryFlowerGarden"],
+  ["dawn", "scenerySoftDawn"],
+]) {
+  assert.ok(
+    new RegExp(`^  ${scene}: \\{ src: ${binding}, frame: "[^"]+" \\},$`, "m").test(shell),
+    `the ${scene} scene no longer lends the banner its picture, framed`
+  );
+}
+
+/**
+ * The banner is shaped for what is in it.
+ *
+ * "die banner müssen alle angepasst werden. die größe ist nicht gut." At the
+ * 4.6:1 this box used to be, cover threw away 57% of a 2:1 picture's height
+ * and the plane came out as a fragment. Nothing about that reads as broken —
+ * it looks like a picture somebody chose badly.
+ */
+const bannerBox = /\.np-home-banner \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? "";
+const bannerRatio = /aspect-ratio:\s*([\d.]+)\s*\/\s*1/.exec(bannerBox);
+assert.ok(bannerRatio, "the banner has no shape of its own, so its height is whatever a min-height says");
+assert.ok(
+  Number(bannerRatio[1]) <= 3.6,
+  `the banner is ${bannerRatio[1]} to 1, which crops a 2:1 picture down to a strip again`
+);
+assert.ok(
+  /style=\{scenery\.frame/.test(shell),
+  "the banner ignores each picture's framing, so cover falls back to one placement for all of them"
+);
+assert.ok(
+  !/^  (?:monkey|plain):/m.test(/const BANNER_SCENERY[^}]*\}/.exec(shell)?.[0] ?? ""),
+  "monkey world is lending the banner its picture, which is the mascot she had taken off it"
+);
+assert.ok(
+  shell.includes("window.addEventListener(GUIDED_BACKGROUND_EVENT, refresh)"),
+  "the banner no longer hears the scenery change, so it would only follow after a restart"
+);
 
 // ── the language card wears the language you are learning ────────────────
 // German, British English and French each have a picture of their own. Anything
@@ -95,20 +148,26 @@ assert.ok(
 // ── the country card wears the country you picked ─────────────────────────
 // One picture served both countries and it draws Berlin — the Brandenburg
 // Gate, the Fernsehturm, a yellow Deutsche Post box — so choosing the United
-// Kingdom left that scene sitting under a Union Jack. Pinned as a mapping
-// rather than as two loose files, because the failure worth catching is not
-// a missing picture but a card that has stopped following the selection.
-pinPicture("home-country-de-v1.webp", "homeCountryArtDe");
-pinPicture("home-country-uk-v1.webp", "homeCountryArtUk");
-for (const line of [
-  "const COUNTRY_ART: Record<CountryId, string> = {",
-  "  de: homeCountryArtDe,",
-  "  uk: homeCountryArtUk,",
-]) {
-  assert.ok(
-    shell.includes(line),
-    "COUNTRY_ART no longer maps each country to its own artwork: " + line
-  );
+// Kingdom left that scene sitting under a Union Jack.
+//
+// Read out of COUNTRY_ART rather than listed here. Listed, it named two of
+// the three countries and France went unchecked for as long as it existed —
+// which is the same shape of mistake as the card naming the country with a
+// conditional. Every entry is followed to its file, and every country pack
+// must have one.
+const artBlock = /const COUNTRY_ART: Record<CountryId, string> = \{([\s\S]*?)\n\};/.exec(shell);
+assert.ok(artBlock, "COUNTRY_ART is gone, so nothing decides which picture a country card draws");
+const art = new Map(
+  [...artBlock[1].matchAll(/\n {2}([a-z]+): (\w+),/g)].map((m) => [m[1], m[2]])
+);
+const packIds = [...read("src/lib/countryPacks.ts").matchAll(/\n {2}id: "([a-z]+)",/g)].map((m) => m[1]);
+assert.ok(packIds.length >= 3, `expected at least three country packs, found ${packIds.length}`);
+for (const id of packIds) {
+  const binding = art.get(id);
+  assert.ok(binding, `${id} has a country pack but no picture in COUNTRY_ART`);
+  const imported = new RegExp(`import ${binding} from "\\./assets/([\\w.-]+)"`).exec(shell);
+  assert.ok(imported, `${binding} is named in COUNTRY_ART but nothing imports it`);
+  pinPicture(imported[1], binding);
 }
 assert.ok(
   shell.includes('className="np-home-choice-art" decoding="async" loading="eager" src={COUNTRY_ART[pack.id]}'),
@@ -191,3 +250,55 @@ console.log(
   "check-home-layout: her pictures are used where she put them, the country card follows the country, the banner carries no mascot, "
   + "the page runs banner → question → cards → figures, and the cards let their pictures show"
 );
+
+// ── the two cards fold outwards ───────────────────────────────────────────
+/**
+ * "sodass sprachenlernen nach links zuklappbar ist. und landeskunde nach
+ * rechts. der knopf dafür soll bei sprachen lernen links oben in der ecke und
+ * bei landeskunde rechts oben in der ecke sein."
+ *
+ * Which corner the handle sits in IS the feature: it says which way the card
+ * will go before you press it. Swapped, nothing errors and nothing looks
+ * broken — the cards simply fold the wrong way.
+ */
+assert.ok(
+  /\.np-home-choice--language \.np-home-choice-fold \{ left: /.test(css)
+    && /\.np-home-choice--country \.np-home-choice-fold \{ right: /.test(css),
+  "the fold handles are not in the outer corners: language left, country right"
+);
+
+// A flex row, not the auto-fit grid it replaced. auto-fit gives every column
+// the same width by definition, so a folded card would be as wide as the one
+// it just made room for.
+const choices = /\.np-home-choices \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? "";
+assert.ok(
+  /display: flex/.test(choices) && !/grid-template-columns/.test(choices),
+  "the cards are back in a grid of equal columns, so folding one cannot narrow it"
+);
+// Folded, the country rail sits at the RIGHT edge even when the language card
+// is folded too — with both shut there is no open card to push it there, and
+// the two rails stood side by side at the left.
+assert.ok(
+  /\.np-home-choice--country\.is-folded \{\s*margin-left: auto;/.test(css),
+  "a folded country card no longer keeps to the right edge, so with both cards shut the two rails "
+  + "stand together at the left with the page empty beside them"
+);
+const railBasis = /\.np-home-choice\.is-folded \{\s*flex: 0 0 (\d+)px/.exec(css);
+assert.ok(railBasis, "a folded card has no width of its own — it would stay as wide as an open one");
+assert.ok(
+  Number(railBasis[1]) < 200,
+  `a folded card is ${railBasis[1]}px wide, which is a card rather than the rail it folds down to`
+);
+
+// Both handles, and the label that stays on the rail. A folded card with
+// nothing on it is a strip to work out rather than a thing to recognise.
+for (const needed of ["np-home-choice-fold", "np-home-choice-spine"]) {
+  assert.ok(shell.includes(needed), `the home cards no longer render ${needed}`);
+}
+assert.ok(
+  /getHomeCardOpen\("language"\)/.test(shell) && /getHomeCardOpen\("country"\)/.test(shell),
+  "the cards no longer read how they were left, so folding one is forgotten on the next start"
+);
+for (const key of ["Fold this card away", "Open this card"]) {
+  assert.ok(i18n.includes(`"${key}":`), `"${key}" has no German, so the handle would say it in English`);
+}

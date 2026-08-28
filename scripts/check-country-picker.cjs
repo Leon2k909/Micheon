@@ -61,6 +61,20 @@ for (const name of names) {
   );
 }
 
+/**
+ * The sidebar's chooser names the country, not the course.
+ *
+ * Every course title ends "– Land und Kultur", which is the group heading
+ * repeated once per row. The menu is 140px wide and hangs under the flag: the
+ * titles came out three lines each, with "Großbritannien" broken across two of
+ * them. Each pack carries the plain country name for exactly this.
+ */
+assert.ok(
+  /<span>\{ui\(entry\.country\)\}<\/span>/.test(shell),
+  "the sidebar's country chooser is not naming the country from its pack. If it went back to "
+  + "entry.label, every row repeats the group heading it sits under and wraps to three lines"
+);
+
 // ── the card reads the name rather than working it out ────────────────────
 assert.ok(
   /<strong>\{ui\(pack\.country\)\}<\/strong>/.test(shell),

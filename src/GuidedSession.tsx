@@ -141,6 +141,18 @@ const SFX_IDLE_SUSPEND_MS = 4000;
  * the app hesitating over something it has already accepted.
  */
 const AUTO_CHECK_PAUSE_MS = 450;
+
+/**
+ * An answer reduced to the letters and digits in it, lower case.
+ *
+ * Only ever compared with another answer's shape, to ask whether one is the
+ * beginning of the other. Punctuation and capitals are set aside because the
+ * matcher sets them aside too — a line typed without its full stop is the
+ * same answer, and must not read as an unfinished one.
+ */
+function answerShape(text: string): string {
+  return String(text ?? "").toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
+}
 let sfxIdleTimer: ReturnType<typeof setTimeout> | null = null;
 
 function scheduleSfxIdleSuspend() {
@@ -1789,17 +1801,20 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // two results means the shown answer is the one people say, without punishing
   // anyone who typed the one people write.
   /**
-   * The longest answer the target side will accept, in characters.
+   * Every answer the target side will accept, in full.
    *
-   * Every form matchEither will take: the card's own line, its written-out
-   * form where it has one, and the siblings of a combined synonym card. Once
-   * somebody has typed this many characters there is no longer answer left to
-   * be typing towards, which is the only thing the auto-check pause waits for.
+   * The card's own line, its written-out form where it has one, and the
+   * siblings of a combined synonym card. The auto-check pause waits for one
+   * thing only — that what has been typed is still growing towards a longer
+   * answer — and that is a question about prefixes, so it needs the answers
+   * themselves and not a measurement of them.
    */
-  const longestAcceptedAnswer = useMemo(() => {
-    const forms = [item.de, item.long, ...(item.synonyms ?? []).map((entry: { de?: string }) => entry.de)];
-    return forms.reduce((longest, form) => Math.max(longest, String(form ?? "").trim().length), 0);
-  }, [item.de, item.long, item.synonyms]);
+  const acceptedAnswers = useMemo(
+    () => [item.de, item.long, ...(item.synonyms ?? []).map((entry: { de?: string }) => entry.de)]
+      .map((form) => String(form ?? "").trim())
+      .filter(Boolean),
+    [item.de, item.long, item.synonyms]
+  );
 
   const matchEither = React.useCallback(
     (typed: string) => {
@@ -2530,18 +2545,27 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
      *
      * The pause exists for one case: a correct short answer that is the
      * opening of a longer correct one, where checking on the spot would cut
-     * somebody off mid-sentence. Writing out a whole dictated line is the
-     * opposite case — the answer is already as long as any accepted answer
-     * can be, so the wait protects nothing and reads as the app hesitating
-     * over something it has plainly accepted.
+     * somebody off mid-sentence. So the question is whether what has been
+     * typed is still the beginning of some other answer this card takes.
      *
-     * Measured against the longest form the matcher would take, not against
-     * the one on screen: a card can also accept its written-out form and its
-     * synonyms, and any of those may be longer than what is being compared to.
+     * It used to be asked as a question about LENGTH — is this at least as
+     * long as the longest answer the card accepts — and the two are the same
+     * only on a card that accepts exactly one. They are not the same when the
+     * card also takes a fuller written form, and they are not the same when
+     * the line is typed without its full stop, which is most of the time on a
+     * stage that dictates one. Both are finished answers that cannot grow,
+     * and both sat out the wait for a growth that could never come.
+     *
+     * Compared with case, spacing and punctuation set aside, because the
+     * matcher accepts an answer that differs from the card in any of them and
+     * this must agree with the matcher about what counts as finished.
      */
-    const complete = finishable
-      && longestAcceptedAnswer > 0
-      && typed.trim().length >= longestAcceptedAnswer;
+    const typedKey = answerShape(typed);
+    const stillGrowing = acceptedAnswers.some((form) => {
+      const shape = answerShape(form);
+      return shape.length > typedKey.length && shape.startsWith(typedKey);
+    });
+    const complete = finishable && typedKey.length > 0 && !stillGrowing;
 
     const go = run;
     if (complete) {
@@ -2556,7 +2580,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, listeningMode, listeningInput, listeningTypeChecked, listeningTypeResult,
     input, checked, result, translationMode, translationAnswer, enChecked, enResult,
-    longestAcceptedAnswer]);
+    acceptedAnswers]);
 
   const retryEn = () => {
     setEnInput("");

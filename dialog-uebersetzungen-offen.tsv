@@ -1,0 +1,736 @@
+# Uebersetzungsvorlage fuer die Capstone-Dialoge: pro Zeile Lektion, Titel, deutscher Satz.
+# Franzoesisch und Polnisch werden im Uebersetzungsdurchgang direkt an die Zeilen in
+# src/lib/capstoneDialogues.ts geschrieben (Felder fr/pl); diese Datei wird bei jedem
+# Block aus dem Katalogstand neu erzeugt und ist damit immer vollstaendig.
+part84	Die letzte Runde	Ich kann nicht mehr, ich bin komplett aus der Puste.
+part84	Die letzte Runde	Komm, letzte Runde, dann hast du es geschafft!
+part84	Die letzte Runde	Ich habe Seitenstechen und spüre Muskeln, von denen ich nichts wusste.
+part84	Die letzte Runde	Der Muskelkater kommt sowieso erst übermorgen. Durchziehen!
+part84	Die letzte Runde	Na gut. Aber nächsten Sonntag kicken wir nur im Park.
+part94	Rezeptfrei oder nicht	Guten Tag, haben Sie etwas gegen Halsschmerzen für ein Kind von fünf Jahren?
+part94	Rezeptfrei oder nicht	Ja, dieser Saft hier ist rezeptfrei. Einmal morgens, einmal abends.
+part94	Rezeptfrei oder nicht	Macht der müde? Sie hat morgen Schule.
+part94	Rezeptfrei oder nicht	Nein. Aber geben Sie ihn nach dem Essen, nicht vorher.
+part94	Rezeptfrei oder nicht	Gut. Und welche Apotheke hat heute Nacht Notdienst, falls was ist?
+part95	Der Notfalltermin	Guten Morgen, ich habe starke Zahnschmerzen. Geht heute noch ein Notfalltermin?
+part95	Der Notfalltermin	Um halb zwölf. Seit wann tut der Zahn denn weh?
+part95	Der Notfalltermin	Seit gestern Abend. Es pocht, und kalt trinken geht gar nicht mehr.
+part95	Der Notfalltermin	Welcher ist es denn?
+part95	Der Notfalltermin	Der hintere unten links. Mir ist da vor Jahren mal eine Füllung rausgefallen.
+part96	Der Anruf bei der 112	Notruf, was ist passiert?
+part96	Der Anruf bei der 112	Es hat einen Unfall gegeben, auf der B27 kurz vor der Ausfahrt.
+part96	Der Anruf bei der 112	Ist jemand verletzt?
+part96	Der Anruf bei der 112	Eine Person. Sie ist bewusstlos, atmet aber. Wir haben mit Erster Hilfe angefangen.
+part96	Der Anruf bei der 112	Gut gemacht. Bleiben Sie ruhig bei ihr, Hilfe ist unterwegs.
+part98	Das Gespräch übers Gehalt	Danke, dass Sie Zeit haben. Ich würde gern über mein Gehalt sprechen.
+part98	Das Gespräch übers Gehalt	Gern. Worum geht es konkret?
+part98	Das Gespräch übers Gehalt	Sie wissen ja: Seit zwei Jahren trage ich deutlich mehr Verantwortung.
+part98	Das Gespräch übers Gehalt	Das stimmt. An welche Größenordnung denken Sie?
+part98	Das Gespräch übers Gehalt	Zehn Prozent. Und zusätzlich zwei Tage pro Woche im Homeoffice.
+part114	Aufgeschoben	Wie verbringst du eigentlich deinen Sonntag, so ganz ehrlich?
+part114	Aufgeschoben	Ursprünglich wollte ich aufräumen. Ich schiebe das seit Wochen vor mir her.
+part114	Aufgeschoben	Kenne ich. Künftig machen wir das anders: erst eine Stunde arbeiten, dann frei.
+part114	Aufgeschoben	Das dauert bei mir höchstens zehn Minuten, so viel liegt da nicht.
+part114	Aufgeschoben	Dann nimm dir danach bewusst Zeit für was Schönes.
+part115	Nicht optimal, aber es geht	Und, wie findest du die neue Software generell?
+part115	Nicht optimal, aber es geht	Relativ einfach zu bedienen. Das Konzept überzeugt mich aber noch nicht.
+part115	Nicht optimal, aber es geht	Die Reaktion im Team war auch eher negativ.
+part115	Nicht optimal, aber es geht	Wir haben zwei Wochen intensiv geübt. Es ist nicht optimal, aber es geht.
+part115	Nicht optimal, aber es geht	Na immerhin. Effektiv ist es billiger als vorher, das zählt auch.
+part116	Der Antrag online	Guten Tag, ich habe den Antrag online gestellt. Wie lange dauert die Bearbeitung?
+part116	Der Antrag online	Etwa drei Wochen. Bringen Sie zum Termin bitte alle Dokumente mit.
+part116	Der Antrag online	Gilt der Bescheid dann bundesweit?
+part116	Der Antrag online	Ja. Nur eine Frage kann ich Ihnen aus Gründen des Datenschutzes nicht beantworten.
+part116	Der Antrag online	Verstehe. Können Sie mir wenigstens erläutern, welche Unterlagen noch fehlen?
+part117	Das kriegen wir hin	Darf ich kurz ergänzen? Ich habe das Problem schon länger beobachtet.
+part117	Das kriegen wir hin	Bitte, gern. Jeder Hinweis erleichtert die Sache erheblich.
+part117	Das kriegen wir hin	Wir müssen nur verhindern, dass es im Winter schlimmer wird.
+part117	Das kriegen wir hin	Da hat jeder andere Bedürfnisse. Aber gut: Sag Bescheid, wenn du Hilfe brauchst.
+part117	Das kriegen wir hin	Mach ich. Zusammen kriegen wir das hin.
+part121	Mehr Kunden für den Laden	Ich brauche endlich eine richtige Webseite für mein Geschäft.
+part121	Mehr Kunden für den Laden	Lass eine bauen und mach mehr Werbung. Wir werben fast nur noch online.
+part121	Mehr Kunden für den Laden	Und wie gewinnt ihr neue Kunden? Nur über Instagram?
+part121	Mehr Kunden für den Laden	Auch. Vor allem aber über sehr gute Bewertungen.
+part121	Mehr Kunden für den Laden	Gut. Schick mir ein Angebot — zahlbar innerhalb von vierzehn Tagen, wie immer?
+part122	Nur noch eine Folge	Ich habe die zweite Staffel gestern in einem Rutsch durchgeschaut.
+part122	Nur noch eine Folge	Verrate mir nichts! Ich bin erst bei Folge vier.
+part122	Nur noch eine Folge	Keine Sorge, kein Spoiler. Aber sie ist besser als die erste.
+part122	Nur noch eine Folge	Das reicht mir schon! Und danach? Was soll ich als Nächstes schauen?
+part122	Nur noch eine Folge	Ich schicke dir den Kanal, den ich abonniert habe. Kann ich echt empfehlen.
+part123	Stoßlüften, nicht kippen	Die Nachbarn haben sich beschwert? Wir sind doch gerade erst eingezogen.
+part123	Stoßlüften, nicht kippen	Wegen der Waschmaschine gestern Nacht. Ab zweiundzwanzig Uhr ist Ruhezeit.
+part123	Stoßlüften, nicht kippen	Steht das wirklich in der Hausordnung?
+part123	Stoßlüften, nicht kippen	Ja, und noch mehr: sonntags wird nicht gebohrt.
+part123	Stoßlüften, nicht kippen	Gut zu wissen. Der Hausmeister meinte auch noch: Stoßlüften, nicht kippen.
+part124	Endlich eingeschlafen	Leise, sie ist gerade eingeschlafen.
+part124	Endlich eingeschlafen	Endlich. Hat er auch durchgeschlafen?
+part124	Endlich eingeschlafen	Bis fünf. Dann hat er geschrien, und die Windel war natürlich voll.
+part124	Endlich eingeschlafen	Ich übernehme morgen früh. Du bringst sie in die Kita, ich wickle ihn.
+part124	Endlich eingeschlafen	Abgemacht. Und der Kinderwagen muss unten bleiben, er passt nicht in den Aufzug.
+part125	Die leere Batterie	Der Wagen springt nicht an. Ich glaube, die Batterie ist leer.
+part125	Die leere Batterie	Schon wieder? Kannst du mal Starthilfe geben lassen?
+part125	Die leere Batterie	Der Nachbar hilft gleich. Aber der Motor macht auch ein komisches Geräusch.
+part125	Die leere Batterie	Dann bring den Wagen diese Woche in die Werkstatt. Der TÜV ist eh bald fällig.
+part125	Die leere Batterie	Stimmt. Und tanken muss ich auch noch. Das Auto frisst gerade nur Geld.
+part126	Alles ein bisschen viel	Du wirkst gestresst. Alles okay bei dir?
+part126	Alles ein bisschen viel	Ehrlich? Ich bin gerade etwas überfordert. Das ist mir alles zu viel.
+part126	Alles ein bisschen viel	Das verstehe ich. Mich nervt die Woche auch langsam.
+part126	Alles ein bisschen viel	Wie bleibt deine Schwester eigentlich immer so gelassen?
+part126	Alles ein bisschen viel	Keine Ahnung. Aber ich bin froh, dass du so ehrlich bist.
+part127	Die Taufe im Frühling	Wir lassen den Kleinen im Frühling taufen.
+part127	Die Taufe im Frühling	Wie schön! In eurer Gemeinde?
+part127	Die Taufe im Frühling	Ja, der Gottesdienst fängt um zehn an, danach feiern wir im Garten.
+part127	Die Taufe im Frühling	Der Pfarrer hat bei eurer Hochzeit damals so schön gesprochen.
+part127	Die Taufe im Frühling	Genau der macht es wieder. Mein Glaube ist mir wichtig, das weißt du ja.
+part128	Der verstauchte Knöchel	Kommst du morgen joggen? Wir wollten doch dreimal die Woche trainieren.
+part128	Der verstauchte Knöchel	Ich kann nicht, ich habe mir den Knöchel verstaucht.
+part128	Der verstauchte Knöchel	Autsch. Beim Schwimmen gestern?
+part128	Der verstauchte Knöchel	Nein, auf der Treppe. Es tut vor allem beim Laufen weh.
+part128	Der verstauchte Knöchel	Dann mach diese Woche Pause. Ich wärme mich ab jetzt für zwei auf.
+part132	Der Ohrwurm	Ich habe seit Tagen einen Ohrwurm von deinem Lied.
+part132	Der Ohrwurm	Welches denn? Das, das wir im Chor proben?
+part132	Der Ohrwurm	Genau das. Ich kenne den Text inzwischen besser als du.
+part132	Der Ohrwurm	Dann sing doch mit! Wir proben jeden Donnerstag.
+part132	Der Ohrwurm	Mal sehen. Euer letzter Auftritt war jedenfalls richtig gut.
+part138	Samstag im Garten	Was steht heute an? Der Rasen?
+part138	Samstag im Garten	Mähen, ja. Und im Beet wächst nur noch Unkraut.
+part138	Samstag im Garten	Ich übernehme das Beet, und danach hältst du mir die Leiter fest.
+part138	Samstag im Garten	Für den Baum? Der muss wirklich geschnitten werden.
+part138	Samstag im Garten	Genau. Und abends gießen wir die Blumen und sind fertig.
+part140	Im Abteil nach Norden	Entschuldigung, ist dieses Abteil noch frei?
+part140	Im Abteil nach Norden	Ja, kommen Sie rein. Müssen Sie auch umsteigen?
+part140	Im Abteil nach Norden	Einmal, aber der Anschlusszug wartet. Wir wollen an die Küste, zelten.
+part140	Im Abteil nach Norden	Schön! Die Wellen sollen dieses Wochenende ziemlich hoch sein.
+part140	Im Abteil nach Norden	Perfekt für die Kinder. Zelt, Lagerfeuer, grillen — mehr brauchen wir nicht.
+part99	Gelinde gesagt	Und, was hältst du von seinem Vorschlag?
+part99	Gelinde gesagt	Der ist, gelinde gesagt, unglücklich formuliert.
+part99	Gelinde gesagt	Ich will dir nicht zu nahe treten, aber der Text kam doch von euch.
+part99	Gelinde gesagt	Da würde ich stark differenzieren wollen: am ersten Teil, nicht am zweiten.
+part99	Gelinde gesagt	Na gut. Das steht ohnehin auf einem anderen Blatt.
+part129	Fünf Minuten noch	Bist du bald fertig im Bad? Ich muss mir noch die Zähne putzen.
+part129	Fünf Minuten noch	Fünf Minuten! Ich föhne mir nur kurz die Haare.
+part129	Fünf Minuten noch	Dann hebe ich unterwegs Geld ab. Der Automat an der Ecke geht wieder.
+part129	Fünf Minuten noch	Gut. Steht Milch eigentlich schon auf der Liste?
+part129	Fünf Minuten noch	Ja, und alle Zutaten für morgen. Ich warte unten.
+part130	Der Kreisverkehr	Ich glaube, wir sind falsch. Da vorne ist eine Umleitung.
+part130	Der Kreisverkehr	Nein, das passt. Fahr im Kreisverkehr die zweite Ausfahrt.
+part130	Der Kreisverkehr	Und dann? An der Kreuzung links abbiegen?
+part130	Der Kreisverkehr	Erst an der zweiten Ampel. Das Haus liegt direkt gegenüber der Post.
+part130	Der Kreisverkehr	Hoffentlich. Die Straße danach ist nämlich eine Einbahnstraße.
+part131	Massives Holz	Schau mal, der Tisch! Ist der aus massivem Holz?
+part131	Massives Holz	Ja, und die Stühle sind aus echtem Leder.
+part131	Massives Holz	Passt der überhaupt? Das sind bestimmt zwei Meter.
+part131	Massives Holz	Knapp. Und die Verpackung ist leider komplett aus Plastik.
+part131	Massives Holz	Egal, wir nehmen ihn. Vorsicht beim Tragen, das Holz ist empfindlich.
+part133	Die Klassenarbeit	Welche Note hast du in der Klassenarbeit bekommen?
+part133	Die Klassenarbeit	Eine Zwei! Dabei ist Mathe echt nicht mein Fach.
+part133	Die Klassenarbeit	Eine Zwei ist super. Hat wieder jemand abgeschrieben?
+part133	Die Klassenarbeit	Klar, und der Lehrer hat es sofort gemerkt.
+part133	Die Klassenarbeit	Selber schuld. Das Zeugnis kommt ja schon nächste Woche.
+part137	Verspannt vom Sitzen	Mein Nacken ist total verspannt, und die Schulter tut auch weh.
+part137	Verspannt vom Sitzen	Zu viel am Schreibtisch? Beweg mal die Finger — tut da was weh?
+part137	Verspannt vom Sitzen	Nein, aber das Handgelenk ist ein bisschen geschwollen.
+part137	Verspannt vom Sitzen	Dann leg heute eine Pause ein und kühl das Gelenk.
+part137	Verspannt vom Sitzen	Mach ich. Muskelkater in den Waden habe ich auch noch.
+part447	Nicht mehr zu ertragen	Hast du den Kommentar gesehen? Das macht mich echt wütend.
+part447	Nicht mehr zu ertragen	Ich kann das auch nicht mehr ertragen. Wer hat das gepostet?
+part447	Nicht mehr zu ertragen	Keine Ahnung, irgendein neues Konto. Ich dreh gleich durch.
+part447	Nicht mehr zu ertragen	Melde es einfach und gut. Das ist meistens so bei denen.
+part447	Nicht mehr zu ertragen	Stimmt. Ich freu mich schon drauf, wenn das Konto weg ist.
+part448	Der Stellenabbau in den Nachrichten	Hast du die Nachrichten gelesen? Es droht ein weiterer Stellenabbau.
+part448	Der Stellenabbau in den Nachrichten	Ja. Für die Region klingt das nach einer echten Bedrohung.
+part448	Der Stellenabbau in den Nachrichten	Trifft es auch eure Firma?
+part448	Der Stellenabbau in den Nachrichten	Noch nicht. Unser Produkt ist ein typischer Anwendungsfall für die neue Technik.
+part448	Der Stellenabbau in den Nachrichten	Dann hoffen wir, dass das so bleibt.
+part449	Die übersehene Mitteilung	Du hast nicht geantwortet. Hast du meine Nachricht gesehen?
+part449	Die übersehene Mitteilung	Erst jetzt! Die Benachrichtigung war irgendwie weg.
+part449	Die übersehene Mitteilung	Schon wieder? Bei mir war das auch mal so.
+part449	Die übersehene Mitteilung	Ich habe dann den Verlauf im Browser gelöscht, seitdem geht es.
+part449	Die übersehene Mitteilung	Gut. Ohne Premium-Abo bleibt eben manches komisch.
+part450	Die Sammlung fürs Geschenk	Wir sammeln Geld für ein Geschenk. Bist du dabei?
+part450	Die Sammlung fürs Geschenk	Klar. Für die Kollegin aus Schweden, oder?
+part450	Die Sammlung fürs Geschenk	Genau, sie geht zurück nach Schweden zu ihrer alten Firma.
+part450	Die Sammlung fürs Geschenk	Schade. Ich hab ihr versprochen, dass wir sie besuchen.
+part450	Die Sammlung fürs Geschenk	Dann halte das Versprechen. Schweden im Sommer soll wunderschön sein.
+part451	Kommst du kurz raus?	Kommst du kurz raus? Du musst dir das ansehen.
+part451	Kommst du kurz raus?	Was denn? Ich hab nichts gehört.
+part451	Kommst du kurz raus?	Eben! Die ganze Straße ist leer, alle Autos sind weg.
+part451	Kommst du kurz raus?	Das ist doch verrückt. So was hab ich noch nie gesehen.
+part451	Kommst du kurz raus?	Morgen wird gebaut, stand auf den Schildern. Wir brauchen einen Parkplatz.
+part452	Zurückgetreten	Hast du es gehört? Er ist von seinem Amt zurückgetreten.
+part452	Zurückgetreten	Endlich. Das Ergebnis der Prüfung war ja auch enttäuschend.
+part452	Zurückgetreten	Und die Angaben im Bericht waren unvollständig.
+part452	Zurückgetreten	Kann sein Nachfolger da überhaupt mithalten?
+part452	Zurückgetreten	Mal sehen. Das Update zur Sache verzögert sich ja sowieso.
+part455	Bestellt und bezahlt	Ich habe die Maschine online bestellt. Ist die noch auf Lager?
+part455	Bestellt und bezahlt	Ja, die Lieferung kommt Donnerstag. Der Versand ist kostenlos.
+part455	Bestellt und bezahlt	Sehr gut. Kann ich auch in Raten zahlen?
+part455	Bestellt und bezahlt	Können Sie, drei oder sechs Monate. Und Sie können jederzeit kündigen.
+part455	Bestellt und bezahlt	Perfekt. Ist das Zubehör eigentlich im Preis mit drin?
+part456	Kabellos oder nicht	Ist der Lautsprecher eigentlich kabelgebunden oder kabellos?
+part456	Kabellos oder nicht	Beides — das Kabel ist abnehmbar. Und der Klang ist überraschend gut.
+part456	Kabellos oder nicht	Ist er mit meinem Handy kompatibel?
+part456	Kabellos oder nicht	Ja. In den Einstellungen lässt sich sogar die Helligkeit vom Display anpassen.
+part456	Kabellos oder nicht	Gut. Dann fehlt mir nur noch das Zubehör dazu.
+part605	Der Magnet am Kühlschrank	Warum hält ein Magnet eigentlich am Kühlschrank, aber nicht an der Tür?
+part605	Der Magnet am Kühlschrank	Die Tür ist aus Holz. Ein Magnetfeld zieht nur Metall an.
+part605	Der Magnet am Kühlschrank	Und warum fällt er nicht einfach runter?
+part605	Der Magnet am Kühlschrank	Die Reibung hält ihn oben. Physik im Alltag.
+part605	Der Magnet am Kühlschrank	Dann bist du dran mit dem Stromkreis von der Lampe. Erklären, bitte!
+part606	Die Sicherung ist raus	Schon wieder alles dunkel! Die Sicherung ist raus.
+part606	Die Sicherung ist raus	Dann ist zu viel auf einem Stromkreis. Was lief denn alles?
+part606	Die Sicherung ist raus	Waschmaschine, Ofen und der Wasserkocher.
+part606	Die Sicherung ist raus	Na klar. Zu viel Stromstärke, der Widerstand macht das nicht mit.
+part606	Die Sicherung ist raus	Beim Schalter hat es sogar einen Funken gegeben. Das schaut sich ein Fachmann an.
+part607	Rost am Fahrrad	Mein Fahrrad ist voller Rost. Was mache ich dagegen?
+part607	Rost am Fahrrad	Der Lack ist ab, und Wasser plus Sauerstoff macht den Rest.
+part607	Rost am Fahrrad	Hilft die Flüssigkeit hier? Auf der Flasche steht was von Säure.
+part607	Rost am Fahrrad	Ja, aber vorsichtig — die Säure kann auch den Lack ätzen.
+part607	Rost am Fahrrad	Dann probiere ich das erst an einer kleinen Stelle am Rahmen aus.
+part608	Die Dokumentation über den Wald	Die Dokumentation gestern war stark. Es ging um die Nahrungskette im Wald.
+part608	Die Dokumentation über den Wald	Mit den Pilzen und Bakterien im Boden?
+part608	Die Dokumentation über den Wald	Genau. Ohne die läuft gar nichts, jeder Keim hat seine Aufgabe.
+part608	Die Dokumentation über den Wald	Und die Photosynthese bringt die Energie für das Ganze.
+part608	Die Dokumentation über den Wald	Am Ende hängt jedes Organ von jedem Blatt ab. Verrückt, oder?
+part609	Fieber messen	Das Thermometer zeigt 38,5. Stimmt die Skala überhaupt?
+part609	Fieber messen	Natürlich. Miss noch mal, vorhin war die Auswertung anders.
+part609	Fieber messen	Jetzt 38,7. Die Richtung ist klar, das ist Fieber.
+part609	Fieber messen	Dann Tee, Bett und morgen der Arzt.
+part609	Fieber messen	Und ich messe alle zwei Stunden nach, mit System.
+part610	Die Sonnenfinsternis	Nächsten Monat gibt es eine Sonnenfinsternis, hast du das gelesen?
+part610	Die Sonnenfinsternis	Ja! Und abends soll man sogar einen Kometen sehen können.
+part610	Die Sonnenfinsternis	Dafür fahre ich raus aus der Stadt, weg vom Licht.
+part610	Die Sonnenfinsternis	Nimm mich mit. Seit dem Film über die Raumstation will ich mehr davon sehen.
+part610	Die Sonnenfinsternis	Abgemacht. Vielleicht erwischen wir sogar die Galaxie nebenan.
+part611	Einmal übers Deck	Willkommen an Bord! Ich zeige dir kurz alles.
+part611	Einmal übers Deck	Gern. Was ist vorne und was ist hinten?
+part611	Einmal übers Deck	Vorne ist der Bug, hinten das Heck. Und das hier ist das Steuerrad.
+part611	Einmal übers Deck	Und die Seiten? Da gab es doch diese Wörter.
+part611	Einmal übers Deck	Steuerbord rechts, backbord links. Und halt dich an der Reling fest.
+part612	Wer ist wer an Bord	Der Mann am Steuer — ist das der Kapitän?
+part612	Wer ist wer an Bord	Nein, das ist der Steuermann. Der Kapitän spricht gerade mit dem Lotsen.
+part612	Wer ist wer an Bord	Wozu braucht ein Schiff hier einen Lotsen?
+part612	Wer ist wer an Bord	Der kennt den Hafen. Ohne ihn fährt die Besatzung nicht rein.
+part612	Wer ist wer an Bord	Und der Matrose da vorne macht die Leinen los?
+part613	Anlegen im Hafen	Wo dürfen wir anlegen? Am Kai ist alles voll.
+part613	Anlegen im Hafen	Der Hafenmeister hat uns die Anlegestelle hinter der Mole gegeben.
+part613	Anlegen im Hafen	Gut. Trag es ins Logbuch ein, mit Uhrzeit.
+part613	Anlegen im Hafen	Mache ich. Die Zollkontrolle kommt übrigens um vier an Bord.
+part613	Anlegen im Hafen	Dann liegt bis dahin alles bereit. Nach der Verladung sind wir fertig.
+part614	Ebbe und Flut	Warum liegt das Boot auf einmal im Sand?
+part614	Ebbe und Flut	Gezeiten. Bei Ebbe zieht sich das Wasser hier weit zurück.
+part614	Ebbe und Flut	Und wann kommt es wieder?
+part614	Ebbe und Flut	In sechs Stunden. Dann steht sogar die Brandung wieder am Deich.
+part614	Ebbe und Flut	Die Nordsee macht, was sie will. Beeindruckend.
+part615	Am Fischstand	Was ist heute frisch?
+part615	Am Fischstand	Kabeljau und Scholle, heute Morgen gefangen. Die Makrele ist aus dem Rauch.
+part615	Am Fischstand	Dann zwei Stück Kabeljau. Ist jede Fischgräte schon raus?
+part615	Am Fischstand	Bis auf die letzte Fischgräte. Dazu vielleicht Krabben aus der Region?
+part615	Am Fischstand	Gern. Aber die Auster hebe ich mir für den Urlaub auf.
+part616	Der erste Tauchgang	Morgen ist mein erster richtiger Tauchgang. Ich bin nervös.
+part616	Der erste Tauchgang	Alles halb so wild. Sitzt der Neoprenanzug?
+part616	Der erste Tauchgang	Ja, und die Sauerstoffflasche ist geprüft.
+part616	Der erste Tauchgang	Dann fehlen nur Flossen und Ruhe. Atmen, langsam schauen, fertig.
+part616	Der erste Tauchgang	Und danach erzähle ich dir, wie die Welt unten aussieht.
+part617	Die Übung der Seenotrettung	Was ist da draußen los? Überall Boote!
+part617	Die Übung der Seenotrettung	Eine Übung der Seenotrettung. Die Küstenwache ist auch dabei.
+part617	Die Übung der Seenotrettung	Deshalb der Funkspruch vorhin. Und das Rettungsboot am Strand?
+part617	Die Übung der Seenotrettung	Gehört dazu. Sogar ein Wrack spielen sie durch, mit allem.
+part617	Die Übung der Seenotrettung	Gut zu wissen, dass das geübt wird. Ich bleibe trotzdem im Strandkorb.
+part618	Wen rufen wir an?	Das Bad ist fertig geplant. Wen brauchen wir jetzt alles?
+part618	Wen rufen wir an?	Zuerst den Installateur für Wasser und Heizung.
+part618	Wen rufen wir an?	Dann den Fliesenleger. Und für die neue Tür?
+part618	Wen rufen wir an?	Den Schreiner. Das Glas oben macht der Glaser gleich mit.
+part618	Wen rufen wir an?	Drei Betriebe für ein kleines Bad. Gutes Handwerk hat seinen Preis.
+part619	Vom Lehrling zum Meister	Mein Neffe fängt im August seine Ausbildung an. Drei Jahre!
+part619	Vom Lehrling zum Meister	Mit Zwischenprüfung nach dem zweiten Ausbildungsjahr, wie immer.
+part619	Vom Lehrling zum Meister	Und nach der Abschlussprüfung ist er dann Geselle.
+part619	Vom Lehrling zum Meister	Genau. Der Meisterbrief kommt später, wenn er will.
+part619	Vom Lehrling zum Meister	Die Innung hat ihm sogar schon einen Betrieb gezeigt.
+part620	Auf der Baustelle nebenan	Nebenan geht es los! Die Baugrube ist schon fertig.
+part620	Auf der Baustelle nebenan	Dann kommt jetzt das Fundament. Der Betonmischer steht ja bereit.
+part620	Auf der Baustelle nebenan	Der Bauleiter meinte, der Rohbau steht vor dem Winter.
+part620	Auf der Baustelle nebenan	Sportlich. Und der Innenausbau?
+part620	Auf der Baustelle nebenan	Im Frühjahr, alles in Trockenbau. Die Baugenehmigung hing übrigens am Bauzaun.
+part621	Ordnung in der Werkstatt	Hast du die Schraubzwinge gesehen? Ich finde sie nicht.
+part621	Ordnung in der Werkstatt	Neben der Drehbank, unter deinem Overall.
+part621	Ordnung in der Werkstatt	Danke. Und das Sägeblatt für die Kettensäge?
+part621	Ordnung in der Werkstatt	Ist gerade beim Schleifen. Nimm solange Feile und Stemmeisen.
+part621	Ordnung in der Werkstatt	Gut. Aber zuerst wird der Boden gefegt, die Sägespäne liegen überall.
+part622	Das fehlende Ersatzteil	Der Schrank wackelt. Da fehlt eine Schraube mit Unterlegscheibe.
+part622	Das fehlende Ersatzteil	Schau in die Kiste — Gewinde in jeder Größe, Niete, Klammern.
+part622	Das fehlende Ersatzteil	Gefunden. Und die Leiste hier? Die Maserung passt gar nicht zum Rest.
+part622	Das fehlende Ersatzteil	Das ist Furnier auf Spanplatte, kein echtes Holz.
+part622	Das fehlende Ersatzteil	Deshalb! Dann klebe ich sie mit Leim fest und gut ist.
+part623	Erst grundieren, dann streichen	Wand verputzen, schleifen, streichen — richtig?
+part623	Erst grundieren, dann streichen	Fast. Nach dem Verputzen erst grundieren, sonst hält die Farbe nicht.
+part623	Erst grundieren, dann streichen	Und das Regal? Zuschneiden und anschrauben?
+part623	Erst grundieren, dann streichen	Erst anzeichnen, dann zuschneiden, dann verschrauben. Und alles festziehen.
+part623	Erst grundieren, dann streichen	Verstanden. Reparieren kann jeder — montieren ist eine Kunst.
+part624	Der Kostenvoranschlag	Der Handwerker war da. Hier ist der Kostenvoranschlag.
+part624	Der Kostenvoranschlag	Materialkosten, Stundenlohn ... und was ist diese Pauschale?
+part624	Der Kostenvoranschlag	Anfahrt und Kleinkram. Dafür gibt es Skonto, wenn wir schnell zahlen.
+part624	Der Kostenvoranschlag	Vierzehn Tage Zahlungsziel steht hier. Machen wir.
+part624	Der Kostenvoranschlag	Und nach der Abnahme haben wir zwei Jahre Gewährleistung.
+part625	Am Einstieg vom Klettersteig	Sitzt dein Klettergurt? Ich prüfe noch mal jeden Karabiner.
+part625	Am Einstieg vom Klettersteig	Alles fest. Wie lang ist der Klettersteig?
+part625	Am Einstieg vom Klettersteig	Zwei Stunden bis zum Grat, mit einer Stelle unterm Überhang.
+part625	Am Einstieg vom Klettersteig	Und da oben? Trittsicherheit reicht, oder brauche ich mehr?
+part625	Am Einstieg vom Klettersteig	Reicht. Nur bei Regen wird der Fels ernst. Los jetzt.
+part626	Der Wegweiser fehlt	Hier stimmt was nicht. Auf der Wanderkarte ist ein Wegweiser.
+part626	Der Wegweiser fehlt	Der liegt da drüben im Gras. Der Wind war wohl zu stark.
+part626	Der Wegweiser fehlt	Super. Also: Rundweg links oder Aussichtspunkt rechts?
+part626	Der Wegweiser fehlt	Rechts, über die Serpentinen. Der Wanderführer schwärmt davon.
+part626	Der Wegweiser fehlt	Gut. An der Baumgrenze machen wir Rast.
+part627	Feuer im Regen	Alles ist klamm. Kriegen wir das Lagerfeuer trotzdem an?
+part627	Feuer im Regen	Mit dem trockenen Zunder aus der Dose, ja. Brennholz liegt unter der Plane.
+part627	Feuer im Regen	Gut mitgedacht. Und der Windschutz steht auch schon.
+part627	Feuer im Regen	Dann Wasser in den Topf. Der Proviant reicht noch für zwei Tage.
+part627	Feuer im Regen	Perfekt. Morgen füllen wir die Trinkflaschen an der Quelle auf.
+part628	Rast auf der Alm	Endlich oben. Die Almwiese ist ja schöner als jedes Foto.
+part628	Rast auf der Alm	Und die Sennhütte hat offen! Käse und Milch, direkt von hier.
+part628	Rast auf der Alm	Danach der Abstieg durch den Nadelwald, am Wildbach entlang.
+part628	Rast auf der Alm	Im Naturschutzgebiet bleiben wir auf dem Weg, klar.
+part628	Rast auf der Alm	Klar. Und unten im Weiher kühlen wir die Füße.
+part629	Was da geflogen ist	Siehst du den großen Vogel über dem Hang? Ein Adler?
+part629	Was da geflogen ist	Ein Bussard, glaube ich. Und hör mal: ein Specht.
+part629	Was da geflogen ist	Vorhin stand ein Murmeltier direkt am Weg.
+part629	Was da geflogen ist	Besser als eine Kreuzotter. Auf die Steine trete ich vorsichtig.
+part629	Was da geflogen ist	Gute Idee. Die Gams da oben interessiert das alles gar nicht.
+part630	Wetterumschwung am Berg	Der Aufwind wird kalt, und da hinten wird es schwarz.
+part630	Wetterumschwung am Berg	Dann runter. Bei Gewitter hat man auf dem Grat nichts verloren.
+part630	Wetterumschwung am Berg	Die Hütte meldet Graupel und Böen. Lawinengefahr ist zum Glück keine.
+part630	Wetterumschwung am Berg	Trotzdem: Steinschlag nach dem Regen. Helm auf.
+part630	Wetterumschwung am Berg	Und falls was passiert, hat die Bergrettung heute sowieso viel zu tun.
+part631	Das Paket nach Polen	Guten Tag, dieses Paket soll nach Polen. Was kostet das Porto?
+part631	Das Paket nach Polen	Neun Euro, mit Sendungsverfolgung. Als Warensendung ginge es billiger.
+part631	Das Paket nach Polen	Nein, es soll schnell gehen. Wie viele Zustellversuche gibt es?
+part631	Das Paket nach Polen	Zwei. Danach liegt es in der Filiale zur Abholung.
+part631	Das Paket nach Polen	Gut. Und eine Empfangsbestätigung hätte ich gern dazu.
+part632	Gut verpackt	Reicht die Versandtasche, oder brauche ich einen Karton?
+part632	Gut verpackt	Für Gläser? Karton, Wellpappe und ordentlich Füllmaterial.
+part632	Gut verpackt	Und außen der Aufkleber mit dem Barcode?
+part632	Gut verpackt	Genau, gut sichtbar. Sonst zahlt bei einem Transportschaden keiner.
+part632	Gut verpackt	Verstanden. Der Versicherungswert steht ja auf dem Lieferschein.
+part633	Die Rücksendung	Die Jacke ist zu klein. Wie läuft die Rücksendung?
+part633	Die Rücksendung	Rücksendeetikett ausdrucken, drauf, abgeben. Das Rückgaberecht gilt vierzehn Tage.
+part633	Die Rücksendung	Und wann kommt das Geld?
+part633	Die Rücksendung	Nach der Ankunft im Lager, meist in einer Woche.
+part633	Die Rücksendung	Okay. Nächstes Mal bestelle ich zwei Größen und schicke eine zurück.
+part634	Im Versandlager	Erster Tag im Lager? Ich zeige dir alles.
+part634	Im Versandlager	Gern. Was fahren die Gabelstapler da hin und her?
+part634	Im Versandlager	Paletten für den Großhandel. Der Einzelhandel läuft über das Band da.
+part634	Im Versandlager	Und wann ist Inventur?
+part634	Im Versandlager	Ende des Jahres. Dann zählt jeder hier jeden Lagerbestand zweimal.
+part635	An der Zollkontrolle	Ihr Paket kommt von außerhalb der EU. Das ist eine Einfuhr.
+part635	An der Zollkontrolle	Muss ich dann Zollgebühren zahlen?
+part635	An der Zollkontrolle	Kommt auf den Warenwert an. Die Zollinhaltserklärung fehlt leider.
+part635	An der Zollkontrolle	Die hat der Absender vergessen? Großartig.
+part635	An der Zollkontrolle	Passiert oft. Er kann sie nachreichen, dann geht alles seinen Weg.
+part636	Welche Versicherung braucht man	Welche Versicherungen brauche ich wirklich? Ehrlich jetzt.
+part636	Welche Versicherung braucht man	Haftpflicht zuerst. Die zahlt, wenn du anderen etwas kaputt machst.
+part636	Welche Versicherung braucht man	Und Hausrat?
+part636	Welche Versicherung braucht man	Sinnvoll, sobald dir deine Sachen weh tun würden. Der Beitrag ist klein.
+part636	Welche Versicherung braucht man	Gut. Den Rechtsschutz hebe ich mir für später auf.
+part637	Die Mahnung	Hier ist eine Mahnung! Dabei war die Überweisung längst raus.
+part637	Die Mahnung	Steht die Rechnungsnummer im Verwendungszweck?
+part637	Die Mahnung	Ähm ... nein. Nur mein Name.
+part637	Die Mahnung	Deshalb. Ohne Nummer findet die Buchhaltung den Zahlungseingang nicht.
+part637	Die Mahnung	Dann rufe ich an und schicke den Beleg mit. Danke!
+part638	Seit gestern Schüttelfrost	Was fehlt Ihnen denn?
+part638	Seit gestern Schüttelfrost	Seit gestern Schüttelfrost, Herzrasen und ein Kribbeln in den Händen.
+part638	Seit gestern Schüttelfrost	Schlafen Sie zurzeit schlecht?
+part638	Seit gestern Schüttelfrost	Kaum. Die Schlafstörung habe ich schon länger.
+part638	Seit gestern Schüttelfrost	Dann schauen wir uns das gründlich an. Erst mal Blutdruck.
+part639	Die Frage nach dem Impfpass	Wir machen eine große Reise. Welche Impfungen brauchen wir?
+part639	Die Frage nach dem Impfpass	Zeigen Sie mal Ihren Impfpass. Tetanus ist Pflicht, das zuerst.
+part639	Die Frage nach dem Impfpass	Und gegen Tollwut?
+part639	Die Frage nach dem Impfpass	Nur bei viel Kontakt mit Tieren. Malaria ist dort das größere Thema.
+part639	Die Frage nach dem Impfpass	Verstanden. Dann planen wir die Termine gleich durch.
+part640	Die verspannte Schulter	Es zieht vom Nacken bis unters Schulterblatt.
+part640	Die verspannte Schulter	Der Muskel ist hart. Das Gewebe hier ist deutlich verspannt.
+part640	Die verspannte Schulter	Ist das was mit einem Nerv?
+part640	Die verspannte Schulter	Eher nicht. Das Immunsystem hat damit nichts zu tun, die Haltung schon.
+part640	Die verspannte Schulter	Also mehr Bewegung. Und weniger Schreibtisch.
+part641	Die Blutwerte sind da	Ihre Laborwerte sind da. Der Blutzucker ist in Ordnung.
+part641	Die Blutwerte sind da	Und das Cholesterin?
+part641	Die Blutwerte sind da	Leicht erhöht. Nichts, was Sport und Küche nicht regeln.
+part641	Die Blutwerte sind da	Puh. Und der Ultraschall von letzter Woche?
+part641	Die Blutwerte sind da	Ohne Befund. Die Früherkennung machen wir trotzdem jedes Jahr.
+part642	Wer hilft wobei	Mein Rücken, mein Knie, meine Stimme — wohin zuerst?
+part642	Wer hilft wobei	Für Rücken und Knie zum Physiotherapeuten.
+part642	Wer hilft wobei	Und für die Stimme?
+part642	Wer hilft wobei	Zum Logopäden. Und der Apotheker hat sicher noch Tee für dich.
+part642	Wer hilft wobei	Drei Profis für einen Menschen. Na dann, der Reihe nach.
+part643	Die Rettungsgasse	Hinter uns: Blaulicht und Martinshorn. Alle fahren zur Seite.
+part643	Die Rettungsgasse	Rettungsgasse! Du nach rechts, die linke Spur nach links.
+part643	Die Rettungsgasse	Geschafft. Der Krankenwagen ist durch.
+part643	Die Rettungsgasse	Bei einem Notfall zählt jede Minute bis zur Notaufnahme.
+part643	Die Rettungsgasse	Genau deshalb übt man das. Gut gemacht, alle hier.
+part644	Der Treppenlift für Oma	Oma kommt nach der Operation nach Hause. Was braucht sie?
+part644	Der Treppenlift für Oma	Einen Treppenlift für den ersten Stock. Der Antrag läuft schon.
+part644	Der Treppenlift für Oma	Und die Wundnaht? Wer schaut danach?
+part644	Der Treppenlift für Oma	Der Pflegedienst, zweimal die Woche. Die Gehhilfe steht auch bereit.
+part644	Der Treppenlift für Oma	Dann fehlt nur noch ihre neue Brille — und ihr Sessel am Fenster.
+part645	Erst die Packungsbeilage	Diese Augentropfen — wie oft darf ich die nehmen?
+part645	Erst die Packungsbeilage	Steht in der Packungsbeilage: dreimal täglich, ein Tropfen.
+part645	Erst die Packungsbeilage	Und wenn ich mal einen vergesse?
+part645	Erst die Packungsbeilage	Dann einfach normal weiter. Bloß nicht doppelt — eine Überdosis hilft niemandem.
+part645	Erst die Packungsbeilage	Verstanden. Die Rezeptgebühr zahle ich vorne an der Kasse?
+part646	Langsam wieder aufbauen	Der Gips ist ab! Und jetzt?
+part646	Langsam wieder aufbauen	Jetzt kommt die Genesung: erst Dehnung, dann Muskelaufbau.
+part646	Langsam wieder aufbauen	Ich gehe noch ziemlich langsam und schief.
+part646	Langsam wieder aufbauen	Normal. Die Beweglichkeit kommt in Wochen zurück, nicht in Tagen.
+part646	Langsam wieder aufbauen	Und bis dahin Schonkost fürs Bein: Spazieren statt Fußball.
+part647	Gut geplant für Opa	Opa stürzt in letzter Zeit öfter. Ich mache mir Sorgen.
+part647	Gut geplant für Opa	Die Sturzgefahr in der Wohnung lässt sich senken: mehr Licht, Teppiche weg.
+part647	Gut geplant für Opa	Und wenn das nicht mehr reicht? Seniorenheim?
+part647	Gut geplant für Opa	Erst mal Betreuung zu Hause. Und die Vorsorgevollmacht sollte er jetzt regeln.
+part647	Gut geplant für Opa	Stimmt. Das Gespräch führen wir am Sonntag, in Ruhe.
+part648	Kasse oder privat	Zwei Wochen auf einen Termin! Als Privatpatient ginge es morgen.
+part648	Kasse oder privat	Als Kassenpatient zahlst du dafür keinen Eigenanteil für das Meiste.
+part648	Kasse oder privat	Und diese Wahlleistungen im Krankenhaus, lohnt sich das?
+part648	Kasse oder privat	Kommt drauf an. Das Zweibettzimmer ja, der Rest selten.
+part648	Kasse oder privat	Na gut. Hauptsache, jemand hat Nachtdienst, wenn es ernst wird.
+part545	Der neue Mehrspielermodus	Hast du das Update gesehen? Der Mehrspielermodus ist endlich da.
+part545	Der neue Mehrspielermodus	Ja! Das Kampfsystem fühlt sich auf der Konsole viel besser an.
+part545	Der neue Mehrspielermodus	Bei mir hakt noch das Startprogramm, jedes Mal eine Korrektur.
+part545	Der neue Mehrspielermodus	Installier das Plug-in neu, danach lief es bei mir.
+part545	Der neue Mehrspielermodus	Mach ich heute Abend. Der Aufschwung kam für das Spiel genau rechtzeitig.
+part546	Die Landkarte der Großtante	Schau, was ich beim Aufräumen gefunden habe: eine alte Landkarte.
+part546	Die Landkarte der Großtante	Von deiner Großtante? Der Anblick ist wirklich etwas Besonderes.
+part546	Die Landkarte der Großtante	Mein Kumpel meint, so etwas gehört mit Rahmen an die Wand.
+part546	Die Landkarte der Großtante	Recht hat er. Besser als jedes Diagramm im Arbeitszimmer.
+part546	Die Landkarte der Großtante	Dann hängt sie ab morgen über dem Tisch — beim Abendessen schauen alle drauf.
+part547	Die Eilmeldung	Eilmeldung auf dem Handy: eine Festnahme in der Innenstadt.
+part547	Die Eilmeldung	Schon wieder? Gestern war es noch der Börsengang, heute ein Verdächtiger.
+part547	Die Eilmeldung	Die Empörung im Netz ist jedenfalls riesig.
+part547	Die Eilmeldung	Wie immer. Ich warte lieber auf die Ankündigung der Polizei.
+part547	Die Eilmeldung	Vernünftig. Erst die Fakten, dann die Meinung.
+part548	Was für ein Blödsinn	Mein Nachbar glaubt an eine große Verschwörung. Wegen der Lampen an der Straße.
+part548	Was für ein Blödsinn	Was für ein Blödsinn. Und woher hat er das?
+part548	Was für ein Blödsinn	Aus dem Internet. Er will jetzt sogar als Demonstrant auf die Straße.
+part548	Was für ein Blödsinn	Dann leih ihm lieber ein gutes Lehrbuch.
+part548	Was für ein Blödsinn	Mache ich. Das kann er dann gern durchsuchen — Seite für Seite.
+part549	Umbenennen und aufräumen	Tausend Dateien, alle heißen Dokument eins bis Dokument tausend.
+part549	Umbenennen und aufräumen	Dann bitte alle umbenennen. Und die Hälfte fliegt raus.
+part549	Umbenennen und aufräumen	Ich horte so etwas eben. Man weiß ja nie.
+part549	Umbenennen und aufräumen	Erwäge es wenigstens. Halbieren wäre schon fantastisch.
+part549	Umbenennen und aufräumen	Na gut. Aber die Fotos bleiben — unbedingt alle.
+part586	Wohin mit dem Sofa	Das neue Sofa kommt Freitag. Nur: wie kommt es in die dritte Etage?
+part586	Wohin mit dem Sofa	Der Aufzug ist zu klein. Bleibt die Treppe.
+part586	Wohin mit dem Sofa	Durch den Flur passt es, das habe ich gemessen.
+part586	Wohin mit dem Sofa	Dann tragen wir es zu viert. Danach gibt es Kaffee aus der neuen Kaffeemaschine.
+part586	Wohin mit dem Sofa	Abgemacht. Und das alte Sofa stellen wir in die Garage.
+part587	Ohne Ausweis zum Bahnsteig	Mist, mein Ausweis liegt zu Hause. Nur der Führerschein ist dabei.
+part587	Ohne Ausweis zum Bahnsteig	Für die Fahrkarte reicht der. Welcher Bahnsteig ist es?
+part587	Ohne Ausweis zum Bahnsteig	Sieben, durch die Bahnhofshalle und dann links.
+part587	Ohne Ausweis zum Bahnsteig	Gut. Und vom Bahnhof nehmen wir ein Taxi zur Pension.
+part587	Ohne Ausweis zum Bahnsteig	Oder den Spaziergang durch die Gasse — die Kurve am Fluss ist schön.
+part588	Mehr Pfeffer	Probier mal die Soße. Fehlt da was?
+part588	Mehr Pfeffer	Pfeffer. Und ein kleines bisschen Salz.
+part588	Mehr Pfeffer	Der Reis ist fertig, die Nudeln auch. Beides da.
+part588	Mehr Pfeffer	Dann ist die Mahlzeit komplett. Käse noch drüber?
+part588	Mehr Pfeffer	Klar. Und danach Schokolade — der Hunger hat Platz für beides.
+part589	Die neue Trainerin	Habt ihr eine neue Trainerin?
+part589	Die neue Trainerin	Ja, seit März. Vorher war sie selbst Spielerin, ziemlich gut sogar.
+part589	Die neue Trainerin	Und wie findet die Mannschaft sie?
+part589	Die neue Trainerin	Alle sind begeistert. Sogar die Chefin vom Verein.
+part589	Die neue Trainerin	Dann schaue ich Samstag zu — mit Großvater und Großmutter.
+part590	Das Turnier am See	Samstag ist das Turnier: Volleyball, Badminton und Tennis.
+part590	Das Turnier am See	Ich bringe den Schläger mit. Und danach?
+part590	Das Turnier am See	Picknick am See, mit Grill und Sonnenschirm.
+part590	Das Turnier am See	Perfekt. Zelt und Schlafsack auch, oder wird das zu viel?
+part590	Das Turnier am See	Bring sie mit. Aus einem Turnier wird bei uns gern Camping.
+part591	Das Geräusch im Scanner	Der Scanner macht so ein komisches Geräusch beim Upload.
+part591	Das Geräusch im Scanner	Solange keine Flamme rauskommt, ist alles gut.
+part591	Das Geräusch im Scanner	Sehr witzig. Es ist unsere einzige Hardware für die Reservierung morgen.
+part591	Das Geräusch im Scanner	Dann behandeln wir es wie einen Notfall: ausschalten, abkühlen, neu starten.
+part591	Das Geräusch im Scanner	Und wenn das nichts hilft, hilft Konzentration — oder ein neues Gerät.
+part585	Der, die oder das	Hilf mir mal: Heißt es der, die oder das Wörterbuch?
+part585	Der, die oder das	Das Wörterbuch. Nomen lernst du am besten gleich mit Artikel.
+part585	Der, die oder das	Und warum wird aus der Tisch auf einmal den Tisch?
+part585	Der, die oder das	Akkusativ. Der Nominativ nennt, wer handelt, der Akkusativ, wen es trifft.
+part585	Der, die oder das	Dann fehlen mir nur noch Dativ und Genitiv.
+part585	Der, die oder das	Ein Fall pro Woche, und im Plural sind sowieso alle gleich nett.
+part592	Erst entpacken, dann klicken	Ich habe die Datei doch runtergeladen. Warum geht nichts?
+part592	Erst entpacken, dann klicken	Du musst sie erst entpacken. Dann das Programm anklicken.
+part592	Erst entpacken, dann klicken	Ah. Und dann konfigurieren, oder?
+part592	Erst entpacken, dann klicken	Genau, einmal durchklicken, am Ende exportieren. Fertig.
+part592	Erst entpacken, dann klicken	Danach logge ich mich aus und schalte den Rechner aus. Versprochen.
+part593	Selbst gemacht	Der Stuhl wackelt nicht mehr! Was hast du gemacht?
+part593	Selbst gemacht	Neu verleimt, geschliffen und poliert. Dann noch lackiert.
+part593	Selbst gemacht	Das sieht besser aus als neu. Und der Korb da?
+part593	Selbst gemacht	Selbst gemacht — gewebt, aus alten Resten.
+part593	Selbst gemacht	Nächstes Wochenende bringst du mir das bei. Erst häkeln, dann weben.
+part594	Das Zimmer neu gedacht	Wir renovieren im Herbst. Erst streichen, dann neu möblieren.
+part594	Das Zimmer neu gedacht	Und die dunkle Ecke? Da bekommt man doch nie Licht rein.
+part594	Das Zimmer neu gedacht	Mit einem Spiegel vergrößern wir sie optisch. Alter Trick.
+part594	Das Zimmer neu gedacht	Gut. Beim Tragen musst du dann aber in die Knie gehen, nicht in den Rücken.
+part594	Das Zimmer neu gedacht	Keine Sorge. Und abends wird verriegelt, die Leiter bleibt draußen.
+part595	Säen, gießen, warten	Ich habe im März gesät, und jetzt blüht das ganze Beet!
+part595	Säen, gießen, warten	Schön! Hast du gedüngt?
+part595	Säen, gießen, warten	Nur mit Kompost. Recyceln für den Garten, sozusagen.
+part595	Säen, gießen, warten	Und die Kinder? Helfen die mit?
+part595	Säen, gießen, warten	Sie buddeln vor allem. Aber pflücken können sie schon sehr gut.
+part596	Staunen und begreifen	Ich habe gestern eine Stunde nur den Sternen zugeschaut. Ich staune immer noch.
+part596	Staunen und begreifen	Das kann ich gut verstehen. Mich entspannt das auch.
+part596	Staunen und begreifen	Und je mehr ich begreife, desto mehr bewundere ich das alles.
+part596	Staunen und begreifen	So soll Lernen sein. Besser als sich zu langweilen.
+part596	Staunen und begreifen	Eben. Nächste Woche fange ich an zu musizieren. Ganz neues Staunen.
+part597	Der Termin ist reserviert	Ich habe den Tisch reserviert und den Ausflug terminiert.
+part597	Der Termin ist reserviert	Du klingst wie ein Büro. Wir wollten uns entspannen!
+part597	Der Termin ist reserviert	Deshalb ja! Nichts wird verschwendet, auch keine Zeit.
+part597	Der Termin ist reserviert	Gut. Samstag fahren wir am Fluss entlang und sonnen uns.
+part597	Der Termin ist reserviert	Und Sonntag ruhen wir. Das unterschreibe ich dir sogar.
+part598	Zwei sehr verschiedene Brüder	Deine Brüder sind wirklich verschieden, oder?
+part598	Zwei sehr verschiedene Brüder	Sehr. Der eine redselig und gesellig, der andere eher wortkarg.
+part598	Zwei sehr verschiedene Brüder	Aber beide liebevoll, das merkt man sofort.
+part598	Zwei sehr verschiedene Brüder	Ja. Der eine optimistisch, der andere vorsichtig. Zusammen perfekt.
+part598	Zwei sehr verschiedene Brüder	Hartnäckig sind sie beide. Das liegt dann wohl in der Familie.
+part599	Unklar und undeutlich	Die Ansage am Bahnhof war mal wieder völlig undeutlich.
+part599	Unklar und undeutlich	Wie immer. Und die Anzeige bleibt neutral: Verspätung unklar.
+part599	Unklar und undeutlich	Unrealistisch ist das nicht, aber unpräzise.
+part599	Unklar und undeutlich	Identisch mit letzter Woche. Konstant schlecht, immerhin.
+part599	Unklar und undeutlich	Logisch wäre eine klare Ansage. Aber das ist wohl undenkbar.
+part600	Essbar oder nicht	Ist der Pilz da essbar?
+part600	Essbar oder nicht	Keine Ahnung, und genau deshalb bleibt er stehen.
+part600	Essbar oder nicht	Gut. Das Wasser hier, ist das trinkbar?
+part600	Essbar oder nicht	Ja, steht auf dem Schild. Und die Beeren sind sogar messbar süßer als gekaufte.
+part600	Essbar oder nicht	Dann ist das Picknick ja bezahlbar: alles umsonst.
+part601	Unnötig kompliziert	Das Formular ist unnötig kompliziert. Zehn Seiten!
+part601	Unnötig kompliziert	Und unpraktisch: Feld drei passt nicht mal auf die Zeile.
+part601	Unnötig kompliziert	Unfair ist es auch. Ohne Internet ist es fast unmöglich.
+part601	Unnötig kompliziert	Unvorsichtig ausgefüllt wird es aber erst recht ungerecht.
+part601	Unnötig kompliziert	Also langsam und produktiv. Zart anfassen, das Papier ist spröde.
+part602	Die Anzeige für die Wohnung	Wie beschreiben wir die Wohnung in der Anzeige?
+part602	Die Anzeige für die Wohnung	Geräumig, renoviert, möbliert. Und die Lage: urban, aber wassernah.
+part602	Die Anzeige für die Wohnung	Morgendliche Sonne im Schlafzimmer, abendliche auf dem Balkon.
+part602	Die Anzeige für die Wohnung	Das Viertel ist belebt, aber nachts ruhig.
+part602	Die Anzeige für die Wohnung	Perfekt. Altmodisch ist nur das Bad — das nennen wir charmant.
+part603	Freundlich zu allen	Das neue Café ist wirklich kinderfreundlich. Und tierfreundlich!
+part603	Freundlich zu allen	Und behindertengerecht, habe ich gelesen. Breite Türen, keine Stufen.
+part603	Freundlich zu allen	Die Verpackung beim Mitnehmen ist umweltfreundlich.
+part603	Freundlich zu allen	Benutzerfreundlich ist sogar die Karte: drei Seiten, klare Preise.
+part603	Freundlich zu allen	Friedlich ist es auch noch. Da gehen wir jetzt immer hin.
+part604	Hellblau oder dunkelgrün	Welche Farbe fürs Arbeitszimmer: hellblau oder dunkelgrün?
+part604	Hellblau oder dunkelgrün	Dunkelgrün, mit silbernen Rahmen an der Wand.
+part604	Hellblau oder dunkelgrün	Und der Teppich? Oval oder rechteckig?
+part604	Hellblau oder dunkelgrün	Rechteckig. Oval wirkt schnell altmodisch.
+part604	Hellblau oder dunkelgrün	Gut. Violett kommt mir jedenfalls nicht ins Haus.
+part405	Der Kompromiss	Deine These kenne ich. Aber es gibt einen Einwand.
+part405	Der Kompromiss	Dann her damit. Ohne Entgegnung wird das keine echte Verhandlung.
+part405	Der Kompromiss	Deine Behauptung stützt sich auf eine einzige Quelle.
+part405	Der Kompromiss	Das räume ich ein. Dafür ist es eine sehr gute Quelle.
+part405	Der Kompromiss	Na schön. Ich mache dir einen Kompromiss: Wir prüfen sie zusammen.
+part407	Erleichterung	Und? Wie war das Gespräch, vor dem du solche Angst hattest?
+part407	Erleichterung	Die Beklommenheit war nach zwei Minuten weg. Danach: pure Erleichterung.
+part407	Erleichterung	Siehst du! Deine Zuversicht war berechtigt.
+part407	Erleichterung	Ein bisschen Reue bleibt, dass ich so lange gewartet habe.
+part407	Erleichterung	Kein Neid auf Leute, die das leichter können — jeder hat sein Tempo.
+part409	Der Lichtblick	Das Projekt war viele Monate ein Teufelskreis: kein Geld, keine Leute.
+part409	Der Lichtblick	Und dann kam der Durchbruch?
+part409	Der Lichtblick	Erst ein Lichtblick: eine kleine Zusage. Dann der Wendepunkt.
+part409	Der Lichtblick	Der Knackpunkt war sicher das Geld.
+part409	Der Lichtblick	Genau. Jetzt haben wir Spielraum — und ich etwas Fingerspitzengefühl mehr.
+part409	Der Lichtblick	Dann war die ganze Gratwanderung am Ende eine Sternstunde.
+part111	Vor dem Kunstwerk	Für moderne Kunst hast du doch nichts übrig — was machst du dann hier?
+part111	Vor dem Kunstwerk	Die Ausstellung hat meine Perspektive verändert, ehrlich.
+part111	Vor dem Kunstwerk	Welches Werk denn? Zeig mal.
+part111	Vor dem Kunstwerk	Das da drüben. Der Künstler hat einen ganz eigenen Stil.
+part111	Vor dem Kunstwerk	Hm. Damit kann ich ehrlich gesagt nichts anfangen.
+part8	Kurz vor Feierabend	Bist du bald fertig? Wir wollten doch noch einkaufen.
+part8	Kurz vor Feierabend	Zehn Minuten noch. Ich muss diese Liste zu Ende schreiben.
+part8	Kurz vor Feierabend	Gut, dann mache ich schon mal das Fenster zu und packe die Taschen.
+part8	Kurz vor Feierabend	Hast du Kleingeld für den Einkaufswagen?
+part8	Kurz vor Feierabend	Nein, aber wir nehmen einfach den Korb. So viel brauchen wir nicht.
+part9	Die neue Wohnung zeigen	Komm rein! Die Schuhe kannst du gern anlassen.
+part9	Die neue Wohnung zeigen	Schön hell hier. Seit wann wohnst du im dritten Stock?
+part9	Die neue Wohnung zeigen	Seit zwei Monaten. Die Küche ist klein, aber sie reicht mir.
+part9	Die neue Wohnung zeigen	Und der Balkon! Da bleibe ich im Sommer gleich zum Essen.
+part9	Die neue Wohnung zeigen	Gern. Nur der Aufzug ist leider öfter kaputt als er fährt.
+part10	Das neue Projekt	Arbeitest du morgen im Büro oder im Homeoffice?
+part10	Das neue Projekt	Im Büro. Wir planen das neue Projekt, da will ich dabei sein.
+part10	Das neue Projekt	Wer erklärt dem Team eigentlich den Plan?
+part10	Das neue Projekt	Die Chefin selbst, am Freitag um neun.
+part10	Das neue Projekt	Dann arbeite ich Freitag nur bis zwei und komme danach dazu.
+part11	Die Nachricht in der Zeitung	Hast du die Nachricht über das neue Schwimmbad gelesen?
+part11	Die Nachricht in der Zeitung	Ja, heute Morgen in der Zeitung. Ich glaube aber nicht, dass das klappt.
+part11	Die Nachricht in der Zeitung	Warum nicht? Ich finde die Idee eigentlich gut.
+part11	Die Nachricht in der Zeitung	Zu teuer. Und ich glaube, die Stadt hat das Geld nicht.
+part11	Die Nachricht in der Zeitung	Da hast du vielleicht recht. Mal sehen, was daraus wird.
+part12	Die vergessene Tasche	Entschuldigung, ich habe meine Tasche im Zug vergessen. Wer kann mir helfen?
+part12	Die vergessene Tasche	Da sind Sie hier richtig. Welcher Zug war es denn?
+part12	Die vergessene Tasche	Der um halb neun aus Hamburg. Die Tasche ist blau, mit meinem Regenschirm drin.
+part12	Die vergessene Tasche	Moment ... tatsächlich, die wurde gerade abgegeben. Haben Sie Ihren Pass dabei?
+part12	Die vergessene Tasche	Ja, zum Glück war der in meiner Jacke und nicht in der Tasche.
+part68	Gleich ins Bett	Ich putz mir noch die Zähne und geh dann ins Bett.
+part68	Gleich ins Bett	Schon? Ich wollte noch eine Folge gucken.
+part68	Gleich ins Bett	Dann leise, bitte. Und weck mich nicht, wenn du kommst.
+part68	Gleich ins Bett	Versprochen. Bist du eigentlich noch sauer wegen vorhin?
+part68	Gleich ins Bett	Nein, schon vergessen. Gute Nacht, bis morgen.
+part69	Der neue Kollege	Und, wie ist der Neue so?
+part69	Der neue Kollege	Ich kann ihn gut leiden. Ehrlich, hilfsbereit, macht seine Arbeit.
+part69	Der neue Kollege	Wirklich? Mir gefällt sein Ton nicht besonders.
+part69	Der neue Kollege	Das ist nur seine Art. Er meint das nicht böse.
+part69	Der neue Kollege	Vielleicht. Sympathisch finde ich trotzdem andere.
+part70	Was aus dem Umzug wurde	Du hast letztens erzählt, du willst umziehen. Was ist daraus geworden?
+part70	Was aus dem Umzug wurde	Nichts. Der Vermieter hat die Wohnung dann doch anders vergeben.
+part70	Was aus dem Umzug wurde	Ach echt? Das hätte ich nicht gedacht. Und wie ging es weiter?
+part70	Was aus dem Umzug wurde	Ich suche noch. Aber ehrlich gesagt ohne Eile.
+part70	Was aus dem Umzug wurde	Das kenne ich. Bei mir hat die Suche damals ein Jahr gedauert.
+part71	Teils, teils	Und, wie fandest du den Vorschlag?
+part71	Teils, teils	Naja, teils teils. Da ist schon was dran, aber so einfach ist das nicht.
+part71	Teils, teils	Kommt drauf an, wen du fragst, oder?
+part71	Teils, teils	Genau. Ich sag ja nicht, dass er unrecht hat. Überzeugt bin ich trotzdem nicht.
+part71	Teils, teils	Das kann man so sehen. Schlafen wir eine Nacht drüber.
+part72	Donnerstag um acht	Hättest du Lust, diese Woche mal wieder essen zu gehen?
+part72	Donnerstag um acht	Sehr gern. Geht bei dir Donnerstag?
+part72	Donnerstag um acht	Donnerstag ja, aber ich kann leider erst ab acht.
+part72	Donnerstag um acht	Passt mir gut. Ich reserviere uns was und schreibe dir vorher noch kurz.
+part72	Donnerstag um acht	Perfekt. Bis Donnerstag dann!
+part78	Angeschlagen	Du siehst blass aus. Alles okay?
+part78	Angeschlagen	Ich fühl mich total angeschlagen. Ich glaub, ich brüte was aus.
+part78	Angeschlagen	Dann geh heim. Hast du was da? Tee, Ibu, Wärmflasche?
+part78	Angeschlagen	Tee ja. Aber ich hab heute Nacht kein Auge zugemacht.
+part78	Angeschlagen	Eben. Leg dich hin, ich sag den anderen Bescheid.
+part79	Einfach mal zuhören	Du bist heute so still. Irgendwas stimmt doch nicht, oder?
+part79	Einfach mal zuhören	Ach, ich weiß auch nicht. Irgendwie ist gerade alles viel.
+part79	Einfach mal zuhören	Willst du reden, oder lieber abgelenkt werden?
+part79	Einfach mal zuhören	Ehrlich gesagt: im Moment lieber nur reden.
+part79	Einfach mal zuhören	Dann höre ich zu. Lass dir Zeit, Geduld habe ich genug.
+part100	Nach der Ausbildung	Wie lange dauert deine Ausbildung eigentlich noch?
+part100	Nach der Ausbildung	Noch ein Jahr. Danach will ich vielleicht noch studieren.
+part100	Nach der Ausbildung	An der Universität hier, oder woanders?
+part100	Nach der Ausbildung	Am liebsten an der Hochschule in Köln. Der Kurs dort soll sehr gut sein.
+part100	Nach der Ausbildung	Dann lies schon mal fleißig. Die nehmen nicht jeden.
+part103	Es hat geklappt	Und? Hat es mit der Wohnung geklappt?
+part103	Es hat geklappt	Diesmal ist es mir gelungen! Ich habe gestern die Nachricht erhalten.
+part103	Es hat geklappt	Wie schön! Und wie viel Fläche hat sie?
+part103	Es hat geklappt	Drei Zimmer, und der Keller gehört auch dazu.
+part103	Es hat geklappt	Das scheint mir ein sehr guter Fang. Du siehst richtig glücklich aus.
+part104	Der Vergleich lohnt sich	Warum kaufst du hier? Der Laden an der Ecke ist doch näher.
+part104	Der Vergleich lohnt sich	Stimmt, aber die Auswahl hier ist wirklich groß.
+part104	Der Vergleich lohnt sich	Und die Preise?
+part104	Der Vergleich lohnt sich	Im Vergleich ziemlich günstig. Zusätzlich ist sonntags geöffnet.
+part104	Der Vergleich lohnt sich	Das ist allerdings ein wesentlicher Unterschied.
+part105	Der Anspruch auf Beratung	Guten Tag, ich brauche Unterstützung bei einem Antrag. Wo finde ich die Beratung?
+part105	Der Anspruch auf Beratung	Hier. Welche Voraussetzungen Sie erfüllen müssen, steht in diesem Heft.
+part105	Der Anspruch auf Beratung	Habe ich auch Anspruch auf einen Termin zur Beratung vor Ort?
+part105	Der Anspruch auf Beratung	Ja. Füllen Sie das Formular vollständig aus und bringen Sie Ihre Unterlagen mit.
+part105	Der Anspruch auf Beratung	Danke für den Hinweis. Das Gebäude hier am Bahnhof, richtig?
+part110	Zwei Sichtweisen	Wie hat sie eigentlich auf die Absage reagiert?
+part110	Zwei Sichtweisen	Erstaunlich ruhig. Aus meiner Sicht war das kein Problem für sie.
+part110	Zwei Sichtweisen	Das würde ich anders sehen. Sie hatte sich sehr darauf gefreut.
+part110	Zwei Sichtweisen	Kann ich nachvollziehen. Ich möchte nur betonen: Es war ihre Entscheidung.
+part110	Zwei Sichtweisen	Da hast du völlig recht. Bei Gelegenheit frage ich sie einfach selbst.
+part113	Der Ausflug zum See	Sollen wir am Samstag an den See? Die Saison fängt doch jetzt an.
+part113	Der Ausflug zum See	Es soll aber örtlich Gewitter geben.
+part113	Der Ausflug zum See	Nur am Nachmittag. Vormittags waren wir letztes Mal fast allein dort.
+part113	Der Ausflug zum See	Gut. Aber der See ist an einer Stelle ziemlich tief, denk an die Kinder.
+part113	Der Ausflug zum See	Wir bleiben nah am Ufer. Und bei Regen ist das Auto nur zehn Minuten entfernt.
+part380	Mal sehen, ob das Wetter hält	Kommst du morgen mit zum Flohmarkt?
+part380	Mal sehen, ob das Wetter hält	Kann sein. Kommt drauf an, wie viel Zeit wir haben.
+part380	Mal sehen, ob das Wetter hält	Wir fahren früh los. Mal sehen, ob das Wetter hält.
+part380	Mal sehen, ob das Wetter hält	Ich weiß nicht, ob ich das schaffe. Ich sage dir heute Abend Bescheid.
+part380	Mal sehen, ob das Wetter hält	Gut. Und keine Ahnung, wo mein Schlüssel ist — such du schon mal deinen.
+part73	Die Übergabe vor dem Urlaub	Bevor ich in den Urlaub gehe, machen wir noch die Übergabe.
+part73	Die Übergabe vor dem Urlaub	Gut. Wer macht deine Vertretung, während du weg bist?
+part73	Die Übergabe vor dem Urlaub	Der Kollege aus dem Büro nebenan, der hat noch Puffer.
+part73	Die Übergabe vor dem Urlaub	Und dein Resturlaub? Der ist sonst einfach weg.
+part73	Die Übergabe vor dem Urlaub	Schon eingetragen. Ab morgen habe ich Feierabend.
+part74	Schlechter Empfang	Hallo, hörst du mich? Der Empfang im Keller ist eine Katastrophe.
+part74	Schlechter Empfang	Halb. Bei dir hat es die ganze Zeit gerauscht.
+part74	Schlechter Empfang	Ich gehe mal rauf ans Fenster. Hörst du mich jetzt besser?
+part74	Schlechter Empfang	Ja, viel besser. Warum bist du vorhin nicht rangegangen?
+part74	Schlechter Empfang	Dein Anruf ist direkt auf die Mailbox gegangen, sorry.
+part75	Der Zug fällt aus	Entschuldigung, mein Zug fällt aus. Wie komme ich heute noch nach Köln?
+part75	Der Zug fällt aus	Es gibt einen Ersatzbus, der fährt in zehn Minuten vor dem Bahnhof ab.
+part75	Der Zug fällt aus	Und erreiche ich damit meinen Anschlusszug?
+part75	Der Zug fällt aus	Das wird knapp. Ab sechzig Minuten Verspätung kriegen Sie aber Geld zurück.
+part75	Der Zug fällt aus	Gut zu wissen. Dann fülle ich nachher gleich das Formular für die Verspätung aus.
+part77	Der Umtausch ohne Bon	Guten Tag, ich möchte das hier umtauschen. Da fehlt eine Schraube.
+part77	Der Umtausch ohne Bon	Haben Sie den Bon dabei?
+part77	Der Umtausch ohne Bon	Nein, aber ich habe mit Karte bezahlt. Sie sehen das sicher im System.
+part77	Der Umtausch ohne Bon	Moment, ich schaue nach ... ja, hier ist es. Möchten Sie das Geld zurück?
+part77	Der Umtausch ohne Bon	Lieber ein neues Gerät, wenn Sie hinten noch eins im Lager haben.
+part80	Der Neue im Haus	Hallo, ich bin der Neue aus dem dritten Stock.
+part80	Der Neue im Haus	Ah, willkommen im Haus! Schon richtig angekommen?
+part80	Der Neue im Haus	Fast. Eine Frage: Wann stellt man hier die Tonnen raus?
+part80	Der Neue im Haus	Immer montags. Und nach zehn bitte leise, die Wände sind dünn.
+part80	Der Neue im Haus	Versprochen. Wenn was ist, klingeln Sie einfach bei mir.
+part81	Kein Wort über die Serie	Guckst du die Serie auch? Alle reden davon.
+part81	Kein Wort über die Serie	Ja, aber kein Wort — ich bin erst bei der zweiten Folge.
+part81	Kein Wort über die Serie	Okay, ich sage nichts. Ich schicke dir nachher das Meme dazu.
+part81	Kein Wort über die Serie	Bitte nicht in den Gruppenchat, da liest es sonst jeder.
+part81	Kein Wort über die Serie	Gut. Und lade vorher dein Handy, sonst bist du gleich wieder raus.
+part82	Omas Neunzigster	Kommst du am Sonntag zur Familienfeier? Oma wird neunzig.
+part82	Omas Neunzigster	Klar. Und die ganze Verwandtschaft reist wieder an, nehme ich an?
+part82	Omas Neunzigster	Alle. Auch der Cousin aus Hamburg, den du noch nie getroffen hast.
+part82	Omas Neunzigster	Der, der dir so ähnlich sieht?
+part82	Omas Neunzigster	Genau der. Mama sagt, wir sind wie aus dem Gesicht geschnitten.
+part83	Dreißig Grad in der Wohnung	Sag ehrlich: Wie viel Grad hat deine Bude gerade?
+part83	Dreißig Grad in der Wohnung	Dreißig, mindestens. Ich habe die Rollläden den ganzen Tag unten gelassen.
+part83	Dreißig Grad in der Wohnung	Hilft das denn wirklich?
+part83	Dreißig Grad in der Wohnung	Ein bisschen. Abends mache ich dann alle Fenster auf.
+part83	Dreißig Grad in der Wohnung	Morgen soll ein Gewitter kommen, dann kühlt es endlich ab.
+part85	Die offenen zwölf Euro	Ich habe noch Schulden bei dir von gestern Abend.
+part85	Die offenen zwölf Euro	Ach ja, stimmt. Zwölf Euro, glaube ich.
+part85	Die offenen zwölf Euro	Geht das per Überweisung? Dann brauche ich deine IBAN.
+part85	Die offenen zwölf Euro	Mach dir keinen Stress, das hat Zeit bis zum Wochenende.
+part85	Die offenen zwölf Euro	Nein, nein, sonst vergesse ich es wieder. Halbe-halbe beim nächsten Mal?
+part86	Er frisst nicht	Guten Tag. Mein Hund frisst seit zwei Tagen kaum etwas.
+part86	Er frisst nicht	Dann schauen wir mal. Zieht er an der Leine noch wie immer?
+part86	Er frisst nicht	Nein, er ist viel ruhiger als sonst.
+part86	Er frisst nicht	Ich untersuche ihn kurz. Halten Sie ihn bitte gut fest.
+part86	Er frisst nicht	Kein Problem, er tut nichts. Er ist nur ein bisschen ängstlich.
+part87	Der Fleck auf dem Hemd	Mist, ich habe einen Fleck auf dem Hemd. Kriegt man den noch raus?
+part87	Der Fleck auf dem Hemd	Zeig mal. Oh je, das ist Fett — das geht so schnell nicht raus.
+part87	Der Fleck auf dem Hemd	Das war mein letztes sauberes Hemd.
+part87	Der Fleck auf dem Hemd	Dann nimm den Pulli, der ist frisch gewaschen.
+part87	Der Fleck auf dem Hemd	Der ist beim Waschen eingelaufen, der passt mir nicht mehr.
+part88	Morgens um halb acht	Schuhe an, wir sind spät dran!
+part88	Morgens um halb acht	Ich finde meine Brotdose nicht.
+part88	Morgens um halb acht	Die steht schon in deinem Rucksack. Und bitte nicht trödeln.
+part88	Morgens um halb acht	Krieg ich heute Nachmittag Zeit am Tablet?
+part88	Morgens um halb acht	Zehn Minuten nach den Hausaufgaben. Und jetzt los, ich zähle bis drei.
+part89	Der Abend vor der Klausur	Kannst du mich heute Abend abfragen? Morgen ist die Klausur.
+part89	Der Abend vor der Klausur	Klar. Wie läuft es mit dem Lernen?
+part89	Der Abend vor der Klausur	Ich bin seit Tagen dran, aber ich trete auf der Stelle.
+part89	Der Abend vor der Klausur	Du schaffst das. Letztes Mal hast du auch bestanden.
+part89	Der Abend vor der Klausur	Stimmt. Und diesmal lerne ich nicht erst auf den letzten Drücker.
+part90	Es klappert hinten	Guten Tag, beim Fahren klappert hinten irgendwas.
+part90	Es klappert hinten	Wann können Sie das Auto vorbeibringen?
+part90	Es klappert hinten	Geht Donnerstag? Der TÜV ist auch bald fällig.
+part90	Es klappert hinten	Donnerstag passt. Die Werkstatt ist ab sieben besetzt, kommen Sie einfach vorbei.
+part90	Es klappert hinten	Und die Winterreifen? Können Sie die gleich mit draufmachen?
+part91	Sonntag, halb eins	Schlechte Nachricht: Das Brot ist alle, und alles hat zu.
+part91	Sonntag, halb eins	Der Bäcker am Markt hat sonntags vormittags auf.
+part91	Sonntag, halb eins	Es ist schon halb eins.
+part91	Sonntag, halb eins	Dann bleibt wohl wieder nur die Tankstelle an der Ecke.
+part91	Sonntag, halb eins	Na gut. Aber danach geht es zurück auf die Couch.
+part92	Streit um den Film	Und? Wie fandest du den Film?
+part92	Streit um den Film	Ehrlich? Den Hype verstehe ich nicht.
+part92	Streit um den Film	Was? Am Ende habe ich fast geheult.
+part92	Streit um den Film	Na ja. Allein der Soundtrack war ganz gut.
+part92	Streit um den Film	Siehst du! Lies danach das Buch, das ist noch besser.
+part93	Dampf ablassen	Hast du kurz Zeit? Ich muss mal Dampf ablassen.
+part93	Dampf ablassen	Klar, immer. Wer hat dir denn den Tag versaut?
+part93	Dampf ablassen	Der Chef hat mich heute vor allen zusammengefaltet.
+part93	Dampf ablassen	Wie bitte? Das hast du nicht verdient.
+part93	Dampf ablassen	Danke. Jetzt platzt mir wenigstens nicht mehr gleich der Kragen.
+part101	Die App geht nicht auf	Die neue App lädt bei mir ewig und geht dann einfach nicht auf.
+part101	Die App geht nicht auf	Hast du das Update schon installiert?
+part101	Die App geht nicht auf	Nein, mein Speicher ist voll. Ich muss erst Dateien löschen.
+part101	Die App geht nicht auf	Sichere sie vorher irgendwo, sonst sind sie weg.
+part101	Die App geht nicht auf	Gute Idee. Danach erstelle ich das Konto neu und sichere alles doppelt.
+part102	Samstag ins Museum	Was machen wir am Samstag, bevor die Gäste kommen?
+part102	Samstag ins Museum	Im Museum läuft noch die Ausstellung, die du sehen wolltest.
+part102	Samstag ins Museum	Gute Idee. Ist der Eintritt für Schüler ermäßigt? Dann kommt dein Bruder mit.
+part102	Samstag ins Museum	Ja, aber für die Führung muss man sich vorher anmelden.
+part102	Samstag ins Museum	Das mache ich gleich online. Sonst ist am Ende alles voll.
+part76	Bestellen mit Allergie	Entschuldigung, ist in der Vorspeise Sahne drin? Ich bin allergisch.
+part76	Bestellen mit Allergie	In der Suppe ja, aber die Küche macht sie gern ohne Sahne.
+part76	Bestellen mit Allergie	Sehr gut. Gibt es das Tagesgericht auch vegetarisch?
+part76	Bestellen mit Allergie	Ja, mit extra Beilagen statt Fleisch. Soll ich das so bestellen?
+part76	Bestellen mit Allergie	Gern. Den Nachtisch suchen wir später von der Speisekarte aus.

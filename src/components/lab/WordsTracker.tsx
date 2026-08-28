@@ -6,6 +6,7 @@ import { buildWordCatalog, rankWordCatalog, type WordItem } from "@/lib/wordSess
 import { useLearningMode } from "@/lib/learningMode";
 import { buildWordExampleIndex } from "@/lib/wordExamples";
 import { buildCorpusIndex } from "@/lib/corpusFrequency";
+import { CEFR_STEPS, cefrStep, cefrStepLabel, type CefrStep } from "@/lib/cefr";
 import {
   loadGradeStore,
   progressEntryForId,
@@ -258,6 +259,7 @@ export function WordsTracker({ apiParts, user }: {
 }) {
   const [filter, setFilter] = useState<Filter>("all");
   const [partOfSpeech, setPartOfSpeech] = useState<WordPartOfSpeechFilter>("all");
+  const [level, setLevel] = useState<"all" | CefrStep>("all");
   const [sort, setSort] = useState<WordTrackerSort>("common");
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
@@ -323,6 +325,7 @@ export function WordsTracker({ apiParts, user }: {
     const rows = catalog.filter((word) => {
       if (filter !== "all" && statusOf(word) !== filter) return false;
       if (!wordMatchesPartOfSpeech(word.pos, partOfSpeech)) return false;
+      if (level !== "all" && cefrStep(word.level) !== level) return false;
       if (!needle) return true;
       // A combined card answers for every word in it: searching a less common
       // synonym has to find the card that now carries it.
@@ -342,7 +345,7 @@ export function WordsTracker({ apiParts, user }: {
       alphabetLanguage
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [alphabetLanguage, catalog, commonRanks, filter, partOfSpeech, query, sort, grades]);
+  }, [alphabetLanguage, catalog, commonRanks, filter, level, partOfSpeech, query, sort, grades]);
 
   const visible = filtered.slice(0, page * PAGE);
 
@@ -476,7 +479,7 @@ export function WordsTracker({ apiParts, user }: {
         </p>
       </div>
 
-      <div className="mt-3 grid grid-cols-1 gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] p-3 sm:grid-cols-3">
+      <div className="mt-3 grid grid-cols-1 gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] p-3 sm:grid-cols-2 lg:grid-cols-4">
         <label className="min-w-0">
           <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.12em] text-[var(--text-3)]">{ui("Part of speech")}</span>
           <select
@@ -486,6 +489,23 @@ export function WordsTracker({ apiParts, user }: {
           >
             {WORD_PART_OF_SPEECH_FILTERS.map((option) => (
               <option key={option.key} value={option.key}>{ui(option.label)}</option>
+            ))}
+          </select>
+        </label>
+        {/* Between the part of speech and the sort, because both of the ones
+            around it narrow the list and the sort only reorders it. A1 and A2
+            are separate steps here: the list is nine thousand rows long, and
+            the difference between them is most of a beginner's first year. */}
+        <label className="min-w-0">
+          <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.12em] text-[var(--text-3)]">{ui("Level")}</span>
+          <select
+            className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-xs font-black text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
+            onChange={(event) => { setLevel(event.target.value as "all" | CefrStep); reset(); }}
+            value={level}
+          >
+            <option value="all">{ui("All levels")}</option>
+            {CEFR_STEPS.map((step) => (
+              <option key={step} value={step}>{cefrStepLabel(step)}</option>
             ))}
           </select>
         </label>

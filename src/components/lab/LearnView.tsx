@@ -231,8 +231,11 @@ export function LearnView({
     setHideFinished(setHideFinishedLessons(false));
   };
 
-  const chip = (active: boolean) => [
-    "h-9 rounded-full px-3.5 text-xs font-black transition-colors",
+  // One pill per question, in the chip's own clothes. Accent ink means "an
+  // answer other than the default", exactly what a lit chip used to mean, so
+  // a narrowed list is still visible at a glance with the menu closed.
+  const filterSelect = (active: boolean) => [
+    "h-9 max-w-full rounded-full px-3.5 text-xs font-black outline-none transition-colors",
     active
       ? "bg-[var(--accent)] text-[var(--accent-text)]"
       : "bg-[var(--surface-2)] text-[var(--text-2)] hover:text-[var(--text-1)]",
@@ -295,67 +298,75 @@ export function LearnView({
             )}
           </label>
 
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {LEVEL_FILTERS.map((option) => (
-              <button
-                aria-pressed={levelFilter === option.id}
-                className={chip(levelFilter === option.id)}
-                key={option.id}
-                onClick={() => setLevelFilter(option.id)}
-                type="button"
+          {/* Three questions, three menus, one row. As chips these were
+              three rows holding fourteen pills for three answers, and the
+              filters stood taller than the lessons they filtered. A closed
+              menu shows its answer and nothing else; the row wraps only
+              when the card genuinely has no width for it. */}
+          <div className="mt-3 flex flex-wrap items-center gap-1.5">
+            <div className="min-w-0">
+              <select
+                aria-label={ui("Level")}
+                className={filterSelect(levelFilter !== "all")}
+                onChange={(event) => setLevelFilter(event.target.value as LevelFilter)}
+                value={levelFilter}
               >
-                {ui(option.label)}
-              </button>
-            ))}
-          </div>
-          <div className="mt-1.5 flex flex-wrap gap-1.5">
-            {KIND_FILTERS.map((option) => (
-              <button
-                aria-pressed={kindFilter === option.id}
-                className={chip(kindFilter === option.id)}
-                key={option.id}
-                onClick={() => setKindFilter(option.id)}
-                type="button"
+                {LEVEL_FILTERS.map((option) => (
+                  <option key={option.id} value={option.id}>{ui(option.label)}</option>
+                ))}
+              </select>
+            </div>
+            <div className="min-w-0">
+              <select
+                aria-label={ui("Lesson content")}
+                className={filterSelect(kindFilter !== "all")}
+                onChange={(event) => setKindFilter(event.target.value as KindFilter)}
+                value={kindFilter}
               >
-                {ui(option.label)}
-              </button>
-            ))}
-          </div>
-          {/* A row of its own. It used to share the row above, and one row
-              carrying two questions reads as one question: a lit chip in each
-              group looked like two answers at once, and choosing a kind left
-              the progress chip lit with nothing in reach that would put it
-              out. Levels already had their own row; these two now match it. */}
-          <div className="mt-1.5 flex flex-wrap gap-1.5">
-            {PROGRESS_FILTERS.map((option) => (
-              <button
-                aria-pressed={progressFilter === option.id}
-                className={chip(progressFilter === option.id)}
-                key={option.id}
-                onClick={() => setProgressFilter(option.id)}
-                type="button"
-              >
-                {ui(option.label)}
-              </button>
-            ))}
-            {/* Carries its own count, so a shelf holding forty lessons says
-                so. A control that hides work silently is a control that gets
-                blamed for losing it. */}
-            {shelf.finished > 0 && (
-              <button
-                aria-pressed={hideFinished}
-                className={chip(hideFinished)}
-                onClick={toggleHideFinished}
+                {KIND_FILTERS.map((option) => (
+                  <option key={option.id} value={option.id}>{ui(option.label)}</option>
+                ))}
+              </select>
+            </div>
+            {/* The shelf rides in this menu as its last entry. Choosing it
+                answers the progress question too — "everything, minus the
+                finished ones" — so the two states collapse into one value:
+                any other answer takes the shelf off. The way BACK stays a
+                visible button in the count line below, because a closed menu
+                that silently hides forty lessons is a control that gets
+                blamed for losing them. */}
+            <div className="min-w-0">
+              <select
+                aria-label={ui("Progress")}
+                className={filterSelect(progressFilter !== "all" || hideFinished)}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  if (value === "shelf") {
+                    setProgressFilter("all");
+                    if (!hideFinished) setHideFinished(setHideFinishedLessons(true));
+                    return;
+                  }
+                  if (hideFinished) setHideFinished(setHideFinishedLessons(false));
+                  setProgressFilter(value as ProgressFilter);
+                }}
                 title={ui(hideFinished
                   ? "Finished lessons are put away — nothing is deleted, and any whose words have started to fade stay in the list so you can review them."
                   : "Put finished lessons away to clear the list. Nothing is deleted, and this button brings them straight back.")}
-                type="button"
+                value={hideFinished ? "shelf" : progressFilter}
               >
-                {uiFmt(hideFinished ? "Show finished ({count})" : "Hide finished ({count})", {
-                  count: shelf.finished,
-                })}
-              </button>
-            )}
+                {PROGRESS_FILTERS.map((option) => (
+                  <option key={option.id} value={option.id}>{ui(option.label)}</option>
+                ))}
+                {/* Carries its own count, so a shelf holding forty lessons
+                    says so. Rendered whenever the shelf is on as well, so the
+                    select never holds a value with no option to show it. */}
+                {(shelf.finished > 0 || hideFinished) && (
+                  <option value="shelf">
+                    {uiFmt("Hide finished ({count})", { count: shelf.finished })}
+                  </option>
+                )}
+              </select>
+            </div>
           </div>
 
           {filtering && (
@@ -370,6 +381,18 @@ export function LearnView({
               >
                 {ui("Clear filters")}
               </button>
+              {/* The labelled way back from the shelf, visible without
+                  opening the menu that switched it on. */}
+              {hideFinished && (
+                <button
+                  className="text-xs font-black text-[var(--accent)] hover:underline"
+                  onClick={toggleHideFinished}
+                  title={ui("Finished lessons are put away — nothing is deleted, and any whose words have started to fade stay in the list so you can review them.")}
+                  type="button"
+                >
+                  {uiFmt("Show finished ({count})", { count: shelf.finished })}
+                </button>
+              )}
             </div>
           )}
 

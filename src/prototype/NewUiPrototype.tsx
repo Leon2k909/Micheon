@@ -163,6 +163,13 @@ import {
 } from "@/lib/notificationPrefs";
 import { estimateFluencyHours, LEARNING_TIME_UPDATED_EVENT, loadLearningTimeStats } from "@/lib/learningTime";
 import { hasLeonSocialPreview } from "@/lib/socialPreview";
+import { getHomeCardOpen, setHomeCardOpen, type HomeCard } from "@/lib/homeCards";
+import {
+  GUIDED_BACKGROUND_EVENT,
+  getGuidedBackground,
+  getGuidedCustomBackground,
+  type GuidedBackground,
+} from "@/lib/guidedBackground";
 import { FriendsPanel } from "@/components/social/FriendsPanel";
 import { formatFriendCode, getFriendCode } from "@/lib/friendCode";
 import { FRIENDS_EVENT, loadFriends } from "@/lib/friendStore";
@@ -181,14 +188,18 @@ import { getLessonContent, setLessonContent, type LessonContent } from "@/lib/le
  * lernen?".
  */
 import homeBannerImage from "./assets/home-banner-sunrise-v1.webp";
+import scenerySpeechBubbles from "./assets/guided-speech-bubbles-v1.webp";
+import sceneryFlightPath from "./assets/guided-flight-path-v1.webp";
+import sceneryFlowerGarden from "./assets/guided-flower-garden-v1.webp";
+import scenerySoftDawn from "./assets/guided-soft-dawn-v1.webp";
 import homeLanguagesImage from "./assets/home-languages-de-v2.webp";
 import homeLanguagesGermanImage from "./assets/home-languages-german-v1.webp";
 import homeLanguagesUkImage from "./assets/home-languages-uk-v1.webp";
 import homeLanguagesFrImage from "./assets/home-languages-fr-v1.webp";
 import homeLanguagesPlImage from "./assets/home-languages-pl-v1.webp";
-import homeCountryArtDe from "./assets/home-country-de-v1.webp";
-import homeCountryArtFr from "./assets/home-country-fr-v1.webp";
-import homeCountryArtUk from "./assets/home-country-uk-v1.webp";
+import homeCountryArtDe from "./assets/home-country-de-v2.webp";
+import homeCountryArtFr from "./assets/home-country-fr-v2.webp";
+import homeCountryArtUk from "./assets/home-country-uk-v2.webp";
 import achievementAtlas from "./assets/achievements-v1/achievement-atlas-v3.webp";
 import backpackReward from "./assets/rewards-v3/backpack.webp";
 import flameReward from "./assets/rewards-v3/flame.webp";
@@ -1187,7 +1198,14 @@ function Sidebar({
                       <span aria-hidden="true" className="np-nav-visual">
                         <FlagRoundel id={entry.flagId} />
                       </span>
-                      <span>{ui(entry.label)}</span>
+                      {/* The country, not the course title. The title says
+                          "– Land und Kultur" after every one of them, which
+                          the group heading above already says once, and in a
+                          menu this narrow it cost three lines a row and broke
+                          Großbritannien in half. The card and the course
+                          chooser keep the full title; they have the room and
+                          the reader is choosing a course there. */}
+                      <span>{ui(entry.country)}</span>
                       {selected && <Check aria-hidden="true" className="np-nav-country-tick" />}
                     </button>
                   );
@@ -1973,7 +1991,7 @@ function CourseHero({
   return (
     <div className="np-course-hero-frame">
       <section className="np-course-hero">
-        <img alt="" className="np-course-art" decoding="async" fetchPriority="high" height={833} loading="eager" src={languageCardArt(sides.target.code, englishVariant)} width={1200} />
+        <img alt="" className="np-course-art" data-course={sides.target.code} decoding="async" fetchPriority="high" height={833} loading="eager" src={languageCardArt(sides.target.code, englishVariant)} width={1200} />
         <div aria-hidden="true" className="np-course-shade" />
         <div className="np-course-copy">
           <div className="np-course-meta-row">
@@ -2055,7 +2073,60 @@ function CourseHero({
  * that picture is laid over the skyline behind a soft elliptical mask, so its
  * grass fades into the meadow the skyline already has on that side.
  */
+/**
+ * The picture each scene lends the banner.
+ *
+ * Two are missing on purpose. Plain canvas is the option for wanting no
+ * scenery, so it keeps the app's own banner. And monkey world has the mascot
+ * painted into it — he was taken off this banner at her word, and a setting is
+ * no way to put him back. Both fall through to the banner that has always been
+ * here.
+ */
+const BANNER_SCENERY: Partial<Record<GuidedBackground, { src: string; frame: string }>> = {
+  // Where the band falls, per picture. Three of these came with black bars
+  // baked into the file and are trimmed to their real edges, which leaves them
+  // wider than the banner: the box crops their sides, not their height, and
+  // centre is right. The speech bubbles are a 2:1 illustration and the only
+  // one still cropped vertically — 26% keeps the top row of greetings and the
+  // hands meeting, and gives up the two bubbles below them.
+  bubbles: { src: scenerySpeechBubbles, frame: "center 26%" },
+  atlas: { src: sceneryFlightPath, frame: "center 50%" },
+  garden: { src: sceneryFlowerGarden, frame: "center 50%" },
+  dawn: { src: scenerySoftDawn, frame: "center 50%" },
+};
+
+/**
+ * The banner picture, following the scenery chosen for a lesson.
+ *
+ * Read on mount and kept in step through the event the setting fires, so
+ * choosing a scene changes this page while it is open rather than at the next
+ * start. A picture of your own is used here too: that is the whole point of
+ * having put one there.
+ */
+function useBannerScenery(): { src: string; frame?: string } {
+  const [scene, setScene] = useState<GuidedBackground>(() => getGuidedBackground());
+  const [own, setOwn] = useState<string | null>(() => getGuidedCustomBackground());
+  useEffect(() => {
+    const refresh = () => {
+      setScene(getGuidedBackground());
+      setOwn(getGuidedCustomBackground());
+    };
+    window.addEventListener(GUIDED_BACKGROUND_EVENT, refresh);
+    // Another window of the same profile counts as well.
+    window.addEventListener("storage", refresh);
+    return () => {
+      window.removeEventListener(GUIDED_BACKGROUND_EVENT, refresh);
+      window.removeEventListener("storage", refresh);
+    };
+  }, []);
+  // A picture of your own has no framing anyone can know in advance, so it
+  // takes the middle. The sunrise keeps the placement written for it in CSS.
+  if (scene === "custom" && own) return { src: own, frame: "center" };
+  return BANNER_SCENERY[scene] ?? { src: homeBannerImage };
+}
+
 function HomeBanner() {
+  const scenery = useBannerScenery();
   return (
     <section className="np-home-banner">
       <img
@@ -2064,7 +2135,8 @@ function HomeBanner() {
         decoding="async"
         fetchPriority="high"
         loading="eager"
-        src={homeBannerImage}
+        src={scenery.src}
+        style={scenery.frame ? { objectPosition: scenery.frame } : undefined}
       />
       <div aria-hidden="true" className="np-home-banner-wash" />
       <div className="np-home-banner-copy">
@@ -2101,6 +2173,8 @@ function LanguageCard({
   onPickContent,
   onSwitchCourse,
   onToggleContentMenu,
+  onToggleFold,
+  open,
   packProgress,
   profile,
   stats,
@@ -2111,6 +2185,9 @@ function LanguageCard({
   onPickContent: (value: LessonContent) => void;
   onSwitchCourse: () => void;
   onToggleContentMenu: () => void;
+  /** Folds the card away to the left, and back out again. */
+  onToggleFold: () => void;
+  open: boolean;
   packProgress: PackProgress | null;
   profile: UserProfile | null;
   stats: PrototypeStats;
@@ -2126,13 +2203,36 @@ function LanguageCard({
   const percent = packProgress ? packProgress.percent : 0;
 
   return (
-    <article className="np-home-choice np-home-choice--language">
+    <article className={`np-home-choice np-home-choice--language${open ? "" : " is-folded"}`}>
+      {/* The handle sits in the corner the card folds towards, and the arrow
+          points the way it will go — so it turns round rather than becoming a
+          second icon. Outside the hero, because it has to stay put while
+          everything under it is folded away. */}
+      <button
+        aria-expanded={open}
+        aria-label={open ? ui("Fold this card away") : ui("Open this card")}
+        className="np-home-choice-fold"
+        onClick={onToggleFold}
+        title={open ? ui("Fold this card away") : ui("Open this card")}
+        type="button"
+      >
+        <ChevronLeft aria-hidden="true" />
+      </button>
+      {/* Folded, the card is a slice of its own picture with its flag and its
+          name down it. A blank strip would be a thing to work out rather than
+          a thing to recognise. */}
+      {!open && (
+        <span aria-hidden="true" className="np-home-choice-spine">
+          <span className="np-home-choice-spine-flag"><FlagRoundel id={courseFlagId} /></span>
+          <b>{ui("Language learning")}</b>
+        </span>
+      )}
       {/* Two halves. Only the heading and the current language stay in the
           picture; the building blocks and the continue row all sit below it.
           to its foot, so far more of the artwork is visible; progress and the
           button sit below it on the plain card. */}
       <div className="np-home-choice-hero">
-        <img alt="" className="np-course-art" decoding="async" fetchPriority="high" height={833} loading="eager" src={languageCardArt(sides.target.code, englishVariant)} width={1200} />
+        <img alt="" className="np-course-art" data-course={sides.target.code} decoding="async" fetchPriority="high" height={833} loading="eager" src={languageCardArt(sides.target.code, englishVariant)} width={1200} />
         <div aria-hidden="true" className="np-home-choice-wash" />
         <div className="np-home-choice-body">
           <span aria-hidden="true" className="np-home-choice-flag"><FlagRoundel id={courseFlagId} /></span>
@@ -2246,9 +2346,6 @@ function LanguageCard({
  */
 const COUNTRY_ART: Record<CountryId, string> = {
   de: homeCountryArtDe,
-  // Drawn as vectors rather than painted like the other two, so it reads a
-  // little flatter beside them. Same subject matter: a river, a skyline the
-  // country is known by, and the street furniture you actually walk past.
   fr: homeCountryArtFr,
   uk: homeCountryArtUk,
 };
@@ -2256,6 +2353,8 @@ const COUNTRY_ART: Record<CountryId, string> = {
 function CountryCard({
   onChangeCountry,
   onOpen,
+  onToggleFold,
+  open,
   pack,
   profile,
 }: {
@@ -2265,6 +2364,9 @@ function CountryCard({
    */
   onChangeCountry: () => void;
   onOpen: () => void;
+  /** Folds the card away to the right, and back out again. */
+  onToggleFold: () => void;
+  open: boolean;
   pack: CountryPack;
   profile: UserProfile | null;
 }) {
@@ -2280,7 +2382,25 @@ function CountryCard({
   const nextLesson = lessons.find((lesson) => !completed.includes(lesson.id));
 
   return (
-    <article className="np-home-choice np-home-choice--country">
+    <article className={`np-home-choice np-home-choice--country${open ? "" : " is-folded"}`}>
+      {/* The mirror of the language card's: this one folds right, so its
+          handle is in the right corner and its arrow points that way. */}
+      <button
+        aria-expanded={open}
+        aria-label={open ? ui("Fold this card away") : ui("Open this card")}
+        className="np-home-choice-fold"
+        onClick={onToggleFold}
+        title={open ? ui("Fold this card away") : ui("Open this card")}
+        type="button"
+      >
+        <ChevronRight aria-hidden="true" />
+      </button>
+      {!open && (
+        <span aria-hidden="true" className="np-home-choice-spine">
+          <span className="np-home-choice-spine-flag"><FlagRoundel id={pack.flagId} /></span>
+          <b>{ui("Country studies")}</b>
+        </span>
+      )}
       {/* Same two halves as LanguageCard. The pair has to keep matching — they
           are drawn as one choice with two sides, and splitting only one of them
           would leave the row lopsided. */}
@@ -3235,6 +3355,21 @@ function HomeView({
   const packProgress = useMemo(() => activePackProgress(apiParts, profile), [apiParts, profile, stats.sessionsCompleted]);
   const [lessonContent, setLessonContentState] = useState<LessonContent>(() => getLessonContent());
   const [contentMenuOpen, setContentMenuOpen] = useState(false);
+  /**
+   * Which of the two cards is unfolded. Read once on mount and written on
+   * every change, so the page comes back the way it was left.
+   */
+  const [cardsOpen, setCardsOpen] = useState<Record<HomeCard, boolean>>(() => ({
+    language: getHomeCardOpen("language"),
+    country: getHomeCardOpen("country"),
+  }));
+  const foldCard = (card: HomeCard) => {
+    setCardsOpen((was) => {
+      const next = !was[card];
+      setHomeCardOpen(card, next);
+      return { ...was, [card]: next };
+    });
+  };
   // The menu closes the way every menu should: outside click or Escape.
   useEffect(() => {
     if (!contentMenuOpen) return undefined;
@@ -3282,6 +3417,8 @@ function HomeView({
           contentMenuOpen={contentMenuOpen}
           lessonContent={lessonContent}
           onOpen={onPractice}
+          onToggleFold={() => foldCard("language")}
+          open={cardsOpen.language}
           onPickContent={(value) => {
             setLessonContent(value);
             setLessonContentState(value);
@@ -3297,6 +3434,8 @@ function HomeView({
         <CountryCard
           onChangeCountry={onChangeCountry}
           onOpen={onOpenCountryCourse}
+          onToggleFold={() => foldCard("country")}
+          open={cardsOpen.country}
           pack={countryPack(countryId)}
           profile={profile}
         />
