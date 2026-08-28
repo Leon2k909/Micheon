@@ -2083,16 +2083,14 @@ function CourseHero({
  * here.
  */
 const BANNER_SCENERY: Partial<Record<GuidedBackground, { src: string; frame: string }>> = {
-  // Where the band falls, per picture. Three of these came with black bars
-  // baked into the file and are trimmed to their real edges, which leaves them
-  // wider than the banner: the box crops their sides, not their height, and
-  // centre is right. The speech bubbles are a 2:1 illustration and the only
-  // one still cropped vertically — 26% keeps the top row of greetings and the
-  // hands meeting, and gives up the two bubbles below them.
-  bubbles: { src: scenerySpeechBubbles, frame: "center 26%" },
-  atlas: { src: sceneryFlightPath, frame: "center 50%" },
-  garden: { src: sceneryFlowerGarden, frame: "center 50%" },
-  dawn: { src: scenerySoftDawn, frame: "center 50%" },
+  // Centre, all four, because each file now has the banner's own shape. They
+  // arrived with black bars baked in and at ratios from 2:1 to 3:1: trimmed to
+  // their real edges, then to 5.5 to 1, which sits between the widths this box
+  // takes. There is no band left to place.
+  bubbles: { src: scenerySpeechBubbles, frame: "center" },
+  atlas: { src: sceneryFlightPath, frame: "center" },
+  garden: { src: sceneryFlowerGarden, frame: "center" },
+  dawn: { src: scenerySoftDawn, frame: "center" },
 };
 
 /**
