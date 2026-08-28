@@ -131,12 +131,13 @@ assert.ok(
 );
 
 // ── the language card wears the language you are learning ────────────────
-// German, British English, French, Polish and Spanish each have a picture of
-// their own, and anything else keeps the general one, so a language can be
-// listed before anybody has drawn anything for it. Spanish runs the other way
-// round: the scene exists while the course does not, so its branch cannot be
-// reached today. It is pinned all the same, or it reads as dead code to the
-// next person through and gets tidied away before Spanish ever opens.
+// Each course that exists has a picture of its own, and anything else keeps
+// the general one, so a language can be listed before anybody has drawn
+// anything for it. Six scenes run the other way round: the picture exists
+// while the course does not, and they sit in PLANNED_CARD_ART where nothing
+// can reach them yet. Pinned all the same. Unreachable code reads as
+// something to tidy away, and the tidying would land long before anybody
+// remembered it was waiting for a course to open.
 // Keyed on the language code rather than
 // on a German-or-not flag, because that flag handed French the German scene.
 // The failure worth catching is not a missing file but a card that has
@@ -147,17 +148,38 @@ pinPicture("home-languages-uk-v1.webp", "homeLanguagesUkImage");
 pinPicture("home-languages-fr-v1.webp", "homeLanguagesFrImage");
 pinPicture("home-languages-pl-v1.webp", "homeLanguagesPlImage");
 pinPicture("home-languages-es-v1.webp", "homeLanguagesEsImage");
+pinPicture("home-languages-it-v1.webp", "homeLanguagesItImage");
+pinPicture("home-languages-pt-v1.webp", "homeLanguagesPtImage");
+pinPicture("home-languages-ru-v1.webp", "homeLanguagesRuImage");
+pinPicture("home-languages-hi-v1.webp", "homeLanguagesHiImage");
+pinPicture("home-languages-zh-v1.webp", "homeLanguagesZhImage");
 for (const line of [
   '  if (targetCode === "de") return homeLanguagesGermanImage;',
   '  if (targetCode === "fr") return homeLanguagesFrImage;',
   '  if (targetCode === "pl") return homeLanguagesPlImage;',
-  '  if (targetCode === "es") return homeLanguagesEsImage;',
   '  if (targetCode === "en") return englishVariant === "american" ? homeLanguagesImage : homeLanguagesUkImage;',
-  "  return homeLanguagesImage;",
+  "  return PLANNED_CARD_ART[targetCode] ?? homeLanguagesImage;",
 ]) {
   assert.ok(
     shell.includes(line),
     "languageCardArt no longer gives each course its own picture: " + line
+  );
+}
+
+// The scenes that have no course yet. Read out of the table rather than
+// listed as branches, so a seventh means one line in the app and one here,
+// not a third place to remember.
+for (const [code, binding] of [
+  ["es", "homeLanguagesEsImage"],
+  ["it", "homeLanguagesItImage"],
+  ["pt", "homeLanguagesPtImage"],
+  ["ru", "homeLanguagesRuImage"],
+  ["hi", "homeLanguagesHiImage"],
+  ["zh", "homeLanguagesZhImage"],
+]) {
+  assert.ok(
+    shell.includes("  " + code + ": " + binding + ","),
+    "the scene drawn for " + code + " has fallen out of PLANNED_CARD_ART, so that course would open wearing the German picture"
   );
 }
 assert.ok(
