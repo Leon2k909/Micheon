@@ -62,8 +62,8 @@ for (const [file, binding, className] of PICTURES) {
   assert.ok(
     new RegExp(`className="${className}"[^>]*src=\\{${binding}\\}|src=\\{${binding}\\}[^>]*className="${className}"`).test(shell)
       // The banner draws the chosen scenery and falls back to this one.
-      || (className === "np-home-banner-sky" && /className="np-home-banner-sky"[\s\S]{0,140}src=\{scenery\}/.test(shell)
-        && shell.includes(`?? ${binding};`)),
+      || (className === "np-home-banner-sky" && /className="np-home-banner-sky"[\s\S]{0,160}src=\{scenery\.src\}/.test(shell)
+        && shell.includes(`?? { src: ${binding} };`)),
     `${binding} is imported but not drawn as ${className}`
   );
 }
@@ -85,10 +85,30 @@ for (const [scene, binding] of [
   ["dawn", "scenerySoftDawn"],
 ]) {
   assert.ok(
-    new RegExp(`^  ${scene}: ${binding},$`, "m").test(shell),
-    `the ${scene} scene no longer lends the banner its picture`
+    new RegExp(`^  ${scene}: \\{ src: ${binding}, frame: "[^"]+" \\},$`, "m").test(shell),
+    `the ${scene} scene no longer lends the banner its picture, framed`
   );
 }
+
+/**
+ * The banner is shaped for what is in it.
+ *
+ * "die banner müssen alle angepasst werden. die größe ist nicht gut." At the
+ * 4.6:1 this box used to be, cover threw away 57% of a 2:1 picture's height
+ * and the plane came out as a fragment. Nothing about that reads as broken —
+ * it looks like a picture somebody chose badly.
+ */
+const bannerBox = /\.np-home-banner \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? "";
+const bannerRatio = /aspect-ratio:\s*([\d.]+)\s*\/\s*1/.exec(bannerBox);
+assert.ok(bannerRatio, "the banner has no shape of its own, so its height is whatever a min-height says");
+assert.ok(
+  Number(bannerRatio[1]) <= 3.6,
+  `the banner is ${bannerRatio[1]} to 1, which crops a 2:1 picture down to a strip again`
+);
+assert.ok(
+  /style=\{scenery\.frame/.test(shell),
+  "the banner ignores each picture's framing, so cover falls back to one placement for all of them"
+);
 assert.ok(
   !/^  (?:monkey|plain):/m.test(/const BANNER_SCENERY[^}]*\}/.exec(shell)?.[0] ?? ""),
   "monkey world is lending the banner its picture, which is the mascot she had taken off it"

@@ -2082,11 +2082,17 @@ function CourseHero({
  * no way to put him back. Both fall through to the banner that has always been
  * here.
  */
-const BANNER_SCENERY: Partial<Record<GuidedBackground, string>> = {
-  bubbles: scenerySpeechBubbles,
-  atlas: sceneryFlightPath,
-  garden: sceneryFlowerGarden,
-  dawn: scenerySoftDawn,
+const BANNER_SCENERY: Partial<Record<GuidedBackground, { src: string; frame: string }>> = {
+  // Where the band falls, per picture. Three of these came with black bars
+  // baked into the file and are trimmed to their real edges, which leaves them
+  // wider than the banner: the box crops their sides, not their height, and
+  // centre is right. The speech bubbles are a 2:1 illustration and the only
+  // one still cropped vertically — 26% keeps the top row of greetings and the
+  // hands meeting, and gives up the two bubbles below them.
+  bubbles: { src: scenerySpeechBubbles, frame: "center 26%" },
+  atlas: { src: sceneryFlightPath, frame: "center 50%" },
+  garden: { src: sceneryFlowerGarden, frame: "center 50%" },
+  dawn: { src: scenerySoftDawn, frame: "center 50%" },
 };
 
 /**
@@ -2097,7 +2103,7 @@ const BANNER_SCENERY: Partial<Record<GuidedBackground, string>> = {
  * start. A picture of your own is used here too: that is the whole point of
  * having put one there.
  */
-function useBannerScenery(): string {
+function useBannerScenery(): { src: string; frame?: string } {
   const [scene, setScene] = useState<GuidedBackground>(() => getGuidedBackground());
   const [own, setOwn] = useState<string | null>(() => getGuidedCustomBackground());
   useEffect(() => {
@@ -2113,8 +2119,10 @@ function useBannerScenery(): string {
       window.removeEventListener("storage", refresh);
     };
   }, []);
-  if (scene === "custom" && own) return own;
-  return BANNER_SCENERY[scene] ?? homeBannerImage;
+  // A picture of your own has no framing anyone can know in advance, so it
+  // takes the middle. The sunrise keeps the placement written for it in CSS.
+  if (scene === "custom" && own) return { src: own, frame: "center" };
+  return BANNER_SCENERY[scene] ?? { src: homeBannerImage };
 }
 
 function HomeBanner() {
@@ -2127,7 +2135,8 @@ function HomeBanner() {
         decoding="async"
         fetchPriority="high"
         loading="eager"
-        src={scenery}
+        src={scenery.src}
+        style={scenery.frame ? { objectPosition: scenery.frame } : undefined}
       />
       <div aria-hidden="true" className="np-home-banner-wash" />
       <div className="np-home-banner-copy">
