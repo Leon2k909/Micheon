@@ -1371,6 +1371,45 @@ export function matchEnglishPhrase(
   const targetC = expandEnglishContractions(targetNorm);
   const contracted = matchGermanPhrase(inputC, targetC);
   if (contracted.ok) return contracted;
+  // Tier 2.5: a dropped first-person subject, restored or omitted.
+  //
+  // English ellipsis: an answer key written the way people speak drops the
+  // subject — "Found it, thanks!" — while the German it translates says the
+  // subject out loud. A learner translating faithfully writes "I've found it,
+  // thanks" and every other tier sees two extra tokens and refuses a sentence
+  // that is, if anything, the closer translation. The reverse is the same
+  // sentence too: a key that writes "I've found it" met by the elliptical
+  // "Found it".
+  //
+  // First person only, deliberately. Elliptical English implies I/we from
+  // context, so restoring "I" is safe where restoring "he" is not — "he found
+  // it" answers a different question about who did the finding, and must stay
+  // wrong. The prefixes are matched on the contraction-EXPANDED forms, so
+  // "ive", "im" and "ill" arrive here already written out; longest first, so
+  // "i have" is taken before "i" leaves "have" stranded.
+  const ellipted = (text: string): string | null => {
+    for (const prefix of ["i have ", "i had ", "i will ", "i would ", "i am ", "i "]) {
+      if (text.startsWith(prefix) && text.length > prefix.length) return text.slice(prefix.length);
+    }
+    return null;
+  };
+  const inputSubjectless = ellipted(inputC);
+  const targetSubjectless = ellipted(targetC);
+  if (inputSubjectless) {
+    const restored = matchGermanPhrase(inputSubjectless, targetC);
+    if (restored.ok) return restored;
+  }
+  if (targetSubjectless) {
+    const omitted = matchGermanPhrase(inputC, targetSubjectless);
+    if (omitted.ok) return omitted;
+  }
+  if (inputSubjectless && targetSubjectless) {
+    // "I found it" against a key of "I've found it": both said who, both said
+    // what; the auxiliary is the only difference and German's Perfekt maps to
+    // either English form.
+    const both = matchGermanPhrase(inputSubjectless, targetSubjectless);
+    if (both.ok) return both;
+  }
   // Tier 3: articles ignored ("I see the cash" == "I see cash").
   const articles = matchGermanPhrase(stripArticles(inputC), stripArticles(targetC));
   if (articles.ok) return articles;

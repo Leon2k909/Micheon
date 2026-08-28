@@ -500,6 +500,36 @@ check(
     && matchEnglishMeaning("government department", "ministry, government department").ok
 );
 
+// English drops a first-person subject the way people speak — the key writes
+// "Found it, thanks!" while the German it translates says the subject out
+// loud. A learner translating faithfully restores it, and was told "Not
+// quite" for the closer translation. Both directions are the same sentence.
+check(
+  "restoring the dropped first-person subject passes",
+  matchEnglishMeaning("ive found it thanks", "Found it, thanks!").ok
+    && matchEnglishMeaning("I've found it, thanks!", "Found it, thanks!").ok
+    && matchEnglishMeaning("i found it thanks", "Found it, thanks!").ok
+    && matchEnglishMeaning("i have found it thanks", "Found it, thanks!").ok
+);
+check(
+  "omitting the subject the key wrote passes too",
+  matchEnglishMeaning("found it thanks", "I've found it, thanks!").ok
+    && matchEnglishMeaning("i found it thanks", "I've found it, thanks!").ok
+);
+// First person only: elliptical English implies I/we from context, so
+// restoring "I" is safe where restoring "he" answers a different question
+// about who did the finding.
+check(
+  "a third-person subject is not treated as the dropped one",
+  !matchEnglishMeaning("he found it thanks", "Found it, thanks!").ok
+    && !matchEnglishMeaning("you found it thanks", "Found it, thanks!").ok
+);
+check(
+  "the subject fold does not loosen content",
+  !matchEnglishMeaning("ive lost it thanks", "Found it, thanks!").ok
+    && !matchEnglishMeaning("i am tired", "You are tired").ok
+);
+
 if (failures) {
   console.error(`\n${failures} answer-matching regression${failures === 1 ? "" : "s"}`);
   process.exit(1);
