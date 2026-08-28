@@ -131,9 +131,13 @@ assert.ok(
 );
 
 // ── the language card wears the language you are learning ────────────────
-// German, British English and French each have a picture of their own. Anything
-// keeps the general one, so a language can be listed before anybody has drawn
-// anything for it — French already is. Keyed on the language code rather than
+// German, British English, French, Polish and Spanish each have a picture of
+// their own, and anything else keeps the general one, so a language can be
+// listed before anybody has drawn anything for it. Spanish runs the other way
+// round: the scene exists while the course does not, so its branch cannot be
+// reached today. It is pinned all the same, or it reads as dead code to the
+// next person through and gets tidied away before Spanish ever opens.
+// Keyed on the language code rather than
 // on a German-or-not flag, because that flag handed French the German scene.
 // The failure worth catching is not a missing file but a card that has
 // stopped following the course.
@@ -141,9 +145,13 @@ pinPicture("home-languages-de-v2.webp", "homeLanguagesImage");
 pinPicture("home-languages-german-v1.webp", "homeLanguagesGermanImage");
 pinPicture("home-languages-uk-v1.webp", "homeLanguagesUkImage");
 pinPicture("home-languages-fr-v1.webp", "homeLanguagesFrImage");
+pinPicture("home-languages-pl-v1.webp", "homeLanguagesPlImage");
+pinPicture("home-languages-es-v1.webp", "homeLanguagesEsImage");
 for (const line of [
   '  if (targetCode === "de") return homeLanguagesGermanImage;',
   '  if (targetCode === "fr") return homeLanguagesFrImage;',
+  '  if (targetCode === "pl") return homeLanguagesPlImage;',
+  '  if (targetCode === "es") return homeLanguagesEsImage;',
   '  if (targetCode === "en") return englishVariant === "american" ? homeLanguagesImage : homeLanguagesUkImage;',
   "  return homeLanguagesImage;",
 ]) {

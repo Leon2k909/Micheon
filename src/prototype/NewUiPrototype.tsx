@@ -197,6 +197,7 @@ import homeLanguagesGermanImage from "./assets/home-languages-german-v1.webp";
 import homeLanguagesUkImage from "./assets/home-languages-uk-v1.webp";
 import homeLanguagesFrImage from "./assets/home-languages-fr-v1.webp";
 import homeLanguagesPlImage from "./assets/home-languages-pl-v1.webp";
+import homeLanguagesEsImage from "./assets/home-languages-es-v1.webp";
 import homeCountryArtDe from "./assets/home-country-de-v2.webp";
 import homeCountryArtFr from "./assets/home-country-fr-v2.webp";
 import homeCountryArtUk from "./assets/home-country-uk-v2.webp";
@@ -470,6 +471,11 @@ function languageCardArt(targetCode: string, englishVariant: "british" | "americ
   if (targetCode === "de") return homeLanguagesGermanImage;
   if (targetCode === "fr") return homeLanguagesFrImage;
   if (targetCode === "pl") return homeLanguagesPlImage;
+  // Spanish is drawn but not yet taught: courseRegistry still lists it as
+  // unavailable, so this branch cannot be reached today. It is here so the
+  // scene is waiting rather than remembered - the day the course opens, the
+  // card wears Spain instead of the general picture, with nothing to add.
+  if (targetCode === "es") return homeLanguagesEsImage;
   if (targetCode === "en") return englishVariant === "american" ? homeLanguagesImage : homeLanguagesUkImage;
   return homeLanguagesImage;
 }
