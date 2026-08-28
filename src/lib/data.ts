@@ -8188,7 +8188,53 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "stringent", lookup: "stringent", fallbackEn: "rigorous", tip: "adjective" },
     ],
     dialogues: [],
-    phrases: [],
+    phrases: [
+
+      { de: "Die Stichprobe ist zu klein, um daraus allgemeine Schlüsse zu ziehen.", en: "The sample is too small to draw general conclusions from.", use: "zu + adjective pairs with um ... zu: zu klein, um ... zu ziehen. The um-clause explains what the size is too small FOR." },
+
+      { de: "Die Hypothese ließ sich mit den vorliegenden Daten nicht belegen.", en: "The hypothesis could not be corroborated with the available data.", use: "sich lassen + infinitive is the everyday passive of ability: ließ sich nicht belegen = konnte nicht belegt werden, one word shorter." },
+
+      { de: "Wir müssen die Fragestellung weiter eingrenzen, sonst wird die Arbeit uferlos.", en: "We need to narrow the research question down further, otherwise the paper will sprawl.", use: "sonst after a comma threatens the consequence of not doing it — no wenn-clause needed." },
+
+      { de: "Erst die Auswertung zeigte, wie stark die Verzerrung tatsächlich war.", en: "Only the analysis revealed how strong the bias actually was.", use: "Erst + subject fronts the thing that finally did it: not until the analysis. Word order stays verb-second." },
+
+      { de: "Eine Korrelation belegt noch keine Kausalität.", en: "A correlation does not in itself prove causation.", use: "noch kein(e) softens the negation to 'not yet / not by itself' — the standard phrasing of this warning in German academic prose." },
+
+      { de: "Der Befund deckt sich mit dem aktuellen Forschungsstand.", en: "The finding is consistent with the current state of research.", use: "sich decken mit = to match, to be consistent with. The sich cannot be dropped: decken alone means to cover." },
+
+      { de: "Wie repräsentativ die Erhebung ist, bleibt umstritten.", en: "How representative the survey is remains contested.", use: "An indirect question can be the SUBJECT of the sentence; the main verb then follows it directly: ..., bleibt umstritten." },
+
+      { de: "Die Ergebnisse sind vorläufig und dürfen nicht verallgemeinert werden.", en: "The results are preliminary and must not be generalised.", use: "dürfen nicht + passive infinitive = must not be. Watch the false friend: müssen nicht means need not." },
+
+      { de: "In der Fußnote verweist die Autorin auf ein Gutachten aus dem Jahr 2019.", en: "In the footnote, the author refers to an expert report from 2019.", use: "verweisen auf + accusative is how academic German points at a source; aus dem Jahr keeps the year from dangling bare." },
+
+      { de: "Diese Frage klammern wir hier bewusst aus.", en: "We are deliberately leaving that question aside here.", use: "Fronting the object (Diese Frage ...) marks it as the topic under discussion; ausklammern splits, sending aus to the end." },
+
+      { de: "Das Zitat ist aus dem Zusammenhang gerissen.", en: "The quotation is taken out of context.", use: "aus dem Zusammenhang gerissen is the fixed phrase — reißen, not nehmen, and always with the article dem." },
+
+      { de: "Die Methodik muss so beschrieben sein, dass sich die Studie wiederholen lässt.", en: "The methodology has to be described in such a way that the study can be repeated.", use: "so ... dass sets up the required standard; inside the dass-clause, sich wiederholen lassen is the can-be-done passive." },
+
+      { de: "Im Fazit fasst sie die wichtigsten Befunde noch einmal knapp zusammen.", en: "In the conclusion she briefly sums up the key findings once more.", use: "zusammenfassen splits around the clause: fasst ... zusammen. noch einmal knapp = once more, briefly — adverbs stack before the separated prefix." },
+
+      { de: "Wer zitiert, muss die Quelle angeben, sonst ist es ein Plagiat.", en: "Anyone who quotes has to give the source, otherwise it is plagiarism.", use: "Wer opens a free relative clause meaning 'anyone who'; the main clause follows with the verb first: Wer zitiert, muss ..." },
+
+      { de: "Je größer die Stichprobe, desto aussagekräftiger das Ergebnis.", en: "The larger the sample, the more meaningful the result.", use: "je ... desto with NO verbs at all — the elliptical form is standard in written German for rules of thumb." },
+
+      { de: "Der Unterschied ist statistisch signifikant, aber praktisch bedeutungslos.", en: "The difference is statistically significant but practically meaningless.", use: "signifikant is a statistical term of art in German, not a synonym for wichtig — this sentence is the distinction." },
+
+      { de: "Die beiden Gutachten kommen zu gegensätzlichen Ergebnissen und müssen sorgfältig gegenübergestellt werden.", en: "The two expert reports reach opposite conclusions and need to be carefully compared side by side.", use: "gegenüberstellen keeps its prefix in the passive participle: gegenübergestellt. zu einem Ergebnis kommen = to reach a conclusion." },
+
+      { de: "Aus einem Einzelfall lässt sich keine allgemeine Regel herleiten.", en: "You cannot derive a general rule from a single case.", use: "aus + Dativ names the source of the derivation; sich lassen turns it impersonal — no man needed." },
+
+      { de: "Ihre Argumentation ist stringent, stützt sich aber auf eine einzige Quelle.", en: "Her reasoning is rigorous, but it rests on a single source.", use: "sich stützen auf + accusative = to rest on. aber can sit AFTER the verb it contrasts: stützt sich aber ..." },
+
+      { de: "Die Studie schließt eine Lücke im Forschungsstand.", en: "The study fills a gap in the research.", use: "German closes a gap (eine Lücke schließen) where English fills one — translating fill literally (füllen) sounds off." },
+
+      { de: "Um die Aussagekraft zu erhöhen, wurden die Daten interdisziplinär ausgewertet.", en: "To increase the explanatory power, the data was analysed across disciplines.", use: "A fronted um ... zu clause is followed directly by the verb: Um ... zu erhöhen, wurden ... The comma is obligatory." },
+
+      { de: "Paraphrasieren heißt, den Gedanken mit eigenen Worten wiederzugeben.", en: "Paraphrasing means restating the idea in your own words.", use: "heißen + comma + zu-infinitive defines a term: X heißt, ... zu tun. With separable wiedergeben, zu goes inside: wiederzugeben." },
+
+    ],
   },
   part409: {
     label: "Part 409", level: "C1", theme: "Idiomatic precision",
@@ -8237,7 +8283,53 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "der Türöffner", lookup: "Türöffner", fallbackEn: "door-opener (figurative)", tip: "noun", article: "der" },
     ],
     dialogues: [],
-    phrases: [],
+    phrases: [
+
+      { de: "Die Verhandlung war eine Gratwanderung zwischen Nähe und Distanz.", en: "The negotiation was a balancing act between closeness and distance.", use: "eine Gratwanderung zwischen X und Y — the image is walking a mountain ridge; the zwischen-pair names the two drops." },
+
+      { de: "Nach dem Dämpfer von letzter Woche brauchte das Team einen Lichtblick.", en: "After last week's setback, the team needed a ray of hope.", use: "einen Dämpfer bekommen/brauchen — Dämpfer is a setback that deflates enthusiasm, milder than Rückschlag." },
+
+      { de: "Wir stecken in einer Zwickmühle: Beides zugleich geht nicht.", en: "We are caught in a dilemma: we cannot have both at once.", use: "in einer Zwickmühle stecken is the fixed verb; the colon then states the two horns. geht nicht = is not possible, very spoken." },
+
+      { de: "Aus diesem Teufelskreis kommt man nur mit Hilfe von außen heraus.", en: "You only break out of a vicious circle with outside help.", use: "aus ... herauskommen brackets the whole sentence; von außen = from outside, no article." },
+
+      { de: "Der Durchbruch kam, als niemand mehr damit rechnete.", en: "The breakthrough came when nobody was expecting it any more.", use: "als for a single past moment; mit etwas rechnen = to expect it, and damit carries the etwas." },
+
+      { de: "Der Knackpunkt ist die Finanzierung, nicht der Zeitplan.", en: "The sticking point is the funding, not the schedule.", use: "X, nicht Y after the verb corrects a wrong assumption without a second clause — the everyday shape of a pointed correction." },
+
+      { de: "Bei so einem Gespräch braucht man Fingerspitzengefühl.", en: "A conversation like that takes tact.", use: "bei + situation = in/at that kind of situation; Fingerspitzengefühl takes no article — you have it or you don't." },
+
+      { de: "Sie hat sich mit ihrem Alleingang keinen Gefallen getan.", en: "She did herself no favours by going it alone.", use: "sich (Dativ) keinen Gefallen tun = to do oneself no favours; mit + noun names the deed that backfired." },
+
+      { de: "Das ist die Kehrseite des Erfolgs: Man ist nie richtig frei.", en: "That is the flip side of success: you are never really free.", use: "die Kehrseite + Genitiv; the colon delivers the downside. Man generalises without naming anyone." },
+
+      { de: "Das neue Produkt war ein Selbstläufer, das alte blieb als Ladenhüter im Regal.", en: "The new product sold itself, while the old one sat on the shelf.", use: "Selbstläufer and Ladenhüter are opposite fates of a product; als + noun says in what role the old one stayed put." },
+
+      { de: "Für die Artikel habe ich mir eine Eselsbrücke gebaut.", en: "I came up with a mnemonic for the articles.", use: "You BUILD yourself an Eselsbrücke (sich eine Eselsbrücke bauen) — the donkey bridge is constructed, not found." },
+
+      { de: "Dieses Lied ist ein echter Ohrwurm, ich werde es einfach nicht mehr los.", en: "This song is a real earworm — I just cannot get it out of my head.", use: "jemanden/etwas loswerden = to get rid of; in the present with nicht mehr it means being stuck with it." },
+
+      { de: "Mein Bauchgefühl sagt mir, dass an der Sache etwas faul ist.", en: "My gut tells me something is off about this.", use: "an etwas (Dativ) ist etwas faul — the fixed image for 'something smells fishy'; faul here is rotten, not lazy." },
+
+      { de: "Die Prüfung war für ihn eine Feuertaufe, aber er hat sie bestanden.", en: "The exam was a baptism of fire for him, but he passed it.", use: "eine Prüfung bestehen = to pass an exam; the sie refers back to die Prüfung, not the Feuertaufe." },
+
+      { de: "Nach wochenlangem Tauziehen um den Vertrag machte der Verein einen Rückzieher.", en: "After weeks of wrangling over the contract, the club backed out.", use: "das Tauziehen um + Akkusativ = the tug of war OVER something; einen Rückzieher machen is the fixed verb for backing out." },
+
+      { de: "Die letzten Monate waren ein Wechselbad der Gefühle.", en: "The last few months have been an emotional rollercoaster.", use: "ein Wechselbad der Gefühle — always with the genitive der Gefühle; the image is alternating hot and cold baths." },
+
+      { de: "Der Umzug war die erste Bewährungsprobe für die neue Mannschaft.", en: "The move was the first real test for the new team.", use: "die Bewährungsprobe für + Akkusativ; sich bewähren underneath it means to prove oneself — the noun bakes that in." },
+
+      { de: "Mit dieser Entscheidung wurden die Weichen für die Zukunft gestellt.", en: "That decision set the course for the future.", use: "die Weichen stellen (railway points) is the verb behind the noun Weichenstellung; German prefers the passive wurden ... gestellt here." },
+
+      { de: "Der Abschluss ist ein Meilenstein, aber noch nicht das Ziel.", en: "The degree is a milestone, but it is not the finish line yet.", use: "noch nicht = not yet; placed before das Ziel it keeps the journey image running." },
+
+      { de: "Die Sprache ist oft der größte Stolperstein beim Neuanfang im Ausland.", en: "Language is often the biggest stumbling block when starting over abroad.", use: "beim + nominalised noun (der Neuanfang) compresses a whole wenn-clause into two words: when starting over." },
+
+      { de: "Das Praktikum war für sie der Türöffner in die Branche.", en: "The internship opened the door to the industry for her.", use: "der Türöffner in + Akkusativ — the figurative door-opener takes a direction, not a location." },
+
+      { de: "Der Vertrag lässt uns kaum Spielraum für Änderungen.", en: "The contract leaves us hardly any room for manoeuvre.", use: "jemandem Spielraum lassen — Dativ for who gets the leeway; kaum negates more gently than kein." },
+
+    ],
   },
   part410: {
     label: "Part 410", level: "C1", theme: "Subtle distinctions",
@@ -8286,7 +8378,53 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "angeblich wahr", lookup: "angeblich wahr", fallbackEn: "purported", tip: "adjective" },
     ],
     dialogues: [],
-    phrases: [],
+    phrases: [
+
+      { de: "Er hat es nicht direkt gesagt, sondern nur angedeutet.", en: "He did not say it outright, he only implied it.", use: "nicht ..., sondern corrects within one sentence; the participle angedeutet stands alone because gesagt already carried hat." },
+
+      { de: "Aus ihrem Schweigen würde ich nicht zu viel folgern.", en: "I would not infer too much from her silence.", use: "würde + infinitive is the polite hedge of advice; aus + Dativ names what the inference is drawn FROM." },
+
+      { de: "Sie weigert sich, die Aussage zu unterschreiben.", en: "She refuses to sign the statement.", use: "sich weigern always takes a comma plus zu-infinitive — never a bare infinitive like English refuse to." },
+
+      { de: "Auf Nachfrage verneinte der Sprecher den Bericht.", en: "When asked, the spokesman denied the report.", use: "auf Nachfrage = when asked, a two-word absolute; verneinen denies a STATEMENT — a person denying guilt is leugnen or abstreiten." },
+
+      { de: "Ich kann Ihnen zusichern, dass Ihre Daten vertraulich behandelt werden.", en: "I can assure you that your data will be treated confidentially.", use: "zusichern is the formal, binding assure (Dativ person + dass); versichern merely asserts, zusichern promises." },
+
+      { de: "Der Lärm beeinträchtigt die Konzentration, auch wenn man ihn kaum bemerkt.", en: "The noise impairs concentration even if you barely notice it.", use: "auch wenn = even if/though; beeinträchtigen degrades quality, behindern blocks an activity — the pair this pack keeps apart." },
+
+      { de: "Das neue Gesetz soll den Fortschritt fördern, nicht behindern.", en: "The new law is meant to foster progress, not obstruct it.", use: "sollen for intended purpose = is meant to; the bare infinitive pair fördern, nicht behindern shares one object." },
+
+      { de: "Der Plan wurde nicht ersetzt, sondern nur geringfügig abgeändert.", en: "The plan was not replaced, just slightly amended.", use: "abändern = to amend in details; ändern would be neutral change, ersetzen full replacement — three rungs of one ladder." },
+
+      { de: "Das Streaming hat die DVD fast vollständig verdrängt.", en: "Streaming has almost completely supplanted the DVD.", use: "verdrängen = to push out of the market/mind; ersetzen swaps in a substitute, verdrängen wins a fight." },
+
+      { de: "Er hat ihre Gutmütigkeit jahrelang ausgenutzt.", en: "He exploited her good nature for years.", use: "ausnutzen with a person or their trait is negative; nutzen with a thing is neutral. jahrelang = for years, one word." },
+
+      { de: "Die Kameras beobachten nicht nur den Verkehr, sie überwachen ihn.", en: "The cameras do not just observe the traffic — they surveil it.", use: "nicht nur ..., sie ... escalates: the second verb replaces the first as the truer description. überwachen implies control." },
+
+      { de: "Fähigkeiten bringt man mit, Fertigkeiten erwirbt man durch Übung.", en: "Abilities are what you bring with you; skills you acquire through practice.", use: "Both objects are fronted (Fähigkeiten ..., Fertigkeiten ...) to set the pair against each other — the contrast carries the definition." },
+
+      { de: "Die Wirkung des Medikaments setzt schnell ein, die Nebenwirkungen zeigen sich erst später.", en: "The drug takes effect quickly; the side effects only show up later.", use: "einsetzen = to set in (of an effect); sich zeigen = to become apparent. erst später = only later, not until later." },
+
+      { de: "Der Vorfall an sich war harmlos, aber er wurde zum Auslöser einer langen Debatte.", en: "The incident in itself was harmless, but it became the trigger for a long debate.", use: "an sich = in itself; zum Auslöser werden + Genitiv is the nominal way to say it set something off." },
+
+      { de: "Der Grund war lange bekannt, der Anlass war ein einziger Tweet.", en: "The underlying reason had long been known; what set it off was a single tweet.", use: "Grund is the standing reason, Anlass the occasion that triggers — German separates what English blurs into 'reason'." },
+
+      { de: "Nutzen Sie die Gelegenheit, solange sie sich bietet.", en: "Seize the opportunity while it presents itself.", use: "sich bieten = to present itself (of chances); solange = for as long as. Gelegenheit is the takeable moment, Möglichkeit the abstract option." },
+
+      { de: "Die Therapie ist wirksam, aber alles andere als effizient.", en: "The therapy is effective but anything but efficient.", use: "alles andere als = anything but; wirksam says it works, effizient weighs the cost — the sentence holds the two apart." },
+
+      { de: "Das Hotel ist berühmt, sein Besitzer eher berüchtigt.", en: "The hotel is famous; its owner is more like notorious.", use: "The second clause drops its verb (ist) — permitted when it repeats; eher shades the adjective toward the darker twin." },
+
+      { de: "Der Mauerfall war ein historischer Moment, kein bloß geschichtliches Detail.", en: "The fall of the Wall was a historic moment, not merely a historical detail.", use: "historisch = momentous; geschichtlich = of history. bloß before an adjective = merely." },
+
+      { de: "Ihre Antwort war ausweichend: Sie versicherte nur, man prüfe den Fall.", en: "Her answer was evasive: she merely asserted that the case was being looked into.", use: "man prüfe is Konjunktiv I — reported speech that keeps the claim at arm's length. versichern asserts; it does not promise." },
+
+      { de: "Die Opposition fordert Aufklärung, die Regierung fördert lieber neue Projekte.", en: "The opposition demands answers; the government would rather fund new projects.", use: "fordern (demand) and fördern (foster) differ by one umlaut and point in opposite directions — this pair is a classic exam trap." },
+
+      { de: "Angeblich war es ein Versehen, doch daran gibt es Zweifel.", en: "Supposedly it was an oversight, but there are doubts about that.", use: "angeblich brands the claim as someone else's; daran = about that (Zweifel an + Dativ)." },
+
+    ],
   },
 ...advancedWordPartBlueprints,
 ...advancedWordPartBlueprints2,

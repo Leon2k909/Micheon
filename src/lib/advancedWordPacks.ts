@@ -316,7 +316,53 @@ export const advancedWordPartBlueprints: Record<string, Blueprint> = {
       { de: "die Beweisführung", lookup: "Beweisführung", fallbackEn: "line of argument", tip: "noun", article: "die" },
     ],
     dialogues: [],
-    phrases: [],
+    phrases: [
+
+      { de: "Aus welchem Blickwinkel man den Fall betrachtet, ändert die Einschätzung erheblich.", en: "Which angle you look at the case from changes the assessment considerably.", use: "The indirect question (Aus welchem Blickwinkel ...) serves as subject; the main verb follows it immediately: ..., ändert ..." },
+
+      { de: "Für diese Vermutung gibt es bisher keinen einzigen Anhaltspunkt.", en: "So far there is not a single clue to support this supposition.", use: "kein einziger sharpens kein to 'not one single'; bisher = so far, sitting comfortably mid-sentence." },
+
+      { de: "Ihre Prognose beruht auf einer groben Schätzung, nicht auf Daten.", en: "Her forecast rests on a rough estimate, not on data.", use: "beruhen auf + Dativ; repeating the preposition (nicht auf Daten) keeps the contrast grammatical." },
+
+      { de: "Der Konsens täuscht: Hinter den Kulissen schwelt die Kontroverse weiter.", en: "The consensus is deceptive: behind the scenes, the controversy is still smouldering.", use: "täuschen used intransitively = to be deceptive; weiterschwelen splits, and hinter den Kulissen is the fixed stage image." },
+
+      { de: "Ein einziges Gegenbeispiel genügt, um die Verallgemeinerung zu widerlegen.", en: "A single counterexample is enough to refute the generalisation.", use: "genügen, um ... zu = to be enough to; widerlegen is inseparable — no ge- in sight and the zu stands before it whole." },
+
+      { de: "Wo genau liegt der Denkfehler in dieser Beweisführung?", en: "Where exactly is the flaw in this line of argument?", use: "liegen, not sein, for where an abstract fault sits: der Fehler liegt in ... — the standard collocation." },
+
+      { de: "Ihre Glaubwürdigkeit steht und fällt mit der Stichhaltigkeit ihrer Belege.", en: "Her credibility stands or falls with the soundness of her evidence.", use: "steht und fällt mit + Dativ — fixed pair, always this order, with und where English says or." },
+
+      { de: "Verschaffen Sie sich zuerst einen Überblick, ehe Sie sich ein Urteil bilden.", en: "Get an overview first, before you form a judgement.", use: "sich (Dativ) einen Überblick verschaffen and sich ein Urteil bilden — both keep their sich; ehe is the formal bevor." },
+
+      { de: "Der Schwerpunkt der Arbeit liegt auf der Auslegung des neuen Gesetzes.", en: "The paper focuses on the interpretation of the new law.", use: "der Schwerpunkt liegt auf + Dativ is the nominal way to say 'focuses on' — common in abstracts and introductions." },
+
+      { de: "Dass Kälte Erkältungen verursacht, ist ein weitverbreiteter Irrglaube.", en: "That cold weather causes colds is a widespread misconception.", use: "A dass-clause as fronted subject; the main clause then starts with its verb: ..., ist ..." },
+
+      { de: "Ohne klare Kriterien bleibt jede Bewertung willkürlich.", en: "Without clear criteria, any evaluation remains arbitrary.", use: "ohne + noun replaces a whole conditional clause; bleiben marks the state as persisting, not appearing." },
+
+      { de: "Die Mehrdeutigkeit der Formulierung ist kein Zufall, sondern Absicht.", en: "The ambiguity of the wording is no accident — it is deliberate.", use: "kein Zufall, sondern Absicht — the sondern-correction with two bare nouns, no verb repeated." },
+
+      { de: "Gegen diese These gibt es ein naheliegendes Gegenargument.", en: "There is an obvious counterargument to this thesis.", use: "das Argument GEGEN etwas — German keeps the preposition gegen where English says 'to'; fronting Gegen diese These stresses the target." },
+
+      { de: "Seine Denkweise ist von zwanzig Jahren Behördenarbeit geprägt.", en: "His mindset has been shaped by twenty years of working in government offices.", use: "geprägt von + Dativ — the stative passive: shaped and still bearing the stamp. Behördenarbeit compresses 'work in public agencies' into one noun." },
+
+      { de: "Zuerst müssen wir den Sachverhalt klären, dann können wir ihn bewerten.", en: "First we need to establish the facts; only then can we judge them.", use: "zuerst ... dann orders the steps; der Sachverhalt is the legal-administrative word for the facts of the matter, singular." },
+
+      { de: "Im Rahmen dieser Untersuchung lässt sich das nur andeuten.", en: "Within the scope of this study, that can only be hinted at.", use: "im Rahmen + Genitiv = within the scope of — the standard academic hedge before admitting limits." },
+
+      { de: "Das Muster wiederholt sich: Auf jede Krise folgt ein kurzer Aufschwung.", en: "The pattern repeats itself: every crisis is followed by a brief upturn.", use: "auf X folgt Y inverts the order English expects — the thing that comes AFTER stands as subject after folgt." },
+
+      { de: "Nach welchem Kriterium wurden die Bewerber ausgewählt?", en: "By what criterion were the applicants selected?", use: "nach + Kriterium = by/according to; the preposition travels to the front of the question with its noun." },
+
+      { de: "Mit mehr Fachwissen hätte er den Fehler sofort erkannt.", en: "With more expertise, he would have spotted the mistake immediately.", use: "hätte + participle is the past unreal (Konjunktiv II der Vergangenheit); mit + noun smuggles in the unreal condition." },
+
+      { de: "Ihre Einordnung des Falls überzeugt mich mehr als jede Statistik.", en: "The way she puts the case in context convinces me more than any statistic.", use: "Einordnung nominalises einordnen — classification into context; mehr als jede X = more than any X." },
+
+      { de: "Der Grundsatz gilt, bis jemand ihn überzeugend widerlegt.", en: "The principle holds until someone convincingly refutes it.", use: "gelten = to hold/be valid; bis opens a subordinate clause, so the verb widerlegt moves to the end." },
+
+      { de: "Bei aller Unsicherheit: An der Grundlage der Theorie zweifelt kaum jemand.", en: "For all the uncertainty, hardly anyone doubts the theory's foundations.", use: "bei aller X = for all the X, conceding before asserting; zweifeln an + Dativ, and kaum jemand = hardly anyone." },
+
+    ],
   },
   part417: {
     label: "Part 417",
@@ -367,7 +413,53 @@ export const advancedWordPartBlueprints: Record<string, Blueprint> = {
       { de: "der Steuerzahler", lookup: "Steuerzahler", fallbackEn: "taxpayer", tip: "noun", article: "der" },
     ],
     dialogues: [],
-    phrases: [],
+    phrases: [
+
+      { de: "Die Ausgaben übersteigen die Einnahmen seit Jahren.", en: "Spending has exceeded revenue for years.", use: "seit + time span takes the PRESENT tense in German where English needs the perfect: übersteigen ... seit Jahren." },
+
+      { de: "Ohne das Darlehen der Bank hätte die Firma die Krise nicht überstanden.", en: "Without the bank loan, the company would not have survived the crisis.", use: "ohne + noun carries the unreal condition; hätte ... überstanden is Konjunktiv II of the past." },
+
+      { de: "Trotz des Wirtschaftswachstums sinkt die Kaufkraft vieler Haushalte.", en: "Despite economic growth, the purchasing power of many households is falling.", use: "trotz governs the genitive in written German: trotz des Wachstums. vieler Haushalte is a bare genitive plural — no article." },
+
+      { de: "Die Rezession traf zuerst die, die ohnehin wenig hatten.", en: "The recession first hit those who had little to begin with.", use: "die, die = those who; the first die is a demonstrative standing alone. ohnehin = anyway/to begin with." },
+
+      { de: "Der Überschuss des Vorjahres ist längst aufgebraucht.", en: "Last year's surplus has long since been used up.", use: "längst = long since, stronger than schon lange; aufgebraucht is the stative passive — the state, not the act." },
+
+      { de: "Lohn und Gehalt sind nicht dasselbe: Das eine wird nach Stunden gezahlt, das andere monatlich.", en: "A wage and a salary are not the same thing: one is paid by the hour, the other monthly.", use: "das eine ... das andere pairs two neuter stand-ins; nach Stunden = by the hour. Lohn is blue-collar, Gehalt salaried." },
+
+      { de: "Den Zuschuss muss man nicht zurückzahlen, das Darlehen schon.", en: "You do not have to pay back the grant — the loan you do.", use: "A bare schon answers the negation for the second item: das Darlehen schon = but the loan, yes. Very German, very compact." },
+
+      { de: "Wer Sozialleistungen beantragt, muss sein Vermögen offenlegen.", en: "Anyone applying for welfare benefits has to disclose their assets.", use: "Wer ..., muss ... — the free relative again; offenlegen (separable) is the official verb for mandatory disclosure." },
+
+      { de: "Prüfen Sie die Vertragsklausel, bevor Sie das Abonnement verlängern.", en: "Check the contract clause before you renew the subscription.", use: "bevor needs a full clause with the verb at the end; the Sie-imperative fronts the bare verb: Prüfen Sie ..." },
+
+      { de: "Die Behörde beruft sich auf eine interne Richtlinie.", en: "The agency is invoking an internal policy.", use: "sich berufen auf + Akkusativ = to invoke/cite as authority — not to be confused with berufen = to appoint." },
+
+      { de: "Der Stadtrat hat die Förderung gegen den Widerstand der Bürgerinitiative beschlossen.", en: "The city council approved the funding against the resistance of the citizens' initiative.", use: "gegen den Widerstand + Genitiv slots the opposition inside the sentence; beschließen = to resolve/approve formally." },
+
+      { de: "Die Wohltätigkeitsorganisation finanziert sich fast ausschließlich aus Spenden.", en: "The charity is funded almost entirely by donations.", use: "sich finanzieren aus + Dativ — the sich says it funds ITSELF from a source; no passive needed." },
+
+      { de: "Steigende Lebenshaltungskosten treffen Geringverdiener am härtesten.", en: "Rising living costs hit low earners hardest.", use: "The participle steigend works as an adjective; am härtesten is the superlative adverb — am + -sten." },
+
+      { de: "Die Arbeitslosigkeit ist auf den niedrigsten Stand seit zehn Jahren gefallen.", en: "Unemployment has fallen to its lowest level in ten years.", use: "auf einen Stand fallen/steigen = to fall/rise TO a level; seit zehn Jahren pins the comparison window." },
+
+      { de: "Ohne den Tarifvertrag läge der Lohn vermutlich unter dem Mindestlohn.", en: "Without the collective agreement, pay would probably be below the minimum wage.", use: "läge is the one-word Konjunktiv II of liegen — written German prefers it to würde liegen for common verbs." },
+
+      { de: "Die Gewerkschaft droht mit Streik, falls die Verhandlungen scheitern.", en: "The union is threatening to strike if the talks fail.", use: "drohen mit + Dativ noun (mit Streik), not an infinitive; falls = in case/if, slightly more formal than wenn." },
+
+      { de: "Wo der Wettbewerb fehlt, entsteht früher oder später ein Monopol.", en: "Where competition is absent, a monopoly emerges sooner or later.", use: "wo opens a generalising clause of place; früher oder später — German keeps the same order as English, comma-free." },
+
+      { de: "Die Konjunktur zieht an, doch beim Verbraucher kommt davon wenig an.", en: "The economy is picking up, but little of it is reaching the consumer.", use: "anziehen (intransitive) = to pick up; ankommen bei = to reach someone. davon = of it — the partitive glue." },
+
+      { de: "Wohlstand, der auf Verschuldung beruht, ist keiner.", en: "Prosperity built on debt is no prosperity at all.", use: "The bare keiner at the end stands for kein Wohlstand — German can end on the pronoun where English must repeat the noun." },
+
+      { de: "Für die einen verzerren Subventionen den Wettbewerb, für die anderen sichern sie Arbeitsplätze.", en: "For some, subsidies distort competition; for others, they protect jobs.", use: "für die einen ..., für die anderen ... frames a two-camp dispute; sie picks up Subventionen across the comma." },
+
+      { de: "Als Steuerzahler frage ich mich, wofür dieses Haushaltsdefizit eigentlich gut sein soll.", en: "As a taxpayer, I wonder what this budget deficit is actually supposed to achieve.", use: "wofür ... gut sein soll = what it is supposed to be good for; eigentlich adds the sceptical edge of 'actually'." },
+
+      { de: "Sobald die Hypothek abbezahlt ist, gehört das Haus endlich uns.", en: "Once the mortgage is paid off, the house will finally be ours.", use: "sobald = as soon as, verb to the end; gehören + Dativ — das Haus gehört UNS, no possessive needed." },
+
+    ],
   },
   part418: {
     label: "Part 418",
@@ -418,7 +510,53 @@ export const advancedWordPartBlueprints: Record<string, Blueprint> = {
       { de: "die Datenverarbeitung", lookup: "Datenverarbeitung", fallbackEn: "data processing", tip: "noun", article: "die" },
     ],
     dialogues: [],
-    phrases: [],
+    phrases: [
+
+      { de: "Ohne Ihre ausdrückliche Einwilligung werden keine Daten weitergegeben.", en: "No data is passed on without your explicit consent.", use: "The German fronts the condition and negates the object (keine Daten) — the standard privacy-notice sentence shape." },
+
+      { de: "Die Verschlüsselung schützt die Daten nur auf dem Weg, nicht auf dem Server.", en: "Encryption protects the data only in transit, not on the server.", use: "auf dem Weg = in transit, literally 'on the way'; the repeated preposition keeps the contrast parallel." },
+
+      { de: "Nach der Aktualisierung war die Benutzeroberfläche kaum wiederzuerkennen.", en: "After the update, the interface was barely recognisable.", use: "sein + zu + infinitive = can/must be done: war kaum wiederzuerkennen = could barely be recognised. zu sits inside the separable verb." },
+
+      { de: "Wenn der Speicherplatz knapp wird, leeren Sie zuerst den Zwischenspeicher.", en: "When storage runs low, clear the cache first.", use: "knapp werden = to run low; the wenn-clause fronts, so the imperative follows comma-first: ..., leeren Sie ..." },
+
+      { de: "Je geringer die Bandbreite, desto länger die Ladezeit.", en: "The lower the bandwidth, the longer the loading time.", use: "je ... desto in its verbless form again — the natural shape for technical rules of thumb." },
+
+      { de: "Der Serverausfall ließ sich auf eine einzige Sicherheitslücke zurückführen.", en: "The server outage could be traced back to a single security vulnerability.", use: "sich zurückführen lassen auf + Akkusativ = can be traced back to; ließ sich is its past." },
+
+      { de: "Öffnen Sie keinen Anhang, dessen Absender Sie nicht kennen.", en: "Do not open an attachment whose sender you do not know.", use: "dessen is the genitive relative pronoun — whose — for masculine and neuter heads like der Anhang." },
+
+      { de: "Die Schadsoftware kam über ein harmlos wirkendes Eingabefeld ins Netzwerk.", en: "The malware got into the network through an innocent-looking input field.", use: "harmlos wirkend = seeming harmless — a participle phrase compressed into an attribute before the noun; über = via." },
+
+      { de: "Geben Sie Ihre Zugangsdaten niemals telefonisch weiter.", en: "Never give out your login credentials over the phone.", use: "telefonisch does adverbial work — by phone, one word; weitergeben splits around it in the imperative." },
+
+      { de: "Ihnen fehlt die Berechtigung, diese Datei zu ändern.", en: "You do not have permission to modify this file.", use: "jemandem fehlt X — the thing lacking is the subject and the person goes into the dative: Ihnen fehlt ..." },
+
+      { de: "Ich habe die Benachrichtigungen abgestellt, um mich besser konzentrieren zu können.", en: "I turned off notifications so I could concentrate better.", use: "um ... zu können adds ability into the purpose clause — so as to BE ABLE to; abstellen = to switch off, everyday register." },
+
+      { de: "Der Browserverlauf verrät mehr über einen Menschen, als ihm lieb ist.", en: "A browsing history reveals more about a person than they would like.", use: "mehr, als jemandem lieb ist — the fixed comparative: more than one is comfortable with. ihm points back to Menschen." },
+
+      { de: "Die Schnittstelle ist gut dokumentiert, der Quellcode leider nicht.", en: "The interface is well documented; the source code, unfortunately, is not.", use: "The second clause keeps only its topic and nicht — ellipsis German loves in verdicts. leider slots before the negation." },
+
+      { de: "Bei schwacher Verbindung sinkt zuerst die Auflösung, dann die Bildfrequenz.", en: "On a weak connection, the resolution drops first, then the frame rate.", use: "bei + adjective + noun sets a standing condition (whenever the connection is weak); zuerst ... dann orders the failure." },
+
+      { de: "Prüfen Sie vor dem Kauf die Kompatibilität mit Ihrem Endgerät.", en: "Check compatibility with your device before buying.", use: "vor dem Kauf nominalises 'before you buy' into two words — the shape German product pages actually use." },
+
+      { de: "Barrierefreiheit ist kein Extra, sondern eine Voraussetzung.", en: "Accessibility is not an optional extra — it is a requirement.", use: "kein ..., sondern ... again, here with two predicate nouns; Voraussetzung = precondition, stronger than Anforderung." },
+
+      { de: "Die Nutzungsbedingungen akzeptiert man meist, ohne sie gelesen zu haben.", en: "People usually accept the terms of service without having read them.", use: "ohne ... zu + PERFECT infinitive (gelesen zu haben) = without having done — the past inside the ohne-clause." },
+
+      { de: "Auch im Internet gilt das Urheberrecht.", en: "Copyright applies on the internet too.", use: "auch fronts with the phrase it scopes over: Auch im Internet = on the internet TOO. gelten = to apply/be in force." },
+
+      { de: "Fehlinformationen verbreiten sich schneller, als sie sich richtigstellen lassen.", en: "Misinformation spreads faster than it can be corrected.", use: "als opens the comparison clause; sich richtigstellen lassen = can be corrected — the lassen-passive inside a comparative." },
+
+      { de: "Die Suchmaschine bewertet nicht, was wahr ist, sondern was angeklickt wird.", en: "The search engine does not rank what is true — it ranks what gets clicked.", use: "Two was-clauses as objects, corrected by sondern; angeklickt wird is the processual passive: what GETS clicked." },
+
+      { de: "Die Voreinstellung ist bequem, aber selten die sicherste Wahl.", en: "The default setting is convenient, but rarely the safest choice.", use: "selten does the negating here — 'rarely the safest' — softer and more idiomatic than fast nie." },
+
+      { de: "Ohne Bildschirmfreigabe kann der Support nur raten.", en: "Without screen sharing, support can only guess.", use: "raten = to guess (and also to advise — context decides); ohne + bare noun states the missing tool." },
+
+    ],
   },
   part419: {
     label: "Part 419",
@@ -520,6 +658,52 @@ export const advancedWordPartBlueprints: Record<string, Blueprint> = {
       { de: "die Naturkatastrophe", lookup: "Naturkatastrophe", fallbackEn: "natural disaster", tip: "noun", article: "die" },
     ],
     dialogues: [],
-    phrases: [],
+    phrases: [
+
+      { de: "Die Verschmutzung des Grundwassers bleibt jahrzehntelang messbar.", en: "Groundwater pollution remains measurable for decades.", use: "jahrzehntelang — German builds 'for decades' as one adverb; -lang glues onto most time nouns: stundenlang, wochenlang." },
+
+      { de: "Aus Abfall wird Rohstoff: Genau das meint Kreislaufwirtschaft.", en: "Waste becomes raw material: that is exactly what a circular economy means.", use: "aus X wird Y = X turns into Y — the becoming reads backwards for English eyes; genau das points at the whole first clause." },
+
+      { de: "Mit jedem verlorenen Lebensraum verschwinden auch Tierarten, die niemand je gezählt hat.", en: "With every habitat lost, animal species vanish that no one ever counted.", use: "mit jedem + participle + noun = with every X that is Y-ed; the relative clause trails after the verb — legal and common." },
+
+      { de: "Auf die Dürre folgte die Überschwemmung, und beides in einem einzigen Sommer.", en: "The drought was followed by the flood — and both in a single summer.", use: "auf X folgt Y again — the follower is the subject; the afterthought und beides ... needs no verb at all." },
+
+      { de: "Der Waldbrand hat mehr Treibhausgase freigesetzt als der gesamte Autoverkehr der Region in einem Jahr.", en: "The wildfire released more greenhouse gases than the region's entire road traffic does in a year.", use: "mehr ... als with a full noun phrase as the comparison; freisetzen = to release (gases, energy) — technical register." },
+
+      { de: "Erneuerbare Energiequellen decken inzwischen die Hälfte des Energieverbrauchs.", en: "Renewable energy sources now cover half of all energy consumption.", use: "decken = to cover (demand); inzwischen = by now, marking how far things have moved. die Hälfte + Genitiv." },
+
+      { de: "Steigt der Meeresspiegel weiter, sind die ersten Inseln nicht mehr zu retten.", en: "If sea levels keep rising, the first islands will be beyond saving.", use: "The wenn is dropped: verb-first Steigt ... = if it rises. nicht mehr zu retten = sein + zu-infinitive as 'cannot be'." },
+
+      { de: "Ohne ein stabiles Stromnetz nützt der beste Solarpark wenig.", en: "Without a stable power grid, even the best solar farm is of little use.", use: "nützen = to be of use (intransitive); wenig alone as its measure. Superlative der beste concedes quality before dismissing it." },
+
+      { de: "Wassermangel und Bodenerosion treiben die Landflucht voran.", en: "Water scarcity and soil erosion are driving the exodus from the countryside.", use: "vorantreiben (separable) = to drive forward; two compound subjects share one plural verb." },
+
+      { de: "Der Abholzung folgt die Erosion, der Erosion folgt die Aufgabe der Felder.", en: "Deforestation is followed by erosion, and erosion by the abandonment of the fields.", use: "folgen + Dativ chains causes: the DATIVE names what came first. The repetition is deliberate rhetoric, not clumsiness." },
+
+      { de: "Die Wiederaufforstung wird Jahrzehnte brauchen, die Abholzung brauchte drei Wochen.", en: "Reforestation will take decades; the clearing took three weeks.", use: "Future werden against bare Präteritum in one line — the tense clash IS the argument." },
+
+      { de: "Einzelne Messwerte weichen immer ab, entscheidend ist der Durchschnitt.", en: "Individual readings always deviate; what matters is the average.", use: "abweichen splits (weichen ... ab); entscheidend ist X fronts the predicate — 'what is decisive is ...'." },
+
+      { de: "Ein einziger Datensatz macht noch keine Theorie.", en: "A single dataset does not make a theory.", use: "X macht noch kein Y — the proverb frame (eine Schwalbe macht noch keinen Sommer) borrowed for science." },
+
+      { de: "Die Entdeckung gelang durch Zufall, ihre Bestätigung durch Messung.", en: "The discovery came about by chance; its confirmation came through measurement.", use: "gelingen = to succeed/come off, with the achievement as subject; the second half drops the verb and keeps durch." },
+
+      { de: "Die Schwerkraft wirkt auf jedes Teilchen, ob wir sie messen oder nicht.", en: "Gravity acts on every particle whether we measure it or not.", use: "ob ... oder nicht = whether ... or not; wirken auf + Akkusativ = to act on." },
+
+      { de: "Ein Temperaturanstieg von zwei Grad klingt harmlos und ist es nicht.", en: "A two-degree rise in temperature sounds harmless — and it is not.", use: "und ist es nicht — es stands for the adjective harmlos; German can pronoun-ise a predicate adjective this way." },
+
+      { de: "Ein Ökosystem kippt nicht langsam, sondern plötzlich.", en: "An ecosystem does not tip gradually — it tips all at once.", use: "kippen is the ecological term for tipping past the point of recovery; nicht ..., sondern with two bare adverbs." },
+
+      { de: "Die Luftqualität hat sich verbessert, seit die Innenstadt autofrei ist.", en: "Air quality has improved since the city centre went car-free.", use: "seit as a conjunction takes present tense for a state that still holds: seit ... IST. autofrei — German coins adjectives with -frei." },
+
+      { de: "Jede Messung verändert das, was sie misst, zumindest ein wenig.", en: "Every measurement changes the thing it measures, at least a little.", use: "das, was = that which; the comma pair around the relative clause is obligatory. zumindest = at least, as a concession." },
+
+      { de: "Die Erwärmung der Meere verläuft schneller, als jede bisherige Prognose annahm.", en: "The oceans are warming faster than any previous forecast assumed.", use: "verlaufen describes how a process runs; als + clause for the exceeded expectation, with annahm (annehmen) at the end." },
+
+      { de: "Der Ausstoß pro Kopf sagt mehr als die Gesamtzahl.", en: "Per-capita emissions tell you more than the total does.", use: "pro Kopf = per head/capita — no article; sagen here = to tell (be informative), a common metaphor with numbers." },
+
+      { de: "Naturkatastrophen treffen selten die, die sie verursacht haben.", en: "Natural disasters rarely strike the people who caused them.", use: "die, die once more — those who; sie inside the relative clause points back to the disasters, not the people." },
+
+    ],
   },
 };

@@ -1,4 +1,4 @@
-import type { Blueprint, VocabSeed } from "./types";
+import type { Blueprint, Phrase, VocabSeed } from "./types";
 
 /**
  * A second authored vocabulary expansion for the dedicated Words route.
@@ -15,7 +15,10 @@ const verb = (de: string, en: string): VocabSeed => ({ de, lookup: de.replace(/^
 const verbPhrase = (de: string, lookup: string, en: string): VocabSeed => ({ de, lookup, fallbackEn: en, tip: "verb phrase" });
 const noun = (article: "der" | "die" | "das", de: string, en: string): VocabSeed => ({ de: `${article} ${de}`, lookup: de, fallbackEn: en, tip: "noun", article });
 
-const pack = (label: string, level: string, theme: string, description: string, seeds: VocabSeed[]): Blueprint => ({
+// The sixth argument arrived with the sentence packs: these started as word
+// lists with a lesson name, and the sentences that teach the words in use are
+// passed alongside the seeds. Packs not yet deepened simply omit it.
+const pack = (label: string, level: string, theme: string, description: string, seeds: VocabSeed[], phrases: Phrase[] = []): Blueprint => ({
   label,
   level,
   theme,
@@ -23,7 +26,7 @@ const pack = (label: string, level: string, theme: string, description: string, 
   focus,
   seeds,
   dialogues: [],
-  phrases: [],
+  phrases,
 });
 
 export const advancedWordPartBlueprints2: Record<string, Blueprint> = {
@@ -197,6 +200,29 @@ export const advancedWordPartBlueprints2: Record<string, Blueprint> = {
     noun("das", "Beweismittel", "item of evidence"),
     noun("die", "Zeugenaussage", "witness testimony"),
     noun("der", "Verfahrensfehler", "procedural error"),
+  ], [
+    { de: "Falschparken ist eine Ordnungswidrigkeit, Fahrerflucht eine Straftat.", en: "Parking illegally is an administrative offence; hit-and-run is a crime.", use: "The second clause drops ist — parallel verdicts, one verb. The pair teaches the legal line German draws between the two." },
+    { de: "Der Zeuge verweigerte die Aussage.", en: "The witness refused to testify.", use: "die Aussage verweigern is the fixed courtroom phrase — a noun where English uses the verb testify." },
+    { de: "Ohne sein Geständnis wäre die Anklage kaum zu halten gewesen.", en: "Without his confession, the charges would hardly have held up.", use: "wäre ... zu halten gewesen stacks Konjunktiv II, sein + zu-infinitive and the past — peak formal German, worth reading twice." },
+    { de: "Die Ermittlung wurde eingestellt, weil sich der Verdacht nicht erhärten ließ.", en: "The investigation was dropped because the suspicion could not be substantiated.", use: "ein Verfahren einstellen = to drop/discontinue proceedings — nothing to do with adjusting settings; sich erhärten lassen = to firm up." },
+    { de: "Die Staatsanwaltschaft hat Anklage erhoben.", en: "The public prosecutor's office has filed charges.", use: "Anklage erheben — no article, fixed legal collocation; erheben also serves Klage (civil suit) and Einspruch (objection)." },
+    { de: "Die Haftstrafe wurde zur Bewährung ausgesetzt.", en: "The prison sentence was suspended on probation.", use: "zur Bewährung aussetzen is THE formula of German sentencing — aussetzen here = to suspend, not to expose." },
+    { de: "Statt einer Geldstrafe bekam er eine Auflage: hundert Stunden gemeinnützige Arbeit.", en: "Instead of a fine, he was given a condition: a hundred hours of community service.", use: "statt + Genitiv (statt einer Geldstrafe); the colon then spells the Auflage out. gemeinnützig = for the public good." },
+    { de: "Auf Schadenersatz hat nur Anspruch, wer den Schaden auch nachweisen kann.", en: "Only those who can actually prove the damage are entitled to compensation.", use: "Anspruch haben auf + Akkusativ = to be entitled to; the wer-clause is postponed to the end for weight." },
+    { de: "Der Gesetzentwurf scheiterte schon im Ausschuss.", en: "The bill already died in committee.", use: "scheitern = to fail definitively; schon marks how early. im Ausschuss — committee stage, where German bills quietly end." },
+    { de: "Die Verfassung schützt die Menschenwürde an erster Stelle.", en: "The constitution protects human dignity first and foremost.", use: "an erster Stelle = in first place/foremost — an echo of Article 1, which every German pupil meets: Die Würde des Menschen ist unantastbar." },
+    { de: "Die Gleichberechtigung steht seit 1949 im Grundgesetz, im Alltag steht sie oft nur auf dem Papier.", en: "Equal rights have been in the constitution since 1949; in everyday life they often exist only on paper.", use: "stehen twice with different force: im Gesetz stehen = to be written there; auf dem Papier stehen = to exist only nominally." },
+    { de: "Die Unschuldsvermutung gilt bis zum rechtskräftigen Urteil.", en: "The presumption of innocence applies until the verdict is final.", use: "rechtskräftig = legally final (no appeal left) — the adjective carries what English needs a whole phrase for." },
+    { de: "Nach zwanzig Jahren tritt bei den meisten Delikten Verjährung ein.", en: "After twenty years, most offences become time-barred.", use: "Verjährung tritt ein — limitation SETS IN; eintreten is the verb German law gives to states that begin by themselves." },
+    { de: "Am Ende einigten sich beide Seiten außergerichtlich.", en: "In the end, the two sides settled out of court.", use: "sich einigen = to reach agreement; außergerichtlich packs 'out of court' into one adverb." },
+    { de: "Die Rechtslage ist eindeutig, die Beweislage nicht.", en: "The legal position is clear; the evidence is not.", use: "-lage builds situation nouns: Rechtslage, Beweislage, Wetterlage. The clipped second clause lands the punch." },
+    { de: "Der Haftbefehl wurde noch am selben Abend vollstreckt.", en: "The arrest warrant was executed that same evening.", use: "vollstrecken = to execute (a warrant, a judgment) — enforcement vocabulary; noch am selben Abend = that very evening." },
+    { de: "Bei der Durchsuchung wurde das entscheidende Beweismittel gefunden.", en: "The decisive piece of evidence was found during the search.", use: "bei + Dativ noun = during/in the course of; das Beweismittel is countable where English 'evidence' is not." },
+    { de: "Wer einer Vorladung nicht folgt, riskiert eine Geldstrafe.", en: "If you ignore an official summons, you risk a fine.", use: "einer Vorladung folgen — folgen takes the dative; here it means to comply, not to walk behind." },
+    { de: "Auf den Freispruch in erster Instanz folgte der Schuldspruch in der zweiten.", en: "The acquittal at first instance was followed by a conviction at the second.", use: "in erster Instanz / in der zweiten — the court hierarchy; auf X folgt Y carries the reversal." },
+    { de: "Gegen das Urteil ist kein Rechtsmittel mehr zulässig.", en: "No further appeal against the verdict is admissible.", use: "ein Rechtsmittel gegen + Akkusativ; kein ... mehr = no further. zulässig = admissible, the gatekeeping adjective of procedure." },
+    { de: "Der Tatbestand des Betrugs setzt eine Täuschung voraus.", en: "Fraud, as defined in law, requires an act of deception.", use: "voraussetzen = to presuppose/require as an element; der Tatbestand + Genitiv names the offence being dissected." },
+    { de: "Ein einziger Verfahrensfehler kann das ganze Urteil kippen.", en: "A single procedural error can overturn the entire verdict.", use: "kippen used transitively = to topple/overturn — colloquial force inside legal talk, which is exactly how lawyers speak." },
   ]),
 
   part425: pack("Part 425", "B2-C1", "Education, research and language", "Words needed to discuss learning, academic work, language and evidence with confidence.", [
@@ -455,5 +481,28 @@ export const advancedWordPartBlueprints2: Record<string, Blueprint> = {
     verb("schützen", "to protect"),
     verb("schädigen", "to damage, harm"),
     verb("vorantreiben", "to drive forward"),
+  ], [
+    { de: "Angst hemmt das Lernen mehr, als es jeder Zeitdruck je könnte.", en: "Fear inhibits learning more than any deadline ever could.", use: "als + clause with könnte at the end; es stands in for das Lernen hemmen — the whole action, pronominalised." },
+    { de: "Das milde Klima begünstigt den Anbau, die Bürokratie erschwert ihn.", en: "The mild climate favours farming; the red tape makes it harder.", use: "begünstigen and erschweren mirror each other around the comma; ihn picks up den Anbau." },
+    { de: "Die neue Regel sollte alles erleichtern, eingetreten ist das Gegenteil.", en: "The new rule was supposed to make everything easier; what happened was the opposite.", use: "sollte = was supposed to; eingetreten ist das Gegenteil inverts to front the participle — the outcome lands first." },
+    { de: "Die Jahre im Ausland haben ihn stärker geprägt als das Studium selbst.", en: "His years abroad shaped him more than the degree itself did.", use: "prägen = to leave a lasting stamp; selbst AFTER the noun means 'itself' — before it, it would mean 'even'." },
+    { de: "Wer die Begriffe bestimmt, lenkt die Debatte.", en: "Whoever defines the terms steers the debate.", use: "bestimmen and lenken in one maxim; the wer-clause is the subject and the main verb follows straight after the comma." },
+    { de: "Ein Projekt lässt sich steuern, ein Gerücht nicht.", en: "A project can be managed; a rumour cannot.", use: "sich steuern lassen = can be controlled; the clipped second half (ein Gerücht nicht) relies on the first for its verb." },
+    { de: "Das Budget begrenzt das Mögliche, nicht das Nötige.", en: "The budget limits what is possible, not what is necessary.", use: "das Mögliche, das Nötige — adjectives nominalised into abstract nouns with das; German prose leans on this constantly." },
+    { de: "Die neuen Vorgaben schränken den Spielraum der Kommunen erheblich ein.", en: "The new requirements considerably restrict the municipalities' room for manoeuvre.", use: "einschränken splits: schränken ... ein — the prefix waits at the very end, past the adverb erheblich." },
+    { de: "Der höhere Lohn kompensiert die längere Anfahrt nur zum Teil.", en: "The higher pay only partly compensates for the longer commute.", use: "kompensieren takes a direct object — no für, unlike English compensate FOR; zum Teil = in part." },
+    { de: "Das neue System soll die Mitarbeiter entlasten, nicht zusätzlich belasten.", en: "The new system is meant to take pressure off the staff, not add to it.", use: "entlasten and belasten share one object across the correction; zusätzlich = additionally, stacking the burden." },
+    { de: "Wer ständig alles kontrollieren will, überfordert sich selbst.", en: "If you try to control everything all the time, you end up overtaxing yourself.", use: "überfordern never splits; sich selbst doubles down — you overtax YOURSELF, nobody else does it to you." },
+    { de: "Die Einnahmen unterschritten die Erwartungen, die Kosten überschritten sie.", en: "Revenue fell short of expectations; costs exceeded them.", use: "unterschreiten and überschreiten are exact opposites with one shared object — sie = die Erwartungen." },
+    { de: "Das Ziel wurde nicht verfehlt, es wurde nur später erfüllt.", en: "The target was not missed — it was just met later.", use: "verfehlen = to miss (a target); erfüllen = to meet it. Both in the processual passive with wurde." },
+    { de: "Der Erfolg beruht auf Vertrauen, und Vertrauen beruht auf Zeit.", en: "Success rests on trust, and trust rests on time.", use: "beruhen auf + Dativ, chained: the object of the first clause becomes the subject of the second — a classic step figure." },
+    { de: "Die Verspätung ist auf einen einzigen Fehler zurückzuführen.", en: "The delay is attributable to a single mistake.", use: "sein + zurückzuführen auf = is attributable to — the fixed passive-like frame of German reports." },
+    { de: "Kleine Ursachen führen mitunter zu großen Wirkungen.", en: "Small causes sometimes lead to large effects.", use: "führen zu + Dativ; mitunter = now and then, a formal cousin of manchmal that lifts the register." },
+    { de: "Jeder trägt dazu bei, ob er will oder nicht.", en: "Everyone contributes, whether they want to or not.", use: "beitragen zu splits around dazu; ob er will oder nicht = whether he wants to or not — the verb-final ob-clause." },
+    { de: "Aus dem Missverständnis resultierte ein monatelanger Streit.", en: "A months-long dispute resulted from the misunderstanding.", use: "resultieren aus + Dativ — the OUTCOME is the subject, the source hides in the aus-phrase; monatelang again builds duration." },
+    { de: "Wo Druck entsteht, entsteht auch Widerstand.", en: "Where pressure arises, resistance arises too.", use: "entstehen = to come into being; the doubled verb and bare nouns give the sentence the shape of a law." },
+    { de: "Die Kampagne rief mehr Widerstand hervor, als sie Zustimmung erzeugte.", en: "The campaign provoked more resistance than it generated support.", use: "hervorrufen splits (rief ... hervor); the als-clause weighs the two effects against each other." },
+    { de: "Eine solche Entscheidung zieht immer Folgekosten nach sich.", en: "A decision like that always entails follow-on costs.", use: "etwas nach sich ziehen = to entail — the sich belongs to the subject; Folgekosten = the costs that follow from it." },
+    { de: "Der Bericht stellt die Lage schlimmer dar, als sie ist.", en: "The report portrays the situation as worse than it is.", use: "darstellen splits; schlimmer ..., als sie ist compares against reality — no wie here, als after a comparative." },
   ]),
 };
