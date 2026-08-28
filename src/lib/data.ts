@@ -8041,7 +8041,51 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "plausibel", lookup: "plausibel", fallbackEn: "plausible", tip: "adjective" },
     ],
     dialogues: [],
-    phrases: [],
+    phrases: [
+
+      { de: "Die These klingt kühn, aber sie lässt sich untermauern.", en: "The thesis sounds bold, but it can be substantiated.", use: "sich untermauern lassen — the can-be-done passive again; untermauern keeps its prefix, it never splits." },
+
+      { de: "Jede Behauptung braucht einen Beleg, sonst bleibt sie eine Unterstellung.", en: "Every assertion needs evidence; without it, it stays an insinuation.", use: "bleiben + noun = to remain something; the sentence walks the line between Behauptung and Unterstellung that this pack draws." },
+
+      { de: "Ihr Einwand ist berechtigt, ändert aber nichts am Ergebnis.", en: "Your objection is valid, but it does not change the outcome.", use: "etwas ändern an + Dativ = to change something ABOUT something; nichts fills the etwas slot." },
+
+      { de: "Er räumte ein, die Zahlen falsch gelesen zu haben.", en: "He conceded that he had misread the figures.", use: "einräumen + perfect infinitive (gelesen zu haben) reports an earlier deed inside the concession — no dass-clause needed." },
+
+      { de: "Niemand zweifelt die Zahlen selbst an, wohl aber ihre Deutung.", en: "Nobody questions the figures themselves — their interpretation, though, they do question.", use: "wohl aber = but very much so; it flips the negation for the second object without repeating the verb." },
+
+      { de: "Wer übertreibt, macht seinen Standpunkt angreifbar.", en: "Overstating your case makes your position easy to attack.", use: "machen + adjective (angreifbar machen) = to render; -bar builds the attackable out of angreifen." },
+
+      { de: "Man kann jemanden überreden, ohne ihn zu überzeugen.", en: "You can talk someone into something without convincing them.", use: "überreden gets the action, überzeugen the mind — the pair this pack exists to keep apart, held in one ohne ... zu clause." },
+
+      { de: "Die Streitfrage ist seit Jahren dieselbe, nur die Lautstärke hat sich geändert.", en: "The contentious issue has been the same for years; only the volume has changed.", use: "dieselbe agrees with die Streitfrage; nur + subject fronts the one thing that did move." },
+
+      { de: "Ein Kompromiss, den beide Seiten hassen, ist manchmal der beste.", en: "A compromise both sides hate is sometimes the best one.", use: "The relative clause (den ... hassen) splits subject from verb; der beste stands alone — the noun is not repeated." },
+
+      { de: "In der Verhandlung machte keine Seite ein Zugeständnis.", en: "In the negotiation, neither side made a concession.", use: "ein Zugeständnis machen is the verb the noun takes; keine Seite = neither side, no extra weder needed." },
+
+      { de: "Bleiben Sie sachlich, auch wenn es persönlich wird.", en: "Stay objective even when it gets personal.", use: "sachlich bleiben = to keep to the substance; es wird persönlich uses werden for a situation turning." },
+
+      { de: "Seine Kritik war pauschal, ihre Antwort differenziert.", en: "His criticism was sweeping; her answer was nuanced.", use: "The second clause drops war — parallel verdicts share one verb. pauschal and differenziert are the pack's own opposites." },
+
+      { de: "Der Ton war polemisch, die Argumente waren es nicht.", en: "The tone was polemical; the arguments were not.", use: "es stands in for the adjective polemisch — German pronoun-ises predicates where English repeats or drops them." },
+
+      { de: "Als befangen gilt, wer am Ausgang des Verfahrens ein eigenes Interesse hat.", en: "Anyone with a personal stake in the outcome counts as biased.", use: "gelten als + adjective fronted, subject postponed as a wer-clause — the sentence shape of legal definitions." },
+
+      { de: "Ein unvoreingenommener Blick von außen deckt Fehler auf, die drinnen niemand mehr sieht.", en: "An impartial outside view uncovers mistakes nobody inside can see any more.", use: "aufdecken splits; von außen / drinnen mirror each other across the clause border." },
+
+      { de: "Die Beweisführung schien stichfest, bis jemand das Datum prüfte.", en: "The argument seemed watertight until someone checked the date.", use: "scheinen + adjective = to seem; bis then punctures it. stichfest — literally proof against stabbing." },
+
+      { de: "Der Vorwurf erwies sich als haltlos.", en: "The accusation proved to be unfounded.", use: "sich erweisen als + adjective = to prove/turn out to be — the standard verdict formula of reports." },
+
+      { de: "Umstritten heißt nicht widerlegt.", en: "Controversial does not mean disproved.", use: "Two bare participles around heißt — a definition compressed to four words; German headlines love this shape." },
+
+      { de: "Ohne triftigen Grund sagt man einen solchen Termin nicht ab.", en: "Without a compelling reason, you do not cancel an appointment like that.", use: "triftig collocates with Grund almost exclusively; absagen splits to the very end. ein solcher = like that." },
+
+      { de: "Es wirkt scheinheilig, Wasser zu predigen und Wein zu trinken.", en: "Preaching water while drinking wine comes across as disingenuous.", use: "Wasser predigen und Wein trinken is the proverb for saying one thing and doing another; wirken = to come across as." },
+
+      { de: "Überspitzt formuliert: Wer alles relativiert, behauptet am Ende gar nichts mehr.", en: "To put it pointedly: if you qualify everything, you end up claiming nothing at all.", use: "Überspitzt formuliert: is the licence German speakers buy before exaggerating on purpose — the pack's überspitzt in its natural habitat." },
+
+    ],
   },
   part406: {
     label: "Part 406", level: "B2-C1", theme: "Formal and official",
@@ -8090,7 +8134,51 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "ordnungsgemäß", lookup: "ordnungsgemäß", fallbackEn: "duly / proper", tip: "adjective" },
     ],
     dialogues: [],
-    phrases: [],
+    phrases: [
+
+      { de: "Der Antrag muss fristgerecht eingereicht werden.", en: "The application must be handed in by the deadline.", use: "fristgerecht packs 'within the deadline' into one adverb — the word every German form letter uses." },
+
+      { de: "Eine Verlängerung müssen Sie schriftlich beantragen, bevor die Frist abläuft.", en: "You have to apply for an extension in writing before the deadline expires.", use: "beantragen takes a direct object, no für; eine Frist läuft ab — deadlines RUN OUT in German." },
+
+      { de: "Die Kündigung bedarf der Schriftform.", en: "Notice of termination must be given in writing.", use: "bedürfen + GENITIV (der Schriftform) — the most official verb German has; four words that mean a whole paragraph." },
+
+      { de: "Mit Ihrer Unterschrift erkennen Sie die Vereinbarung als verbindlich an.", en: "With your signature you accept the agreement as binding.", use: "anerkennen als = to recognise as; the prefix an- waits at the very end, after the als-phrase." },
+
+      { de: "Die Haftung für Schäden ist auf grobe Fahrlässigkeit beschränkt.", en: "Liability for damage is limited to gross negligence.", use: "beschränkt auf + Akkusativ; grobe Fahrlässigkeit is the fixed legal degree of carelessness." },
+
+      { de: "Eine Entschädigung wird nur gegen Nachweis gezahlt.", en: "Compensation is paid only against documentary evidence.", use: "gegen Nachweis = on presentation of proof — gegen here means in exchange for, not against." },
+
+      { de: "Die Genehmigung gilt als erteilt, wenn die Behörde nicht binnen eines Monats widerspricht.", en: "The authorisation counts as granted if the authority does not object within a month.", use: "gelten als + participle; binnen + Genitiv = within — the formal twin of innerhalb von." },
+
+      { de: "Ohne Zustimmung der Eltern ist die Anmeldung unwirksam.", en: "Without the parents' consent, the registration is invalid.", use: "unwirksam = without legal effect — the administrative opposite of wirksam, sharper than ungültig." },
+
+      { de: "Gegen die Ablehnung können Sie innerhalb von vier Wochen Widerspruch einlegen.", en: "You can appeal against the refusal within four weeks.", use: "Widerspruch einlegen gegen + Akkusativ — the fixed formula printed at the bottom of every German Bescheid." },
+
+      { de: "Legen Sie das Zeugnis im Original oder als beglaubigte Ausfertigung vor.", en: "Submit the certificate in the original or as a certified copy.", use: "vorlegen = to present for inspection; die beglaubigte Ausfertigung is the notarised official copy — Amtsdeutsch vocabulary in its element." },
+
+      { de: "Machen Sie im Formular vollständige Angaben, sonst verzögert sich das Verfahren.", en: "Give complete details on the form, otherwise the procedure will be delayed.", use: "Angaben machen = to provide details; sich verzögern — the delay happens BY ITSELF, no agent named." },
+
+      { de: "Auskunft erhält nur, wer ein berechtigtes Interesse nachweist.", en: "Information is given only to those who can show a legitimate interest.", use: "The subject is postponed as a wer-clause; berechtigtes Interesse is the legal threshold phrase for access to records." },
+
+      { de: "Für diesen Fall liegt die Zuständigkeit beim Landratsamt.", en: "For this case, jurisdiction lies with the district office.", use: "die Zuständigkeit liegt bei + Dativ — responsibility LIES WITH an office; the sentence Germans hear whenever they are redirected." },
+
+      { de: "Die Maßnahme tritt zum ersten Januar in Kraft.", en: "The measure comes into effect on the first of January.", use: "in Kraft treten = to come into force; zum + date for the effective day, not am." },
+
+      { de: "Wer gegen die Vorschrift verstößt, muss mit einem Bußgeld rechnen.", en: "Anyone who violates the regulation can expect a fine.", use: "verstoßen gegen + Akkusativ; mit etwas rechnen müssen is the standard warning of consequences." },
+
+      { de: "Der Verstoß wurde vermerkt, blieb aber folgenlos.", en: "The violation was noted on record but had no consequences.", use: "folgenlos bleiben = to remain without consequences — -los builds the adjective, bleiben keeps the state." },
+
+      { de: "Das Amt bewilligte den Zuschuss, verweigerte aber die Auszahlung im Voraus.", en: "The office granted the subsidy but withheld advance payment.", use: "bewilligen and verweigern are the two stamps on an official's desk; im Voraus = in advance." },
+
+      { de: "Das Angebot ist unverbindlich und gilt nur bis Monatsende.", en: "The offer is non-binding and only valid until the end of the month.", use: "unverbindlich — the small print word; bis Monatsende drops the article, like bis Jahresende and bis Wochenende." },
+
+      { de: "Die Stadt untersagte die Versammlung, das Gericht gestattete sie.", en: "The city prohibited the assembly; the court permitted it.", use: "untersagen and gestatten are the formal pair for verbieten and erlauben — same grammar, higher register." },
+
+      { de: "Der Bescheid wird Ihnen per Post zugestellt.", en: "The decision will be delivered to you by post.", use: "zustellen is official delivery with legal effect — the moment of Zustellung starts your appeal clock." },
+
+      { de: "Die Einwilligung kann jederzeit mit Wirkung für die Zukunft widerrufen werden.", en: "Consent may be revoked at any time with effect for the future.", use: "mit Wirkung für die Zukunft is the GDPR formula — revocation does not undo the past; widerrufen never splits." },
+
+    ],
   },
   part407: {
     label: "Part 407", level: "B2-C1", theme: "Nuanced feelings and behaviour",
@@ -8139,7 +8227,51 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "wankelmütig", lookup: "wankelmütig", fallbackEn: "fickle", tip: "adjective" },
     ],
     dialogues: [],
-    phrases: [],
+    phrases: [
+
+      { de: "Sehnsucht ist Heimweh nach etwas, das es vielleicht nie gab.", en: "Longing is homesickness for something that may never have existed.", use: "Heimweh nach + Dativ; das es nie gab — the es-gibt construction inside a relative clause, past tense gab." },
+
+      { de: "Aus anfänglicher Abneigung wurde mit den Jahren Zuneigung.", en: "Initial aversion turned into affection over the years.", use: "aus X wird Y for transformations; mit den Jahren = as the years passed. The pack's two opposites in one arc." },
+
+      { de: "Schlimmer als sein Zorn war ihre Verachtung.", en: "Worse than his anger was her contempt.", use: "Fronting the comparative (Schlimmer als ...) puts the verdict first and the subject last — a written-German emphasis pattern." },
+
+      { de: "Neid richtet sich auf das, was der andere hat, Eifersucht auf den Menschen selbst.", en: "Envy is aimed at what the other person has; jealousy at the person themselves.", use: "sich richten auf + Akkusativ; the second half keeps only auf — ellipsis carries the distinction this pack teaches." },
+
+      { de: "Seine Schadenfreude konnte er nur schlecht verbergen.", en: "He could barely hide his gloating.", use: "nur schlecht = only poorly, i.e. barely; the object fronts and the modal bracket closes with verbergen." },
+
+      { de: "Sie nahm die Nachricht mit erstaunlicher Gelassenheit auf.", en: "She took the news with astonishing composure.", use: "eine Nachricht aufnehmen = to take/receive news; mit + Dativ names the manner. aufnehmen splits." },
+
+      { de: "Zwischen Zuversicht und Verzweiflung lagen bei ihm nur Stunden.", en: "For him, confidence and despair were only hours apart.", use: "zwischen X und Y liegen + time = to be that far apart; bei ihm = in his case." },
+
+      { de: "Die Erleichterung stand ihr ins Gesicht geschrieben.", en: "Relief was written all over her face.", use: "jemandem ins Gesicht geschrieben stehen — fixed idiom; the person goes into the dative (ihr)." },
+
+      { de: "Reue kam erst, als der Schaden nicht mehr gutzumachen war.", en: "Remorse only came once the damage could no longer be undone.", use: "erst, als = only when; war ... gutzumachen is sein + zu again — could be made good." },
+
+      { de: "Vor Scham brachte er kein Wort heraus.", en: "He was too ashamed to get a word out.", use: "vor + emotion (no article) gives the cause: vor Scham, vor Angst, vor Freude. kein Wort herausbringen = to be unable to speak." },
+
+      { de: "Um ihre Verlegenheit zu überspielen, machte sie einen Scherz.", en: "To cover her embarrassment, she made a joke.", use: "überspielen = to play over/mask a feeling — a stage metaphor German uses for social situations; einen Scherz machen, not sagen." },
+
+      { de: "Mit stiller Genugtuung sah er, dass er recht behalten hatte.", en: "With quiet satisfaction he saw that he had been proved right.", use: "recht behalten = to turn out right in the end — behalten, not haben: the being-right survived the argument." },
+
+      { de: "Sei nicht nachtragend, das vergiftet nur dich selbst.", en: "Don't hold grudges — it only poisons you.", use: "nachtragend sein = to hold grudges, from nachtragen, to carry something after someone; das picks up the whole clause." },
+
+      { de: "Nach dem Streit zeigte sie sich versöhnlich.", en: "After the argument, she was ready to make peace.", use: "sich zeigen + adjective = to show oneself to be — the outward behaviour, not necessarily the feeling." },
+
+      { de: "Vor Prüfungen ist er reizbar und schläft schlecht.", en: "Before exams he is irritable and sleeps badly.", use: "vor + Dativ plural for recurring occasions (vor Prüfungen = before exams generally); reizbar — -bar on a feeling verb." },
+
+      { de: "Bleib besonnen, auch wenn alle anderen den Kopf verlieren.", en: "Keep a level head even when everyone else is losing theirs.", use: "besonnen bleiben pairs with den Kopf verlieren — composure kept against composure lost." },
+
+      { de: "Ein einziger leichtsinniger Moment kann Jahre kosten.", en: "A single reckless moment can cost you years.", use: "kosten with a bare accusative of what it costs (Jahre); ein einziger sharpens ein." },
+
+      { de: "Er ist zurückhaltend, aber keineswegs gleichgültig.", en: "He is reserved, but by no means indifferent.", use: "keineswegs = by no means — a firm, formal negation that rescues zurückhaltend from being misread as coldness." },
+
+      { de: "Hinter ihrer überheblichen Art steckt vor allem Unsicherheit.", en: "Behind her arrogant manner lies mostly insecurity.", use: "hinter etwas stecken = to lie behind/be the real cause; die Art = manner, the habitual way someone is." },
+
+      { de: "Was alle stur nennen, nennt er Prinzipientreue.", en: "What everyone calls obstinacy, he calls being true to his principles.", use: "nennen twice with double accusative — the was-clause is the shared object, renamed from each side of the argument." },
+
+      { de: "Er ist launisch wie das Aprilwetter.", en: "He is as moody as April weather.", use: "launisch wie das Aprilwetter is the stock comparison — April weather being famously unable to decide; wie, not als, for likeness." },
+
+    ],
   },
   part408: {
     label: "Part 408", level: "C1", theme: "Academic and analytical",
