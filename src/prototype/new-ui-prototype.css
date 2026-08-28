@@ -1944,7 +1944,6 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
      height. At 3.4 to 1 it keeps 59% instead, and the aspect ratio means a
      wider window gets a taller banner rather than a thinner slice of the
      same picture. The min-height stays as the floor for narrow ones. */
-  aspect-ratio: 3.4 / 1;
   min-height: 250px;
   border: 1px solid var(--np-line);
   border-radius: 28px;

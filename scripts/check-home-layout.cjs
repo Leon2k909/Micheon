@@ -99,12 +99,24 @@ for (const [scene, binding] of [
  * it looks like a picture somebody chose badly.
  */
 const bannerBox = /\.np-home-banner \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? "";
-const bannerRatio = /aspect-ratio:\s*([\d.]+)\s*\/\s*1/.exec(bannerBox);
-assert.ok(bannerRatio, "the banner has no shape of its own, so its height is whatever a min-height says");
 assert.ok(
-  Number(bannerRatio[1]) <= 3.6,
-  `the banner is ${bannerRatio[1]} to 1, which crops a 2:1 picture down to a strip again`
+  !/aspect-ratio/.test(bannerBox),
+  "the banner grows with the window again. A ratio was tried so a picture would stop being cropped, "
+    + "and on a wide screen it made the banner over 500px tall. The pictures carry the banner's shape "
+    + "instead, so the box can stay the height it has always been"
 );
+// Each file has the banner's proportions, so cover has almost nothing to throw
+// away. A 2:1 illustration in a strip this wide comes out as a band of empty
+// sky; contained instead, it shrinks into a corner and leaves the rest flat.
+for (const scenery of [
+  "guided-speech-bubbles-v1",
+  "guided-flight-path-v1",
+  "guided-flower-garden-v1",
+  "guided-soft-dawn-v1",
+]) {
+  const full = path.join(root, "src/prototype/assets", scenery + ".webp");
+  assert.ok(fs.existsSync(full), scenery + " is missing, so a scene has no picture to lend the banner");
+}
 assert.ok(
   /style=\{scenery\.frame/.test(shell),
   "the banner ignores each picture's framing, so cover falls back to one placement for all of them"
