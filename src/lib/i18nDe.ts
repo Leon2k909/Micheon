@@ -1079,6 +1079,7 @@ export const DE: Record<string, string> = {
   "Restart now": "Jetzt neu starten",
   "Restarting…": "Wird neu gestartet…",
   "Installing your update": "Dein Update wird installiert",
+  "Installing update": "Update wird installiert",
   "Micheon will close for a moment and reopen automatically.": "Micheon wird kurz geschlossen und öffnet sich danach automatisch wieder.",
   "Download complete": "Download abgeschlossen",
   "Restarting Micheon": "Micheon wird neu gestartet",

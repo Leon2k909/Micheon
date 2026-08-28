@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, CircleCheck, Download, Power } from "lucide-react";
 import {
-  normaliseUpdatePercent,
   UPDATE_INSTALL_REQUEST_EVENT,
   updatePanelIsUseful,
   updateStatusKey,
@@ -36,18 +35,15 @@ const previewInstalling = import.meta.env.DEV
   && typeof window !== "undefined"
   && new URLSearchParams(window.location.search).get("update-preview") === "installing";
 
-// A failed background check never opens the panel (the app retries silently
-// and settings has its own inline feedback), so only two states need copy.
+// Only a ready update opens the panel: a failed background check retries
+// silently, and a download in progress is not something to act on. So there
+// is one thing to say, and it is the same sentence every time.
 function panelCopy(status: UpdateStatus): string {
-  if (status.state === "downloading") {
-    return ui("Keep learning while Micheon prepares the new version.");
-  }
   const version = status.version ? ` v${status.version}` : "";
   return uiFmt("Restart Micheon to install update{version}. You can also keep learning.", { version });
 }
 
-function panelTitle(state: UpdateState): string {
-  if (state === "downloading") return ui("Downloading update");
+function panelTitle(_state: UpdateState): string {
   return ui("Your update is ready");
 }
 
@@ -117,14 +113,25 @@ function UpdateInstallTakeover({
             <span>{ui("Preparing restart")}</span>
             <span>{ui("Just a moment")}</span>
           </div>
-          <div aria-hidden="true" className="grid grid-cols-3 gap-2">
-            <span className="micheon-update-install-step micheon-update-install-step--done h-1.5 rounded-full" />
-            <motion.span
-              animate={reduceMotion ? undefined : { opacity: [0.45, 1, 0.45] }}
-              className="micheon-update-install-step micheon-update-install-step--active h-1.5 rounded-full"
-              transition={{ duration: 1.1, ease: "easeInOut", repeat: Infinity }}
+          {/*
+            The loading bar, on the screen the learner reached by asking for
+            it. Deliberately WITHOUT a value: the installer reports no
+            progress, so any number here would be invented. An indeterminate
+            bar says "working" and claims nothing about how far along it is —
+            three segments pretending to be steps claimed a sequence that was
+            equally made up.
+          */}
+          <div
+            aria-label={ui("Installing update")}
+            className="micheon-update-progress-track"
+            data-testid="update-install-progress"
+            role="progressbar"
+          >
+            <motion.div
+              animate={reduceMotion ? { width: "100%" } : { x: ["-100%", "250%"] }}
+              className="micheon-update-progress micheon-update-progress--sweeping"
+              transition={reduceMotion ? undefined : { duration: 1.4, ease: "easeInOut", repeat: Infinity }}
             />
-            <span className="micheon-update-install-step h-1.5 rounded-full" />
           </div>
 
           <div className="mt-5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-xs font-bold">
@@ -213,12 +220,9 @@ export function UpdateBanner() {
 
   const key = updateStatusKey(status);
   const open = updatePanelIsUseful(status) && dismissedFor !== key;
-  const percent = useMemo(
-    () => normaliseUpdatePercent(status?.state === "ready" ? 100 : status?.percent),
-    [status?.percent, status?.state]
-  );
 
-  const Icon = status?.state === "ready" ? CircleCheck : Download;
+  // The panel opens for one state, so the mark on it is that state's.
+  const Icon = CircleCheck;
 
   return (
     <>
@@ -266,29 +270,14 @@ export function UpdateBanner() {
               </div>
             </div>
 
-            {status.state === "downloading" && (
-              <div className="micheon-update-download" data-testid="update-progress-wrap">
-                <div className="micheon-update-download__label">
-                  <span>{ui("Downloading")}</span>
-                  <span>{percent}%</span>
-                </div>
-                <div
-                  aria-label={ui("Update download progress")}
-                  aria-valuemax={100}
-                  aria-valuemin={0}
-                  aria-valuenow={percent}
-                  className="micheon-update-progress-track"
-                  role="progressbar"
-                >
-                  <div
-                    className="micheon-update-progress"
-                    data-testid="update-progress-fill"
-                    style={{ width: `${percent}%` }}
-                  />
-                </div>
-              </div>
-            )}
-
+            {/*
+              No progress bar here. The panel's whole job is to say that an
+              update is waiting and offer the one action there is; a transfer
+              nobody asked to watch, reported in the corner of a lesson, is
+              noise with a number on it. The bar lives on the restart screen,
+              where it describes something the learner has just asked for, and
+              in settings, where a percentage is the point.
+            */}
             <div className="micheon-update-actions">
               {status.state === "ready" && (
                 <button
@@ -311,7 +300,7 @@ export function UpdateBanner() {
                 onClick={() => setDismissedFor(key)}
                 type="button"
               >
-                {status.state === "downloading" ? ui("Hide") : ui("Keep learning")}
+                {ui("Keep learning")}
               </button>
             </div>
           </div>

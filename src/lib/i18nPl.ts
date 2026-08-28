@@ -1015,6 +1015,7 @@ export const PL: Record<string, string> = {
   "Restart now": "Uruchom ponownie teraz",
   "Restarting…": "Ponowne uruchamianie…",
   "Installing your update": "Instalujemy twoją aktualizację",
+  "Installing update": "Instalowanie aktualizacji",
   "Micheon will close for a moment and reopen automatically.": "Micheon zamknie się na chwilę i otworzy z powrotem automatycznie.",
   "Download complete": "Pobieranie zakończone",
   "Restarting Micheon": "Ponowne uruchamianie Micheon",

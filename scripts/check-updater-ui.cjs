@@ -53,7 +53,12 @@ check("update percentages clamp below zero", normaliseUpdatePercent(-5) === 0);
 check("update percentages round for display", normaliseUpdatePercent(47.6) === 48);
 check("update percentages clamp above one hundred", normaliseUpdatePercent(105) === 100);
 check("invalid update percentages fall back to zero", normaliseUpdatePercent("not-a-number") === 0);
-check("only actionable download and ready states open the panel", ["downloading", "ready"].every((state) => updatePanelIsUseful({ state })));
+// The panel announces; it does not narrate. Downloading is not a state the
+// learner can act on — its only control was Hide, which is the panel asking
+// to be dismissed for having spoken — and opening for it meant one update
+// interrupting twice. The transfer is automatic and reported in settings.
+check("only a ready update opens the panel", updatePanelIsUseful({ state: "ready" }));
+check("a download in progress does not interrupt", !updatePanelIsUseful({ state: "downloading" }));
 check("quiet updater states stay out of the learner's way", ["idle", "checking", "current", "unsupported", "error"].every((state) => !updatePanelIsUseful({ state })));
 check("dismissal keys change with state and version", updateStatusKey({ state: "downloading", version: "1.2.59" }) !== updateStatusKey({ state: "ready", version: "1.2.59" }));
 
@@ -67,7 +72,7 @@ check("a postponement that has run out lets the panel back",
   updatePanelIsUseful({ state: "ready", version: "1.2.59", snoozedUntil: 4_000 }, 9_000));
 check("no postponement is not a postponement",
   updatePanelIsUseful({ state: "ready", version: "1.2.59", snoozedUntil: 0 })
-  && updatePanelIsUseful({ state: "downloading" }));
+  && updatePanelIsUseful({ state: "ready", version: "1.2.59" }));
 // ── one way to set the panel aside, not two ─────────────────────────────────
 // The panel used to carry a clock beside Keep learning, so that a lasting
 // postponement could be reached without opening settings. Both controls read
@@ -116,7 +121,16 @@ check("Electron publishes live download progress", /download-progress[\s\S]*setU
 check("preload exposes status, manual checking and installation", ["getUpdateStatus", "checkForUpdateNow", "onUpdateStatus", "installUpdate"].every((name) => preload.includes(name)));
 check("the themed panel restores the current state on mount", banner.includes("desktop.getUpdateStatus()"));
 check("the themed panel listens for every updater state", banner.includes("desktop.onUpdateStatus?."));
-check("the themed panel includes accessible progress", banner.includes('role="progressbar"') && banner.includes("aria-valuenow={percent}"));
+// The bar belongs on the screen the learner reached by asking for it, not in
+// the corner of a lesson. It is indeterminate on purpose: the installer
+// reports no progress, so aria-valuenow would be a number nobody measured.
+const takeoverBlock = banner.slice(banner.indexOf("function UpdateInstallTakeover"), banner.indexOf("export function UpdateBanner"));
+const panelBlock = banner.slice(banner.indexOf("export function UpdateBanner"));
+check("the restart screen carries the loading bar", takeoverBlock.includes('role="progressbar"')
+  && takeoverBlock.includes('data-testid="update-install-progress"'));
+check("that bar claims no progress it cannot know", !takeoverBlock.includes("aria-valuenow"));
+check("the corner panel carries no bar and no percentage", !panelBlock.includes('role="progressbar"')
+  && !panelBlock.includes("micheon-update-download") && !panelBlock.includes("{percent}"));
 check("the themed panel offers restart; manual retry lives in settings", banner.includes('ui("Restart Micheon")') && !banner.includes('ui("Try again")') && card.includes('ui("Check for updates")'));
 check("account settings mirror download progress", card.includes('role="progressbar"') && card.includes("normaliseUpdatePercent"));
 check("explicit updates keep the generic NSIS window hidden", /autoUpdater\.quitAndInstall\(\s*true\s*,\s*true\s*\)/.test(main));
@@ -138,7 +152,19 @@ check(
 check(
   "the updater's progress fill is painted from those tokens, not a green literal",
   !styles.includes("#69d463")
-    && /\.micheon-update-progress\s*\{[^}]*var\(--accent\)/.test(styles),
+    && /\.micheon-update-takeover \.micheon-update-progress\s*\{[^}]*var\(--install-accent\)/.test(styles),
+);
+// A gradient built from a token the element cannot see is not a colour, it is
+// nothing: the declaration is invalid and the fill renders fully transparent.
+// That happened twice while moving this bar to the restart screen — once
+// painting from --accent-strong, which only ever existed on the corner panel,
+// and once in the custom-accent overrides, which reached for --np-green. Both
+// produced an invisible loading bar on the one screen whose whole job is to
+// show that work is happening, and neither is visible in the source.
+check(
+  "the restart bar is painted only from tokens that screen defines",
+  !/\.micheon-update-takeover \.micheon-update-progress[^}]*var\(--accent-strong\)/.test(styles)
+    && !/\.micheon-update-takeover \.micheon-update-progress[^}]*var\(--np-green/.test(styles),
 );
 check(
   "the updater's surfaces are neutral, so the track cannot read green under another accent",
@@ -181,6 +207,33 @@ check("the install takeover follows the learner's dark-theme setting", styles.in
     .map((hex) => [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16)))
     .filter(([r, g, b]) => g > Math.max(r, b) && g - Math.max(r, b) >= 3);
   check("the install takeover's dark surfaces are slate, not olive", olive.length === 0);
+  // The scan above reads the palette's own --install-* declarations, which is
+  // where the de-greening was done — and it therefore could not see a rule
+  // that painted a literal instead of using a token. The shell behind the app
+  // icon kept #263a29 that way, an olive square glued to the icon on a slate
+  // card, through every check here. So: in dark, this screen paints from
+  // tokens, and any green hex it names is by definition one the palette does
+  // not control.
+  const darkInstallRules = [...styles.matchAll(
+    /html\[data-theme="dark"\][^{]*\.micheon-update-(?:install|takeover)[^{]*\{([^}]*)\}/g
+  )]
+    .map((match) => match[1])
+    // Comments quote the very greens they record removing, and a var()
+    // fallback is the app's own accent standing in when no accent is set —
+    // neither is this screen choosing a colour of its own. Both are stripped
+    // before the scan, or the guard fails on the note explaining itself.
+    .map((body) => body.replace(/\/\*[\s\S]*?\*\//g, "").replace(/var\([^)]*\)/g, ""))
+    .join("\n");
+  const darkGreenLiterals = [...darkInstallRules.matchAll(/#([0-9a-fA-F]{6})\b/g)]
+    .map((match) => match[1])
+    .map((hex) => [hex, [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16))])
+    .filter(([, [r, g, b]]) => g > Math.max(r, b) && g - Math.max(r, b) >= 3)
+    .map(([hex]) => `#${hex}`);
+  check(
+    "no dark install rule paints a green of its own outside the palette",
+    darkGreenLiterals.length === 0,
+    darkGreenLiterals.join(", ")
+  );
   check(
     "a chosen accent reaches the install takeover",
     /--install-accent:\s*var\(--accent/.test(block)

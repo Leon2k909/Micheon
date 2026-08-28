@@ -54,8 +54,16 @@ export function updatePanelIsUseful(status: UpdateStatus | null, now = Date.now(
   // reports snoozedUntil as 0 once the time has passed, so nothing here has to
   // remember to forget it.
   if (Number(status?.snoozedUntil) > now) return false;
-  return status?.state === "downloading"
-    || status?.state === "ready";
+  // Downloading is not something the learner can act on, and it used to open
+  // the panel anyway — so one update announced itself twice: once to report a
+  // transfer nobody asked to watch, and again when it was actually ready. The
+  // first of those offered no action but Hide, which is the panel asking to be
+  // dismissed for having spoken.
+  //
+  // The transfer is automatic and background; the only moment worth a word is
+  // the one the learner can answer. Anyone who wants to watch the bytes has
+  // settings, which reports the same download with a real percentage.
+  return status?.state === "ready";
 }
 
 export function updateStatusKey(status: UpdateStatus | null): string {
