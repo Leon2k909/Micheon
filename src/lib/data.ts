@@ -143,6 +143,14 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "Ich lerne jeden Tag zwanzig Minuten Deutsch.", en: "I study German for twenty minutes every day. / I do twenty minutes of German a day.", use: "jeden Tag is accusative even though nothing is being done to it — German marks stretches of time this way: jeden Tag, jeden Morgen, letzte Woche.", fr: "J'apprends l'allemand vingt minutes par jour." , say: "sounds like: ish LAIR-nuh YAY-den tahk TSVAN-tsish mi-NOO-ten DOYTSH — Deutsch has the 'oy' of boy, and zwanzig ends in the soft '-ich' hiss, never a hard g; careful speech gives -en its full 'en', but in everyday German it shrinks to a bare n: 'YAY-dn', 'mi-NOO-tn'" },
       { de: "Deutsch lernen macht Spaß.", en: "Learning German is fun. / German's fun to learn.", use: "An infinitive can be the subject of a sentence, exactly like the English -ing form: Deutsch lernen macht Spaß, Kochen macht Spaß, Warten nervt.", fr: "Apprendre l'allemand, c'est amusant." },
       { de: "Ich habe kein Auto.", en: "I don't have a car. / I haven't got a car.", use: "To negate a noun with ein, swap in kein: ein Auto becomes kein Auto. Never nicht ein. It follows the same endings as ein — keine Zeit, keinen Hunger.", fr: "Je n'ai pas de voiture.", short: "Ich hab kein Auto.", shortEn: "I don't have a car. / I haven't got a car." },
+      { de: "Ich heiße Anna, und wie heißt du?", en: "My name is Anna — and what's your name?", use: "heißen carries the name directly, no 'is': Ich heiße Anna. The du-question flips verb and subject: heißt du." },
+      { de: "Das ist mein erster Tag hier.", en: "This is my first day here.", use: "das ist introduces things and situations alike; erster takes -er after mein before a masculine noun." },
+      { de: "Ich verstehe nur ein bisschen Deutsch.", en: "I only understand a little German.", use: "ein bisschen + language, no article on Deutsch; nur sits right before what it limits." },
+      { de: "Sprechen Sie bitte langsamer.", en: "Please speak more slowly.", use: "The Sie-imperative starts with the verb: Sprechen Sie. langsamer — the comparative works as 'more slowly', no extra word." },
+      { de: "Wie bitte? Noch einmal, bitte.", en: "Sorry? Once more, please.", use: "Wie bitte? is the polite 'pardon?' — wie, not was, which sounds blunt. noch einmal = one more time." },
+      { de: "Freut mich, ich bin der Neue.", en: "Nice to meet you — I'm the new guy.", use: "Freut mich — the two-word pleased-to-meet-you; der Neue, the nominalised adjective as a role." },
+      { de: "Mein Wortschatz ist noch klein.", en: "My vocabulary is still small.", use: "der Wortschatz — literally the word treasure; noch = still, promising growth." },
+      { de: "Gute Nacht, bis morgen früh!", en: "Good night — see you in the morning!", use: "morgen früh = tomorrow morning; bis + time once more, the goodnight pair in four words." },
     ],
   },
   part2: {
@@ -199,6 +207,14 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "Der nächste Zug fährt eine Stunde später.", en: "The next train leaves an hour later. / The next one's an hour later.", use: "'fahren' is the normal verb for trains and buses — it covers English 'goes' or 'leaves'. Use 'gehen' when you go somewhere on foot.", fr: "Le prochain train part une heure plus tard." , say: "sounds like: dair NEHSH-stuh TSOOK fairt EYE-nuh SHTOON-duh SHPAY-tuh — Stunde starts 'sht' and später starts 'shp', but the -st- inside nächste stays a plain 's-t', and the ch before it is a soft hiss, never a k" },
       { de: "Darf ich eine Frage stellen?", en: "May I ask a question? / Can I ask you something?", use: "German 'places' a question: 'eine Frage stellen' is the fixed pair. 'fragen' is used with a person — 'Ich frage den Mann'.", fr: "Je peux poser une question ?" },
       { de: "Kurze Frage: Fährt der Bus auch sonntags?", en: "Quick question — does the bus run on Sundays too? / Just a quick one: is there a bus on Sundays?", use: "'Kurze Frage:' is exactly how Germans open a question they know is small. 'sonntags' (small letter, with -s) means 'on Sundays' in general.", fr: "Petite question : le bus circule aussi le dimanche ?", short: "Kurze Frage:", shortEn: "Quick question:" },
+      { de: "Eine Fahrkarte nach Köln, bitte.", en: "One ticket to Cologne, please.", use: "nach + city for destinations; the whole request works without a verb — noun, destination, bitte." },
+      { de: "Wann fährt die letzte Bahn zurück?", en: "When does the last train go back?", use: "zurückfahren splits even in a question: fährt ... zurück; die letzte Bahn — the one you must not miss." },
+      { de: "Fährt dieser Zug auch nach Bonn?", en: "Does this train go to Bonn as well?", use: "auch inside the question = the anxious 'does it really'; dieser points at the train you're boarding." },
+      { de: "Ich steige am Hauptbahnhof aus.", en: "I'm getting off at the main station.", use: "aussteigen splits: steige ... aus. am = an dem for stations and stops." },
+      { de: "Wo kaufe ich hier einen Kaffee?", en: "Where can I buy a coffee here?", use: "German often uses plain present where English says 'can I': Wo kaufe ich ...? einen — masculine accusative." },
+      { de: "Der Bus kommt alle zehn Minuten.", en: "The bus comes every ten minutes.", use: "alle + number + Minuten = every ten minutes — alle, not jede, with intervals." },
+      { de: "Ich brauche noch eine Quittung.", en: "I still need a receipt.", use: "noch here = additionally/still; brauchen + accusative, no preposition." },
+      { de: "Entschuldigung, ist das der Bus zum Flughafen?", en: "Excuse me, is this the bus to the airport?", use: "zum = zu dem — zu for buildings and places, nach for cities; Entschuldigung opens any stranger-question." },
     ],
   },
   part3: {
@@ -254,6 +270,14 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "Am Wochenende schlafe ich oft lange.", en: "I often sleep in at the weekend. / I often have a lie-in on weekends.", use: "'lange schlafen' is the German for a lie-in — there's no single verb for it.", fr: "Le week-end, je fais souvent la grasse matinée." },
       { de: "Ich bin um sechs zu Hause.", en: "I'll be home at six. / I'm back home at six.", use: "'zu Hause' = at home (where you are); 'nach Hause' = home (where you're heading). Learn the two as a pair.", fr: "Je serai à la maison à six heures." },
       { de: "Abends sehe ich noch ein bisschen fern.", en: "In the evenings I watch a bit of TV. / I watch some telly in the evening.", use: "'fernsehen' splits: 'sehe … fern'. The whole idea sits in that one verb — don't build it out of 'sehen' plus a word for TV.", fr: "Le soir, je regarde un peu la télé." , say: "sounds like: AH-b'nts ZAY-uh ish nokh ine BISS-sh'n fairn — bisschen ends in a soft hiss, not an English 'ch'; careful speech says ZAY-uh, everyday German just 'zay'" },
+      { de: "Ich stehe jeden Tag um sieben auf.", en: "I get up at seven every day.", use: "aufstehen splits: stehe ... auf. um + clock time; jeden Tag — accusative for repeated time." },
+      { de: "Zuerst dusche ich, dann frühstücke ich.", en: "First I shower, then I have breakfast.", use: "After zuerst and dann the verb comes straight away: dusche ich, frühstücke ich — verb-second, always." },
+      { de: "Das Bad ist gleich links.", en: "The bathroom is just on the left.", use: "gleich softens directions: just/right there. links needs no preposition — bare direction words." },
+      { de: "Ich räume schnell die Küche auf.", en: "I'll quickly tidy up the kitchen.", use: "German present covers near future: Ich räume ... auf = I'll tidy. aufräumen splits around the object." },
+      { de: "Machst du bitte das Fenster zu?", en: "Will you close the window, please?", use: "zumachen splits; a du-question with bitte works as a soft request — no extra 'will you' needed." },
+      { de: "Der Schlüssel hängt neben der Tür.", en: "The key hangs next to the door.", use: "German says where things HANG, STAND or LIE — hängen for hooks; neben + dative for position." },
+      { de: "Heute Abend koche ich, du spülst.", en: "Tonight I cook, you wash up.", use: "heute Abend fronts, so the verb follows at once: koche ich. The bare second clause splits the chores." },
+      { de: "Das Bett mache ich später.", en: "I'll make the bed later.", use: "das Bett machen = to make the bed; the object fronts, verb stays second: mache ich." },
     ],
   },
   part4: {
@@ -355,6 +379,14 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "Ich habe Milch und Brot gekauft.", en: "I bought milk and bread. / I got milk and bread.", use: "Spoken German tells the past with haben + participle, and the participle waits until the very end: Ich habe ... gekauft.", fr: "J'ai acheté du lait et du pain." },
       { de: "Möchtest du noch etwas?", en: "Would you like anything else? / Do you want some more?", use: "The Sie version a server uses is 'Möchten Sie noch etwas?'", fr: "Tu veux encore quelque chose ?", short: "Noch was?", shortEn: "Anything else?" },
       { de: "Nein danke, ich bin satt.", en: "No thanks, I'm full. / No thank you, I've had enough.", use: "'satt' = full up after eating. Never say 'Ich bin voll' — that means drunk.", fr: "Non merci, j'ai assez mangé.", short: "Ich bin satt.", shortEn: "I'm full." },
+      { de: "Einen Milchkaffee und ein Wasser, bitte.", en: "A latte and a water, please.", use: "Ordering needs no verb: item, item, bitte. einen — accusative shows even without one." },
+      { de: "Was können Sie heute empfehlen?", en: "What can you recommend today?", use: "The polite menu question; können Sie + infinitive at the end: empfehlen." },
+      { de: "Ich nehme die Suppe als Vorspeise.", en: "I'll have the soup as a starter.", use: "nehmen is the ordering verb — I'll TAKE the soup; als + noun for the role it plays." },
+      { de: "Schmeckt es dir?", en: "Are you enjoying it?", use: "schmecken + dative person: does it taste good TO YOU. The es is the food, unnamed." },
+      { de: "Wir möchten bitte zahlen.", en: "We'd like to pay, please.", use: "möchten = would like — the polite want; zahlen alone is what you say to the waiter, zusammen oder getrennt comes next." },
+      { de: "Zusammen oder getrennt? Getrennt, bitte.", en: "Together or separately? Separately, please.", use: "The bill question and its answer, verbless on both sides — exactly as spoken at the table." },
+      { de: "Das Frühstück gibt es bis elf Uhr.", en: "Breakfast is served until eleven.", use: "es gibt + accusative = there is / is available; bis + clock time, no preposition before elf." },
+      { de: "Noch einen Kaffee? Ja, gern.", en: "Another coffee? Yes, please.", use: "noch einen = one more; ja, gern is the warm yes — gern says you're pleased, not just willing." },
     ],
   },
   part6: {
@@ -404,6 +436,14 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "Ich glaube, wir müssen zurück.", en: "I think we have to go back. / I reckon we need to turn around.", use: "The movement verb is left out after müssen — 'wir müssen zurück' is complete as it stands.", fr: "Je crois qu'on doit faire demi-tour." },
       { de: "Steigen Sie hier aus?", en: "Are you getting off here? / Is this your stop?", use: "aussteigen is separable, so the 'aus' lands at the end. Ask it before you squeeze past someone on a full tram.", fr: "Vous descendez ici ?" , say: "sounds like: SHTY-g'n zee heer ows — St at the start of a word is 'sht', and -eigen is 'eye-g'n'" },
       { de: "Ich hole dich am Bahnhof ab.", en: "I'll pick you up at the station. / I'll come and get you from the station.", use: "abholen is separable: the 'ab' goes right to the end. Present tense here means the future — German usually skips 'werden'.", fr: "Je viens te chercher à la gare.", short: "Ich hol dich ab.", shortEn: "I'll pick you up." },
+      { de: "Gehen Sie hier geradeaus und dann rechts.", en: "Go straight on here, then right.", use: "geradeaus and rechts are bare direction adverbs — no zu, no article; the Sie-imperative leads." },
+      { de: "Die Apotheke ist direkt gegenüber.", en: "The pharmacy is directly opposite.", use: "gegenüber can stand alone at the end — opposite (of here); direkt sharpens it." },
+      { de: "Wie weit ist es bis zum Markt?", en: "How far is it to the market?", use: "wie weit + ist es — the distance question; bis zum = bis zu dem, up to." },
+      { de: "Das ist nur fünf Minuten zu Fuß.", en: "It's only five minutes on foot.", use: "zu Fuß = on foot — fixed phrase, no article; the minutes stand bare as a measure." },
+      { de: "Ich gehe lieber die kleine Straße entlang.", en: "I'd rather walk along the little street.", use: "entlang follows its noun: die Straße entlang; lieber = preferably, the comparative of gern." },
+      { de: "Da vorne ist der Eingang.", en: "The entrance is up ahead there.", use: "da vorne = up there ahead — German stacks little place words; the verb-second order puts ist right after." },
+      { de: "Wir treffen uns am Brunnen.", en: "We're meeting at the fountain.", use: "sich treffen = to meet (each other); am + landmark for meeting points." },
+      { de: "Achtung, die Ampel ist rot.", en: "Careful — the light is red.", use: "Achtung! is the warning word; die Ampel = the traffic light, always feminine." },
     ],
   },
   part7: {
@@ -453,6 +493,14 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "Meine Mutter ist gerade eingeschlafen.", en: "My mum has just fallen asleep. / My mam has just dropped off.", use: "'einschlafen' means to fall asleep and takes 'sein' in the perfect: 'ist eingeschlafen', never 'hat eingeschlafen'." },
       { de: "Mein Vater fühlt sich heute nicht so gut.", en: "My dad isn't feeling very well today. / My father doesn't feel very well today.", use: "'sich fühlen' uses a matching word for the person: 'ich fühle mich', 'er fühlt sich'. 'nicht so gut' is a natural, gentle way to say someone feels unwell." },
       { de: "Meiner Mutter geht es heute nicht gut.", en: "My mum isn't feeling well today. / My mam isn't well today.", use: "With 'jemandem geht es ...', the person is dative: 'meiner Mutter', not 'meine Mutter'." },
+      { de: "Das sind meine Eltern.", en: "These are my parents.", use: "das ist / das sind introduces people too — das never changes, the verb agrees: sind for plural." },
+      { de: "Mein Bruder wohnt noch zu Hause.", en: "My brother still lives at home.", use: "zu Hause = at home (being there); nach Hause is going there — the pair every learner mixes up." },
+      { de: "Meine Schwester ist zwei Jahre älter als ich.", en: "My sister is two years older than me.", use: "älter als = older than — als after comparatives, never wie; the years stand bare before it." },
+      { de: "Habt ihr Kinder? Ja, zwei.", en: "Do you have children? Yes, two.", use: "ihr is the plural you for a couple; the answer can be just the number — German drops what's obvious." },
+      { de: "Unsere Tochter heißt Lena.", en: "Our daughter is called Lena.", use: "unser + -e before feminine nouns: unsere Tochter; heißen again carrying the name directly." },
+      { de: "Ich sehe meine Großeltern jedes Wochenende.", en: "I see my grandparents every weekend.", use: "jedes Wochenende — accusative of repeated time, like jeden Tag; sehen + accusative, no preposition." },
+      { de: "Er sieht seinem Vater sehr ähnlich.", en: "He looks a lot like his father.", use: "jemandem ähnlich sehen — the person you resemble goes in the dative: seinem Vater." },
+      { de: "Wie alt ist dein Sohn? Er wird bald drei.", en: "How old is your son? He'll be three soon.", use: "wie alt asks age; er wird drei — werden + number for turning an age, bald = soon." },
     ],
   },
   part8: {
@@ -3628,6 +3676,14 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "Bleib dran!", en: "Keep at it!", use: "Warm encouragement from friends — 'dranbleiben' = stick with it. Also what hosts say before a break: 'Bleibt dran!' / formal 'Bleiben Sie dran!'", fr: "Continue, lâche rien !", when: "To a friend who's talking about quitting their course, the gym, or their language app." , say: "sounds like: BLYPE dran — bleib rhymes with 'ripe', and the b hardens to a p" },
       { de: "Ich muss mehr üben.", en: "I need to practise more.", use: "Neutral, works for German, guitar or gym. The standard humble response to 'Dein Deutsch ist echt gut!'", fr: "Il faut que je m'entraîne plus." },
       { de: "Wie heißt das Ding da?", en: "What's that thing called?", use: "Casual pointing-at-things question with friends — how learners actually acquire everyday nouns. 'das Ding' = thingy.", fr: "Ça s'appelle comment, ce truc ?" },
+      { de: "Ich lerne seit drei Monaten Deutsch.", en: "I've been learning German for three months.", use: "seit + time span with PRESENT tense — German says 'I learn since three months' where English needs the perfect." },
+      { de: "Ich übe jeden Tag zehn Minuten.", en: "I practise ten minutes every day.", use: "Two bare time phrases in a row — jeden Tag zehn Minuten; German needs no 'for'." },
+      { de: "Ich verwechsle die Artikel noch oft.", en: "I still mix up the articles a lot.", use: "verwechseln = to mix up two things; noch oft = still often — the honest learner sentence." },
+      { de: "Dieses Wort kenne ich noch nicht.", en: "I don't know that word yet.", use: "The object fronts: Dieses Wort kenne ich ... — topic first, verb second, subject third. kennen for knowing things." },
+      { de: "Langsam verstehe ich immer mehr.", en: "Slowly I'm understanding more and more.", use: "immer + comparative = more and more: immer mehr, immer besser; langsam fronts and the verb follows." },
+      { de: "Ich schreibe mir neue Wörter sofort auf.", en: "I write new words down right away.", use: "sich (Dativ) etwas aufschreiben — mir says the note is for myself; aufschreiben splits." },
+      { de: "Sprechen ist für mich am schwersten.", en: "Speaking is the hardest part for me.", use: "The bare infinitive Sprechen works as a noun-subject; am schwersten — the am-superlative after sein." },
+      { de: "Übung macht den Meister, sagt man hier.", en: "Practice makes perfect, as they say here.", use: "The proverb with its accusative den Meister; sagt man trails — 'so people say'." },
     ],
   },
   part58: {
@@ -4691,6 +4747,14 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "Ich geh mal eben zum Bäcker.", en: "I'm just popping to the bakery.", use: "'mal eben' is the northern twin of 'mal kurz' — a quick errand you'll be back from. Works with any destination: zum Supermarkt, zur Post, nach unten.", fr: "Je fais un saut à la boulangerie.", when: "Heading out for ten minutes on a Saturday morning." },
       { de: "Warte kurz, ich komme gleich.", en: "Hang on a sec, I'm coming.", use: "'Warte kurz' to one person, 'Wartet kurz' to several. 'Ich komme gleich' is a promise to arrive, not to leave — the opposite of 'Ich bin gleich weg'.", fr: "Attends une seconde, j'arrive.", when: "Someone is at the door or already heading out." },
       { de: "Wo bist du? — Ich bin kurz weg.", en: "Where are you? — I've just nipped out.", use: "'kurz weg' is the everyday way of saying you're away but not gone. If you had really left you'd say 'Ich bin weg' — dropping the 'kurz' changes it completely.", fr: "Tu es où ? — Je suis sorti un instant.", when: "Texting back when someone can't find you." },
+      { de: "Rück mal ein Stück, ich will auch aufs Sofa.", en: "Scoot over a bit — I want to get on the sofa too.", use: "rücken = to scoot/shift; ein Stück = a bit; aufs = auf das, accusative because you're moving there." },
+      { de: "Ich mache uns schnell einen Tee.", en: "I'll quickly make us some tea.", use: "uns as dative — for us; einen Tee, one tea as a serving. Present tense again for the immediate future." },
+      { de: "Dein Handy liegt auf dem Sofa.", en: "Your phone is on the sofa.", use: "liegen for flat things at rest — German picks the posture verb; auf + dative for where it lies." },
+      { de: "Wer bringt heute den Müll raus?", en: "Whose turn is it to take the bin out today?", use: "German asks who DOES it: Wer bringt ... raus? rausbringen splits; den Müll — the rubbish, always singular." },
+      { de: "Lass uns heute früh schlafen gehen.", en: "Let's go to sleep early tonight.", use: "Lass uns + infinitive = let's; schlafen gehen — two infinitives stack at the end, gehen last." },
+      { de: "Mir ist kalt, machst du die Heizung an?", en: "I'm cold — will you turn the heating on?", use: "Mir ist kalt — the cold is felt in the dative, ich bin kalt means something else. anmachen splits." },
+      { de: "Keine Sorge, ich bin nicht sauer.", en: "Don't worry, I'm not annoyed.", use: "Keine Sorge = no worry — the calming opener; sauer = annoyed, the everyday word, not böse." },
+      { de: "Ich bin heute einfach nur müde.", en: "I'm just plain tired today.", use: "einfach nur = just plain/simply — the double particle that says there's no deeper reason." },
     ],
     dialogues: [],
   },
@@ -5850,6 +5914,14 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "Ich brauche etwas gegen Heuschnupfen.", en: "I need something for hay fever.", use: "'der Heuschnupfen' — hay sniffles. Antihistamines are sold over the counter but the strong ones need a prescription.", fr: "J'ai besoin de quelque chose contre le rhume des foins.", when: "Spring arrives and your eyes will not stop streaming." },
       { de: "Haben Sie Pflaster und Desinfektionsmittel?", en: "Do you have plasters and antiseptic?", use: "'das Pflaster' is a sticking plaster (also the word for road paving — context decides). Both are pharmacy items, not supermarket ones.", fr: "Avez-vous des pansements et du désinfectant ?", when: "Someone has cut themselves and you are stocking up the first-aid box." },
       { de: "Das ist in der Drogerie, nicht in der Apotheke.", en: "That's at the drugstore, not the pharmacy.", use: "The distinction catches every English speaker out. An Apotheke sells medicine only. Shampoo, vitamins, nappies and cosmetics are at a Drogerie like dm or Rossmann. Ask for toothpaste in an Apotheke and you will be sent next door.", fr: "Ça se trouve en droguerie, pas en pharmacie.", when: "You went to the wrong shop and the assistant is redirecting you." },
+      { de: "Haben Sie etwas, das ich ohne Rezept bekomme?", en: "Do you have anything I can get without a prescription?", use: "das ich ... bekomme — a relative clause on etwas; ohne Rezept, the pharmacy threshold question." },
+      { de: "Nehmen Sie die Tropfen dreimal täglich nach dem Essen.", en: "Take the drops three times a day after meals.", use: "dreimal täglich — the dosage formula; nach dem Essen, dative after nach." },
+      { de: "Gegen die Schmerzen wurde mir Ibuprofen empfohlen.", en: "I was recommended ibuprofen for the pain.", use: "The dative passive: mir wurde empfohlen — the recommending happened TO me; gegen + Akkusativ for what it fights." },
+      { de: "Gibt es das auch als Saft für Kinder?", en: "Is that also available as a syrup for children?", use: "als + noun for the form a medicine takes; der Saft is the pharmacy word for children's syrup." },
+      { de: "Die Salbe hat bei mir sofort geholfen.", en: "The ointment helped me straight away.", use: "helfen in the perfect (hat geholfen); bei mir = in my case, gentler than a bare mir." },
+      { de: "Vertragen Sie das Mittel, obwohl Sie allergisch sind?", en: "Can you tolerate the medicine even though you're allergic?", use: "obwohl-clause with the verb at the end — the concessive subordinate clause B1 lives on; vertragen = to tolerate." },
+      { de: "Fragen Sie nach, bevor Sie zwei Mittel kombinieren.", en: "Check first before you combine two medicines.", use: "bevor-clause, verb final: bevor Sie ... kombinieren; nachfragen splits in the imperative." },
+      { de: "Wenn das Fieber bis morgen nicht sinkt, gehen Sie zum Arzt.", en: "If the fever hasn't come down by tomorrow, see a doctor.", use: "The wenn-clause fronts, so the main clause starts verb-first: ..., gehen Sie. bis morgen = by tomorrow." },
     ],
     dialogues: [],
   },
@@ -5874,6 +5946,14 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "Können Sie mir einen Heil- und Kostenplan machen?", en: "Could you write me up a treatment and cost plan?", use: "A formal document you submit to your insurer before big work. Asking for it is completely routine and stops nasty surprises.", fr: "Pouvez-vous me faire un devis de traitement ?", when: "Crowns or implants have been mentioned and real money is involved." },
       { de: "Ich möchte eine professionelle Zahnreinigung machen lassen.", en: "I'd like to book a professional clean.", use: "The 'PZR'. Usually not covered, roughly 80-120 euro, and most Germans have one once or twice a year. Note the 'machen lassen' — to have something done.", fr: "Je voudrais faire un détartrage professionnel.", when: "Booking the hygiene appointment rather than a treatment." },
       { de: "Ich war ein Jahr lang nicht mehr da.", en: "I haven't been for a year.", use: "Say it plainly. The Bonusheft — a small booklet stamped at each yearly check-up — raises what your insurance pays towards crowns later, so gaps genuinely cost money.", fr: "Ça fait un an que je ne suis pas venu.", when: "The receptionist asks when you were last in." },
+      { de: "Beim Trinken zieht es im Zahn.", en: "There is a twinge in my tooth when I drink.", use: "es zieht = there is a pulling twinge — the impersonal es of sensations; beim Trinken, bei + nominalised verb." },
+      { de: "Die Füllung ist beim Kauen herausgefallen.", en: "The filling fell out while I was chewing.", use: "beim Kauen — bei + nominalised verb replaces a whole while-clause; herausfallen in the perfect with sein." },
+      { de: "Ich habe den Termin verschoben, weil die Angst zu groß war.", en: "I postponed the appointment because I was too scared.", use: "weil-clause with the verb last — the reason clause A1 was not allowed; verschieben in the perfect." },
+      { de: "Muss der Weisheitszahn wirklich gezogen werden?", en: "Does the wisdom tooth really have to come out?", use: "müssen + passive infinitive: gezogen werden — teeth are PULLED in German, and the passive spares the dentist's name." },
+      { de: "Die Betäubung wirkt schon, meine Lippe ist taub.", en: "The anaesthetic is working — my lip is numb.", use: "wirken again for medical effect; taub = numb, the same word as deaf." },
+      { de: "Spülen Sie heute bitte nur vorsichtig.", en: "Please rinse only gently today.", use: "spülen at the dentist's = to rinse; nur vorsichtig — the adverb pair carries the aftercare." },
+      { de: "Seit der Behandlung kann ich wieder ohne Schmerzen kauen.", en: "Since the treatment I've been able to chew without pain again.", use: "seit + Dativ noun with the present — the seit-rule surviving into B1; können + infinitive frame." },
+      { de: "Wer regelmäßig zur Kontrolle geht, spart am Ende Geld.", en: "Go for regular check-ups and you save money in the end.", use: "wer-clause as subject once more; zur Kontrolle gehen — the check-up visit, zur = zu der." },
     ],
     dialogues: [],
   },
@@ -5898,6 +5978,14 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "Ich möchte einen Unfall melden.", en: "I'd like to report an accident.", use: "'melden' — to report. Use it for accidents, damage and crimes alike.", fr: "Je voudrais signaler un accident.", when: "On the phone to the police after a minor crash with no injuries." },
       { de: "Können wir die Personalien austauschen?", en: "Shall we exchange details?", use: "'die Personalien' is the fixed word for name, address and ID details. After a scrape you swap these plus insurance and registration. Leaving without doing so is a criminal offence in Germany, even for a scratch.", fr: "On échange nos coordonnées ?", when: "Standing between two dented cars in a car park." },
       { de: "Ich brauche eine Bescheinigung für die Versicherung.", en: "I need something in writing for the insurance.", use: "'die Bescheinigung' — a written confirmation. Germany runs on them, and asking for one is always normal.", fr: "J'ai besoin d'une attestation pour l'assurance.", when: "Wrapping up with the police or a doctor after an incident." },
+      { de: "Rufen Sie sofort den Notruf an, das ist keine Kleinigkeit.", en: "Call the emergency number at once — this is not a small thing.", use: "der Notruf = the emergency call/number (112); keine Kleinigkeit — the understatement that means serious." },
+      { de: "Der Fahrer ist ansprechbar, aber verletzt.", en: "The driver is responsive but injured.", use: "ansprechbar — able to be spoken to; the first-aid word every German course teaches." },
+      { de: "Bleiben Sie bei ihm, bis der Krankenwagen kommt.", en: "Stay with him until the ambulance arrives.", use: "bis as a conjunction, verb final: bis ... kommt; bei ihm bleiben, the calm instruction." },
+      { de: "Die Wunde muss sofort versorgt werden.", en: "The wound needs treating immediately.", use: "versorgen = to dress/treat; müssen + passive infinitive again — emergencies speak in the passive." },
+      { de: "Ich habe mir beim Sport den Knöchel verstaucht.", en: "I sprained my ankle doing sport.", use: "sich (Dativ) etwas verstauchen — the injury dative: mir ... den Knöchel; beim Sport, bei + noun once more." },
+      { de: "Wo genau tut es weh, wenn ich hier drücke?", en: "Where exactly does it hurt when I press here?", use: "wehtun with es; the wenn-clause at the end keeps its verb final: wenn ich ... drücke." },
+      { de: "Zum Glück war der Notarzt in wenigen Minuten da.", en: "Luckily the emergency doctor was there within minutes.", use: "in wenigen Minuten = within minutes; war ... da — the plain past of sein doing calm work." },
+      { de: "Der Unfall wurde von zwei Zeugen gemeldet.", en: "The accident was reported by two witnesses.", use: "The passive with von + Dativ naming the agent — wurde gemeldet von, report-German in one line." },
     ],
     dialogues: [],
   },
@@ -5922,6 +6010,14 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "Kann ich die Überstunden abbauen?", en: "Can I take the overtime back as time off?", use: "'Überstunden abbauen' — literally to dismantle your overtime. The normal way it is settled.", fr: "Puis-je récupérer ces heures supplémentaires ?", when: "Your hours account is well into the black." },
       { de: "Ich brauche ein qualifiziertes Arbeitszeugnis.", en: "I need a full written reference.", use: "A legal right in Germany, and it matters. It must be positive in tone, which produced a whole coded language — 'stets zu unserer vollsten Zufriedenheit' is top marks, 'zu unserer Zufriedenheit' is quietly damning.", fr: "J'ai besoin d'un certificat de travail qualifié.", when: "Leaving a job and collecting your paperwork." },
       { de: "Man hat mir einen Aufhebungsvertrag angeboten.", en: "They've offered me a settlement agreement.", use: "Never sign one without advice: agreeing to end the contract yourself can trigger a Sperrzeit, months without unemployment benefit. This sentence is the one to say to a lawyer or your union.", fr: "On m'a proposé une rupture conventionnelle.", when: "The conversation has taken a turn you did not expect." },
+      { de: "Ich habe meinen Vertrag zum Monatsende gekündigt.", en: "I handed in my notice effective the end of the month.", use: "kündigen zum + date — the zum names the effective day; perfect with haben." },
+      { de: "Die Kündigungsfrist beträgt bei mir drei Monate.", en: "My notice period is three months.", use: "betragen = to amount to — periods and sums take this verb; bei mir = in my contract." },
+      { de: "Der Resturlaub wird mir ausgezahlt, weil ich ihn nicht mehr nehmen kann.", en: "My remaining leave is being paid out because I can't take it any more.", use: "der Resturlaub — the leave left over; the weil-clause stacks nicht mehr before the modal." },
+      { de: "Bevor ich unterschreibe, will ich das Arbeitszeugnis sehen.", en: "Before I sign, I want to see the reference.", use: "The bevor-clause fronts; das Arbeitszeugnis — the coded German employer's reference, worth reading twice." },
+      { de: "In der Übergabe erkläre ich alles, was mein Nachfolger wissen muss.", en: "In the handover I'll explain everything my successor needs to know.", use: "alles, was — the relative clause on alles takes was, never das." },
+      { de: "Nach acht Jahren fällt mir der Abschied schwerer als gedacht.", en: "After eight years, leaving is harder than I expected.", use: "jemandem schwerfallen again; als gedacht = than expected — the clipped comparison, participle only." },
+      { de: "Mein Chef hat versucht, mich mit mehr Geld zu halten.", en: "My boss tried to keep me with more money.", use: "versuchen + zu-infinitive after a comma; halten here = to retain an employee." },
+      { de: "Unbezahlten Urlaub muss man rechtzeitig beantragen.", en: "Unpaid leave has to be applied for in good time.", use: "The object fronts (Unbezahlten Urlaub); man + müssen for the house rule; rechtzeitig = in good time." },
     ],
     dialogues: [],
   },
@@ -6000,6 +6096,14 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "Das Gerät erkennt die Karte nicht.", en: "The device doesn't recognise the card.", use: "'erkennen' — to recognise. Also used for realising something: 'Ich habe erkannt, dass …'." },
       { de: "Die neue Version ist deutlich besser.", en: "The new version is noticeably better.", use: "'deutlich' before a comparative means 'markedly'. Sounds far more native than 'viel besser' every time." },
       { de: "Ich nutze das jeden Tag.", en: "I use that every day.", use: "'nutzen' and 'benutzen' are interchangeable here; 'verwenden' is the slightly more formal third option." },
+      { de: "Mein Speicher ist voll, ich lösche alte Fotos.", en: "My storage is full — I'm deleting old photos.", use: "der Speicher = storage; löschen = to delete. The monthly ritual in two clauses." },
+      { de: "Die App stürzt ab, sobald ich sie öffne.", en: "The app crashes as soon as I open it.", use: "sobald-clause with verb final: sobald ich sie öffne; abstürzen splits in the main clause." },
+      { de: "Ich habe das Update gestern Abend installiert.", en: "I installed the update yesterday evening.", use: "The perfect with haben + installiert; gestern Abend — two time words, no preposition." },
+      { de: "Ohne WLAN verbraucht das Video mein ganzes Datenvolumen.", en: "Without wi-fi the video eats up my whole data allowance.", use: "verbrauchen = to use up; das WLAN — what Germans call wi-fi, pronounced VEH-lahn." },
+      { de: "Schalte den Flugmodus ein, dann stört nichts mehr.", en: "Turn on flight mode — then nothing will disturb you.", use: "einschalten splits in the imperative; dann + verb-second delivers the payoff." },
+      { de: "Mein altes Handy war langsamer, aber der Akku hielt länger.", en: "My old phone was slower, but the battery lasted longer.", use: "Two Präteritum forms (war, hielt) — B1 narrating the past without the perfect." },
+      { de: "Das Passwort wird bei jedem Tippfehler neu verlangt.", en: "The password is demanded afresh after every typo.", use: "The processual passive (wird verlangt) plus bei jedem = with every — login frustration, grammatically precise." },
+      { de: "Ich zeige dir gleich, welche Einstellung du ändern musst.", en: "I'll show you in a second which setting you need to change.", use: "An indirect question as object: welche Einstellung du ändern musst — verb final, modal last." },
     ],
     dialogues: [],
   },
@@ -6083,6 +6187,14 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "Das kostet jährlich etwa hundert Euro.", en: "That costs about a hundred euros a year.", use: "'jährlich', 'monatlich', 'wöchentlich', 'täglich' — one adverb each instead of 'per year'." },
       { de: "Modern ist das nicht gerade.", en: "It's not exactly modern.", use: "Fronting the adjective and adding 'nicht gerade' is dry German understatement. Very idiomatic." },
       { de: "Speziell dafür gibt es eine eigene App.", en: "There's a dedicated app just for that.", use: "'speziell dafür' — specifically for that. 'eigen' means 'own' or, as here, 'dedicated'." },
+      { de: "Verglichen mit dem alten Modell ist das neue viel leiser.", en: "Compared with the old model, the new one is much quieter.", use: "Verglichen mit — the fronted participle phrase; das neue stands for the elided Modell." },
+      { de: "Beide sind gut, aber das hier hat den besseren Griff.", en: "Both are good, but this one has the better handle.", use: "das hier = this one right here; den besseren — comparative adjective declined in the accusative." },
+      { de: "Ich würde dir das kleinere Zelt empfehlen, weil es leichter aufzubauen ist.", en: "I'd recommend the smaller tent, because it's easier to put up.", use: "würde + empfehlen for soft advice; leichter aufzubauen — sein + zu-infinitive inside a weil-clause." },
+      { de: "Je nach Wetter ist mal die Bahn, mal das Rad schneller.", en: "Depending on the weather, sometimes the train is faster, sometimes the bike.", use: "je nach + Dativ = depending on; mal ... mal ... = sometimes ... sometimes." },
+      { de: "Das klingt teurer, als es ist.", en: "It sounds more expensive than it is.", use: "als es ist — the comparative clause cut to three words; klingen for how it comes across." },
+      { de: "Am meisten überzeugt mich, wie leicht sich alles reinigen lässt.", en: "What convinces me most is how easy everything is to clean.", use: "Am meisten fronts; the wie-clause is the subject, with sich reinigen lassen inside." },
+      { de: "Für Anfänger reicht das günstige völlig aus.", en: "For beginners, the cheap one is completely sufficient.", use: "ausreichen splits (reicht ... aus); das günstige — the adjective carrying the noun once more." },
+      { de: "Ich rate dir von diesem Anbieter ab, der Support meldet sich nie.", en: "I'd advise you against this provider — their support never gets back to you.", use: "abraten von + Dativ splits: rate ... ab; sich melden reappearing as the thing support never does." },
     ],
     dialogues: [],
   },
@@ -6335,6 +6447,14 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "Sie erwarten im Sommer ein Kind.", en: "They're expecting a baby in the summer.", use: "'ein Kind erwarten' is the standard, slightly formal way to say it. 'schwanger sein' is the direct one." },
       { de: "Er hat ein Kind aus erster Ehe.", en: "He has a child from his first marriage.", use: "'aus erster Ehe' with no article — a fixed phrase you will hear constantly." },
       { de: "Wir kommen alle gut miteinander aus.", en: "We all get on well with each other.", use: "'miteinander auskommen' — to get on together. Separable, and warm without being gushing." },
+      { de: "Das Baby schläft endlich.", en: "The baby is finally asleep.", use: "endlich = at last, with relief; German present covers 'is sleeping' — no -ing form exists." },
+      { de: "Meine Nichte wird morgen sechs.", en: "My niece turns six tomorrow.", use: "werden + number again for birthdays; morgen needs no preposition." },
+      { de: "Mein Opa ist über achtzig und fährt noch Rad.", en: "My grandpa is over eighty and still rides a bike.", use: "über + number = over; Rad fahren — the bike is a bare noun inside the verb phrase." },
+      { de: "Die Zwillinge sind sich sehr ähnlich.", en: "The twins are very alike.", use: "sich ähnlich sein = to be alike — the sich is a mutual 'each other' in the dative." },
+      { de: "Als Kind ist man schnell wieder froh.", en: "As a child, you're quickly happy again.", use: "als + Kind = as a child, no article; man generalises. wieder = again, back to the earlier state." },
+      { de: "Sie ist die Jüngste in der Familie.", en: "She's the youngest in the family.", use: "die Jüngste — the superlative as a noun with a capital letter; in + dative for the group." },
+      { de: "Mit sechzehn will man alles auf einmal.", en: "At sixteen, you want everything at once.", use: "mit + age = at that age; auf einmal = all at once. man again for people in general." },
+      { de: "Unser Nachbar ist im Ruhestand.", en: "Our neighbour is retired.", use: "im Ruhestand sein = to be retired — literally 'in the rest state'; no verb for retiring needed." },
     ],
     dialogues: [
       { title: "Meeting the family", lines: [
@@ -6453,6 +6573,14 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "Das muss schriftlich erfolgen.", en: "That has to be done in writing.", use: "'erfolgen' is the impersonal 'to take place'. Pure officialese, and everywhere in letters." },
       { de: "Ich hätte dazu noch eine Frage.", en: "I'd have one more question about that.", use: "Konjunktiv 'hätte' makes the extra question sound considerate rather than demanding." },
       { de: "Vielen Dank für Ihre Unterstützung.", en: "Thank you very much for your help.", use: "The standard close to any official conversation or email. 'Ihre' capitalised for the formal you." },
+      { de: "Bringen Sie bitte beide Formulare ausgefüllt mit.", en: "Please bring both forms with you, filled in.", use: "mitbringen splits around the object; ausgefüllt — the participle trails as a condition on the forms." },
+      { de: "Ohne Termin werden Sie hier leider nicht drangenommen.", en: "Without an appointment, I'm afraid they won't see you here.", use: "drannehmen = to call someone up next; the passive werden ... drangenommen — the Amt speaks passively." },
+      { de: "Der Antrag liegt seit Wochen bei der Behörde.", en: "The application has been sitting with the authority for weeks.", use: "liegen bei = to sit with (an office); seit Wochen + present — the seit-rule at the Amt." },
+      { de: "Für die Anmeldung brauchen Sie eine Bestätigung vom Vermieter.", en: "For registration you need a confirmation from your landlord.", use: "die Anmeldung — registering your address, the first German ritual; vom Vermieter = von dem." },
+      { de: "Ich bin von Schalter zu Schalter geschickt worden.", en: "I was sent from counter to counter.", use: "The passive PERFECT: bin ... geschickt worden — worden, not geworden, after a participle." },
+      { de: "Falls Unterlagen fehlen, meldet sich das Amt schriftlich.", en: "If documents are missing, the office will contact you in writing.", use: "falls opens the condition; sich melden + schriftlich — the letter you then wait weeks for." },
+      { de: "Der Bescheid kam schneller, als ich erwartet hatte.", en: "The decision came faster than I had expected.", use: "als ich erwartet hatte — Plusquamperfekt in the comparison clause; der Bescheid, the official decision letter." },
+      { de: "Widerspruch lohnt sich nur, wenn Sie Fristen und Nachweise beisammenhaben.", en: "An appeal is only worth it if you have your deadlines and documents in order.", use: "sich lohnen + wenn-clause; beisammenhaben = to have together/in order, one homely verb inside Amtsdeutsch." },
     ],
     dialogues: [],
   },
@@ -6647,6 +6775,14 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "Das Video lädt ewig.", en: "The video is taking forever to load.", use: "'ewig' — eternally, used casually for 'ages'. 'laden' for loading." },
       { de: "Hast du das auch gesehen?", en: "Did you see that too?", use: "'auch' after the object. The opening line of half the messages people send each other." },
       { de: "Ich mache das Handy jetzt mal weg.", en: "I'm going to put my phone away now.", use: "'wegmachen' colloquially for putting something aside. 'mal' softens the announcement." },
+      { de: "Wir gucken die Folge heute Abend zusammen.", en: "We're watching the episode together tonight.", use: "gucken — the spoken watching verb; die Folge = the episode. Present for tonight's plan." },
+      { de: "Kein Spoiler bitte, ich bin noch bei Staffel zwei.", en: "No spoilers please — I'm still on season two.", use: "bei + Staffel for where you are in a series; kein Spoiler, the borrowed noun with German kein." },
+      { de: "Die Serie wurde nach einer Staffel abgesetzt.", en: "The series was cancelled after one season.", use: "absetzen in the passive = to be cancelled — the TV verb; nach einer Staffel, dative after nach." },
+      { de: "Der Film ist im Original besser als in der Übersetzung.", en: "The film is better in the original than dubbed.", use: "im Original — the original-language version; the als-comparison carries the whole opinion." },
+      { de: "Ich habe die Doku in einer Nacht durchgeschaut.", en: "I binged the documentary in one night.", use: "durchschauen — through-watched; in einer Nacht, the binge measured. Perfect with haben." },
+      { de: "Der Ton passt nicht zum Bild, das nervt beim Schauen.", en: "The sound is out of sync with the picture — it's annoying to watch.", use: "passen zu = to match; beim Schauen, bei + nominalised verb for during." },
+      { de: "Empfiehl mir etwas, das nicht zu düster ist.", en: "Recommend me something that isn't too bleak.", use: "empfiehl — the du-imperative of empfehlen with vowel change; das ... ist, relative clause on etwas." },
+      { de: "Den Film kenne ich schon auswendig, so oft lief er bei uns.", en: "I know that film by heart — it was on that often at our place.", use: "so oft lief er — Präteritum of laufen for what used to be on; auswendig = by heart." },
     ],
     dialogues: [],
   },
@@ -6674,6 +6810,14 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "Wir haben eine Nebenkostenabrechnung bekommen.", en: "We got the service charge statement.", use: "A four-part compound: Neben + Kosten + Abrechnung. Once a year, and usually a surprise." },
       { de: "Ich hätte da eine Bitte.", en: "I've got a favour to ask.", use: "'eine Bitte haben' — to have a request. Konjunktiv 'hätte' makes it gentle." },
       { de: "Sag mir Bescheid, wenn es zu laut ist.", en: "Let me know if it's too loud.", use: "The single best thing to say to a new neighbour, and it heads off most of the pack above." },
+      { de: "Laut Hausordnung ist ab zweiundzwanzig Uhr Ruhe.", en: "According to the house rules, quiet time starts at ten pm.", use: "laut + Dativ = according to; die Hausordnung — the rulebook German buildings actually have." },
+      { de: "Die Nebenkosten sind schon wieder gestiegen.", en: "The service charges have gone up yet again.", use: "steigen in the perfect with sein: sind gestiegen; schon wieder, the tenant's sigh." },
+      { de: "Unser Nachbar hat sich über die Musik beschwert.", en: "Our neighbour complained about the music.", use: "sich beschweren über + Akkusativ — the complaint verb with its preposition, in the perfect." },
+      { de: "Wer den Flur blockiert, bekommt Post vom Hausmeister.", en: "Block the hallway and you'll get a letter from the caretaker.", use: "The wer-clause threat; Post bekommen von — the German way of saying trouble is coming in writing." },
+      { de: "Die Waschküche darf nur bis zwanzig Uhr benutzt werden.", en: "The laundry room may only be used until eight pm.", use: "dürfen + passive infinitive: darf ... benutzt werden — permission granted to the room, not the person." },
+      { de: "Beim Einzug haben wir jede Macke im Protokoll notiert.", en: "When we moved in, we noted every scratch in the report.", use: "beim Einzug — the move-in as a noun; das Übergabeprotokoll is the tenant's shield, hence notieren." },
+      { de: "Die Kaution bekommen wir erst zurück, wenn alles geprüft ist.", en: "We only get the deposit back once everything has been checked.", use: "erst ..., wenn = only when; geprüft ist — the stative passive closing the wenn-clause." },
+      { de: "Kleinreparaturen bis achtzig Euro zahlt laut Vertrag der Mieter.", en: "Under the contract, the tenant pays for small repairs up to eighty euros.", use: "laut Vertrag again; the subject arrives last (der Mieter) — contract German enjoys that suspense." },
     ],
     dialogues: [],
   },
@@ -6728,6 +6872,14 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "Hier ist Parken verboten.", en: "Parking is prohibited here.", use: "The noun form of the verb as the subject — \"Parken\" with a capital P. This is the wording on the sign itself." },
       { de: "Ich habe einen Strafzettel bekommen.", en: "I got a parking ticket.", use: "'Strafzettel' — penalty slip. Also 'Knöllchen' colloquially, which sounds far too sweet for what it is." },
       { de: "Das lohnt sich nicht mehr zu reparieren.", en: "It's not worth repairing any more.", use: "'sich lohnen' plus 'zu' + infinitive. The sentence that ends a car's life." },
+      { de: "Beim Anfahren macht der Motor ein komisches Geräusch.", en: "The engine makes a strange noise when pulling away.", use: "beim Anfahren — bei + nominalised verb for when it happens; ein Geräusch machen, the workshop opener." },
+      { de: "Die Werkstatt hat mir einen Kostenvoranschlag geschickt.", en: "The garage sent me a cost estimate.", use: "der Kostenvoranschlag — the estimate you nod at before the real bill; perfect with haben." },
+      { de: "Der Wagen ist nicht mehr durch den TÜV gekommen.", en: "The car failed its MOT.", use: "durch den TÜV kommen = to pass the inspection — Germans say it as getting THROUGH; negated in the perfect." },
+      { de: "Mein Hinterreifen verliert langsam Luft.", en: "My back tyre is slowly losing air.", use: "Luft verlieren — the slow puncture; der Hinterreifen, one compound for back tyre." },
+      { de: "Ich habe die Kette geölt, jetzt fährt es sich viel leichter.", en: "I oiled the chain — the bike rides much more easily now.", use: "es fährt sich leicht — the impersonal es-fährt-sich pattern for how something rides; the sich belongs to the pattern, not to a person." },
+      { de: "Obwohl die Ampel grün war, musste ich bremsen.", en: "Even though the light was green, I had to brake.", use: "obwohl-clause with war at the end; musste — Präteritum of müssen, normal even in speech." },
+      { de: "Das Ersatzteil muss erst bestellt werden.", en: "The spare part has to be ordered first.", use: "müssen + passive infinitive once more: muss ... bestellt werden; erst = first, before anything else." },
+      { de: "Nach der Inspektion fuhr das Auto wie neu.", en: "After the service, the car drove like new.", use: "fuhr — Präteritum of fahren; wie neu = like new, no article. The sentence every garage hopes you say." },
     ],
     dialogues: [],
   },
@@ -7080,6 +7232,14 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "Das verheilt von allein.", en: "That'll heal on its own.", use: "'verheilen' for a wound closing. 'von allein' — by itself." },
       { de: "Ich bin einfach kaputt.", en: "I'm just wrecked.", use: "'kaputt' for a person means exhausted. Broadly the most useful adjective in German." },
       { de: "Schon besser, danke.", en: "Better already, thanks.", use: "The answer that lets someone stop worrying without ending the conversation." },
+      { de: "Mein Kopf tut weh.", en: "My head hurts.", use: "wehtun splits: tut ... weh; German uses the plain article — mein Kopf, but often just der Kopf tut mir weh." },
+      { de: "Ich habe kalte Hände.", en: "My hands are cold.", use: "German says I HAVE cold hands — haben + adjective + body part, where English says 'are'." },
+      { de: "Ihre Augen sind grün, seine blau.", en: "Her eyes are green, his blue.", use: "seine stands alone — the possessive carries the elided Augen; two clauses, one verb." },
+      { de: "Der Zahn wackelt schon.", en: "The tooth is already wobbly.", use: "wackeln = to wobble; schon = already — the proud report of every six-year-old." },
+      { de: "Streck mal die Arme aus.", en: "Stretch your arms out.", use: "ausstrecken splits in the imperative; mal softens the order to a casual prompt. German uses die, not 'your', with body parts." },
+      { de: "Ich stehe den ganzen Tag auf den Beinen.", en: "I'm on my feet all day.", use: "auf den Beinen sein = to be on one's feet; den ganzen Tag — accusative of duration." },
+      { de: "Wasch dir bitte die Hände.", en: "Please wash your hands.", use: "wasch dir die Hände — the dative dir owns the hands, the article stays die; German never says deine Hände here." },
+      { de: "Mein rechtes Knie zwickt beim Treppensteigen.", en: "My right knee twinges when I climb stairs.", use: "zwicken = to twinge/pinch — smaller than wehtun; beim Treppensteigen packs the when into one word." },
     ],
     dialogues: [],
   },
@@ -7234,6 +7394,12 @@ const partBlueprintsBase: Record<string, Blueprint> = {
         en: "I can also add a US-International keyboard layout.",
         use: "For typing outside Micheon without a numpad, add United States-International in Windows keyboard settings. Press the quotation-mark key then a, o or u for an umlaut; use Shift for capitals and Right Alt plus S for ß. The quotation-mark key becomes a dead key, so press it then Space when you need a normal double quote. On a UK physical keyboard, UK Extended is less disruptive: press Right Alt plus 2, then a, o or u for an umlaut; use Micheon's ß button in the app or type ss when ß is unavailable.",
       },
+      { de: "Das ß gibt es nur im Deutschen.", en: "The letter ß exists only in German.", use: "es gibt again; im Deutschen — the language as a noun with im, capital D." },
+      { de: "Ohne Punkte ist das ein ganz anderer Buchstabe.", en: "Without the dots, that's a completely different letter.", use: "ganz anderer = completely different; the umlaut dots change the word, not just the sound — schon/schön." },
+      { de: "Ich tippe die Umlaute mit der rechten Alt-Taste.", en: "I type the umlauts with the right Alt key.", use: "mit + dative for the tool; die Taste = the key on a keyboard, not der Schlüssel." },
+      { de: "Auf meiner Tastatur fehlt das ü.", en: "My keyboard doesn't have a ü.", use: "fehlen flips the sentence: the missing thing is the subject — das ü fehlt. auf + Tastatur for what's on it." },
+      { de: "Zur Not schreibe ich einfach ue.", en: "If need be, I just write ue.", use: "zur Not = if need be, at a pinch; the official fallback spelling — ue, oe, ae, ss." },
+      { de: "Groß und klein ist hier ein Unterschied.", en: "Upper and lower case make a difference here.", use: "groß/klein schreiben = to capitalise or not; the pair works as a bare topic before ist." },
     ],
     dialogues: [
       { title: "Typing on a laptop", lines: [
@@ -7773,6 +7939,14 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "Wir müssen nicht alles auf einmal schaffen.", en: "We don't have to get everything done at once.", use: "English 'at once' means all at the same time here. 'Get everything done' sounds more natural than a literal use of 'manage'.", group: "keep-going" },
       { de: "Es wird jedes Mal ein bisschen leichter.", en: "It gets a little easier every time.", use: "English uses the simple present 'gets' for this repeated change. 'Every time' goes naturally at the end.", group: "keep-going" },
       { de: "Ich bin noch nicht fertig, aber ich komme voran.", en: "I'm not finished yet, but I'm making progress.", use: "'Make progress' is a fixed English pairing. Do not say 'do progress'.", group: "keep-going" },
+      { de: "Ich kann das schon allein.", en: "I can do that by myself already.", use: "können works without a second verb — the doing is understood; allein = on my own, schon = already." },
+      { de: "Das schaffst du locker.", en: "You'll manage that easily.", use: "schaffen = to manage/pull off; locker = easily, relaxed — the standard German pep talk." },
+      { de: "Probier es einfach mal.", en: "Just give it a try.", use: "probieren + es; einfach mal — the particle pair that makes a suggestion feel small and safe." },
+      { de: "Schau her, ich zeige es dir.", en: "Look — I'll show you.", use: "schau her = look here, the attention-getter; then es before dir — accusative pronoun first, dative pronoun second." },
+      { de: "Beim ersten Mal klappt das selten.", en: "It rarely works the first time.", use: "klappen = to work out; beim ersten Mal = the first time round. Consolation grammar." },
+      { de: "Noch einmal, diesmal etwas langsamer.", en: "Once more — a bit slower this time.", use: "diesmal = this time; etwas + comparative = a bit slower. No verb needed for coaching." },
+      { de: "Ich traue mich noch nicht.", en: "I don't dare yet.", use: "sich trauen = to dare — the sich is part of the verb and cannot be dropped; noch nicht = not yet." },
+      { de: "Siehst du? Es geht doch!", en: "See? It does work!", use: "doch contradicts the earlier doubt — 'after all'; es geht = it works. The tiny triumph sentence." },
     ],
     dialogues: [
       { title: "Trying it yourself first", lines: [
@@ -7943,7 +8117,51 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "stichhaltig", lookup: "stichhaltig", fallbackEn: "sound (of an argument)", tip: "adjective" },
     ],
     dialogues: [],
-    phrases: [],
+    phrases: [
+
+      { de: "Der Unterschied zwischen den Angeboten ist geringfügig, der Preisunterschied erheblich.", en: "The difference between the offers is negligible; the price difference is considerable.", use: "geringfügig and erheblich are this pack's two ends of the scale, set against each other around one comma." },
+
+      { de: "Ein umfassender Bericht liegt noch nicht vor, ein vorläufiger schon.", en: "A comprehensive report is not yet available — a provisional one is.", use: "The bare schon answers the negation again; vorläufig against endgültig is the pack's timeline pair." },
+
+      { de: "Ausreichend ist die Begründung, überzeugend ist sie nicht.", en: "The justification is sufficient; convincing it is not.", use: "Both adjectives front their clauses — German lets the predicate lead when the verdict is the news." },
+
+      { de: "Die Prüfer stuften die Unterlagen als mangelhaft ein.", en: "The examiners rated the documents as deficient.", use: "einstufen als = to classify as — the grading verb; mangelhaft is also the German school grade 5." },
+
+      { de: "Jedes dritte Formular ist überflüssig, behauptet die Studie.", en: "Every third form is superfluous, the study claims.", use: "The attribution trails after the comma (behauptet die Studie) — journalism word order, verb before subject." },
+
+      { de: "Ein gewisser Verlust ist unvermeidlich, entscheidend ist seine Größe.", en: "Some loss is inevitable; what matters is its size.", use: "ein gewisser = a certain amount of; entscheidend ist ... fronts the predicate for the pivot." },
+
+      { de: "Die Entscheidung ist endgültig und wird nicht noch einmal geprüft.", en: "The decision is final and will not be reviewed again.", use: "endgültig closes the door vorläufig left open; the passive future (wird geprüft) needs no agent." },
+
+      { de: "Ist diese Reaktion dem Anlass wirklich angemessen?", en: "Is this reaction really appropriate to the occasion?", use: "angemessen + Dativ — appropriate TO something takes the dative, no preposition." },
+
+      { de: "Die Quelle ist zweifelhaft, die Geschichte trotzdem überall zu lesen.", en: "The source is dubious, yet the story is everywhere.", use: "zu lesen sein = can be read — sein + zu once more; trotzdem sits inside the clause, not at its head." },
+
+      { de: "Glaubwürdig wird eine Entschuldigung erst durch geändertes Verhalten.", en: "An apology only becomes credible through changed behaviour.", use: "erst durch = only by means of; the adjective fronts and werden carries the becoming." },
+
+      { de: "Die Aussagen der beiden Zeugen sind in einem Punkt widersprüchlich.", en: "The two witnesses' statements contradict each other on one point.", use: "in einem Punkt = on one point; widersprüchlich describes the pair, not either statement alone." },
+
+      { de: "Formulieren Sie die Klausel eindeutig, Mehrdeutiges wird gegen Sie ausgelegt.", en: "Word the clause unambiguously — anything ambiguous will be interpreted against you.", use: "Mehrdeutiges — the nominalised adjective as a category: whatever is ambiguous. auslegen gegen = to construe against." },
+
+      { de: "Oberflächlich betrachtet wirkt alles in Ordnung.", en: "On the surface, everything looks fine.", use: "oberflächlich betrachtet = viewed superficially — a fixed participle opener that promises a 'but'." },
+
+      { de: "Der Bericht ist gründlich recherchiert und trotzdem gut lesbar.", en: "The report is thoroughly researched and still very readable.", use: "gründlich grades the participle recherchiert; trotzdem concedes that thorough usually means dry." },
+
+      { de: "Die Aufgabe ist anspruchsvoll, aber machbar.", en: "The task is demanding but doable.", use: "anspruchsvoll and machbar — the honest project assessment in four words; -bar builds doable from machen." },
+
+      { de: "Aufschlussreich ist vor allem, was der Bericht verschweigt.", en: "What is most revealing is what the report leaves unsaid.", use: "The was-clause as postponed subject; verschweigen — the deliberate omission again, one verb." },
+
+      { de: "Der Aufwand steht in keinem Verhältnis zum Ergebnis.", en: "The effort is out of all proportion to the result.", use: "in keinem Verhältnis stehen zu — the fixed phrase behind verhältnismäßig and unverhältnismäßig." },
+
+      { de: "Rentabel wird die Anlage erst nach zehn Jahren.", en: "The system only becomes profitable after ten years.", use: "erst + time span = not until; fronting rentabel makes profitability the topic under debate." },
+
+      { de: "Der Zeitplan ist machbar, die Finanzierung bleibt fragwürdig.", en: "The schedule is feasible; the funding remains questionable.", use: "bleiben holds the doubt in place — it was questionable and still is." },
+
+      { de: "Kein Konzept ist so einwandfrei, dass es keine Kritik verdient.", en: "No concept is so flawless that it deserves no criticism.", use: "so ... dass with double negation — kein ... so ..., dass ... keine: German stacks them without cancelling." },
+
+      { de: "Die Datenlage ist lückenhaft, für eine erste Einschätzung reicht sie dennoch.", en: "The data is patchy, yet it is enough for a first assessment.", use: "reichen für = to suffice for; dennoch — this pack's neighbour part404 will make a career of such connectors." },
+
+    ],
   },
   part404: {
     label: "Part 404", level: "B2", theme: "Connecting and hedging",
@@ -7992,7 +8210,51 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "schlimmstenfalls", lookup: "schlimmstenfalls", fallbackEn: "at worst", tip: "adverb" },
     ],
     dialogues: [],
-    phrases: [],
+    phrases: [
+
+      { de: "Der Plan ist riskant, dennoch stimme ich zu.", en: "The plan is risky; nevertheless, I agree.", use: "dennoch takes first position and inverts: dennoch stimme ich zu. Stronger than trotzdem in written German." },
+
+      { de: "Das Hotel war günstig, allerdings auch laut.", en: "The hotel was cheap — however, it was also loud.", use: "allerdings concedes after praise — the German 'mind you'; it does not invert when it follows the clause it limits." },
+
+      { de: "Der Norden blieb trocken, der Süden hingegen versank im Regen.", en: "The north stayed dry; the south, by contrast, was drowning in rain.", use: "hingegen sits AFTER its noun (der Süden hingegen) — the contrast word that never takes first position comfortably." },
+
+      { de: "Er hat den Vertrag nicht gelesen, folglich kannte er die Klausel nicht.", en: "He had not read the contract; consequently, he did not know about the clause.", use: "folglich draws the logical conclusion and inverts the verb like every fronted adverb." },
+
+      { de: "Laut Fahrplan fährt der letzte Bus um elf, demnach schaffen wir es noch.", en: "According to the timetable, the last bus leaves at eleven — so we can still make it.", use: "demnach = according to that/so — it leans on something just cited, here the timetable." },
+
+      { de: "Das Angebot gilt nur online, im Laden gibt es den Rabatt somit nicht.", en: "The offer is online only; in the shop, therefore, there is no discount.", use: "somit can sit mid-clause after the topic — quieter than folglich, same logic." },
+
+      { de: "Einerseits lockt das Gehalt, andererseits schreckt die Pendelei ab.", en: "On the one hand the salary is tempting; on the other, the commuting puts me off.", use: "einerseits ... andererseits — the paired frame; abschrecken splits at the end of its clause." },
+
+      { de: "Die Wohnung ist klein, dagegen ist die Lage unschlagbar.", en: "The flat is small; on the other hand, the location is unbeatable.", use: "dagegen as a connector = by contrast — not to be read as 'against it' when it opens a clause." },
+
+      { de: "Der Einwand kam spät, gleichwohl wurde er noch berücksichtigt.", en: "The objection came late; it was nonetheless still taken into account.", use: "gleichwohl — the formal nonetheless, at home in minutes and judgments; the passive follows it comfortably." },
+
+      { de: "Insofern hatten Sie recht: Der Fehler lag nicht bei der Technik.", en: "In that respect you were right: the fault did not lie with the technology.", use: "insofern limits the concession to one respect; the colon then names it." },
+
+      { de: "Er war gewissermaßen der heimliche Chef der Abteilung.", en: "He was, in a sense, the department's unofficial boss.", use: "gewissermaßen hedges a bold label; heimlich here = unacknowledged rather than secretive." },
+
+      { de: "Vermutlich war es nur ein Versehen, ausschließen kann ich es aber nicht.", en: "Presumably it was just an oversight, but I cannot rule that out either way.", use: "The infinitive fronts in the second clause (ausschließen kann ich es nicht) — emphasis through inversion." },
+
+      { de: "Angeblich war der Brief nie angekommen, offenbar hatte ihn nur niemand geöffnet.", en: "Allegedly the letter had never arrived; evidently, nobody had simply opened it.", use: "angeblich marks the claim, offenbar the visible truth — two hedges with opposite loyalties in one line." },
+
+      { de: "Anscheinend haben wir denselben Weg, wir können zusammen gehen.", en: "It seems we are going the same way — we can walk together.", use: "anscheinend = to all appearances (and probably true); scheinbar would imply the appearance deceives." },
+
+      { de: "Zweifellos war es ein Fehler, aber keineswegs ein böswilliger.", en: "It was undoubtedly a mistake, but by no means a malicious one.", use: "ein böswilliger stands without its noun — the adjective plus -er carries Fehler; keineswegs blocks the harsher reading." },
+
+      { de: "Die Halle war größtenteils leer, nur vorne saßen ein paar Unentwegte.", en: "The hall was mostly empty; only at the front sat a few diehards.", use: "die Unentwegten — the undeterred, a nominalised participle German uses fondly for loyal stragglers." },
+
+      { de: "Die Rückmeldungen sind überwiegend positiv, kritisch sind vor allem die Langzeitnutzer.", en: "The feedback is predominantly positive; the long-term users are the critical ones.", use: "überwiegend measures the majority; the fronted kritisch flags where the minority sits." },
+
+      { de: "Allmählich verstehe ich, worauf Sie hinauswollen.", en: "I am gradually beginning to see what you are getting at.", use: "worauf ... hinauswollen = to be driving at — the wo(r)-compound absorbs the preposition of hinauswollen auf." },
+
+      { de: "Grundsätzlich ja, im Einzelfall entscheidet aber der Arzt.", en: "In principle yes — but in the individual case, the doctor decides.", use: "grundsätzlich = as a rule (with exceptions implied); the German yes that a but always follows." },
+
+      { de: "Er hat der Änderung nie ausdrücklich zugestimmt, nur stillschweigend.", en: "He never explicitly agreed to the change — only tacitly.", use: "ausdrücklich against stillschweigend — the legal pair for stated and silent consent, one adverb each." },
+
+      { de: "Schlimmstenfalls verlieren wir ein Jahr, im Gegenteil zu allem Gerede aber nicht das Projekt.", en: "At worst we lose a year — but contrary to all the talk, not the project.", use: "schlimmstenfalls opens with the worst case; im Gegenteil zu corrects the exaggerated rumour." },
+
+    ],
   },
   part405: {
     label: "Part 405", level: "B2-C1", theme: "Argument and debate",
@@ -8041,7 +8303,51 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "plausibel", lookup: "plausibel", fallbackEn: "plausible", tip: "adjective" },
     ],
     dialogues: [],
-    phrases: [],
+    phrases: [
+
+      { de: "Die These klingt kühn, aber sie lässt sich untermauern.", en: "The thesis sounds bold, but it can be substantiated.", use: "sich untermauern lassen — the can-be-done passive again; untermauern keeps its prefix, it never splits." },
+
+      { de: "Jede Behauptung braucht einen Beleg, sonst bleibt sie eine Unterstellung.", en: "Every assertion needs evidence; without it, it stays an insinuation.", use: "bleiben + noun = to remain something; the sentence walks the line between Behauptung and Unterstellung that this pack draws." },
+
+      { de: "Ihr Einwand ist berechtigt, ändert aber nichts am Ergebnis.", en: "Your objection is valid, but it does not change the outcome.", use: "etwas ändern an + Dativ = to change something ABOUT something; nichts fills the etwas slot." },
+
+      { de: "Er räumte ein, die Zahlen falsch gelesen zu haben.", en: "He conceded that he had misread the figures.", use: "einräumen + perfect infinitive (gelesen zu haben) reports an earlier deed inside the concession — no dass-clause needed." },
+
+      { de: "Niemand zweifelt die Zahlen selbst an, wohl aber ihre Deutung.", en: "Nobody questions the figures themselves — their interpretation, though, they do question.", use: "wohl aber = but very much so; it flips the negation for the second object without repeating the verb." },
+
+      { de: "Wer übertreibt, macht seinen Standpunkt angreifbar.", en: "Overstating your case makes your position easy to attack.", use: "machen + adjective (angreifbar machen) = to render; -bar builds the attackable out of angreifen." },
+
+      { de: "Man kann jemanden überreden, ohne ihn zu überzeugen.", en: "You can talk someone into something without convincing them.", use: "überreden gets the action, überzeugen the mind — the pair this pack exists to keep apart, held in one ohne ... zu clause." },
+
+      { de: "Die Streitfrage ist seit Jahren dieselbe, nur die Lautstärke hat sich geändert.", en: "The contentious issue has been the same for years; only the volume has changed.", use: "dieselbe agrees with die Streitfrage; nur + subject fronts the one thing that did move." },
+
+      { de: "Ein Kompromiss, den beide Seiten hassen, ist manchmal der beste.", en: "A compromise both sides hate is sometimes the best one.", use: "The relative clause (den ... hassen) splits subject from verb; der beste stands alone — the noun is not repeated." },
+
+      { de: "In der Verhandlung machte keine Seite ein Zugeständnis.", en: "In the negotiation, neither side made a concession.", use: "ein Zugeständnis machen is the verb the noun takes; keine Seite = neither side, no extra weder needed." },
+
+      { de: "Bleiben Sie sachlich, auch wenn es persönlich wird.", en: "Stay objective even when it gets personal.", use: "sachlich bleiben = to keep to the substance; es wird persönlich uses werden for a situation turning." },
+
+      { de: "Seine Kritik war pauschal, ihre Antwort differenziert.", en: "His criticism was sweeping; her answer was nuanced.", use: "The second clause drops war — parallel verdicts share one verb. pauschal and differenziert are the pack's own opposites." },
+
+      { de: "Der Ton war polemisch, die Argumente waren es nicht.", en: "The tone was polemical; the arguments were not.", use: "es stands in for the adjective polemisch — German pronoun-ises predicates where English repeats or drops them." },
+
+      { de: "Als befangen gilt, wer am Ausgang des Verfahrens ein eigenes Interesse hat.", en: "Anyone with a personal stake in the outcome counts as biased.", use: "gelten als + adjective fronted, subject postponed as a wer-clause — the sentence shape of legal definitions." },
+
+      { de: "Ein unvoreingenommener Blick von außen deckt Fehler auf, die drinnen niemand mehr sieht.", en: "An impartial outside view uncovers mistakes nobody inside can see any more.", use: "aufdecken splits; von außen / drinnen mirror each other across the clause border." },
+
+      { de: "Die Beweisführung schien stichfest, bis jemand das Datum prüfte.", en: "The argument seemed watertight until someone checked the date.", use: "scheinen + adjective = to seem; bis then punctures it. stichfest — literally proof against stabbing." },
+
+      { de: "Der Vorwurf erwies sich als haltlos.", en: "The accusation proved to be unfounded.", use: "sich erweisen als + adjective = to prove/turn out to be — the standard verdict formula of reports." },
+
+      { de: "Umstritten heißt nicht widerlegt.", en: "Controversial does not mean disproved.", use: "Two bare participles around heißt — a definition compressed to four words; German headlines love this shape." },
+
+      { de: "Ohne triftigen Grund sagt man einen solchen Termin nicht ab.", en: "Without a compelling reason, you do not cancel an appointment like that.", use: "triftig collocates with Grund almost exclusively; absagen splits to the very end. ein solcher = like that." },
+
+      { de: "Es wirkt scheinheilig, Wasser zu predigen und Wein zu trinken.", en: "Preaching water while drinking wine comes across as disingenuous.", use: "Wasser predigen und Wein trinken is the proverb for saying one thing and doing another; wirken = to come across as." },
+
+      { de: "Überspitzt formuliert: Wer alles relativiert, behauptet am Ende gar nichts mehr.", en: "To put it pointedly: if you qualify everything, you end up claiming nothing at all.", use: "Überspitzt formuliert: is the licence German speakers buy before exaggerating on purpose — the pack's überspitzt in its natural habitat." },
+
+    ],
   },
   part406: {
     label: "Part 406", level: "B2-C1", theme: "Formal and official",
@@ -8090,7 +8396,51 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "ordnungsgemäß", lookup: "ordnungsgemäß", fallbackEn: "duly / proper", tip: "adjective" },
     ],
     dialogues: [],
-    phrases: [],
+    phrases: [
+
+      { de: "Der Antrag muss fristgerecht eingereicht werden.", en: "The application must be handed in by the deadline.", use: "fristgerecht packs 'within the deadline' into one adverb — the word every German form letter uses." },
+
+      { de: "Eine Verlängerung müssen Sie schriftlich beantragen, bevor die Frist abläuft.", en: "You have to apply for an extension in writing before the deadline expires.", use: "beantragen takes a direct object, no für; eine Frist läuft ab — deadlines RUN OUT in German." },
+
+      { de: "Die Kündigung bedarf der Schriftform.", en: "Notice of termination must be given in writing.", use: "bedürfen + GENITIV (der Schriftform) — the most official verb German has; four words that mean a whole paragraph." },
+
+      { de: "Mit Ihrer Unterschrift erkennen Sie die Vereinbarung als verbindlich an.", en: "With your signature you accept the agreement as binding.", use: "anerkennen als = to recognise as; the prefix an- waits at the very end, after the als-phrase." },
+
+      { de: "Die Haftung für Schäden ist auf grobe Fahrlässigkeit beschränkt.", en: "Liability for damage is limited to gross negligence.", use: "beschränkt auf + Akkusativ; grobe Fahrlässigkeit is the fixed legal degree of carelessness." },
+
+      { de: "Eine Entschädigung wird nur gegen Nachweis gezahlt.", en: "Compensation is paid only against documentary evidence.", use: "gegen Nachweis = on presentation of proof — gegen here means in exchange for, not against." },
+
+      { de: "Die Genehmigung gilt als erteilt, wenn die Behörde nicht binnen eines Monats widerspricht.", en: "The authorisation counts as granted if the authority does not object within a month.", use: "gelten als + participle; binnen + Genitiv = within — the formal twin of innerhalb von." },
+
+      { de: "Ohne Zustimmung der Eltern ist die Anmeldung unwirksam.", en: "Without the parents' consent, the registration is invalid.", use: "unwirksam = without legal effect — the administrative opposite of wirksam, sharper than ungültig." },
+
+      { de: "Gegen die Ablehnung können Sie innerhalb von vier Wochen Widerspruch einlegen.", en: "You can appeal against the refusal within four weeks.", use: "Widerspruch einlegen gegen + Akkusativ — the fixed formula printed at the bottom of every German Bescheid." },
+
+      { de: "Legen Sie das Zeugnis im Original oder als beglaubigte Ausfertigung vor.", en: "Submit the certificate in the original or as a certified copy.", use: "vorlegen = to present for inspection; die beglaubigte Ausfertigung is the notarised official copy — Amtsdeutsch vocabulary in its element." },
+
+      { de: "Machen Sie im Formular vollständige Angaben, sonst verzögert sich das Verfahren.", en: "Give complete details on the form, otherwise the procedure will be delayed.", use: "Angaben machen = to provide details; sich verzögern — the delay happens BY ITSELF, no agent named." },
+
+      { de: "Auskunft erhält nur, wer ein berechtigtes Interesse nachweist.", en: "Information is given only to those who can show a legitimate interest.", use: "The subject is postponed as a wer-clause; berechtigtes Interesse is the legal threshold phrase for access to records." },
+
+      { de: "Für diesen Fall liegt die Zuständigkeit beim Landratsamt.", en: "For this case, jurisdiction lies with the district office.", use: "die Zuständigkeit liegt bei + Dativ — responsibility LIES WITH an office; the sentence Germans hear whenever they are redirected." },
+
+      { de: "Die Maßnahme tritt zum ersten Januar in Kraft.", en: "The measure comes into effect on the first of January.", use: "in Kraft treten = to come into force; zum + date for the effective day, not am." },
+
+      { de: "Wer gegen die Vorschrift verstößt, muss mit einem Bußgeld rechnen.", en: "Anyone who violates the regulation can expect a fine.", use: "verstoßen gegen + Akkusativ; mit etwas rechnen müssen is the standard warning of consequences." },
+
+      { de: "Der Verstoß wurde vermerkt, blieb aber folgenlos.", en: "The violation was noted on record but had no consequences.", use: "folgenlos bleiben = to remain without consequences — -los builds the adjective, bleiben keeps the state." },
+
+      { de: "Das Amt bewilligte den Zuschuss, verweigerte aber die Auszahlung im Voraus.", en: "The office granted the subsidy but withheld advance payment.", use: "bewilligen and verweigern are the two stamps on an official's desk; im Voraus = in advance." },
+
+      { de: "Das Angebot ist unverbindlich und gilt nur bis Monatsende.", en: "The offer is non-binding and only valid until the end of the month.", use: "unverbindlich — the small print word; bis Monatsende drops the article, like bis Jahresende and bis Wochenende." },
+
+      { de: "Die Stadt untersagte die Versammlung, das Gericht gestattete sie.", en: "The city prohibited the assembly; the court permitted it.", use: "untersagen and gestatten are the formal pair for verbieten and erlauben — same grammar, higher register." },
+
+      { de: "Der Bescheid wird Ihnen per Post zugestellt.", en: "The decision will be delivered to you by post.", use: "zustellen is official delivery with legal effect — the moment of Zustellung starts your appeal clock." },
+
+      { de: "Die Einwilligung kann jederzeit mit Wirkung für die Zukunft widerrufen werden.", en: "Consent may be revoked at any time with effect for the future.", use: "mit Wirkung für die Zukunft is the GDPR formula — revocation does not undo the past; widerrufen never splits." },
+
+    ],
   },
   part407: {
     label: "Part 407", level: "B2-C1", theme: "Nuanced feelings and behaviour",
@@ -8139,7 +8489,51 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "wankelmütig", lookup: "wankelmütig", fallbackEn: "fickle", tip: "adjective" },
     ],
     dialogues: [],
-    phrases: [],
+    phrases: [
+
+      { de: "Sehnsucht ist Heimweh nach etwas, das es vielleicht nie gab.", en: "Longing is homesickness for something that may never have existed.", use: "Heimweh nach + Dativ; das es nie gab — the es-gibt construction inside a relative clause, past tense gab." },
+
+      { de: "Aus anfänglicher Abneigung wurde mit den Jahren Zuneigung.", en: "Initial aversion turned into affection over the years.", use: "aus X wird Y for transformations; mit den Jahren = as the years passed. The pack's two opposites in one arc." },
+
+      { de: "Schlimmer als sein Zorn war ihre Verachtung.", en: "Worse than his anger was her contempt.", use: "Fronting the comparative (Schlimmer als ...) puts the verdict first and the subject last — a written-German emphasis pattern." },
+
+      { de: "Neid richtet sich auf das, was der andere hat, Eifersucht auf den Menschen selbst.", en: "Envy is aimed at what the other person has; jealousy at the person themselves.", use: "sich richten auf + Akkusativ; the second half keeps only auf — ellipsis carries the distinction this pack teaches." },
+
+      { de: "Seine Schadenfreude konnte er nur schlecht verbergen.", en: "He could barely hide his gloating.", use: "nur schlecht = only poorly, i.e. barely; the object fronts and the modal bracket closes with verbergen." },
+
+      { de: "Sie nahm die Nachricht mit erstaunlicher Gelassenheit auf.", en: "She took the news with astonishing composure.", use: "eine Nachricht aufnehmen = to take/receive news; mit + Dativ names the manner. aufnehmen splits." },
+
+      { de: "Zwischen Zuversicht und Verzweiflung lagen bei ihm nur Stunden.", en: "For him, confidence and despair were only hours apart.", use: "zwischen X und Y liegen + time = to be that far apart; bei ihm = in his case." },
+
+      { de: "Die Erleichterung stand ihr ins Gesicht geschrieben.", en: "Relief was written all over her face.", use: "jemandem ins Gesicht geschrieben stehen — fixed idiom; the person goes into the dative (ihr)." },
+
+      { de: "Reue kam erst, als der Schaden nicht mehr gutzumachen war.", en: "Remorse only came once the damage could no longer be undone.", use: "erst, als = only when; war ... gutzumachen is sein + zu again — could be made good." },
+
+      { de: "Vor Scham brachte er kein Wort heraus.", en: "He was too ashamed to get a word out.", use: "vor + emotion (no article) gives the cause: vor Scham, vor Angst, vor Freude. kein Wort herausbringen = to be unable to speak." },
+
+      { de: "Um ihre Verlegenheit zu überspielen, machte sie einen Scherz.", en: "To cover her embarrassment, she made a joke.", use: "überspielen = to play over/mask a feeling — a stage metaphor German uses for social situations; einen Scherz machen, not sagen." },
+
+      { de: "Mit stiller Genugtuung sah er, dass er recht behalten hatte.", en: "With quiet satisfaction he saw that he had been proved right.", use: "recht behalten = to turn out right in the end — behalten, not haben: the being-right survived the argument." },
+
+      { de: "Sei nicht nachtragend, das vergiftet nur dich selbst.", en: "Don't hold grudges — it only poisons you.", use: "nachtragend sein = to hold grudges, from nachtragen, to carry something after someone; das picks up the whole clause." },
+
+      { de: "Nach dem Streit zeigte sie sich versöhnlich.", en: "After the argument, she was ready to make peace.", use: "sich zeigen + adjective = to show oneself to be — the outward behaviour, not necessarily the feeling." },
+
+      { de: "Vor Prüfungen ist er reizbar und schläft schlecht.", en: "Before exams he is irritable and sleeps badly.", use: "vor + Dativ plural for recurring occasions (vor Prüfungen = before exams generally); reizbar — -bar on a feeling verb." },
+
+      { de: "Bleib besonnen, auch wenn alle anderen den Kopf verlieren.", en: "Keep a level head even when everyone else is losing theirs.", use: "besonnen bleiben pairs with den Kopf verlieren — composure kept against composure lost." },
+
+      { de: "Ein einziger leichtsinniger Moment kann Jahre kosten.", en: "A single reckless moment can cost you years.", use: "kosten with a bare accusative of what it costs (Jahre); ein einziger sharpens ein." },
+
+      { de: "Er ist zurückhaltend, aber keineswegs gleichgültig.", en: "He is reserved, but by no means indifferent.", use: "keineswegs = by no means — a firm, formal negation that rescues zurückhaltend from being misread as coldness." },
+
+      { de: "Hinter ihrer überheblichen Art steckt vor allem Unsicherheit.", en: "Behind her arrogant manner lies mostly insecurity.", use: "hinter etwas stecken = to lie behind/be the real cause; die Art = manner, the habitual way someone is." },
+
+      { de: "Was alle stur nennen, nennt er Prinzipientreue.", en: "What everyone calls obstinacy, he calls being true to his principles.", use: "nennen twice with double accusative — the was-clause is the shared object, renamed from each side of the argument." },
+
+      { de: "Er ist launisch wie das Aprilwetter.", en: "He is as moody as April weather.", use: "launisch wie das Aprilwetter is the stock comparison — April weather being famously unable to decide; wie, not als, for likeness." },
+
+    ],
   },
   part408: {
     label: "Part 408", level: "C1", theme: "Academic and analytical",
@@ -8188,7 +8582,53 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "stringent", lookup: "stringent", fallbackEn: "rigorous", tip: "adjective" },
     ],
     dialogues: [],
-    phrases: [],
+    phrases: [
+
+      { de: "Die Stichprobe ist zu klein, um daraus allgemeine Schlüsse zu ziehen.", en: "The sample is too small to draw general conclusions from.", use: "zu + adjective pairs with um ... zu: zu klein, um ... zu ziehen. The um-clause explains what the size is too small FOR." },
+
+      { de: "Die Hypothese ließ sich mit den vorliegenden Daten nicht belegen.", en: "The hypothesis could not be corroborated with the available data.", use: "sich lassen + infinitive is the everyday passive of ability: ließ sich nicht belegen = konnte nicht belegt werden, one word shorter." },
+
+      { de: "Wir müssen die Fragestellung weiter eingrenzen, sonst wird die Arbeit uferlos.", en: "We need to narrow the research question down further, otherwise the paper will sprawl.", use: "sonst after a comma threatens the consequence of not doing it — no wenn-clause needed." },
+
+      { de: "Erst die Auswertung zeigte, wie stark die Verzerrung tatsächlich war.", en: "Only the analysis revealed how strong the bias actually was.", use: "Erst + subject fronts the thing that finally did it: not until the analysis. Word order stays verb-second." },
+
+      { de: "Eine Korrelation belegt noch keine Kausalität.", en: "A correlation does not in itself prove causation.", use: "noch kein(e) softens the negation to 'not yet / not by itself' — the standard phrasing of this warning in German academic prose." },
+
+      { de: "Der Befund deckt sich mit dem aktuellen Forschungsstand.", en: "The finding is consistent with the current state of research.", use: "sich decken mit = to match, to be consistent with. The sich cannot be dropped: decken alone means to cover." },
+
+      { de: "Wie repräsentativ die Erhebung ist, bleibt umstritten.", en: "How representative the survey is remains contested.", use: "An indirect question can be the SUBJECT of the sentence; the main verb then follows it directly: ..., bleibt umstritten." },
+
+      { de: "Die Ergebnisse sind vorläufig und dürfen nicht verallgemeinert werden.", en: "The results are preliminary and must not be generalised.", use: "dürfen nicht + passive infinitive = must not be. Watch the false friend: müssen nicht means need not." },
+
+      { de: "In der Fußnote verweist die Autorin auf ein Gutachten aus dem Jahr 2019.", en: "In the footnote, the author refers to an expert report from 2019.", use: "verweisen auf + accusative is how academic German points at a source; aus dem Jahr keeps the year from dangling bare." },
+
+      { de: "Diese Frage klammern wir hier bewusst aus.", en: "We are deliberately leaving that question aside here.", use: "Fronting the object (Diese Frage ...) marks it as the topic under discussion; ausklammern splits, sending aus to the end." },
+
+      { de: "Das Zitat ist aus dem Zusammenhang gerissen.", en: "The quotation is taken out of context.", use: "aus dem Zusammenhang gerissen is the fixed phrase — reißen, not nehmen, and always with the article dem." },
+
+      { de: "Die Methodik muss so beschrieben sein, dass sich die Studie wiederholen lässt.", en: "The methodology has to be described in such a way that the study can be repeated.", use: "so ... dass sets up the required standard; inside the dass-clause, sich wiederholen lassen is the can-be-done passive." },
+
+      { de: "Im Fazit fasst sie die wichtigsten Befunde noch einmal knapp zusammen.", en: "In the conclusion she briefly sums up the key findings once more.", use: "zusammenfassen splits around the clause: fasst ... zusammen. noch einmal knapp = once more, briefly — adverbs stack before the separated prefix." },
+
+      { de: "Wer zitiert, muss die Quelle angeben, sonst ist es ein Plagiat.", en: "Anyone who quotes has to give the source, otherwise it is plagiarism.", use: "Wer opens a free relative clause meaning 'anyone who'; the main clause follows with the verb first: Wer zitiert, muss ..." },
+
+      { de: "Je größer die Stichprobe, desto aussagekräftiger das Ergebnis.", en: "The larger the sample, the more meaningful the result.", use: "je ... desto with NO verbs at all — the elliptical form is standard in written German for rules of thumb." },
+
+      { de: "Der Unterschied ist statistisch signifikant, aber praktisch bedeutungslos.", en: "The difference is statistically significant but practically meaningless.", use: "signifikant is a statistical term of art in German, not a synonym for wichtig — this sentence is the distinction." },
+
+      { de: "Die beiden Gutachten kommen zu gegensätzlichen Ergebnissen und müssen sorgfältig gegenübergestellt werden.", en: "The two expert reports reach opposite conclusions and need to be carefully compared side by side.", use: "gegenüberstellen keeps its prefix in the passive participle: gegenübergestellt. zu einem Ergebnis kommen = to reach a conclusion." },
+
+      { de: "Aus einem Einzelfall lässt sich keine allgemeine Regel herleiten.", en: "You cannot derive a general rule from a single case.", use: "aus + Dativ names the source of the derivation; sich lassen turns it impersonal — no man needed." },
+
+      { de: "Ihre Argumentation ist stringent, stützt sich aber auf eine einzige Quelle.", en: "Her reasoning is rigorous, but it rests on a single source.", use: "sich stützen auf + accusative = to rest on. aber can sit AFTER the verb it contrasts: stützt sich aber ..." },
+
+      { de: "Die Studie schließt eine Lücke im Forschungsstand.", en: "The study fills a gap in the research.", use: "German closes a gap (eine Lücke schließen) where English fills one — translating fill literally (füllen) sounds off." },
+
+      { de: "Um die Aussagekraft zu erhöhen, wurden die Daten interdisziplinär ausgewertet.", en: "To increase the explanatory power, the data was analysed across disciplines.", use: "A fronted um ... zu clause is followed directly by the verb: Um ... zu erhöhen, wurden ... The comma is obligatory." },
+
+      { de: "Paraphrasieren heißt, den Gedanken mit eigenen Worten wiederzugeben.", en: "Paraphrasing means restating the idea in your own words.", use: "heißen + comma + zu-infinitive defines a term: X heißt, ... zu tun. With separable wiedergeben, zu goes inside: wiederzugeben." },
+
+    ],
   },
   part409: {
     label: "Part 409", level: "C1", theme: "Idiomatic precision",
@@ -8237,7 +8677,53 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "der Türöffner", lookup: "Türöffner", fallbackEn: "door-opener (figurative)", tip: "noun", article: "der" },
     ],
     dialogues: [],
-    phrases: [],
+    phrases: [
+
+      { de: "Die Verhandlung war eine Gratwanderung zwischen Nähe und Distanz.", en: "The negotiation was a balancing act between closeness and distance.", use: "eine Gratwanderung zwischen X und Y — the image is walking a mountain ridge; the zwischen-pair names the two drops." },
+
+      { de: "Nach dem Dämpfer von letzter Woche brauchte das Team einen Lichtblick.", en: "After last week's setback, the team needed a ray of hope.", use: "einen Dämpfer bekommen/brauchen — Dämpfer is a setback that deflates enthusiasm, milder than Rückschlag." },
+
+      { de: "Wir stecken in einer Zwickmühle: Beides zugleich geht nicht.", en: "We are caught in a dilemma: we cannot have both at once.", use: "in einer Zwickmühle stecken is the fixed verb; the colon then states the two horns. geht nicht = is not possible, very spoken." },
+
+      { de: "Aus diesem Teufelskreis kommt man nur mit Hilfe von außen heraus.", en: "You only break out of a vicious circle with outside help.", use: "aus ... herauskommen brackets the whole sentence; von außen = from outside, no article." },
+
+      { de: "Der Durchbruch kam, als niemand mehr damit rechnete.", en: "The breakthrough came when nobody was expecting it any more.", use: "als for a single past moment; mit etwas rechnen = to expect it, and damit carries the etwas." },
+
+      { de: "Der Knackpunkt ist die Finanzierung, nicht der Zeitplan.", en: "The sticking point is the funding, not the schedule.", use: "X, nicht Y after the verb corrects a wrong assumption without a second clause — the everyday shape of a pointed correction." },
+
+      { de: "Bei so einem Gespräch braucht man Fingerspitzengefühl.", en: "A conversation like that takes tact.", use: "bei + situation = in/at that kind of situation; Fingerspitzengefühl takes no article — you have it or you don't." },
+
+      { de: "Sie hat sich mit ihrem Alleingang keinen Gefallen getan.", en: "She did herself no favours by going it alone.", use: "sich (Dativ) keinen Gefallen tun = to do oneself no favours; mit + noun names the deed that backfired." },
+
+      { de: "Das ist die Kehrseite des Erfolgs: Man ist nie richtig frei.", en: "That is the flip side of success: you are never really free.", use: "die Kehrseite + Genitiv; the colon delivers the downside. Man generalises without naming anyone." },
+
+      { de: "Das neue Produkt war ein Selbstläufer, das alte blieb als Ladenhüter im Regal.", en: "The new product sold itself, while the old one sat on the shelf.", use: "Selbstläufer and Ladenhüter are opposite fates of a product; als + noun says in what role the old one stayed put." },
+
+      { de: "Für die Artikel habe ich mir eine Eselsbrücke gebaut.", en: "I came up with a mnemonic for the articles.", use: "You BUILD yourself an Eselsbrücke (sich eine Eselsbrücke bauen) — the donkey bridge is constructed, not found." },
+
+      { de: "Dieses Lied ist ein echter Ohrwurm, ich werde es einfach nicht mehr los.", en: "This song is a real earworm — I just cannot get it out of my head.", use: "jemanden/etwas loswerden = to get rid of; in the present with nicht mehr it means being stuck with it." },
+
+      { de: "Mein Bauchgefühl sagt mir, dass an der Sache etwas faul ist.", en: "My gut tells me something is off about this.", use: "an etwas (Dativ) ist etwas faul — the fixed image for 'something smells fishy'; faul here is rotten, not lazy." },
+
+      { de: "Die Prüfung war für ihn eine Feuertaufe, aber er hat sie bestanden.", en: "The exam was a baptism of fire for him, but he passed it.", use: "eine Prüfung bestehen = to pass an exam; the sie refers back to die Prüfung, not the Feuertaufe." },
+
+      { de: "Nach wochenlangem Tauziehen um den Vertrag machte der Verein einen Rückzieher.", en: "After weeks of wrangling over the contract, the club backed out.", use: "das Tauziehen um + Akkusativ = the tug of war OVER something; einen Rückzieher machen is the fixed verb for backing out." },
+
+      { de: "Die letzten Monate waren ein Wechselbad der Gefühle.", en: "The last few months have been an emotional rollercoaster.", use: "ein Wechselbad der Gefühle — always with the genitive der Gefühle; the image is alternating hot and cold baths." },
+
+      { de: "Der Umzug war die erste Bewährungsprobe für die neue Mannschaft.", en: "The move was the first real test for the new team.", use: "die Bewährungsprobe für + Akkusativ; sich bewähren underneath it means to prove oneself — the noun bakes that in." },
+
+      { de: "Mit dieser Entscheidung wurden die Weichen für die Zukunft gestellt.", en: "That decision set the course for the future.", use: "die Weichen stellen (railway points) is the verb behind the noun Weichenstellung; German prefers the passive wurden ... gestellt here." },
+
+      { de: "Der Abschluss ist ein Meilenstein, aber noch nicht das Ziel.", en: "The degree is a milestone, but it is not the finish line yet.", use: "noch nicht = not yet; placed before das Ziel it keeps the journey image running." },
+
+      { de: "Die Sprache ist oft der größte Stolperstein beim Neuanfang im Ausland.", en: "Language is often the biggest stumbling block when starting over abroad.", use: "beim + nominalised noun (der Neuanfang) compresses a whole wenn-clause into two words: when starting over." },
+
+      { de: "Das Praktikum war für sie der Türöffner in die Branche.", en: "The internship opened the door to the industry for her.", use: "der Türöffner in + Akkusativ — the figurative door-opener takes a direction, not a location." },
+
+      { de: "Der Vertrag lässt uns kaum Spielraum für Änderungen.", en: "The contract leaves us hardly any room for manoeuvre.", use: "jemandem Spielraum lassen — Dativ for who gets the leeway; kaum negates more gently than kein." },
+
+    ],
   },
   part410: {
     label: "Part 410", level: "C1", theme: "Subtle distinctions",
@@ -8286,7 +8772,53 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "angeblich wahr", lookup: "angeblich wahr", fallbackEn: "purported", tip: "adjective" },
     ],
     dialogues: [],
-    phrases: [],
+    phrases: [
+
+      { de: "Er hat es nicht direkt gesagt, sondern nur angedeutet.", en: "He did not say it outright, he only implied it.", use: "nicht ..., sondern corrects within one sentence; the participle angedeutet stands alone because gesagt already carried hat." },
+
+      { de: "Aus ihrem Schweigen würde ich nicht zu viel folgern.", en: "I would not infer too much from her silence.", use: "würde + infinitive is the polite hedge of advice; aus + Dativ names what the inference is drawn FROM." },
+
+      { de: "Sie weigert sich, die Aussage zu unterschreiben.", en: "She refuses to sign the statement.", use: "sich weigern always takes a comma plus zu-infinitive — never a bare infinitive like English refuse to." },
+
+      { de: "Auf Nachfrage verneinte der Sprecher den Bericht.", en: "When asked, the spokesman denied the report.", use: "auf Nachfrage = when asked, a two-word absolute; verneinen denies a STATEMENT — a person denying guilt is leugnen or abstreiten." },
+
+      { de: "Ich kann Ihnen zusichern, dass Ihre Daten vertraulich behandelt werden.", en: "I can assure you that your data will be treated confidentially.", use: "zusichern is the formal, binding assure (Dativ person + dass); versichern merely asserts, zusichern promises." },
+
+      { de: "Der Lärm beeinträchtigt die Konzentration, auch wenn man ihn kaum bemerkt.", en: "The noise impairs concentration even if you barely notice it.", use: "auch wenn = even if/though; beeinträchtigen degrades quality, behindern blocks an activity — the pair this pack keeps apart." },
+
+      { de: "Das neue Gesetz soll den Fortschritt fördern, nicht behindern.", en: "The new law is meant to foster progress, not obstruct it.", use: "sollen for intended purpose = is meant to; the bare infinitive pair fördern, nicht behindern shares one object." },
+
+      { de: "Der Plan wurde nicht ersetzt, sondern nur geringfügig abgeändert.", en: "The plan was not replaced, just slightly amended.", use: "abändern = to amend in details; ändern would be neutral change, ersetzen full replacement — three rungs of one ladder." },
+
+      { de: "Das Streaming hat die DVD fast vollständig verdrängt.", en: "Streaming has almost completely supplanted the DVD.", use: "verdrängen = to push out of the market/mind; ersetzen swaps in a substitute, verdrängen wins a fight." },
+
+      { de: "Er hat ihre Gutmütigkeit jahrelang ausgenutzt.", en: "He exploited her good nature for years.", use: "ausnutzen with a person or their trait is negative; nutzen with a thing is neutral. jahrelang = for years, one word." },
+
+      { de: "Die Kameras beobachten nicht nur den Verkehr, sie überwachen ihn.", en: "The cameras do not just observe the traffic — they surveil it.", use: "nicht nur ..., sie ... escalates: the second verb replaces the first as the truer description. überwachen implies control." },
+
+      { de: "Fähigkeiten bringt man mit, Fertigkeiten erwirbt man durch Übung.", en: "Abilities are what you bring with you; skills you acquire through practice.", use: "Both objects are fronted (Fähigkeiten ..., Fertigkeiten ...) to set the pair against each other — the contrast carries the definition." },
+
+      { de: "Die Wirkung des Medikaments setzt schnell ein, die Nebenwirkungen zeigen sich erst später.", en: "The drug takes effect quickly; the side effects only show up later.", use: "einsetzen = to set in (of an effect); sich zeigen = to become apparent. erst später = only later, not until later." },
+
+      { de: "Der Vorfall an sich war harmlos, aber er wurde zum Auslöser einer langen Debatte.", en: "The incident in itself was harmless, but it became the trigger for a long debate.", use: "an sich = in itself; zum Auslöser werden + Genitiv is the nominal way to say it set something off." },
+
+      { de: "Der Grund war lange bekannt, der Anlass war ein einziger Tweet.", en: "The underlying reason had long been known; what set it off was a single tweet.", use: "Grund is the standing reason, Anlass the occasion that triggers — German separates what English blurs into 'reason'." },
+
+      { de: "Nutzen Sie die Gelegenheit, solange sie sich bietet.", en: "Seize the opportunity while it presents itself.", use: "sich bieten = to present itself (of chances); solange = for as long as. Gelegenheit is the takeable moment, Möglichkeit the abstract option." },
+
+      { de: "Die Therapie ist wirksam, aber alles andere als effizient.", en: "The therapy is effective but anything but efficient.", use: "alles andere als = anything but; wirksam says it works, effizient weighs the cost — the sentence holds the two apart." },
+
+      { de: "Das Hotel ist berühmt, sein Besitzer eher berüchtigt.", en: "The hotel is famous; its owner is more like notorious.", use: "The second clause drops its verb (ist) — permitted when it repeats; eher shades the adjective toward the darker twin." },
+
+      { de: "Der Mauerfall war ein historischer Moment, kein bloß geschichtliches Detail.", en: "The fall of the Wall was a historic moment, not merely a historical detail.", use: "historisch = momentous; geschichtlich = of history. bloß before an adjective = merely." },
+
+      { de: "Ihre Antwort war ausweichend: Sie versicherte nur, man prüfe den Fall.", en: "Her answer was evasive: she merely asserted that the case was being looked into.", use: "man prüfe is Konjunktiv I — reported speech that keeps the claim at arm's length. versichern asserts; it does not promise." },
+
+      { de: "Die Opposition fordert Aufklärung, die Regierung fördert lieber neue Projekte.", en: "The opposition demands answers; the government would rather fund new projects.", use: "fordern (demand) and fördern (foster) differ by one umlaut and point in opposite directions — this pair is a classic exam trap." },
+
+      { de: "Angeblich war es ein Versehen, doch daran gibt es Zweifel.", en: "Supposedly it was an oversight, but there are doubts about that.", use: "angeblich brands the claim as someone else's; daran = about that (Zweifel an + Dativ)." },
+
+    ],
   },
 ...advancedWordPartBlueprints,
 ...advancedWordPartBlueprints2,
