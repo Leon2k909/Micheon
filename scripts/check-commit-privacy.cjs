@@ -61,15 +61,31 @@ const commits = raw
 const PEOPLE = [/\bLeon\b/u, /\bMichelle\b/u, /\bLeon2k909\b/iu, /\bMichelle0298\b/iu];
 
 /**
- * A quoted sentence of real length. Messages here legitimately quote a word
- * or a short phrase — a gloss, "smith's hearth", a UI label — so short quotes
- * pass. Five or more words inside one pair of quotes is somebody's sentence,
- * and in this repository's history every such sentence was a user's message.
+ * The quoted segments of a message, paired shortest-first.
+ *
+ * Pairing matters more than it looks: two single-word quotes on one line —
+ * a gloss here, a gloss there — must not have the prose BETWEEN them read as
+ * one long quotation, which is what a greedy match does the moment a line
+ * carries two of them. This check refused its own author's message that way
+ * on its first day. Lazy pairing takes each opening quote to the nearest
+ * closer, so every segment is what a reader would call the quote.
  */
-const QUOTED_SPEECH = /["“][^"“”\n]*(?:\s+\S+){4,}[^"“”\n]*["”]/u;
+function quotedSegments(message) {
+  return [...message.matchAll(/["“]([^"“”\n]{0,300}?)["”]/gu)].map((match) => match[1]);
+}
+
+/**
+ * A quoted sentence of real length. Messages here legitimately quote a word
+ * or a short phrase — a gloss, a UI label — so short quotes pass. Five or
+ * more words inside one pair of quotes is somebody's sentence, and in this
+ * repository's history every such sentence was a user's message.
+ */
+function quotesASentence(message) {
+  return quotedSegments(message).some((segment) => segment.trim().split(/\s+/).filter(Boolean).length >= 5);
+}
 
 /** The tell of an attributed quote, whatever its length: `someone: "..."`. */
-const ATTRIBUTED = /\w:\s*["“][^"“”\n]{8,}["”]/u;
+const ATTRIBUTED = /\w:\s*["“][^"“”\n]{8,}?["”]/u;
 
 const offenders = [];
 for (const commit of commits) {
@@ -77,7 +93,7 @@ for (const commit of commits) {
   for (const person of PEOPLE) {
     if (person.test(commit.message)) why.push(`names a person (${person.source})`);
   }
-  if (QUOTED_SPEECH.test(commit.message)) why.push("quotes a sentence — keep the reason, drop the source");
+  if (quotesASentence(commit.message)) why.push("quotes a sentence — keep the reason, drop the source");
   if (ATTRIBUTED.test(commit.message)) why.push("attributes a quote to someone");
   if (why.length) offenders.push({ hash: commit.hash, subject: commit.message.split("\n")[0].slice(0, 72), why });
 }
