@@ -2597,6 +2597,23 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   object-position: center 58%;
 }
 
+/*
+ * The Polish painting hangs its flag at the very edge of the canvas, with
+ * forty pixels of sky after it and nothing beyond. object-fit: cover trims
+ * from BOTH sides, so a card even slightly narrower than the picture eats
+ * that sky and then the flag, and the cut lands mid-stripe.
+ *
+ * Anchoring this one to the right means the trim comes off the left only.
+ * The flag keeps its sky at every card size instead of at some of them, and
+ * the left gives up more of the river — which is empty mist there anyway.
+ *
+ * Per-language and not a general rule: the other three paintings hold their
+ * flags well inside, and centring is the better framing for them.
+ */
+.np-course-art[data-course="pl"] {
+  object-position: 100% 58%;
+}
+
 .np-course-shade {
   z-index: 1;
   background: linear-gradient(90deg, rgba(30, 145, 50, 0.95) 0%, rgba(43, 160, 58, 0.88) 31%, rgba(52, 171, 65, 0.62) 46%, rgba(58, 176, 71, 0.2) 62%, rgba(58, 176, 71, 0) 74%);

@@ -1991,7 +1991,7 @@ function CourseHero({
   return (
     <div className="np-course-hero-frame">
       <section className="np-course-hero">
-        <img alt="" className="np-course-art" decoding="async" fetchPriority="high" height={833} loading="eager" src={languageCardArt(sides.target.code, englishVariant)} width={1200} />
+        <img alt="" className="np-course-art" data-course={sides.target.code} decoding="async" fetchPriority="high" height={833} loading="eager" src={languageCardArt(sides.target.code, englishVariant)} width={1200} />
         <div aria-hidden="true" className="np-course-shade" />
         <div className="np-course-copy">
           <div className="np-course-meta-row">
@@ -2223,7 +2223,7 @@ function LanguageCard({
           to its foot, so far more of the artwork is visible; progress and the
           button sit below it on the plain card. */}
       <div className="np-home-choice-hero">
-        <img alt="" className="np-course-art" decoding="async" fetchPriority="high" height={833} loading="eager" src={languageCardArt(sides.target.code, englishVariant)} width={1200} />
+        <img alt="" className="np-course-art" data-course={sides.target.code} decoding="async" fetchPriority="high" height={833} loading="eager" src={languageCardArt(sides.target.code, englishVariant)} width={1200} />
         <div aria-hidden="true" className="np-home-choice-wash" />
         <div className="np-home-choice-body">
           <span aria-hidden="true" className="np-home-choice-flag"><FlagRoundel id={courseFlagId} /></span>
