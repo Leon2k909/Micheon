@@ -1637,9 +1637,33 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const [enAttempts, setEnAttempts] = useState(0);
   const [translationMode, setTranslationMode] = useState<"bank" | "type">("type");
   const [translationPicked, setTranslationPicked] = useState<OrderToken[]>([]);
-  const [gapInput, setGapInput] = useState("");
+  /**
+   * One entry per blank.
+   *
+   * The sentence can blank two words, and one box for both meant the learner
+   * had to infer — from a plural in the placeholder — that a space-separated
+   * pair was wanted. Two blanks now get two boxes, so the shape of the answer
+   * is visible before anything is typed.
+   *
+   * The matcher still receives one joined string: it already accepts the
+   * words in either order and refuses a missing one, and every rule about
+   * hyphens, apostrophes and spellings lives behind that single entry point.
+   * Splitting the ENTRY must not fork the JUDGING.
+   */
+  const [gapInputs, setGapInputs] = useState<string[]>([]);
+  const gapInput = gapInputs.join(" ");
+  const setGapInputAt = (index: number, value: string) => setGapInputs((previous) => {
+    const next = [...previous];
+    while (next.length <= index) next.push("");
+    next[index] = value;
+    return next;
+  });
   const [gapChecked, setGapChecked] = useState(false);
   const gapInputRef = useRef<HTMLInputElement>(null);
+  // Every box, and which one the caret was last in — the accent row has to
+  // put its character where the learner is working, not always in the first.
+  const gapInputRefs = useRef<Array<HTMLInputElement | null>>([]);
+  const gapFocusIndex = useRef(0);
   const [meaningChoice, setMeaningChoice] = useState<string | null>(null);
   const [meaningChecked, setMeaningChecked] = useState(false);
   const [meaningSelectChoice, setMeaningSelectChoice] = useState<string | null>(null);
@@ -2086,7 +2110,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       setTranslationPicked([]);
       setTranslationMode("type");
     }
-    if (phase === "Gap") { setGapInput(""); setGapChecked(false); }
+    if (phase === "Gap") { setGapInputs([]); setGapChecked(false); }
     if (phase === "Order") {
       setOrderTokens(buildOrderTokens(item.de));
       setOrderChecked(false);
@@ -2742,7 +2766,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     reactToAnswer(gapResult.ok);
     if (gapResult.ok) { lessonSpeak(item.de, 0.88, targetLang); setTimeout(advanceOrFinish, 900); }
   };
-  const retryGap = () => { setGapInput(""); setGapChecked(false); setTimeout(() => gapInputRef.current?.focus(), 50); };
+  const retryGap = () => { setGapInputs([]); setGapChecked(false); setTimeout(() => gapInputRef.current?.focus(), 50); };
 
   const reorderToken = (from: number, to: number) => {
     if (from === to || orderLocked) return;
@@ -4510,23 +4534,65 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   <PromptLanguageBadge label={targetLabel} />
                   <strong>{ui("Fill in")}</strong>
                 </div>
-                <Input ref={gapInputRef}
-                  className="fs-input"
-                  placeholder={gap.words.length > 1 ? "Type the missing words..." : "Type the missing word..."}
-                  autoFocus
-                  spellCheck={false}
-                  value={gapInput}
-                  onChange={(e) => { setGapInput(e.target.value); if (gapChecked) setGapChecked(false); }}
-                  onKeyDown={(e) => e.key === "Enter" && (gapChecked && gapResult.ok ? advanceOrFinish() : checkGap())}
-                  disabled={gapChecked && gapResult.ok}
-                />
+                {/*
+                  One box per blank, in sentence order. Two blanks used to
+                  share a box, and the only sign that two words were wanted
+                  was a plural in the placeholder — the shape of the answer
+                  should be visible before anything is typed.
+
+                  Enter moves to the next empty box first and only checks
+                  from the last one, so the key means "done with this blank"
+                  everywhere except where it means "done".
+                */}
+                <div className="flex min-w-0 flex-1 items-center gap-2">
+                  {gap.words.map((_, index) => (
+                    <div className="flex min-w-0 flex-1 items-center gap-1.5" key={index}>
+                      {gap.words.length > 1 && (
+                        <span aria-hidden="true" className="text-xs font-black text-zinc-400">{index + 1}</span>
+                      )}
+                      <Input
+                        ref={(node) => {
+                          gapInputRefs.current[index] = node;
+                          if (index === 0) gapInputRef.current = node;
+                        }}
+                        aria-label={uiFmt("Missing word {n}", { n: index + 1 })}
+                        className="fs-input min-w-0"
+                        placeholder="Type the missing word..."
+                        autoFocus={index === 0}
+                        spellCheck={false}
+                        value={gapInputs[index] ?? ""}
+                        onFocus={() => { gapFocusIndex.current = index; }}
+                        onChange={(e) => { setGapInputAt(index, e.target.value); if (gapChecked) setGapChecked(false); }}
+                        onKeyDown={(e) => {
+                          if (e.key !== "Enter") return;
+                          if (index < gap.words.length - 1 && !(gapChecked && gapResult.ok)) {
+                            gapInputRefs.current[index + 1]?.focus();
+                            return;
+                          }
+                          if (gapChecked && gapResult.ok) advanceOrFinish(); else checkGap();
+                        }}
+                        disabled={gapChecked && gapResult.ok}
+                      />
+                    </div>
+                  ))}
+                </div>
                 <button type="button" className="fs-check" onClick={gapChecked && gapResult.ok ? advanceOrFinish : checkGap}>
                   <span className="fs-check-label">{gapChecked && gapResult.ok ? ui("Next") : ui("Check")}</span>
                   <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
             </motion.div>
-            <AccentRow language={targetLanguage} onInsert={(c) => insertAt(gapInputRef.current, c, setGapInput)} />
+            <AccentRow
+              language={targetLanguage}
+              onInsert={(c) => {
+                const index = Math.min(gapFocusIndex.current, gap.words.length - 1);
+                insertAt(
+                  gapInputRefs.current[index] ?? gapInputRef.current,
+                  c,
+                  (value) => setGapInputAt(index, value)
+                );
+              }}
+            />
             {!(gapChecked && gapResult.ok) && (
               <RecallHelp
                 key={`${item.id}-gap`}

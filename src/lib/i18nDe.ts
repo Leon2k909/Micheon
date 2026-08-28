@@ -277,6 +277,7 @@ export const DE: Record<string, string> = {
   "Listen": "Hören",
   "Pick it": "Auswählen",
   "Missing word": "Fehlendes Wort",
+  "Missing word {n}": "Fehlendes Wort {n}",
   "Type": "Tippen",
   "Translate": "Übersetzen",
   "Review": "Wiederholen",

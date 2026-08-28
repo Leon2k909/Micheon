@@ -263,6 +263,7 @@ export const PL: Record<string, string> = {
   "Listen": "Słuchanie",
   "Pick it": "Wybór",
   "Missing word": "Brakujące słowo",
+  "Missing word {n}": "Brakujące słowo {n}",
   "Type": "Pisanie",
   "Translate": "Tłumaczenie",
   "Review": "Powtórka",

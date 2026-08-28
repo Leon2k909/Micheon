@@ -264,6 +264,7 @@ export const FR: Record<string, string> = {
   "Listen": "Écouter",
   "Pick it": "Choisir",
   "Missing word": "Mot manquant",
+  "Missing word {n}": "Mot manquant {n}",
   "Type": "Taper",
   "Translate": "Traduire",
   "Review": "Réviser",

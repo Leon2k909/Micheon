@@ -134,6 +134,26 @@ check("every catalogue gap preserves the canonical missing-word spelling", !pres
 check("every catalogue gap accepts its own displayed answer", !selfMatchFailure, selfMatchFailure ?? "");
 check("the invariant audits the complete shipped catalogue", fullCatalog.length >= 9000, `found ${fullCatalog.length}`);
 
+// ── the entry matches the shape of the answer ───────────────────────────────
+// Two blanked words used to share one box, and the only sign that two words
+// were wanted was a plural in the placeholder. The boxes now come from the
+// same list the blanks do, so the shape of the answer is visible before
+// anything is typed — while the JUDGING stays behind the one entry point all
+// the rules above are written against.
+const session = require("fs")
+  .readFileSync(require("path").join(root, "src/GuidedSession.tsx"), "utf8")
+  .replace(/\r\n?/gu, "\n");
+check("one box is drawn per blank, from the blanks themselves",
+  session.includes("{gap.words.map((_, index) => ("));
+check("the matcher still receives one joined answer, so no rule forks",
+  session.includes('const gapInput = gapInputs.join(" ")'));
+check("Enter on an inner box moves to the next blank rather than judging half an answer",
+  session.includes("gapInputRefs.current[index + 1]?.focus()"));
+check("the accent row types into the box the learner is in, not always the first",
+  session.includes("gapFocusIndex.current = index") && /Math\.min\(gapFocusIndex\.current, gap\.words\.length - 1\)/.test(session));
+check("retry and the next card clear every box",
+  (session.match(/setGapInputs\(\[\]\)/g) || []).length >= 2);
+
 if (failures) {
   console.error(`\n${failures} gap-fill regression${failures === 1 ? "" : "s"}`);
   process.exit(1);
