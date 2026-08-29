@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, CheckCircle2, Check, Circle, Minus, Search, Star, Volume2, X as XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ui, uiFmt, uiIsEnglish, uiLocale, uiNumber } from "@/lib/i18n";
@@ -7,6 +7,11 @@ import { useLearningMode } from "@/lib/learningMode";
 import { buildWordExampleIndex } from "@/lib/wordExamples";
 import { buildCorpusIndex } from "@/lib/corpusFrequency";
 import { CEFR_STEPS, cefrStep, cefrStepLabel, type CefrStep } from "@/lib/cefr";
+import {
+  conversationPriorityInfo,
+  USEFULNESS_FILTERS,
+  type ConversationUsefulness,
+} from "@/lib/conversationPriority";
 import {
   loadGradeStore,
   progressEntryForId,
@@ -260,6 +265,10 @@ export function WordsTracker({ apiParts, user }: {
   const [filter, setFilter] = useState<Filter>("all");
   const [partOfSpeech, setPartOfSpeech] = useState<WordPartOfSpeechFilter>("all");
   const [level, setLevel] = useState<"all" | CefrStep>("all");
+  // Usefulness is read from the pack an item belongs to, and a word belongs
+  // to a pack exactly as a sentence does — the sentences list has offered
+  // this since it was built and this one never did.
+  const [usefulness, setUsefulness] = useState<"all" | ConversationUsefulness>("all");
   const [sort, setSort] = useState<WordTrackerSort>("common");
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
@@ -320,12 +329,31 @@ export function WordsTracker({ apiParts, user }: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [catalog, grades]);
 
+  /**
+   * The usefulness band of a pack, worked out once per pack.
+   *
+   * This list runs to nine thousand rows and the predicate below is re-run on
+   * every keystroke; a word's band depends only on which pack teaches it, so
+   * the same handful of answers would otherwise be recomputed thousands of
+   * times per pass.
+   */
+  const usefulnessByPart = useRef(new Map<string, ConversationUsefulness>());
+  const usefulnessOf = (partKey: string | undefined) => {
+    const key = String(partKey ?? "");
+    const cached = usefulnessByPart.current.get(key);
+    if (cached) return cached;
+    const band = conversationPriorityInfo(key).key;
+    usefulnessByPart.current.set(key, band);
+    return band;
+  };
+
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
     const rows = catalog.filter((word) => {
       if (filter !== "all" && statusOf(word) !== filter) return false;
       if (!wordMatchesPartOfSpeech(word.pos, partOfSpeech)) return false;
       if (level !== "all" && cefrStep(word.level) !== level) return false;
+      if (usefulness !== "all" && usefulnessOf(word.partKey) !== usefulness) return false;
       if (!needle) return true;
       // A combined card answers for every word in it: searching a less common
       // synonym has to find the card that now carries it.
@@ -506,6 +534,18 @@ export function WordsTracker({ apiParts, user }: {
             <option value="all">{ui("All levels")}</option>
             {CEFR_STEPS.map((step) => (
               <option key={step} value={step}>{cefrStepLabel(step)}</option>
+            ))}
+          </select>
+        </label>
+        <label className="min-w-0">
+          <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.12em] text-[var(--text-3)]">{ui("Usefulness")}</span>
+          <select
+            className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-xs font-black text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
+            onChange={(event) => { setUsefulness(event.target.value as "all" | ConversationUsefulness); reset(); }}
+            value={usefulness}
+          >
+            {USEFULNESS_FILTERS.map((option) => (
+              <option key={option.key} value={option.key}>{ui(option.label)}</option>
             ))}
           </select>
         </label>

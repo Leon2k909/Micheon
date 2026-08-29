@@ -68,6 +68,26 @@ export const EVERYDAY_CONVERSATION_PACKS = [
   "cb-emergencies",
 ] as const;
 
+/**
+ * The usefulness bands as a filter offers them, in the order they are offered.
+ *
+ * Here rather than in a tracker because both trackers offer it: usefulness is
+ * read from the pack an item belongs to, and words belong to packs exactly as
+ * sentences do. Kept as one list so the two cannot drift into offering
+ * different bands for the same underlying value.
+ */
+export const USEFULNESS_FILTERS: { key: "all" | ConversationUsefulness; label: string }[] = [
+  { key: "all", label: "All usefulness levels" },
+  { key: "essential", label: "Conversation essentials" },
+  { key: "everyday", label: "Everyday conversation" },
+  { key: "personal", label: "Your material" },
+  { key: "daily", label: "Daily life" },
+  { key: "occasional", label: "Now and then" },
+  { key: "life-event", label: "Life events & big topics" },
+  { key: "specialist", label: "Specialist / casual" },
+  { key: "extra", label: "Extra practice" },
+];
+
 export type ConversationUsefulness =
   | "essential"
   | "personal"

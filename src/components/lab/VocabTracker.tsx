@@ -13,6 +13,7 @@ import { packMeta } from "@/lib/curriculum";
 import { detectRegister, REGISTER_SHORT, REGISTER_TONE } from "@/lib/register";
 import { getAuthUser, type UserProfile } from "@/lib/profileStorage";
 import { tts } from "@/lib/voice";
+import { CEFR_STEPS, cefrStep, cefrStepLabel, type CefrStep } from "@/lib/cefr";
 import { ui, uiFmt, uiIsEnglish, uiNumber } from "@/lib/i18n";
 import { targetLangTag } from "@/lib/direction";
 import { courseSides, type CourseSides } from "@/lib/courseLanguages";
@@ -22,6 +23,7 @@ import { buildCatalogSearchText, catalogItemMatchesQuery, normalizeCatalogSearch
 import { getLearningMode, useLearningMode } from "@/lib/learningMode";
 import {
   conversationPriorityInfo,
+  USEFULNESS_FILTERS,
   conversationPriorityScore,
   type ConversationPriorityInfo,
   type ConversationUsefulness,
@@ -138,17 +140,7 @@ const ITEM_TYPE_FILTERS: { key: ItemTypeFilter; label: string }[] = [
   { key: "vocab", label: "Vocabulary in context" },
 ];
 
-const USEFULNESS_FILTERS: { key: UsefulnessFilter; label: string }[] = [
-  { key: "all", label: "All usefulness levels" },
-  { key: "essential", label: "Conversation essentials" },
-  { key: "everyday", label: "Everyday conversation" },
-  { key: "personal", label: "Your material" },
-  { key: "daily", label: "Daily life" },
-  { key: "occasional", label: "Now and then" },
-  { key: "life-event", label: "Life events & big topics" },
-  { key: "specialist", label: "Specialist / casual" },
-  { key: "extra", label: "Extra practice" },
-];
+
 
 function speak(text: string) {
   tts(text, 0.9, targetLangTag());
@@ -595,6 +587,10 @@ export function VocabTracker({
   const [filter, setFilter] = useState<FilterKey>("all");
   const [itemTypeFilter, setItemTypeFilter] = useState<ItemTypeFilter>("all");
   const [usefulnessFilter, setUsefulnessFilter] = useState<UsefulnessFilter>("all");
+  // A sentence carries the level of the pack that teaches it, which is what
+  // the words tracker already filters on. Both lists answer the same question
+  // now: show me what is at my level.
+  const [levelFilter, setLevelFilter] = useState<"all" | CefrStep>("all");
   const [sort, setSort] = useState<SortKey>("common");
   const [query, setQuery] = useState("");
   /**
@@ -606,6 +602,7 @@ export function VocabTracker({
     setFilter(key);
     setItemTypeFilter("all");
     setUsefulnessFilter("all");
+    setLevelFilter("all");
     setQuery("");
   }), []);
   /**
@@ -826,6 +823,7 @@ export function VocabTracker({
       if (itemTypeFilter === "phrases" && item.kind === "vocab") return false;
       if (itemTypeFilter === "vocab" && item.kind !== "vocab") return false;
       if (usefulnessFilter !== "all" && priorityIndex.get(item)?.info.key !== usefulnessFilter) return false;
+      if (levelFilter !== "all" && cefrStep(item.level) !== levelFilter) return false;
       if (!needsStatus) return true;
       const status = statusForId(grades, item.id, item.aliases);
       // Fading is a slice of Known rather than a status of its own — these are
@@ -1076,6 +1074,19 @@ export function VocabTracker({
           >
             {USEFULNESS_FILTERS.map((option) => (
               <option key={option.key} value={option.key}>{ui(option.label)}</option>
+            ))}
+          </select>
+        </label>
+        <label className="min-w-0">
+          <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.12em] text-[var(--text-3)]">{ui("Level")}</span>
+          <select
+            className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-xs font-black text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
+            onChange={(event) => { setLevelFilter(event.target.value as "all" | CefrStep); resetList(); }}
+            value={levelFilter}
+          >
+            <option value="all">{ui("All levels")}</option>
+            {CEFR_STEPS.map((step) => (
+              <option key={step} value={step}>{cefrStepLabel(step)}</option>
             ))}
           </select>
         </label>
