@@ -1523,6 +1523,27 @@ html[data-theme="dark"] .micheon-update-panel .micheon-update-secondary:hover {
   grid-area: 1 / 1;
 }
 
+/* The sign-in screen's logo, one ink per theme. Both are rendered stacked and
+   the theme picks, the same way the install banner does it: an <img> cannot
+   recolour with data-theme, and swapping src on a theme change would flash. */
+.login-logo {
+  display: grid;
+  justify-content: start;
+}
+.login-logo__light,
+.login-logo__dark {
+  grid-area: 1 / 1;
+}
+.login-logo__dark {
+  visibility: hidden;
+}
+html[data-theme="dark"] .login-logo__light {
+  visibility: hidden;
+}
+html[data-theme="dark"] .login-logo__dark {
+  visibility: visible;
+}
+
 .micheon-update-install-logo--dark {
   visibility: hidden;
 }
