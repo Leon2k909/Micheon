@@ -197,6 +197,12 @@ import homeLanguagesGermanImage from "./assets/home-languages-german-v1.webp";
 import homeLanguagesUkImage from "./assets/home-languages-uk-v1.webp";
 import homeLanguagesFrImage from "./assets/home-languages-fr-v1.webp";
 import homeLanguagesPlImage from "./assets/home-languages-pl-v1.webp";
+import homeLanguagesEsImage from "./assets/home-languages-es-v1.webp";
+import homeLanguagesItImage from "./assets/home-languages-it-v1.webp";
+import homeLanguagesPtImage from "./assets/home-languages-pt-v1.webp";
+import homeLanguagesRuImage from "./assets/home-languages-ru-v1.webp";
+import homeLanguagesHiImage from "./assets/home-languages-hi-v1.webp";
+import homeLanguagesZhImage from "./assets/home-languages-zh-v1.webp";
 import homeCountryArtDe from "./assets/home-country-de-v2.webp";
 import homeCountryArtFr from "./assets/home-country-fr-v2.webp";
 import homeCountryArtUk from "./assets/home-country-uk-v2.webp";
@@ -466,12 +472,32 @@ const LANGUAGE_SECTION_IDS: PrototypeView[] = LANGUAGE_SECTION_ROWS
  * they are told apart here too - the British one has its own scene, the
  * American one keeps the general picture until somebody draws it one.
  */
+/**
+ * Scenes drawn before their courses exist. courseRegistry lists every one of
+ * these as unavailable, so none of them can be the active course and none of
+ * these pictures can be reached today. They are here so the scene is waiting
+ * rather than remembered: the day a course opens, its card wears its own
+ * country instead of the general German photograph somebody has to notice.
+ *
+ * A table rather than a run of if-branches, because six unreachable branches
+ * in a row read as something to tidy away, and the tidying would land long
+ * before anybody remembered what they were for.
+ */
+const PLANNED_CARD_ART: Record<string, string> = {
+  es: homeLanguagesEsImage,
+  it: homeLanguagesItImage,
+  pt: homeLanguagesPtImage,
+  ru: homeLanguagesRuImage,
+  hi: homeLanguagesHiImage,
+  zh: homeLanguagesZhImage,
+};
+
 function languageCardArt(targetCode: string, englishVariant: "british" | "american" | null) {
   if (targetCode === "de") return homeLanguagesGermanImage;
   if (targetCode === "fr") return homeLanguagesFrImage;
   if (targetCode === "pl") return homeLanguagesPlImage;
   if (targetCode === "en") return englishVariant === "american" ? homeLanguagesImage : homeLanguagesUkImage;
-  return homeLanguagesImage;
+  return PLANNED_CARD_ART[targetCode] ?? homeLanguagesImage;
 }
 
 const NAV_GROUP_ICONS: Partial<Record<PrototypeView, ComponentType<{ className?: string }>>> = {
