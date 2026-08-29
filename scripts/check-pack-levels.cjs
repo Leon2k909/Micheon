@@ -112,7 +112,50 @@ for (const { key, because } of BEGINNER) {
   );
 }
 
+/**
+ * Nothing at A1 is in the passive.
+ *
+ * Sentences do not have the fault the word packs had — they were authored one
+ * at a time into conversation packs rather than bulk-themed twenty at a time,
+ * so no single label is carrying material it never looked at. Measured against
+ * grammar rather than frequency (a relative clause is one whatever its
+ * vocabulary), the 242 A1 sentences hold no passive and no past perfect, and
+ * one dass-clause that is a set phrase.
+ *
+ * This pins the half of that which can be tested without false positives. The
+ * passive is unambiguous and unambiguously B1: werden plus a participle, or
+ * worden outright. Clause-final word order cannot be pinned the same way —
+ * gut, rot, kalt and nicht all end in -t and a regex reads them as verbs, which
+ * is why only this one is a check and the rest was read by hand.
+ *
+ * It is a floor for imports, not a claim about the 5,159 A2 sentences: those
+ * hold thirteen genuine passives, left where they are because a pack's level
+ * is the only lever and demoting a pack of everyday dialogue over one
+ * impersonal passive would be the worse error.
+ */
+const passive = /\bworden\b|\b(?:wird|werden|wurde|wurden)\b[^.?!]*\bge\w+(?:t|en)\b/u;
+const a1Passives = [];
+let a1Sentences = 0;
+for (const part of Object.values(allPartBlueprints)) {
+  if (cefrStep(part.level) !== "a1") continue;
+  // Sentences live in phrases, not seeds. Reading seeds finds no sentences at
+  // all and passes on an empty set, which is why the count is printed below.
+  for (const phrase of part.phrases ?? []) {
+    const text = String(phrase.de ?? "");
+    if (!text) continue;
+    a1Sentences += 1;
+    if (passive.test(text)) a1Passives.push(text);
+  }
+}
+assert.strictEqual(
+  a1Passives.length, 0,
+  `A1 packs teach ${a1Passives.length} sentence(s) in the passive, which is B1 grammar: `
+    + `${a1Passives.slice(0, 3).join(" | ")}. A1 currently holds ${a1Sentences} sentences and `
+    + `none of them needed it.`,
+);
+
 console.log(
   `check-pack-levels: ${SPECIALIST.length} specialist packs held above A2, `
-    + `${BEGINNER.length} beginner packs held at or below it`,
+    + `${BEGINNER.length} beginner packs held at or below it, `
+    + `${a1Sentences} A1 sentences and none in the passive`,
 );
