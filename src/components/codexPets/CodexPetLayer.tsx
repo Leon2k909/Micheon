@@ -207,11 +207,15 @@ const PET_DISPLAY_OPTIONS: Array<{
     value: "desktop",
   },
   {
-    // Say the cost out loud. Staying above a fullscreen game means the
-    // desktop compositor keeps the screen, and the game gives up a frame of
-    // latency to it — which is felt as input lag long before anyone thinks to
-    // blame the mascot sitting in the corner.
-    description: "Also stay over fullscreen games. This can add input lag to the game.",
+    // Say the trade out loud, both halves. Over a game the mascot is
+    // watch-only: it never hooks the mouse and never owns a click, so it
+    // cannot stand in the game's input path. What no window overlay can
+    // promise away is the desktop compositor: on machines without hardware
+    // overlay planes, anything drawn above a fullscreen game can still cost
+    // it a frame. Overlays that draw inside the game itself avoid that by
+    // injecting into its renderer, which is anti-cheat territory this app
+    // will never enter.
+    description: "Also stay over fullscreen games, watch-only — clicks pass straight through. Some machines still give the game up a frame for anything drawn over it.",
     icon: Gamepad2,
     label: "Games",
     value: "games",

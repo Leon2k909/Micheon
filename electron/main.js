@@ -229,6 +229,39 @@ function normalizePetDisplayMode(value) {
   return PET_DISPLAY_MODES.has(value) ? value : "desktop";
 }
 
+/**
+ * Who owns the mouse while the mascot floats, decided in one place.
+ *
+ * Everywhere else an overlay app draws INSIDE the game (Discord and Overwolf
+ * inject a DLL and render into the game's own frames, which is why they add
+ * no latency — and also why they need anti-cheat vendors to whitelist them).
+ * A BrowserWindow can never do that, so this window's only honest job over a
+ * game is to stay out of the input path entirely, and there are two ways it
+ * failed to:
+ *
+ *  - setIgnoreMouseEvents(true, { forward: true }) is implemented on Windows
+ *    as a LOW-LEVEL GLOBAL MOUSE HOOK. Every mouse move on the machine is
+ *    routed through this process before the game sees it, and whenever this
+ *    process is busy the whole system's cursor waits on it. That is felt as
+ *    input delay in a game the mascot is not even touching.
+ *  - The shaped overlay owns real input over the mascot's pixels, so a click
+ *    that lands on the pet mid-fight goes to the pet and not the game.
+ *
+ * Games mode therefore means watch-only: plain click-through, no forwarding
+ * hook, no input-owning shape — the window has no way to slow a game's input
+ * because it is no longer standing in the road. Desktop mode keeps the shaped
+ * interactive mascot exactly as before.
+ */
+function applyPetOverlayInputPolicy() {
+  if (!petWindow || petWindow.isDestroyed()) return;
+  if (petDisplayMode === "games") {
+    petWindow.setIgnoreMouseEvents(true);
+    return;
+  }
+  if (petOverlayUsesShape) petWindow.setIgnoreMouseEvents(false);
+  else petWindow.setIgnoreMouseEvents(true, { forward: true });
+}
+
 function keepPetSurfaceOnTop(window, moveToFront = false) {
   if (!window || window.isDestroyed() || petDisplayMode === "app") return;
   const level = petDisplayMode === "games" ? PET_GAME_TOP_LEVEL : PET_DESKTOP_TOP_LEVEL;
@@ -615,13 +648,13 @@ function applyPetOverlayShape(regions, preserveOnFailure = false) {
     petWindow.setShape(regions);
     petOverlayShapeSignature = signature;
     petOverlayUsesShape = true;
-    petWindow.setIgnoreMouseEvents(false);
+    applyPetOverlayInputPolicy();
     return true;
   } catch (error) {
     petOverlayShapeSignature = null;
     if (!preserveOnFailure) {
       petOverlayUsesShape = false;
-      petWindow.setIgnoreMouseEvents(true, { forward: true });
+      applyPetOverlayInputPolicy();
     }
     console.error("[pet] unable to shape overlay:", error?.message ?? error);
     return false;
@@ -1047,7 +1080,7 @@ function createPetOverlayWindow() {
     }
   });
   keepPetSurfaceOnTop(overlay);
-  overlay.setIgnoreMouseEvents(true, { forward: true });
+  applyPetOverlayInputPolicy();
   overlay.on("move", () => {
     if (petWindow === overlay) publishPetOverlayGeometry();
   });
@@ -1380,6 +1413,10 @@ function setPetOverlayDisplayMode(mode) {
     return;
   }
 
+  // Switching into games mode must tear the forwarding hook down NOW, and
+  // switching out must give the shaped mascot its input back — not wait for
+  // the next shape update to happen to run.
+  applyPetOverlayInputPolicy();
   keepPetSurfaceOnTop(petWindow, true);
   if (petHistoryShouldBeVisible) keepPetSurfaceOnTop(petHistoryWindow, true);
 }
@@ -2161,6 +2198,9 @@ ipcMain.on("pet-overlay:set-history-anchor", (event, mascotBounds) => {
 
 ipcMain.on("pet-overlay:set-interactive", (event, interactive) => {
   if (!eventCameFrom(event, petWindow) || !petWindow || petWindow.isDestroyed()) return;
+  // Watch-only over games: the renderer cannot re-arm the forwarding hook or
+  // claim input while a game may be running underneath. See the input policy.
+  if (petDisplayMode === "games") return;
   // Windows-shaped overlays own input only over the mascot UI and therefore do
   // not need the fragile mousemove-driven click-through toggle.
   if (petOverlayUsesShape) return;

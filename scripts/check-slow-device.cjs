@@ -259,7 +259,7 @@ check(
 );
 check(
   "...and the games option says what it costs",
-  read("src/components/codexPets/CodexPetLayer.tsx").includes("This can add input lag to the game.")
+  read("src/components/codexPets/CodexPetLayer.tsx").includes("Some machines still give the game up a frame for anything drawn over it.")
 );
 
 // The mascot overlay is a topmost LAYERED window, and Windows will not hand a
@@ -277,7 +277,7 @@ check(
 );
 check(
   "...and the games option still says what it costs",
-  petLayer.includes("This can add input lag to the game.")
+  petLayer.includes("Some machines still give the game up a frame for anything drawn over it.")
 );
 
 // Typing in the tracker's search box re-filtered all 16,308 items on every

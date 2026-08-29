@@ -334,7 +334,50 @@ check(
 );
 check(
   "the desktop overlay starts click-through so games receive input outside the visible pet",
-  createOverlayWindow.includes("overlay.setIgnoreMouseEvents(true, { forward: true });")
+  createOverlayWindow.includes("applyPetOverlayInputPolicy();")
+);
+
+/**
+ * Games mode never stands in a game's input path.
+ *
+ * setIgnoreMouseEvents(true, { forward: true }) is a LOW-LEVEL GLOBAL MOUSE
+ * HOOK on Windows: every mouse move on the machine routes through this
+ * process before the game sees it, and a busy Electron process is felt as
+ * input delay in a game the mascot is not even touching. The shaped overlay
+ * has the other half of the problem — it owns real clicks over the pet's
+ * pixels, so a shot that crosses the mascot lands on the mascot.
+ *
+ * So over games the mascot is watch-only, and every road back is closed: the
+ * one policy function decides input for every caller, the games branch takes
+ * no forward hook and no shape interactivity, the renderer's set-interactive
+ * message cannot re-arm it, and switching modes applies the policy at once
+ * rather than waiting for the next shape update.
+ */
+const inputPolicy = main.slice(
+  main.indexOf("function applyPetOverlayInputPolicy()"),
+  main.indexOf("function keepPetSurfaceOnTop")
+);
+check(
+  "one input-policy function exists and its games branch is a plain click-through",
+  inputPolicy.includes('if (petDisplayMode === "games") {')
+    && inputPolicy.includes("petWindow.setIgnoreMouseEvents(true);")
+    && !/games"\) \{[\s\S]*?forward: true[\s\S]*?return;/.test(inputPolicy)
+);
+check(
+  "every setIgnoreMouseEvents outside the policy respects games mode",
+  // The shape paths defer to the policy instead of claiming input directly...
+  /petOverlayUsesShape = true;\s*applyPetOverlayInputPolicy\(\);/.test(main)
+    && /petOverlayUsesShape = false;\s*applyPetOverlayInputPolicy\(\);/.test(main)
+    // ...and the renderer's toggle is refused while a game may be underneath.
+    && /set-interactive[\s\S]{0,400}?if \(petDisplayMode === "games"\) return;/.test(main)
+);
+check(
+  "switching display mode re-applies the input policy immediately",
+  /function setPetOverlayDisplayMode[\s\S]{0,900}?applyPetOverlayInputPolicy\(\);[\s\S]{0,200}?keepPetSurfaceOnTop\(petWindow, true\);/.test(main)
+);
+check(
+  "the games-mode picker says watch-only out loud",
+  layer.includes("watch-only — clicks pass straight through")
 );
 check(
   "the desktop overlay keeps Chromium background throttling enabled",
@@ -345,7 +388,9 @@ check(
   "the native shaped window owns input only inside actual pet regions",
   main.includes("petWindow.setShape(regions);")
     && main.includes("if (signature === petOverlayShapeSignature) return true;")
-    && main.includes("petWindow.setIgnoreMouseEvents(false);")
+    // Through the policy: shaped means interactive on the desktop and never
+    // over a game.
+    && inputPolicy.includes("if (petOverlayUsesShape) petWindow.setIgnoreMouseEvents(false);")
 );
 check(
   "sprite frame style updates cannot trigger native shape recalculation",

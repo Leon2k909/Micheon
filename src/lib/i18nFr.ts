@@ -2790,7 +2790,7 @@ export const FR: Record<string, string> = {
   "The interface icons.": "Les icônes de l'interface.",
   "Electron, React and Vite": "Electron, React et Vite",
   "What the desktop app is built with.": "Ce avec quoi l'application de bureau est construite.",
-  "Also stay over fullscreen games. This can add input lag to the game.": "Rester aussi au-dessus des jeux en plein écran. Cela peut ajouter de la latence dans le jeu.",
+  "Also stay over fullscreen games, watch-only — clicks pass straight through. Some machines still give the game up a frame for anything drawn over it.": "Rester aussi au-dessus des jeux en plein écran, en simple spectateur — les clics passent au travers. Sur certaines machines, tout ce qui est dessiné au-dessus du jeu lui coûte quand même une frame.",
   "🌱 I'm new to coding": "🌱 Je débute en programmation",
   "colour, practise": "colour, practise",
   "color, practice": "color, practice",
