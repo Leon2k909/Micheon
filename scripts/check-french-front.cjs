@@ -101,7 +101,12 @@ const BANDS = [
   { upTo: 12000 },
   { upTo: 16000 },
 ];
-const TRANSLATED_QUEUE_FLOORS = { fr: 17300, pl: 18700 };
+// Spanish is being written now, block by block, and its floor is raised to
+// match after each one. Zero is not "no standard" — the rule this check
+// enforces is that a count never falls, and that rule bites from the first
+// block onwards. It is here rather than only in check-translation-coverage
+// because a language with a table and no floor here fails the build outright.
+const TRANSLATED_QUEUE_FLOORS = { fr: 17300, pl: 18700, es: 0 };
 
 /**
  * How much of the word tracker the French course is allowed to be missing.

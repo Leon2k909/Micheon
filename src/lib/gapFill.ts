@@ -69,3 +69,34 @@ export function matchesGapInput(input: string, words: string[]): boolean {
 
   return placeSequence(0, new Set());
 }
+
+/**
+ * True when one box already holds a whole missing word that no earlier box has
+ * claimed — the signal that the learner is finished with this blank and the
+ * caret should move on by itself.
+ *
+ * Blanks are order-free, so a box is judged against the pool of answers rather
+ * than against the answer at its own position, and earlier boxes take their
+ * match out of that pool first.
+ *
+ * A word that is still growing into a different answer holds the caret where it
+ * is: with "es" and "essen" both missing, typing "es" is as likely to be the
+ * first half of "essen" as a finished answer, and yanking the caret mid-word is
+ * worse than one extra press of Enter.
+ */
+export function gapEntryIsComplete(entries: string[], index: number, words: string[]): boolean {
+  const clean = (value: string) => normalizeGermanLenient(String(value ?? "")).trim();
+  const remaining = words.map(clean).filter(Boolean);
+  if (remaining.length === 0) return false;
+
+  const typed = clean(entries[index] ?? "");
+  if (!typed) return false;
+
+  for (let earlier = 0; earlier < index; earlier += 1) {
+    const claimed = remaining.indexOf(clean(entries[earlier] ?? ""));
+    if (claimed !== -1) remaining.splice(claimed, 1);
+  }
+
+  if (!remaining.includes(typed)) return false;
+  return !remaining.some((word) => word !== typed && word.startsWith(typed));
+}

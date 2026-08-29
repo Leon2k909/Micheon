@@ -603,7 +603,7 @@ export const frequencyWordPartBlueprints: Record<string, Blueprint> = {
     { de: "der Krieg", lookup: "Krieg", fallbackEn: "war", tip: "noun", article: "der" },
     { de: "das Essen", lookup: "Essen", fallbackEn: "food, meal", tip: "noun", article: "das" },
     { de: "verantwortlich", lookup: "verantwortlich", fallbackEn: "responsible", tip: "adjective" },
-    { de: "rufen", lookup: "rufen", fallbackEn: "to call, cry", tip: "verb" },
+    { de: "rufen", lookup: "rufen", fallbackEn: "to call, call out", tip: "verb" },
     { de: "der Grad", lookup: "Grad", fallbackEn: "degree, order", tip: "noun", article: "der" },
     { de: "widmen", lookup: "widmen", fallbackEn: "to dedicate, devote", tip: "verb" },
     { de: "der Arbeitnehmer", lookup: "Arbeitnehmer", fallbackEn: "employee", tip: "noun", article: "der" },

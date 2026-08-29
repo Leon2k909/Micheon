@@ -35,6 +35,7 @@ const built = esbuild.buildSync({
       // every language at once with no event loop to await one on.
       'export { FRENCH_BY_GERMAN } from "./src/lib/frenchTranslations.ts";',
       'export { POLISH_BY_GERMAN } from "./src/lib/polishTranslations.ts";',
+      'export { SPANISH_BY_GERMAN } from "./src/lib/spanishTranslations.ts";',
     ].join("\n"),
     resolveDir: root,
     sourcefile: "translations-entry.ts",
@@ -59,6 +60,7 @@ const { TRANSLATION_LANGUAGES, TRANSLATION_LANGUAGE_NAMES, translate, translatio
 const M = compiled.exports;
 M.primeTranslations("fr", M.FRENCH_BY_GERMAN);
 M.primeTranslations("pl", M.POLISH_BY_GERMAN);
+M.primeTranslations("es", M.SPANISH_BY_GERMAN);
 
 // ── read every taught entry out of the packs ────────────────────────────────
 const FIELD = (name) => new RegExp("\\b" + name + ':\\s*"((?:[^"\\\\]|\\\\.)*)"');
@@ -107,6 +109,11 @@ const FLOORS = {
   // which counts the cards the course serves and requires every one of them to
   // have an answer.
   pl: 12700,
+  // Spanish is being written now, and the floor follows it up block by
+  // block. Zero is not "no standard": while a language is in progress the
+  // rule that matters is that its number never falls, and this check reads
+  // the floor from here rather than from the table itself.
+  es: 0,
 };
 
 // The percentage is still reported, because it is the honest measure of how

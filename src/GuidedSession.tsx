@@ -21,7 +21,7 @@ import {
   takeMatchingSafe,
 } from "@/lib/germanTextMatch";
 import { getMeaningLenience } from "@/lib/meaningLenience";
-import { computeGap, matchesGapInput, spokenWord } from "@/lib/gapFill";
+import { computeGap, gapEntryIsComplete, matchesGapInput, spokenWord } from "@/lib/gapFill";
 import type { AnswerPerformance } from "@/lib/adaptivePractice";
 import {
   ENGLISH_VARIANT_EVENT,
@@ -4573,8 +4573,14 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   Enter moves to the next empty box first and only checks
                   from the last one, so the key means "done with this blank"
                   everywhere except where it means "done".
+
+                  A finished word moves the caret on by itself: waiting for
+                  Enter after the answer is already complete makes the box
+                  feel stuck. Enter still works for the cases the check keeps
+                  its hands off — see gapEntryIsComplete.
                 */}
-                <div className="flex min-w-0 flex-1 items-center gap-2">
+                <div className={cn("flex min-w-0 flex-1 items-center gap-2",
+                  gap.words.length > 1 && "fs-gap-row")}>
                   {gap.words.map((_, index) => (
                     <div className="flex min-w-0 flex-1 items-center gap-1.5" key={index}>
                       {gap.words.length > 1 && (
@@ -4592,7 +4598,19 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                         spellCheck={false}
                         value={gapInputs[index] ?? ""}
                         onFocus={() => { gapFocusIndex.current = index; }}
-                        onChange={(e) => { setGapInputAt(index, e.target.value); if (gapChecked) setGapChecked(false); }}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setGapInputAt(index, value);
+                          if (gapChecked) setGapChecked(false);
+                          const next = [...gapInputs];
+                          while (next.length <= index) next.push("");
+                          next[index] = value;
+                          const nextIsEmpty = !(next[index + 1] ?? "").trim();
+                          if (index < gap.words.length - 1 && nextIsEmpty
+                            && gapEntryIsComplete(next, index, gap.words)) {
+                            gapInputRefs.current[index + 1]?.focus();
+                          }
+                        }}
                         onKeyDown={(e) => {
                           if (e.key !== "Enter") return;
                           if (index < gap.words.length - 1 && !(gapChecked && gapResult.ok)) {
