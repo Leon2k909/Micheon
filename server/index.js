@@ -319,24 +319,62 @@ function readSharedStorage() {
   return sharedStorageCache;
 }
 
+/**
+ * Saves must never block the process that owns the windows.
+ *
+ * In the desktop app this server runs INSIDE Electron's main process, and the
+ * store it writes is the whole shared progress file — around 400KB and
+ * growing with every learned word. writeFileSync of that, on every grade the
+ * renderer records, stalls the process that every window, menu and (until
+ * recently) mouse hook lives on; each stall is small alone and they land
+ * exactly when the learner is doing something.
+ *
+ * So writes are asynchronous, atomic and coalesced. Atomic because a crash
+ * mid-write must not tear the only copy of someone's progress: the bytes go
+ * to a sibling temp file first and rename() replaces the real one in a single
+ * step. Coalesced because only the LAST snapshot matters: if saves arrive
+ * faster than the disk, the pending one is replaced rather than queued, so a
+ * burst of grading writes once, not thirty times. The in-memory cache is
+ * updated first and reads serve from it, so nothing ever waits on the disk to
+ * see its own save.
+ */
+let pendingStorageWrite = null;
+let storageWriteRunning = false;
+
+async function flushSharedStorageWrites() {
+  if (storageWriteRunning) return;
+  storageWriteRunning = true;
+  try {
+    while (pendingStorageWrite) {
+      const raw = pendingStorageWrite;
+      pendingStorageWrite = null;
+      try {
+        await fs.promises.mkdir(appdataDir, { recursive: true });
+        const tmp = `${appdataFile}.tmp`;
+        await fs.promises.writeFile(tmp, raw);
+        await fs.promises.rename(tmp, appdataFile);
+      } catch (e) {
+        console.error("Failed to write to AppData storage:", e);
+      }
+      if (workspaceStorageEnabled) {
+        try {
+          const tmp = `${workspaceFile}.tmp`;
+          await fs.promises.writeFile(tmp, raw);
+          await fs.promises.rename(tmp, workspaceFile);
+        } catch (e) {
+          console.error("Failed to write to workspace storage:", e);
+        }
+      }
+    }
+  } finally {
+    storageWriteRunning = false;
+  }
+}
+
 function writeSharedStorage(next) {
   sharedStorageCache = next;
-  const raw = JSON.stringify(next, null, 2);
-
-  try {
-    fs.mkdirSync(appdataDir, { recursive: true });
-    fs.writeFileSync(appdataFile, raw);
-  } catch (e) {
-    console.error("Failed to write to AppData storage:", e);
-  }
-
-  if (workspaceStorageEnabled) {
-    try {
-      fs.writeFileSync(workspaceFile, raw);
-    } catch (e) {
-      console.error("Failed to write to workspace storage:", e);
-    }
-  }
+  pendingStorageWrite = JSON.stringify(next);
+  void flushSharedStorageWrites();
 }
 
 app.get("/api/storage", (_req, res) => {
