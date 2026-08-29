@@ -737,7 +737,13 @@ export const everydayWordPartBlueprints: Record<string, Blueprint> = {
     adjective("verstaucht", "sprained", "sich den Knöchel verstauchen"),
   ]),
 
-  part517: pack("Part 517", "A1", "Family ties", "The whole family tree — in-laws, steps, halves and the words for life's married and unmarried states.", [
+  // A2 rather than A1, which is what the contents are. A1 family vocabulary is
+  // mother, father, brother, sister; this pack is in-laws, step-relations,
+  // widowhood, divorce, engagement and adoption — its own description says so.
+  // Nothing here derives a word's level, so the pack's label is what every
+  // word in it claims, and at A1 they claimed to be among the first words in
+  // the language.
+  part517: pack("Part 517", "A2", "Family ties", "The whole family tree — in-laws, steps, halves and the words for life's married and unmarried states.", [
     noun("der", "Zwilling", "twin", "plural: die Zwillinge; also the star sign Gemini"),
     noun("der", "Säugling", "infant, newborn", "from saugen (to suckle); everyday speech says das Baby"),
     noun("das", "Kleinkind", "toddler", "literally 'small child'"),
