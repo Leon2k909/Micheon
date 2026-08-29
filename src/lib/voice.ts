@@ -152,6 +152,7 @@ function trimUrlCache() {
       urlCache.delete(key);
       urlCacheBytes -= entry.bytes;
       URL.revokeObjectURL(entry.url);
+      forgetSpeechEnd(entry.url);
       evicted = true;
       break;
     }
@@ -174,18 +175,86 @@ function cacheAudioBlob(key: string, blob: Blob) {
     urlCache.delete(key);
     urlCacheBytes -= previous.bytes;
     URL.revokeObjectURL(previous.url);
+    forgetSpeechEnd(previous.url);
   }
   const entry = { bytes: blob.size, url: URL.createObjectURL(blob) };
   urlCache.set(key, entry);
   urlCacheBytes += entry.bytes;
   trimUrlCache();
+  void measureSpeechEnd(entry.url, blob);
   return entry.url;
 }
 
 function clearUrlCache() {
-  for (const entry of urlCache.values()) URL.revokeObjectURL(entry.url);
+  for (const entry of urlCache.values()) {
+    URL.revokeObjectURL(entry.url);
+    forgetSpeechEnd(entry.url);
+  }
   urlCache.clear();
   urlCacheBytes = 0;
+}
+
+/**
+ * Where the speech in a clip actually ends, so playback can too.
+ *
+ * Every clip the synthesis service returns carries a tail of encoded silence:
+ * measured against the shipped voices, "air" ends 354ms before its file does
+ * and "water" a full 1,049ms before. Playback advanced on `ended`, so all of
+ * that dead air was listened to in full, between every line of every card —
+ * and in Listen, where one card is two languages and up to three repeats,
+ * whole seconds of nothing. That silence is what a learner reports as the
+ * voice "lagging": the words are fine, the wait after them is not.
+ *
+ * Each fetched clip is decoded once, off the playback path, and scanned from
+ * the end for the last audible sample. Playback then stops at that point plus
+ * a small comfort margin, and only when doing so saves something worth having
+ * — a clip whose trim would be shorter than TAIL_MIN_SAVING_S keeps its
+ * natural ending. Decoding is best-effort: with no context or a failed
+ * decode, nothing is stored and the clip plays exactly as before.
+ */
+const TAIL_COMFORT_MARGIN_S = 0.12;
+const TAIL_MIN_SAVING_S = 0.15;
+const TAIL_VOICED_THRESHOLD = 0.008;
+const speechEndByUrl = new Map<string, number>();
+const speechEndPendingByUrl = new Map<string, Promise<void>>();
+
+function forgetSpeechEnd(url: string) {
+  speechEndByUrl.delete(url);
+  speechEndPendingByUrl.delete(url);
+}
+
+/** The last audible moment in a channel, in seconds — or null for silence. */
+export function lastVoicedEndSeconds(samples: Float32Array, sampleRate: number): number | null {
+  if (!samples.length || !(sampleRate > 0)) return null;
+  for (let index = samples.length - 1; index >= 0; index -= 1) {
+    if (Math.abs(samples[index]) > TAIL_VOICED_THRESHOLD) {
+      return (index + 1) / sampleRate;
+    }
+  }
+  return null;
+}
+
+async function measureSpeechEnd(url: string, blob: Blob): Promise<void> {
+  if (typeof window === "undefined") return;
+  const pending = (async () => {
+    try {
+      const AudioContextClass = window.AudioContext
+        ?? (window as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!AudioContextClass) return;
+      // decodeAudioData works on a suspended context, so this never wakes the
+      // hardware — the idle suspend that keeps Listen cheap stays in charge.
+      sharedAudioContext ??= new AudioContextClass();
+      const decoded = await sharedAudioContext.decodeAudioData(await blob.arrayBuffer());
+      const voicedEnd = lastVoicedEndSeconds(decoded.getChannelData(0), decoded.sampleRate);
+      if (voicedEnd == null) return;
+      const stopAt = voicedEnd + TAIL_COMFORT_MARGIN_S;
+      if (decoded.duration - stopAt < TAIL_MIN_SAVING_S) return;
+      speechEndByUrl.set(url, stopAt);
+    } catch { /* an undecodable clip simply keeps its padding */ }
+  })();
+  speechEndPendingByUrl.set(url, pending);
+  await pending;
+  speechEndPendingByUrl.delete(url);
 }
 
 /**
@@ -506,11 +575,27 @@ function playUrl(url: string, token: number, lang: string): Promise<boolean> {
     let started = false;
     let startGuard: ReturnType<typeof setTimeout> | undefined;
     let lengthGuard: ReturnType<typeof setTimeout> | undefined;
+    let tailGuard: ReturnType<typeof setTimeout> | undefined;
+    // Stop at the measured end of speech instead of the end of the file —
+    // the encoded tail after the last word is dead air the learner would
+    // otherwise sit through between every line. See measureSpeechEnd.
+    const armTailTrim = () => {
+      const stopAt = speechEndByUrl.get(url);
+      if (stopAt == null || finished) return;
+      const remainingMs = (stopAt - audio.currentTime) * 1000;
+      if (tailGuard) clearTimeout(tailGuard);
+      tailGuard = setTimeout(() => {
+        if (finished) return;
+        try { audio.pause(); } catch { /* stopping early is best-effort */ }
+        finish();
+      }, Math.max(0, remainingMs) + 20);
+    };
     const finish = () => {
       if (finished) return;
       finished = true;
       if (startGuard) clearTimeout(startGuard);
       if (lengthGuard) clearTimeout(lengthGuard);
+      if (tailGuard) clearTimeout(tailGuard);
       // A clip that never started may still begin later (stalled decode
       // recovering after the watchdog) — silence it before the retry plays.
       if (!started) {
@@ -548,6 +633,15 @@ function playUrl(url: string, token: number, lang: string): Promise<boolean> {
         if (token !== playSeq || currentAudio !== audio) return;
         started = true;
         emitSpeaking(true);
+        armTailTrim();
+        // A first play of a clip may still be measuring; when the answer
+        // lands mid-playback, trim with it rather than waiting for next time.
+        const pendingMeasure = speechEndPendingByUrl.get(url);
+        if (pendingMeasure) {
+          void pendingMeasure.then(() => {
+            if (!finished && started && currentAudio === audio) armTailTrim();
+          });
+        }
         if (analyser && currentAudioAnalyser === analyser) {
           startAudioAnalysis(audio, analyser, token);
         } else {
