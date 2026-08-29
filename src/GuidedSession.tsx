@@ -12,6 +12,7 @@ import {
   matchGermanMeaning,
   matchGermanSentence,
   matchEnglishMeaning,
+  forgivableMeaningSlip,
   matchEnglishPhrase as matchEnglish,
   matchingVisibleKeys,
   primaryAnswer,
@@ -19,6 +20,7 @@ import {
   primaryGermanMeaning,
   takeMatchingSafe,
 } from "@/lib/germanTextMatch";
+import { getMeaningLenience } from "@/lib/meaningLenience";
 import { computeGap, matchesGapInput, spokenWord } from "@/lib/gapFill";
 import type { AnswerPerformance } from "@/lib/adaptivePractice";
 import {
@@ -1877,6 +1879,16 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // stays correct in both learning directions.
   const matchMeaning = React.useCallback(
     (typed: string) => {
+      // Whichever language it is, this side is the one NOT being learned. The
+      // strict answer is worked out first and only a rejection is revisited,
+      // so nothing that passed can change and nothing about the target side is
+      // touched — that half is the answer and stays marked as one.
+      const forgiveSlips = (result: ReturnType<typeof matchEnglishMeaning>) => {
+        if (result.ok) return result;
+        if (getMeaningLenience() !== "forgiving") return result;
+        if (!forgivableMeaningSlip(typed, displayEnglish)) return result;
+        return { ...result, ok: true, spellingNote: true };
+      };
       if (meaningIsGerman && isWordItem) {
         const primary = matchGermanMeaning(typed, displayEnglish);
         if (primary.ok) return primary;
@@ -1887,13 +1899,13 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
           const alt = matchGermanMeaning(typed, entry.de);
           if (alt.ok) return alt;
         }
-        return primary;
+        return forgiveSlips(primary);
       }
-      return meaningIsGerman
+      return forgiveSlips(meaningIsGerman
         ? matchGermanSentence(typed, displayEnglish)
         : isWordItem
           ? matchEnglishMeaning(typed, displayEnglish)
-          : matchEnglish(typed, displayEnglish);
+          : matchEnglish(typed, displayEnglish));
     },
     [displayEnglish, isWordItem, item.synonyms, meaningIsGerman]
   );
@@ -2257,22 +2269,30 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
         }
         return;
       }
+      // A number PLAYS its option here; it does not answer with it.
+      //
+      // Every other choice round shows its options, so a number key committing
+      // one is a considered choice. This round hides them behind audio on
+      // purpose — the whole task is telling the three apart by ear — so the
+      // same key was answering with an option the learner had not yet heard.
+      // Pressing it again replays, which is what you want when deciding
+      // between two similar words, and Enter commits whatever was last
+      // played. That also makes the round finishable without a mouse, which it
+      // was not: the play buttons had no keyboard route to them at all.
       const option = missingWordChoices[Number(event.key) - 1];
-      if (!option) return;
-      event.preventDefault();
-      const ok = choiceKey(option) === choiceKey(missingWord.answer);
-      setMissingWordPreview(null);
-      setMissingWordChoice(option);
-      setMissingWordChecked(true);
-      reactToAnswer(ok);
-      if (ok) {
-        lessonSpeak(item.de, 0.88, targetLang);
-        window.setTimeout(advanceOrFinish, 900);
+      if (option) {
+        event.preventDefault();
+        previewMissingWord(option);
+        return;
+      }
+      if (event.key === "Enter" && missingWordPreview) {
+        event.preventDefault();
+        selectMissingWord(missingWordPreview);
       }
     };
     window.addEventListener("keydown", handleChoiceKey, true);
     return () => window.removeEventListener("keydown", handleChoiceKey, true);
-  }, [phase, missingWordChecked, missingWordCorrect, missingWordChoices, missingWord.answer, item.de, targetLang]);
+  }, [phase, missingWordChecked, missingWordCorrect, missingWordChoices, missingWordPreview, missingWord.answer, item.de, targetLang]);
 
   const goBack = () => {
     if (recallTransitionPendingRef.current || recallCompletionScheduledRef.current) return;
@@ -3815,6 +3835,12 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             <p className="fs-missing-instruction">
               {ui("Listen to each option and choose the word that completes the sentence.")}
             </p>
+            {/* Said where the choosing happens, not in a help screen. The keys
+                are the only way through this round without a mouse, and a
+                shortcut nobody is told about is one nobody uses. */}
+            <p className="fs-missing-keyhint">
+              {ui("Press 1, 2 or 3 to hear an option again, then Enter to choose it.")}
+            </p>
             <div className="fs-missing-audio-list" role="group" aria-label={ui("Missing-word audio choices")}>
               {missingWordChoices.map((choice, choiceIndex) => {
                 const isSelected = missingWordChoice === choice;
@@ -3825,6 +3851,10 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                     className={cn(
                       "fs-missing-audio-option",
                       isSelected && "is-selected",
+                      // What Enter would choose. is-speaking lasts only as
+                      // long as the audio, so on its own the keyboard route
+                      // leaves nothing on screen saying which option is armed.
+                      !missingWordChecked && missingWordPreview === choice && "is-armed",
                       ttsOn && missingWordPreview === choice && "is-speaking",
                       missingWordChecked && isAnswer && "is-correct",
                       missingWordChecked && isSelected && !isAnswer && "is-wrong"

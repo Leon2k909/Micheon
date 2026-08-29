@@ -104,6 +104,34 @@ check(
   "the retry keys outrank the stage-nav arrows",
   (guided.match(/window\.addEventListener\("keydown", handleChoiceKey, true\)/g) || []).length >= 2
 );
+
+// ── 2d. the audio round is finishable without a mouse ──────────────────────
+// Every other choice round shows its options, so a number key answering with
+// one is a considered choice. This round hides them behind audio on purpose —
+// telling the three apart by ear IS the task — so the same key was answering
+// with an option the learner had not heard, and the play buttons had no
+// keyboard route to them at all. A number plays, Enter commits what played.
+check(
+  "a number key plays a missing-word option instead of answering with it",
+  guided.includes("const option = missingWordChoices[Number(event.key) - 1];")
+    && /if \(option\) \{\s*\n\s*event\.preventDefault\(\);\s*\n\s*previewMissingWord\(option\);/u.test(guided)
+    // The committing path must NOT be reachable straight from a digit.
+    && !/const option = missingWordChoices\[Number\(event\.key\) - 1\];[\s\S]{0,400}?setMissingWordChecked\(true\)/u.test(guided)
+);
+check(
+  "Enter commits the option that was played, and only if one was",
+  /event\.key === "Enter" && missingWordPreview/u.test(guided)
+    && guided.includes("selectMissingWord(missingWordPreview)")
+);
+check(
+  "the armed option stays visible after its audio stops",
+  guided.includes('!missingWordChecked && missingWordPreview === choice && "is-armed"')
+    && css.includes(".guided-session .fs-missing-audio-option.is-armed")
+);
+check(
+  "and the keys are named where the choosing happens",
+  guided.includes('ui("Press 1, 2 or 3 to hear an option again, then Enter to choose it.")')
+);
 check(
   "the retry keys are shown next to the button",
   (guided.match(/<kbd>\{ui\("Space"\)\}<\/kbd> <kbd>R<\/kbd> <kbd>→<\/kbd>/g) || []).length >= 2

@@ -94,6 +94,7 @@ import { getInterfaceLanguage, setInterfaceLanguage, type InterfaceLanguage } fr
 import { VoicePicker } from "@/components/VoicePicker";
 import { UpdateStatusCard } from "@/components/UpdateStatusCard";
 import { SettingsCategory, SettingsCategoryLayout } from "@/components/SettingsCategory";
+import { getMeaningLenience, setMeaningLenience, type MeaningLenience } from "@/lib/meaningLenience";
 import { DataAndStorage } from "@/components/DataAndStorage";
 import { BROWSER_EXTENSION_ICON, BrowserExtension } from "@/components/BrowserExtension";
 import { AppZoomControl } from "@/components/AppZoomControl";
@@ -819,6 +820,7 @@ export default function GamificationPanel({
   const [learningMode, setLearningModeState] = useState<LearningMode>(getLearningMode);
   const [flashcardMode, setFlashcardModeState] = useState<FlashcardMode>(() => getFlashcardMode());
   const [flashcardFace, setFlashcardFaceState] = useState<FlashcardFace>(() => getFlashcardFace());
+  const [meaningLenience, setMeaningLenienceState] = useState<MeaningLenience>(() => getMeaningLenience());
   const [englishVariant, setEnglishVariantState] = useState<EnglishVariant>(() => getEnglishVariant(user));
   const [settingsQuery, setSettingsQuery] = useState("");
   const settingsSearchRef = useRef<HTMLInputElement | null>(null);
@@ -1765,6 +1767,48 @@ export default function GamificationPanel({
                     onFaceChange={(next) => { setFlashcardFaceState(next); setFlashcardFace(next); }}
                     onModeChange={(next) => { setFlashcardModeState(next); setFlashcardMode(next); }}
                   />
+
+                  {/* The two boxes in a lesson are asking different questions.
+                      The target one is the answer; the meaning one only shows
+                      the sentence was understood, in a language the learner
+                      already has. Marking both to the same standard fails a
+                      recall over a language nobody is being tested on. */}
+                  <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
+                    <p className="text-sm font-black text-[var(--text-1)]">{ui("Typos in the meaning box")}</p>
+                    <p className="mt-1 text-xs font-semibold leading-5 text-[var(--text-3)]">
+                      {ui("Only affects the side you are not learning. The word you are being taught is always marked exactly.")}
+                    </p>
+                    <div
+                      aria-label={ui("Typos in the meaning box")}
+                      className="mt-3 grid grid-cols-2 gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-1.5"
+                      role="radiogroup"
+                    >
+                      {([
+                        ["forgiving", "Let small typos through"],
+                        ["strict", "Mark it exactly"],
+                      ] as const).map(([value, label]) => {
+                        const selected = meaningLenience === value;
+                        return (
+                          <button
+                            aria-checked={selected}
+                            className={cn(
+                              "min-h-10 rounded-xl border px-2 py-2 text-xs font-black transition-[background-color,border-color,color] duration-150",
+                              selected
+                                ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-text)] shadow-[0_3px_0_var(--accent-dark)]"
+                                : "border-transparent bg-transparent text-[var(--text-2)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                            )}
+                            data-testid={`meaning-lenience-${value}`}
+                            key={value}
+                            onClick={() => { setMeaningLenienceState(setMeaningLenience(value)); }}
+                            role="radio"
+                            type="button"
+                          >
+                            {ui(label)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </SettingsCategory>
 
 

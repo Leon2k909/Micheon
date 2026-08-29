@@ -1191,6 +1191,76 @@ function typoClose(a: string, b: string): boolean {
   return fuzzy > 0;
 }
 
+/**
+ * The same slip, judged for the language the learner is NOT learning.
+ *
+ * typoClose refuses to forgive a word shorter than five letters, and that is
+ * right for the language being taught: in German a one-letter difference in a
+ * short word is usually the answer itself — der against die, ihn against ihm,
+ * ein against eine — and forgiving it teaches nothing. Applied to the side the
+ * learner only has to make themselves understood in, the same rule protects
+ * nothing and rejects teh, smal and rooom.
+ *
+ * So the length floor goes and the budget stays. Two slips per sentence, one
+ * edit each, and the words must still line up one for one, which is what keeps
+ * this from accepting a different sentence: every word has to be recognisably
+ * the word that belongs there. Inflection edits stay excluded even here — a
+ * final s or d is tense, and getting the tense wrong in the meaning is a
+ * misread of the German rather than a slip of the finger.
+ *
+ * Only ever consulted AFTER the ordinary match has already failed, so it can
+ * turn a rejection into a pass with a spelling note and can never turn a pass
+ * into anything else.
+ */
+export function forgivableMeaningSlip(input: string, target: string): boolean {
+  const tidy = (value: string) => String(value ?? "")
+    .toLowerCase()
+    .replace(/['’]/gu, "")
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/gu, " ")
+    .trim();
+  const wa = tidy(input).split(" ").filter(Boolean);
+  const wb = tidy(target).split(" ").filter(Boolean);
+  if (wa.length !== wb.length || wa.length === 0) return false;
+  let fuzzy = 0;
+  for (let k = 0; k < wa.length; k++) {
+    if (wa[k] === wb[k]) continue;
+    if (forgivableWordSlip(wa[k], wb[k])) {
+      if (++fuzzy > 2) return false;
+      continue;
+    }
+    return false;
+  }
+  return fuzzy > 0;
+}
+
+/**
+ * What a finger does, as opposed to what changes the word.
+ *
+ * Dropping a key, hitting one twice, or hitting two in the wrong order cannot
+ * be anything but a slip, and stays forgivable at any length: teh for the,
+ * smal for small, rooom for room. Substituting one letter is different — in a
+ * short word it usually lands on another real word, and "the cat sat" for "the
+ * bat sat" is a misread of the German being marked correct, not a typo. So a
+ * substitution is only forgiven where the existing tolerance already forgave
+ * it, at five letters and up, where an accidental real word is rare and
+ * definately-for-definitely is the likelier reading.
+ */
+function forgivableWordSlip(a: string, b: string): boolean {
+  if (isInflectionEdit(a, b)) return false;
+  if (a.length === b.length) {
+    const diffs: number[] = [];
+    for (let k = 0; k < a.length; k++) if (a[k] !== b[k]) diffs.push(k);
+    if (diffs.length === 1) return a.length >= 5 && b.length >= 5; // substitution
+    if (diffs.length === 2) {
+      const [x, y] = diffs;
+      return y === x + 1 && a[x] === b[y] && a[y] === b[x]; // two keys swapped
+    }
+    return false;
+  }
+  return withinOneEdit(a, b); // one key dropped or one struck twice
+}
+
 // Fold an -ing gerund to its base so "to listen" and "listening" compare equal
 // ("listening" -> "listen", "running" -> "run", "swimming" -> "swim"). Only for
 // words > 4 chars, so short non-gerunds (king, ring, sing) are left alone. Tense

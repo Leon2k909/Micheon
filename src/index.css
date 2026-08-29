@@ -3695,6 +3695,22 @@ a { color: inherit; text-decoration: none; }
   transition: transform 70ms linear, opacity 120ms ease;
   will-change: transform;
 }
+/* Armed by the keyboard: the option Enter would choose.
+   Deliberately quieter than is-selected — this is "the one you just heard",
+   not "the one you answered with", and the two must not look alike or the
+   round appears already answered. The outline is what survives when the audio
+   stops, which is the whole point: is-speaking lasts as long as the sound. */
+.guided-session .fs-missing-audio-option.is-armed {
+  border-color: rgba(177,139,255,0.44);
+  background: rgba(139,76,255,0.06);
+}
+.guided-session .fs-missing-audio-option.is-armed .fs-missing-option-number {
+  border-color: rgba(202,181,255,0.42); background: rgba(139,76,255,0.2); color: #e6dcff;
+}
+.fs-missing-keyhint {
+  margin: 6px 0 0; color: var(--fs-muted); font-size: 12px; font-weight: 650;
+  text-align: center; opacity: 0.85;
+}
 .guided-session .fs-missing-audio-option.is-selected {
   border-color: rgba(177,139,255,0.66); background: rgba(139,76,255,0.13);
   box-shadow: inset 0 0 0 1px rgba(177,139,255,0.12), 0 5px 0 rgba(59,23,111,0.92), 0 12px 25px rgba(66,25,132,0.16);
