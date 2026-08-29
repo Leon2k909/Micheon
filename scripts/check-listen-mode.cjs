@@ -57,7 +57,7 @@ const result = esbuild.buildSync({
       'export { buildApiPartFromResolved } from "./src/lib/api.ts";',
       'export { WORD_ID_PREFIX, buildWordCatalog, wordLadderRung } from "./src/lib/wordSession.ts";',
       'export { buildCatalog } from "./src/session.ts";',
-      'export { cefrRung, cefrRungLabel, cefrStep, cefrStepLabel } from "./src/lib/cefr.ts";',
+      'export { cefrRung, cefrRungLabel, cefrStep, cefrStepLabel, CEFR_STEPS } from "./src/lib/cefr.ts";',
       'export { wordDifficultyRung, spokenWordRung } from "./src/lib/wordSession.ts";',
       'export { FRENCH_BY_GERMAN } from "./src/lib/frenchTranslations.ts";',
       'export { POLISH_BY_GERMAN } from "./src/lib/polishTranslations.ts";',
@@ -105,7 +105,7 @@ const {
   listenCountForId, buildWordCatalog, wordLadderRung,
   loadGradeStore, statusForId, COMPLETED_KEY, getScopedKey,
   recordSuccess,
-  buildCatalog, cefrRung, cefrRungLabel, cefrStep, cefrStepLabel, wordDifficultyRung, spokenWordRung, translationLanguagesNeeded,
+  buildCatalog, cefrRung, cefrRungLabel, cefrStep, cefrStepLabel, CEFR_STEPS, wordDifficultyRung, spokenWordRung, translationLanguagesNeeded,
   allPartBlueprints, buildApiPartFromResolved, WORD_ID_PREFIX,
 } = compiled.exports;
 // The tables are fetched on demand in the app, so a German-only learner
@@ -289,6 +289,30 @@ if (disagreeing.length) console.error(`  ${disagreeing.slice(0, 3).join("\n  ")}
 check("a sentence shows the level the tracker filters it by",
   sentenceCards.length > 0 && disagreeing.length === 0);
 
+/**
+ * Easiest-first has to be monotonic in the level the CARD SHOWS.
+ *
+ * Asserting it against the sort key only proves the sort ran. The learner sees
+ * a badge, and the promise "nothing harder before something easier" is kept or
+ * broken in those units: when the badge read the high end of a range and the
+ * sort key read the low end, A1-labelled and A1-A2-labelled packs walked
+ * together at the same rung and the screen showed A1, A2, A1, A2 while the
+ * sort was working exactly as written.
+ */
+const easiest = buildListenQueue(parts, {}, { contentSource: "sentences", order: "level" });
+const shownRank = (item) => CEFR_STEPS.indexOf(String(item.levelLabel ?? "").toLowerCase());
+const backwards = [];
+for (let i = 1; i < easiest.length; i += 1) {
+  const previous = shownRank(easiest[i - 1]);
+  const current = shownRank(easiest[i]);
+  if (previous >= 0 && current >= 0 && current < previous) {
+    backwards.push(`${easiest[i - 1].levelLabel} then ${easiest[i].levelLabel}: ${easiest[i].de}`);
+  }
+}
+if (backwards.length) console.error(`  ${backwards.slice(0, 3).join("\n  ")}`);
+check("easiest first never shows a level lower than the one before it",
+  easiest.length > 100 && backwards.length === 0);
+
 const byLevel = buildListenQueue(parts, {}, { contentSource: "mixed", order: "level" });
 const byCommon = buildListenQueue(parts, {}, { contentSource: "mixed", order: "common" });
 check("easiest-first never puts a harder card before an easier one",
@@ -376,13 +400,34 @@ check(`the ladder has real rungs on it (${[...rungCounts.keys()].sort().join("/"
 const packOfId = new Map();
 for (const word of buildWordCatalog(parts)) packOfId.set(word.id, word.partKey);
 for (const line of buildCatalog(parts)) if (!packOfId.has(line.id)) packOfId.set(line.id, line.partKey);
+// Stated as the property, not as a pack count.
+//
+// "At least eight packs in the first sixty cards" was a proxy, and it encoded
+// an assumption about how big a tier is. It holds easily where a level has
+// thousands of cards and cannot hold at A1, where only seven packs carry a
+// sentence at all and the three most useful of them fill the opening between
+// them — which is most-useful-first working, not pack-walking.
+//
+// What must never happen is a single pack OWNING the start of a level. That is
+// what pack-at-a-time walking looks like, it is what the queue actually did
+// when one pack labelled A1-B1 supplied all sixty opening cards at B1, and it
+// is true of a small tier and a huge one alike. Three packs sharing an opening
+// half-and-quarter-and-quarter is spread; one pack taking all of it is not.
 for (const source of ["words", "sentences", "mixed"]) {
   const graded = buildListenQueue(parts, {}, { contentSource: source, order: "level" });
-  const spreads = [1, 2, 3].map((rung) => new Set(
-    graded.filter((item) => item.rung === rung).slice(0, 60).map((item) => packOfId.get(item.id))
-  ).size);
-  check(`each level of ${source} opens with cards from across the course (${spreads.join(", ")} packs)`,
-    spreads.every((packs) => packs >= 8));
+  const openings = [1, 2, 3].map((rung) => {
+    const opening = graded.filter((item) => item.rung === rung).slice(0, 60);
+    const perPack = new Map();
+    for (const item of opening) {
+      const pack = packOfId.get(item.id);
+      perPack.set(pack, (perPack.get(pack) ?? 0) + 1);
+    }
+    const largest = Math.max(0, ...perPack.values());
+    return { packs: perPack.size, share: opening.length ? largest / opening.length : 0 };
+  });
+  check(`no single pack owns the start of a level of ${source} `
+    + `(${openings.map((o) => `${o.packs} packs, biggest ${Math.round(o.share * 100)}%`).join("; ")})`,
+    openings.every((o) => o.packs >= 3 && o.share <= 0.5));
 }
 
 // 3. The words this course says most are ALL on the first rung — the whole
@@ -1067,6 +1112,16 @@ check("reviewed word cards explain important secondary meanings on screen",
 // the lines are not in. And the queue has to rebuild when the app language
 // changes: the meaning is baked into the item, so re-rendering alone leaves
 // French labels reading English text.
+// The dependency array of the memo that builds the queue, read the same way
+// the tracker check reads its filter memos: anchored backwards from the call,
+// so it cannot latch onto some earlier memo and answer about that instead.
+const queueCall = view.indexOf("buildListenQueue(apiParts");
+const queueMemoStart = view.lastIndexOf("useMemo<ListenItem[]>(", queueCall);
+const queueMemoClose = view.indexOf("\n    [", queueMemoStart);
+const queueMemoDeps = view.slice(queueMemoClose, view.indexOf("]", queueMemoClose) + 1);
+check("the queue memo's dependencies could be read at all",
+  queueCall > 0 && queueMemoStart > 0 && queueMemoClose > queueCall && queueMemoDeps.includes("apiParts"));
+
 check("the player reads its two languages from the course and the app, not from the slot names",
   view.includes("const courseLanguage = targetLanguage(learningDirection);")
   && view.includes("const meaningLanguage = meaningLanguageFor(courseLanguage, appLanguage);")
@@ -1076,7 +1131,14 @@ check("the player reads its two languages from the course and the app, not from 
   && view.includes("{ de: courseLanguage, en: meaningLanguage };")
   && !view.includes("? { de: meaningLanguage")
   && view.includes("const appLanguage = useInterfaceLanguage();")
-  && view.includes("meaningLanguage, profile, queueOrder, translationsRevision]")
+  // By membership, not by the literal tail of the array. Pinning the exact
+  // string made every later dependency — a filter, a new revision counter —
+  // look like a language regression, which is a check failing for a reason it
+  // is not about.
+  && queueMemoDeps.includes("meaningLanguage")
+  && queueMemoDeps.includes("profile")
+  && queueMemoDeps.includes("queueOrder")
+  && queueMemoDeps.includes("translationsRevision")
   // ...and it redraws when a fetched table lands, so switching the app's
   // language while Listen is open does not blank the screen for the length of
   // a download and then fill it in.
@@ -1115,6 +1177,53 @@ check("Both exposes independent word and sentence loop counts and preserves the 
 check("the card says which rung it is on, and the picker offers the order by name",
   view.includes("{item.levelLabel ? <> · {item.levelLabel}</> : item.rung ? <> · {cefrRungLabel(item.rung)}</> : null}")
   && view.includes('"level", "Easiest first (A1 → C1)",'));
+/**
+ * Narrowing, as distinct from reordering.
+ *
+ * Every order plays the whole catalogue and only argues about what comes
+ * first, so there was no way to work through one level and stop. These two
+ * read the same categories the trackers narrow by, so asking for A2 in Listen
+ * and asking for it in the word list mean the same thing.
+ */
+const everything = buildListenQueue(parts, {}, { contentSource: "mixed", order: "level" });
+const justA2 = buildListenQueue(parts, {}, { contentSource: "mixed", order: "level", level: "a2" });
+const justEssential = buildListenQueue(parts, {}, {
+  contentSource: "mixed", order: "level", usefulness: "essential",
+});
+check(`the level filter narrows the queue (${everything.length} to ${justA2.length})`,
+  justA2.length > 0 && justA2.length < everything.length
+  && justA2.every((card) => !card.levelLabel || card.levelLabel === "A2"));
+check(`the usefulness filter narrows the queue (${everything.length} to ${justEssential.length})`,
+  justEssential.length > 0 && justEssential.length < everything.length);
+check("narrowing by both is narrower than either alone",
+  buildListenQueue(parts, {}, {
+    contentSource: "mixed", order: "level", level: "a2", usefulness: "essential",
+  }).length <= Math.min(justA2.length, justEssential.length));
+
+/**
+ * And a filter must never be a one-way door. The no-cards return sits above
+ * the panel holding the filter buttons, so an empty result hides the only
+ * controls that could widen it: the empty state has to say a filter did this
+ * and offer the way back, or the setting can only be undone by clearing
+ * storage.
+ */
+check("an empty queue caused by a filter says so and offers the way back",
+  view.includes('data-testid="listen-clear-filters"')
+  && view.includes('const narrowed = levelFilter !== "all" || usefulnessFilter !== "all"')
+  && view.includes('ui("Nothing matches those filters")'));
+check("the filters are offered as controls, not just honoured in code",
+  view.includes("data-testid={`listen-level-${value}`}")
+  && view.includes("data-testid={`listen-usefulness-${option.key}`}")
+  && view.includes("chooseLevelFilter(")
+  && view.includes("chooseUsefulnessFilter("));
+
+// The same failure the two trackers shipped with: a filter read by the memo
+// but missing from its dependency array is a control that moves and changes
+// nothing. Asserted here BEFORE it can happen rather than after somebody
+// reports the buttons doing nothing.
+check("the queue rebuilds when a filter changes",
+  queueMemoDeps.includes("levelFilter") && queueMemoDeps.includes("usefulnessFilter"));
+
 check("Listen exposes real source and queue-order controls",
   view.includes('data-testid={`listen-source-${value}`}')
   && view.includes('data-testid={`listen-queue-${value}`}')

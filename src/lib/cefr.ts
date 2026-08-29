@@ -54,11 +54,29 @@ export const CEFR_STEPS: CefrStep[] = ["a1", "a2", "b1", "b2", "c1", "c2"];
 
 export function cefrStep(level: string | undefined): CefrStep {
   const text = String(level ?? "");
-  if (/C2/i.test(text)) return "c2";
-  if (/C1/i.test(text)) return "c1";
-  if (/B2/i.test(text)) return "b2";
-  if (/B1/i.test(text)) return "b1";
-  if (/A2/i.test(text)) return "a2";
+  // A range wider than one step is filed at its MIDDLE, not at either end.
+  //
+  // Reading the top end is right for a range that spans one step — "A1-A2"
+  // teaches A2 material and someone asking for A1 is asking for the very
+  // start — and for the 136 packs labelled that way it is what this still
+  // does, because the middle of two adjacent steps rounds back to the top one.
+  //
+  // It stops being right when a pack spans three. "A1-B1" filed as B1 is a
+  // pack of everyday reactions declared harder than the B1 material around it,
+  // and in a queue ordered by level it arrives at B1 with enough
+  // conversational priority to own the whole start of that level — sixty
+  // consecutive cards on one theme, in the mode you are not watching. Filed at
+  // A2 it sits where it reads. Twenty-four packs are wide enough for this to
+  // change anything.
+  const bounds = [...text.matchAll(/([ABC][12])/giu)]
+    .map((match) => CEFR_STEPS.indexOf(match[1].toLowerCase() as CefrStep))
+    .filter((index) => index >= 0);
+  if (bounds.length > 1) {
+    const low = Math.min(...bounds);
+    const high = Math.max(...bounds);
+    return CEFR_STEPS[Math.ceil((low + high) / 2)];
+  }
+  if (bounds.length === 1) return CEFR_STEPS[bounds[0]];
   return "a1";
 }
 

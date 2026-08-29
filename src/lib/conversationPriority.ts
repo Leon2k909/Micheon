@@ -84,6 +84,11 @@ export const USEFULNESS_FILTERS: { key: "all" | ConversationUsefulness; label: s
   { key: "daily", label: "Daily life" },
   { key: "occasional", label: "Now and then" },
   { key: "life-event", label: "Life events & big topics" },
+  // The band every pack falls back to, and by a wide margin the largest — a
+  // third of everything teachable. It was the one band with no way to ask for
+  // it, so choosing any band at all silently excluded most of the catalogue
+  // and no combination of the others added back up to the whole.
+  { key: "situational", label: "Situational" },
   { key: "specialist", label: "Specialist / casual" },
   { key: "extra", label: "Extra practice" },
 ];

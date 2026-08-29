@@ -133,6 +133,34 @@ check("every usefulness band the control offers matches something", () => {
     `the control offers ${offered.join(", ")}, which no pack is`);
 });
 
+/**
+ * And the other direction, which is the one that actually bit.
+ *
+ * Checking only that every offered band exists lets a band the data produces
+ * go unoffered, and that is worse than a dead option: a dead option returns
+ * nothing and you can see it did, while a missing one quietly removes its
+ * items from every answer. "situational" is the fallback every pack lands on
+ * when no other rule claims it, which made it the largest band in the
+ * catalogue and the one with no way to ask for it — so narrowing by usefulness
+ * at all dropped a third of everything, and no combination of the bands on
+ * offer added back up to the whole.
+ */
+check("every usefulness band the data produces can be asked for", () => {
+  const counts = new Map();
+  for (const key of partLevels.keys()) {
+    const band = conversationPriorityInfo(key).key;
+    counts.set(band, (counts.get(band) ?? 0) + 1);
+  }
+  const offered = new Set(USEFULNESS_FILTERS.map((option) => option.key));
+  const missing = [...counts.entries()]
+    .filter(([band]) => !offered.has(band))
+    .sort((a, b) => b[1] - a[1])
+    .map(([band, n]) => `${band} (${n} packs)`);
+  assert.strictEqual(missing.length, 0,
+    `the data puts packs in ${missing.join(", ")}, and the control has no way to ask for them, `
+      + `so choosing any band at all hides them and the bands on offer do not add up to the whole`);
+});
+
 check("the two lists keep the controls that describe what they are", () => {
   assert.ok(words.includes("WORD_PART_OF_SPEECH_FILTERS"), "the words list lost its part-of-speech control");
   assert.ok(sentences.includes("ITEM_TYPE_FILTERS"), "the sentence list lost its item-type control");

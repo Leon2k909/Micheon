@@ -27,8 +27,13 @@ import { primaryAnswer } from "@/lib/germanTextMatch";
 import { buildCatalog } from "@/session";
 import { buildWordCatalog, rankWordCatalog, spokenWordRung } from "@/lib/wordSession";
 import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
-import { conversationPriorityScore } from "@/lib/conversationPriority";
-import { cefrRung, cefrStep, cefrStepLabel } from "@/lib/cefr";
+import {
+  conversationPriorityInfo,
+  conversationPriorityScore,
+  USEFULNESS_FILTERS,
+  type ConversationUsefulness,
+} from "@/lib/conversationPriority";
+import { cefrRung, cefrStep, cefrStepLabel, CEFR_STEPS, type CefrStep } from "@/lib/cefr";
 import { withoutMutedPacks } from "@/lib/mutedPacks";
 import { packMeta } from "@/lib/curriculum";
 import {
@@ -89,6 +94,8 @@ const PET_BILINGUAL_CAPTIONS_KEY = "gl-listen-pet-bilingual-captions-v1";
 const CONTENT_SOURCE_KEY = "gl-listen-content-source";
 const MIXED_COUNTS_KEY = "gl-listen-mixed-counts-v1";
 const QUEUE_ORDER_KEY = "gl-listen-queue-order";
+const LEVEL_FILTER_KEY = "gl-listen-level-filter-v1";
+const USEFULNESS_FILTER_KEY = "gl-listen-usefulness-filter-v1";
 // v2 deliberately separates cursors by queue order. The original key only
 // included course + content source, so changing from adaptive/least-heard to
 // Most common first restored the same niche item at its popularity rank
@@ -125,6 +132,8 @@ export const DEFAULT_NEXT_CARD_DELAY_MS = 1_100;
 export const DEFAULT_LANGUAGE_GAP_MS = 0;
 export type ListenContentSource = "sentences" | "words" | "mixed";
 export type ListenQueueOrder = "common" | "learning" | "least-heard" | "newest" | "level";
+export type ListenLevelFilter = "all" | CefrStep;
+export type ListenUsefulnessFilter = "all" | ConversationUsefulness;
 export const LISTEN_QUEUE_ORDERS: ListenQueueOrder[] = ["level", "common", "learning", "least-heard", "newest"];
 export const DEFAULT_LISTEN_CONTENT_SOURCE: ListenContentSource = "mixed";
 /**
@@ -323,6 +332,61 @@ export function setListenQueueOrder(
   const next = LISTEN_QUEUE_ORDERS.includes(order) ? order : DEFAULT_LISTEN_QUEUE_ORDER;
   try {
     window.localStorage.setItem(courseSettingKey(QUEUE_ORDER_KEY, direction), next);
+  } catch { /* keep Listen usable */ }
+  return next;
+}
+
+/**
+ * Narrowing what plays, as opposed to reordering it.
+ *
+ * Order decides what comes first and still plays everything; a filter decides
+ * what is in the queue at all. They answer different questions — "start me on
+ * the easy material" is an order, "I only want A1 today" is a filter — and
+ * Listen had only the first, so there was no way to work through one level or
+ * one kind of usefulness and stop.
+ *
+ * Both read the same two categories the trackers narrow by, deliberately: a
+ * learner who filters the word list to A2 and then opens Listen should be able
+ * to ask for the same thing in the same words.
+ */
+export function getListenLevelFilter(
+  direction: LearningDirection = getLearningDirection()
+): ListenLevelFilter {
+  try {
+    const value = window.localStorage.getItem(courseSettingKey(LEVEL_FILTER_KEY, direction));
+    if (value === "all" || CEFR_STEPS.includes(value as CefrStep)) return value as ListenLevelFilter;
+  } catch { /* storage blocked: play everything */ }
+  return "all";
+}
+
+export function setListenLevelFilter(
+  level: ListenLevelFilter,
+  direction: LearningDirection = getLearningDirection()
+): ListenLevelFilter {
+  const next = level === "all" || CEFR_STEPS.includes(level as CefrStep) ? level : "all";
+  try {
+    window.localStorage.setItem(courseSettingKey(LEVEL_FILTER_KEY, direction), next);
+  } catch { /* keep Listen usable */ }
+  return next;
+}
+
+export function getListenUsefulnessFilter(
+  direction: LearningDirection = getLearningDirection()
+): ListenUsefulnessFilter {
+  try {
+    const value = window.localStorage.getItem(courseSettingKey(USEFULNESS_FILTER_KEY, direction));
+    if (USEFULNESS_FILTERS.some((option) => option.key === value)) return value as ListenUsefulnessFilter;
+  } catch { /* storage blocked: play everything */ }
+  return "all";
+}
+
+export function setListenUsefulnessFilter(
+  usefulness: ListenUsefulnessFilter,
+  direction: LearningDirection = getLearningDirection()
+): ListenUsefulnessFilter {
+  const next = USEFULNESS_FILTERS.some((option) => option.key === usefulness) ? usefulness : "all";
+  try {
+    window.localStorage.setItem(courseSettingKey(USEFULNESS_FILTER_KEY, direction), next);
   } catch { /* keep Listen usable */ }
   return next;
 }
@@ -721,6 +785,8 @@ export type ListenQueueOptions = {
   contentSource?: ListenContentSource;
   direction?: LearningDirection;
   order?: ListenQueueOrder;
+  level?: ListenLevelFilter;
+  usefulness?: ListenUsefulnessFilter;
 };
 
 /**
@@ -771,18 +837,51 @@ export function buildListenQueue(
   // appear in more than one pack, and the catalogue has already decided which
   // one this card came from. A map rebuilt afterwards answers for whichever
   // pack was walked last, which is a different card's level.
-  const partRung = (partKey: unknown) => cefrRung(parts[String(partKey ?? "")]?.level);
-  // The same pack level read the way the tracker's filter reads it, so the
-  // badge and the filter cannot disagree about one sentence. See levelLabel.
+  // A SENTENCE is ranked by the same reading of its pack label that it shows,
+  // which is the high end of a range.
+  //
+  // Ranking by the low end is defensible on its own — an A1-A2 lesson is a
+  // beginner lesson that happens to reach far — but it cannot be combined with
+  // a badge that reads the high end. Easiest-first then walks A1-labelled and
+  // A1-A2-labelled packs together, both at rung 1, and the cards announce A1,
+  // A2, A1, A2 while the order is working exactly as written. A promise that
+  // nothing harder comes before something easier is only kept if it is kept in
+  // the units the learner is shown.
+  const partRung = (partKey: unknown) => {
+    const level = parts[String(partKey ?? "")]?.level;
+    if (!level) return cefrRung(level);
+    return CEFR_STEPS.indexOf(cefrStep(level)) + 1;
+  };
   const partLevelLabel = (partKey: unknown) => {
     const level = parts[String(partKey ?? "")]?.level;
     return level ? cefrStepLabel(cefrStep(level)) : undefined;
+  };
+
+  // Narrowing happens BEFORE ranking, not after: popularity is stored as a
+  // percentile of the queue, so filtering afterwards would leave a queue whose
+  // positions were normalised against cards that are no longer in it.
+  const levelFilter = options.level ?? getListenLevelFilter(direction);
+  const usefulnessFilter = options.usefulness ?? getListenUsefulnessFilter(direction);
+  const narrowing = levelFilter !== "all" || usefulnessFilter !== "all";
+  const keep = (partKey: unknown, ownLevel?: string) => {
+    if (!narrowing) return true;
+    const key = String(partKey ?? "");
+    if (levelFilter !== "all") {
+      // A word carries its own level and a sentence takes its pack's, which is
+      // exactly how the two trackers filter them. Asking for A2 in Listen and
+      // asking for it in the word list must not answer differently.
+      const level = ownLevel ?? parts[key]?.level;
+      if (cefrStep(level) !== levelFilter) return false;
+    }
+    if (usefulnessFilter !== "all" && conversationPriorityInfo(key).key !== usefulnessFilter) return false;
+    return true;
   };
 
   // primaryAnswer on both sides: answer keys list alternatives behind " / "
   // for the matcher's benefit, but a listening card shows (and the voice
   // speaks) one clean form, not the whole key.
   const rankedSentences = content === "words" ? [] : buildCatalog(parts)
+    .filter((item) => keep(item.partKey))
     .map((item, index) => ({
       item,
       index,
@@ -820,7 +919,10 @@ export function buildListenQueue(
   // than a confidently spoken mistranslation, but it does not teach it wrong.
   const rankedWords = content === "sentences"
     ? []
-    : rankWordCatalog(buildWordCatalog(parts).filter((word) => word.listenSafe !== false), corpusIndex);
+    : rankWordCatalog(
+      buildWordCatalog(parts).filter((word) => word.listenSafe !== false && keep(word.partKey, word.level)),
+      corpusIndex
+    );
   rankedWords.forEach((word) => rememberPack(word.id, word.partKey));
   const words: ListenItem[] = rankedWords
     .map((word, index, ranked) => ({
@@ -963,6 +1065,7 @@ export function buildListenQueue(
       )
       .map((entry) => entry.item);
   }
+
 
   // Newest first exists because "Most common first" structurally cannot reach
   // new content: a freshly added word is by definition one the frequency bank

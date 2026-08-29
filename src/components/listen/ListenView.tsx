@@ -55,6 +55,8 @@ import {
   getListenNextCardDelayMs,
   getListenPetBilingualCaptions,
   getListenQueueOrder,
+  getListenLevelFilter,
+  getListenUsefulnessFilter,
   listenLoopPassForPlayhead,
   listenPlayheadForQueueIndex,
   listenQueueIndexForPlayhead,
@@ -72,6 +74,8 @@ import {
   setListenNextCardDelayMs,
   setListenPetBilingualCaptions,
   setListenQueueOrder,
+  setListenLevelFilter,
+  setListenUsefulnessFilter,
   setListenReviewLevel,
   snoozeListenItem,
   undoListenReviewChange,
@@ -79,10 +83,13 @@ import {
   type ListenItem,
   type ListenLanguageOrder,
   type ListenQueueOrder,
+  type ListenLevelFilter,
+  type ListenUsefulnessFilter,
   type ListenReviewChange,
   type ListenReviewLevel,
 } from "@/lib/listenMode";
-import { cefrRungLabel } from "@/lib/cefr";
+import { cefrRungLabel, cefrStepLabel, CEFR_STEPS, type CefrStep } from "@/lib/cefr";
+import { USEFULNESS_FILTERS } from "@/lib/conversationPriority";
 import { ListenTest } from "@/components/listen/ListenTest";
 import { LISTEN_TEST_MAX_QUESTIONS } from "@/lib/listenTest";
 import { TappableSentence } from "@/components/shared/TappableSentence";
@@ -367,6 +374,12 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   const [queueOrder, setQueueOrder] = useState<ListenQueueOrder>(
     () => getListenQueueOrder(learningDirection)
   );
+  const [levelFilter, setLevelFilter] = useState<ListenLevelFilter>(
+    () => getListenLevelFilter(learningDirection)
+  );
+  const [usefulnessFilter, setUsefulnessFilter] = useState<ListenUsefulnessFilter>(
+    () => getListenUsefulnessFilter(learningDirection)
+  );
   const [mixedCounts, setMixedCounts] = useState(() => getListenMixedCounts(learningDirection));
   useEffect(() => { setMixedCounts(getListenMixedCounts(learningDirection)); }, [learningDirection, profile?.id]);
   // Grade writes made elsewhere (the tracker's "never review" star, lesson
@@ -453,9 +466,11 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
         contentSource,
         direction: learningDirection,
         order: queueOrder,
+        level: levelFilter,
+        usefulness: usefulnessFilter,
       })
       : []),
-    [everOpened, apiParts, contentSource, gradesRevision, learningDirection, meaningLanguage, profile, queueOrder, translationsRevision]
+    [everOpened, apiParts, contentSource, gradesRevision, learningDirection, levelFilter, meaningLanguage, profile, queueOrder, translationsRevision, usefulnessFilter]
   );
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => new Set());
   const queue = useMemo(
@@ -1237,6 +1252,14 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     setQueueOrder(setListenQueueOrder(order, learningDirection));
   };
 
+  const chooseLevelFilter = (level: ListenLevelFilter) => {
+    setLevelFilter(setListenLevelFilter(level, learningDirection));
+  };
+
+  const chooseUsefulnessFilter = (usefulness: ListenUsefulnessFilter) => {
+    setUsefulnessFilter(setListenUsefulnessFilter(usefulness, learningDirection));
+  };
+
   const commitDelaySeconds = (seconds: number) => {
     const nextMs = setListenNextCardDelayMs(seconds * 1000);
     setNextCardDelayMs(nextMs);
@@ -1258,13 +1281,33 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   };
 
   if (!item) {
+    // A filter can empty the queue, and this return sits ABOVE the panel that
+    // holds the filter buttons — so the honest message matters more than
+    // usual. Told to wait for content that is already loaded, with the only
+    // controls that would undo it no longer on screen, there is no way back
+    // except clearing storage. The narrowing says so and offers the way out.
+    const narrowed = levelFilter !== "all" || usefulnessFilter !== "all";
     return active ? (
       <section className="card p-6 text-center">
         <Headphones className="mx-auto h-8 w-8 text-[var(--text-3)]" />
-        <p className="mt-3 text-sm font-black text-[var(--text-1)]">{ui("Nothing to listen to yet")}</p>
-        <p className="mt-1 text-xs font-semibold text-[var(--text-3)]">
-          {ui("Once the course content is loaded, everything you are learning becomes listenable here.")}
+        <p className="mt-3 text-sm font-black text-[var(--text-1)]">
+          {narrowed ? ui("Nothing matches those filters") : ui("Nothing to listen to yet")}
         </p>
+        <p className="mt-1 text-xs font-semibold text-[var(--text-3)]">
+          {narrowed
+            ? ui("There is nothing at that level and usefulness together. Widen either one and the queue comes back.")
+            : ui("Once the course content is loaded, everything you are learning becomes listenable here.")}
+        </p>
+        {narrowed ? (
+          <button
+            className="mt-4 min-h-10 rounded-xl border border-[var(--accent)] bg-[var(--accent)] px-4 py-2 text-xs font-black text-[var(--accent-text)] shadow-[0_3px_0_var(--accent-dark)]"
+            data-testid="listen-clear-filters"
+            onClick={() => { chooseLevelFilter("all"); chooseUsefulnessFilter("all"); }}
+            type="button"
+          >
+            {ui("Play everything again")}
+          </button>
+        ) : null}
       </section>
     ) : null;
   }
@@ -1835,6 +1878,72 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                       type="button"
                     >
                       {ui(label)}
+                    </button>
+                  );
+                })}
+              </div>
+            </fieldset>
+            <fieldset className="mt-4 border-t border-[var(--border)] pt-4">
+              <legend className="text-xs font-black text-[var(--text-2)]">{ui("Level")}</legend>
+              <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">
+                {ui("Order decides what comes first and still plays everything. This decides what is in the queue at all, so you can work through one level and stop.")}
+              </p>
+              <div
+                aria-label={ui("Level")}
+                className="mt-2 grid grid-cols-3 gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-1.5 sm:grid-cols-4"
+                role="radiogroup"
+              >
+                {(["all", ...CEFR_STEPS] as ListenLevelFilter[]).map((value) => {
+                  const selected = levelFilter === value;
+                  return (
+                    <button
+                      aria-checked={selected}
+                      className={cn(
+                        "min-h-10 rounded-xl border px-2 py-2 text-[11px] font-black transition-[background-color,border-color,color,transform,box-shadow] duration-150",
+                        selected
+                          ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-text)] shadow-[0_3px_0_var(--accent-dark)]"
+                          : "border-transparent bg-transparent text-[var(--text-2)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                      )}
+                      data-testid={`listen-level-${value}`}
+                      key={value}
+                      onClick={() => chooseLevelFilter(value)}
+                      role="radio"
+                      type="button"
+                    >
+                      {value === "all" ? ui("All levels") : cefrStepLabel(value as CefrStep)}
+                    </button>
+                  );
+                })}
+              </div>
+            </fieldset>
+            <fieldset className="mt-4 border-t border-[var(--border)] pt-4">
+              <legend className="text-xs font-black text-[var(--text-2)]">{ui("Usefulness")}</legend>
+              <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">
+                {ui("The same bands the word and sentence trackers narrow by, so asking for one here and there means the same thing.")}
+              </p>
+              <div
+                aria-label={ui("Usefulness")}
+                className="mt-2 grid grid-cols-1 gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-1.5 sm:grid-cols-2"
+                role="radiogroup"
+              >
+                {USEFULNESS_FILTERS.map((option) => {
+                  const selected = usefulnessFilter === option.key;
+                  return (
+                    <button
+                      aria-checked={selected}
+                      className={cn(
+                        "min-h-10 rounded-xl border px-2 py-2 text-[11px] font-black leading-tight transition-[background-color,border-color,color,transform,box-shadow] duration-150",
+                        selected
+                          ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-text)] shadow-[0_3px_0_var(--accent-dark)]"
+                          : "border-transparent bg-transparent text-[var(--text-2)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                      )}
+                      data-testid={`listen-usefulness-${option.key}`}
+                      key={option.key}
+                      onClick={() => chooseUsefulnessFilter(option.key)}
+                      role="radio"
+                      type="button"
+                    >
+                      {ui(option.label)}
                     </button>
                   );
                 })}
