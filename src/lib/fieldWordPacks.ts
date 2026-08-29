@@ -230,7 +230,7 @@ part611: pack("Part 611", "B1", "A ship and its parts", "What the pieces of a bo
     { de: "die Nordsee", lookup: "Nordsee", fallbackEn: "North Sea", tip: "noun", article: "die" },
     { de: "die Ostsee", lookup: "Ostsee", fallbackEn: "Baltic Sea", tip: "noun", article: "die" },
   ]),
-  part615: pack("Part 615", "A2", "What lives in it", "Fish on a menu, birds over the water, and what a rock pool holds.", [
+  part615: pack("Part 615", "B1", "What lives in it", "Fish on a menu, birds over the water, and what a rock pool holds.", [
     { de: "die Krabbe", lookup: "Krabbe", fallbackEn: "crab", tip: "noun", article: "die" },
     { de: "der Hummer", lookup: "Hummer", fallbackEn: "lobster", tip: "noun", article: "der" },
     { de: "der Kabeljau", lookup: "Kabeljau", fallbackEn: "cod", tip: "noun", article: "der" },
@@ -445,7 +445,7 @@ part625: pack("Part 625", "B1", "Up the mountain", "Climbing words, from the rop
     { de: "die Trittsicherheit", lookup: "Trittsicherheit", fallbackEn: "sure-footedness", tip: "noun", article: "die", use: "what a route description asks you to have" },
     { de: "die Schwindelfreiheit", lookup: "Schwindelfreiheit", fallbackEn: "head for heights", tip: "noun", article: "die" },
   ]),
-  part626: pack("Part 626", "A2", "The path and the way-marking", "What you carry, and how you know you are still on the route.", [
+  part626: pack("Part 626", "B1", "The path and the way-marking", "What you carry, and how you know you are still on the route.", [
     { de: "der Wanderschuh", lookup: "Wanderschuh", fallbackEn: "walking boot", tip: "noun", article: "der" },
     { de: "der Wanderstock", lookup: "Wanderstock", fallbackEn: "walking pole", tip: "noun", article: "der" },
     { de: "der Rucksackgurt", lookup: "Rucksackgurt", fallbackEn: "rucksack strap", tip: "noun", article: "der" },
@@ -464,7 +464,7 @@ part625: pack("Part 625", "B1", "Up the mountain", "Climbing words, from the rop
     { de: "die Schneegrenze", lookup: "Schneegrenze", fallbackEn: "snow line", tip: "noun", article: "die" },
     { de: "die Baumgrenze", lookup: "Baumgrenze", fallbackEn: "tree line", tip: "noun", article: "die" },
   ]),
-  part627: pack("Part 627", "A2", "Camping and the fire", "A night outdoors, and what it takes to eat and stay dry.", [
+  part627: pack("Part 627", "B1", "Camping and the fire", "A night outdoors, and what it takes to eat and stay dry.", [
     { de: "der Zeltplatz", lookup: "Zeltplatz", fallbackEn: "camping pitch", tip: "noun", article: "der" },
     { de: "die Zeltstange", lookup: "Zeltstange", fallbackEn: "tent pole", tip: "noun", article: "die" },
     { de: "das Vorzelt", lookup: "Vorzelt", fallbackEn: "awning", tip: "noun", article: "das" },
@@ -486,7 +486,7 @@ part625: pack("Part 625", "B1", "Up the mountain", "Climbing words, from the rop
     { de: "der Wasserkanister", lookup: "Wasserkanister", fallbackEn: "water canister", tip: "noun", article: "der" },
     { de: "das Mückenspray", lookup: "Mückenspray", fallbackEn: "insect repellent", tip: "noun", article: "das" },
   ]),
-  part628: pack("Part 628", "A2", "Woods, water and high pasture", "The kinds of country a walk goes through.", [
+  part628: pack("Part 628", "B1", "Woods, water and high pasture", "The kinds of country a walk goes through.", [
     { de: "der Waldboden", lookup: "Waldboden", fallbackEn: "forest floor", tip: "noun", article: "der" },
     { de: "der Laubwald", lookup: "Laubwald", fallbackEn: "deciduous forest", tip: "noun", article: "der" },
     { de: "der Nadelwald", lookup: "Nadelwald", fallbackEn: "coniferous forest", tip: "noun", article: "der" },
@@ -510,7 +510,7 @@ part625: pack("Part 625", "B1", "Up the mountain", "Climbing words, from the rop
     { de: "der Tropfstein", lookup: "Tropfstein", fallbackEn: "stalactite", tip: "noun", article: "der" },
     { de: "das Bergwerk", lookup: "Bergwerk", fallbackEn: "mine", tip: "noun", article: "das" },
   ]),
-  part629: pack("Part 629", "A2", "Animals you might see", "What crosses the path, and what calls from the trees.", [
+  part629: pack("Part 629", "B1", "Animals you might see", "What crosses the path, and what calls from the trees.", [
     { de: "das Murmeltier", lookup: "Murmeltier", fallbackEn: "marmot", tip: "noun", article: "das" },
     { de: "die Gams", lookup: "Gams", fallbackEn: "chamois", tip: "noun", article: "die" },
     { de: "der Bussard", lookup: "Bussard", fallbackEn: "buzzard", tip: "noun", article: "der" },

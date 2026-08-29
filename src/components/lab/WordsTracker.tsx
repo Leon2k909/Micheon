@@ -373,7 +373,7 @@ export function WordsTracker({ apiParts, user }: {
       alphabetLanguage
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [alphabetLanguage, catalog, commonRanks, filter, level, partOfSpeech, query, sort, grades]);
+  }, [alphabetLanguage, catalog, commonRanks, filter, level, partOfSpeech, query, sort, usefulness, grades]);
 
   const visible = filtered.slice(0, page * PAGE);
 

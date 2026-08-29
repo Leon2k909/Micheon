@@ -28,7 +28,7 @@ import { buildCatalog } from "@/session";
 import { buildWordCatalog, rankWordCatalog, spokenWordRung } from "@/lib/wordSession";
 import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
 import { conversationPriorityScore } from "@/lib/conversationPriority";
-import { cefrRung } from "@/lib/cefr";
+import { cefrRung, cefrStep, cefrStepLabel } from "@/lib/cefr";
 import { withoutMutedPacks } from "@/lib/mutedPacks";
 import { packMeta } from "@/lib/curriculum";
 import {
@@ -667,11 +667,30 @@ export type ListenItem = {
   /**
    * How hard this card is, 1 (A1) to 6 (C1-C2) — see cefrRung.
    *
-   * What "easiest first" sorts on, and what the card shows through
+   * What "easiest first" sorts on, and what a WORD card shows through
    * cefrRungLabel. Read from the item rather than recomputed, so the order
    * can be checked against the thing it actually used.
+   *
+   * A sentence shows levelLabel instead: a range label's low end is the right
+   * thing to sort by and the wrong thing to announce.
    */
   rung?: number;
+  /**
+   * What the card SAYS its level is, when that differs from what it sorts by.
+   *
+   * A range label has two readings and the app uses both on purpose: cefrRung
+   * takes the low end so an A1-A2 lesson sorts among the A1s, and cefrStep
+   * takes the high end so a learner filtering for A2 is shown the A2 material
+   * inside it. Sorting and filtering each want a different one, and the badge
+   * had been reading the sort key — so a sentence from an A1-A2 pack of
+   * subordinate clauses announced itself as A1 while the tracker filed it
+   * under A2. One item, two answers, and the badge gave the flattering one.
+   *
+   * Sentences carry the filter's reading here. Words do not set it: a word's
+   * rung is its own difficulty rather than its pack's, which is why haben
+   * sorts at 1 from inside an A2 pack, and that number is the honest badge.
+   */
+  levelLabel?: string;
   kind: "sentence" | "word";
   popularity: number;
 };
@@ -753,6 +772,12 @@ export function buildListenQueue(
   // one this card came from. A map rebuilt afterwards answers for whichever
   // pack was walked last, which is a different card's level.
   const partRung = (partKey: unknown) => cefrRung(parts[String(partKey ?? "")]?.level);
+  // The same pack level read the way the tracker's filter reads it, so the
+  // badge and the filter cannot disagree about one sentence. See levelLabel.
+  const partLevelLabel = (partKey: unknown) => {
+    const level = parts[String(partKey ?? "")]?.level;
+    return level ? cefrStepLabel(cefrStep(level)) : undefined;
+  };
 
   // primaryAnswer on both sides: answer keys list alternatives behind " / "
   // for the matcher's benefit, but a listening card shows (and the voice
@@ -779,6 +804,7 @@ export function buildListenQueue(
       tierNote: item.tierNote,
       long: item.long,
       rung: partRung(item.partKey),
+      levelLabel: partLevelLabel(item.partKey),
       kind: "sentence" as const,
       // A percentile makes sentence and word popularity comparable in the
       // mixed queue even though their underlying scorers use different

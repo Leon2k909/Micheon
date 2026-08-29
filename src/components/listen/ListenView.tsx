@@ -1421,7 +1421,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               printing a gap. */}
           <p className="text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
             {ui(item.kind === "word" ? "Word" : "Sentence")}
-            {item.rung ? <> · {cefrRungLabel(item.rung)}</> : null}
+            {item.levelLabel ? <> · {item.levelLabel}</> : item.rung ? <> · {cefrRungLabel(item.rung)}</> : null}
             {" · "}{queueIndex + 1} / {queue.length}
             {loopPasses > 1 && <> · {uiFmt("Learning pass {pass} of {passes}", { pass: loopPass, passes: loopPasses })}</>}
           </p>

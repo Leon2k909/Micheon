@@ -138,6 +138,65 @@ check("the two lists keep the controls that describe what they are", () => {
   assert.ok(sentences.includes("ITEM_TYPE_FILTERS"), "the sentence list lost its item-type control");
 });
 
+/**
+ * A filter the list does not recompute for is a control that does nothing.
+ *
+ * Both lists are memoised, and both memos silence the exhaustive-deps rule
+ * because they deliberately hold values the rule would add. That makes the
+ * dependency array hand-maintained, and a filter added to the predicate but
+ * not to the array reads as a working control: the state changes, the select
+ * shows the new value, and the rows never move. Every filter shipped this way
+ * to start with, and it is invisible in review because the predicate line is
+ * correct.
+ */
+const LIST_MEMOS = [
+  {
+    name: "sentence list",
+    source: sentences,
+    // The state each predicate reads, and the select that sets it.
+    filters: ["itemTypeFilter", "usefulnessFilter", "levelFilter", "filterQuery", "filter", "sort"],
+  },
+  {
+    name: "word list",
+    source: words,
+    filters: ["partOfSpeech", "usefulness", "level", "query", "filter", "sort"],
+  },
+];
+
+for (const { name, source, filters } of LIST_MEMOS) {
+  check(`every ${name} filter is a dependency of the list it filters`, () => {
+    // The memo that builds the rows: the one whose body filters the catalogue.
+    // Anchored BACKWARDS from the filter call, because searching forwards from
+    // a guessed offset lands on whichever memo happens to come first and then
+    // passes vacuously — every filter skipped by the "does it read it" guard
+    // below, which is how this check first shipped.
+    const predicate = source.indexOf("catalog.filter(");
+    assert.ok(predicate >= 0, `could not find the ${name} filter predicate`);
+    const start = source.lastIndexOf("useMemo(() => {", predicate);
+    assert.ok(start >= 0, `could not find the ${name} memo`);
+    // The close at component indentation, so a nested callback cannot end it.
+    const close = source.indexOf("\n  }, [", start);
+    assert.ok(close > predicate, `could not find the ${name} memo's dependency array`);
+    const deps = source.slice(close, source.indexOf("]", close) + 1);
+    const named = new Set(deps.replace(/[^A-Za-z0-9_,]/gu, "").split(",").filter(Boolean));
+    const body = source.slice(start, close);
+    // The anchor must have found the memo that actually filters.
+    assert.ok(body.includes("catalog.filter("), `the ${name} memo anchor missed the predicate`);
+
+    for (const filterName of filters) {
+      // Only demand it as a dependency if the predicate actually reads it.
+      if (!body.includes(filterName)) continue;
+      assert.ok(
+        named.has(filterName),
+        `the ${name} predicate reads ${filterName} but the memo does not depend on it, so `
+          + `changing that control re-renders with the same rows and the filter appears dead. `
+          + `Add ${filterName} to the dependency array — exhaustive-deps is disabled here, so `
+          + `nothing else will tell you.`,
+      );
+    }
+  });
+}
+
 if (failed) {
   console.error(`\n${failed} tracker filter check(s) failed.`);
   process.exit(1);

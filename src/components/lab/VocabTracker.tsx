@@ -878,7 +878,7 @@ export function VocabTracker({
   // once at urgent priority with the OLD deferred query before running again
   // with the new one, which is exactly the work useDeferredValue was added to
   // move off the keystroke.
-  }, [catalog, commonOrder, grades, filter, indexedMatches, indexedSearch, itemTypeFilter, learnsEnglish, priorityIndex, filterQuery, searchIndex, sort, usefulnessFilter]);
+  }, [catalog, commonOrder, grades, filter, indexedMatches, indexedSearch, itemTypeFilter, learnsEnglish, levelFilter, priorityIndex, filterQuery, searchIndex, sort, usefulnessFilter]);
 
   const visible = filtered.slice(0, limit);
 

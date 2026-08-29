@@ -405,7 +405,7 @@ export const moreWordPartBlueprints: Record<string, Blueprint> = {
     noun("die", "Halbinsel", "peninsula"),
     noun("der", "Archipel", "archipelago"),
   ]),
-  part575: pack("Part 575", "A2", "What is on the plate", "The courses of a meal and the dishes a German menu actually lists.", [
+  part575: pack("Part 575", "B1", "What is on the plate", "The courses of a meal and the dishes a German menu actually lists.", [
     noun("die", "Nachspeise", "dessert course"),
     noun("die", "Sättigungsbeilage", "starchy side dish"),
     noun("die", "Brühe", "broth"),
@@ -436,7 +436,7 @@ export const moreWordPartBlueprints: Record<string, Blueprint> = {
     noun("die", "Schlagsahne", "whipped cream"),
     noun("der", "Schmand", "soured cream"),
   ]),
-  part576: pack("Part 576", "A2", "Baking day", "Dough, filling and topping — what a German bakery window is made of.", [
+  part576: pack("Part 576", "B1", "Baking day", "Dough, filling and topping — what a German bakery window is made of.", [
     noun("der", "Pudding", "set custard"),
     noun("die", "Grütze", "fruit or grain porridge"),
     noun("der", "Grieß", "semolina"),

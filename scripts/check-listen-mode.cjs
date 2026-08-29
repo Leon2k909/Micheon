@@ -57,7 +57,7 @@ const result = esbuild.buildSync({
       'export { buildApiPartFromResolved } from "./src/lib/api.ts";',
       'export { WORD_ID_PREFIX, buildWordCatalog, wordLadderRung } from "./src/lib/wordSession.ts";',
       'export { buildCatalog } from "./src/session.ts";',
-      'export { cefrRung, cefrRungLabel } from "./src/lib/cefr.ts";',
+      'export { cefrRung, cefrRungLabel, cefrStep, cefrStepLabel } from "./src/lib/cefr.ts";',
       'export { wordDifficultyRung, spokenWordRung } from "./src/lib/wordSession.ts";',
       'export { FRENCH_BY_GERMAN } from "./src/lib/frenchTranslations.ts";',
       'export { POLISH_BY_GERMAN } from "./src/lib/polishTranslations.ts";',
@@ -105,7 +105,7 @@ const {
   listenCountForId, buildWordCatalog, wordLadderRung,
   loadGradeStore, statusForId, COMPLETED_KEY, getScopedKey,
   recordSuccess,
-  buildCatalog, cefrRung, cefrRungLabel, wordDifficultyRung, spokenWordRung, translationLanguagesNeeded,
+  buildCatalog, cefrRung, cefrRungLabel, cefrStep, cefrStepLabel, wordDifficultyRung, spokenWordRung, translationLanguagesNeeded,
   allPartBlueprints, buildApiPartFromResolved, WORD_ID_PREFIX,
 } = compiled.exports;
 // The tables are fetched on demand in the app, so a German-only learner
@@ -255,6 +255,39 @@ check("every card in the queue knows how hard it is",
     .filter((item) => !item.rung).length === 0);
 
 check("Listen starts at the easiest level by default", DEFAULT_LISTEN_QUEUE_ORDER === "level");
+
+/**
+ * The badge on a card and the tracker's level filter must give one answer.
+ *
+ * A range label reads two ways and the app uses both deliberately: the sort
+ * key takes the low end so an A1-A2 lesson orders among the A1s, the filter
+ * takes the high end so asking for A2 finds the A2 material inside it. The
+ * badge was rendering the sort key, so a sentence out of an A1-A2 pack of
+ * subordinate clauses (ob, weil, obwohl, dafür) announced A1 while the
+ * tracker filed the same sentence under A2.
+ */
+const sentenceCards = buildListenQueue(parts, {}, { contentSource: "sentences", order: "common" });
+check("every sentence card carries a level to show",
+  sentenceCards.length > 0 && sentenceCards.every((item) => Boolean(item.levelLabel)));
+
+// A card does not carry its partKey, but the catalogue it was built from does
+// — so the join goes through the catalogue by id. Matching card text against
+// seed text instead finds nothing and passes whatever it is given, which is
+// how the first version of this check survived every sentence reading "A1".
+const sentencePackOfId = new Map(buildCatalog(parts).map((entry) => [entry.id, entry.partKey]));
+const disagreeing = [];
+for (const card of sentenceCards) {
+  const part = parts[String(sentencePackOfId.get(card.id) ?? "")];
+  if (!part?.level) continue;
+  const expected = cefrStepLabel(cefrStep(part.level));
+  if (card.levelLabel !== expected) {
+    disagreeing.push(`${card.de} shows ${card.levelLabel}, pack is ${part.level} so the tracker files it under ${expected}`);
+  }
+}
+check("the level join actually finds the packs it is checking", disagreeing.length > 0 || sentencePackOfId.size > 0);
+if (disagreeing.length) console.error(`  ${disagreeing.slice(0, 3).join("\n  ")}`);
+check("a sentence shows the level the tracker filters it by",
+  sentenceCards.length > 0 && disagreeing.length === 0);
 
 const byLevel = buildListenQueue(parts, {}, { contentSource: "mixed", order: "level" });
 const byCommon = buildListenQueue(parts, {}, { contentSource: "mixed", order: "common" });
@@ -1074,8 +1107,13 @@ check("Both exposes independent word and sentence loop counts and preserves the 
   && view.includes("next.words + next.sentences"));
 // Easiest first is the default order now, and a walk up through the levels is
 // only a walk if you can see which rung you are on.
+//
+// A sentence shows the level its pack is filtered by; a word has no pack level
+// worth showing (its rung is its own difficulty, which is the point of
+// spokenWordRung) and keeps the rung label. Both branches stay present: losing
+// the fallback would blank the badge on every word card.
 check("the card says which rung it is on, and the picker offers the order by name",
-  view.includes("{item.rung ? <> · {cefrRungLabel(item.rung)}</> : null}")
+  view.includes("{item.levelLabel ? <> · {item.levelLabel}</> : item.rung ? <> · {cefrRungLabel(item.rung)}</> : null}")
   && view.includes('"level", "Easiest first (A1 → C1)",'));
 check("Listen exposes real source and queue-order controls",
   view.includes('data-testid={`listen-source-${value}`}')
