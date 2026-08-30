@@ -1,4 +1,5 @@
 import type { TranslationTable } from "@/lib/translations";
+import { PORTUGUESE_ADVANCED_BY_GERMAN } from "@/lib/portugueseAdvancedTranslations";
 
 /**
  * European Portuguese translations keyed by the German catalogue text.
@@ -8,6 +9,7 @@ import type { TranslationTable } from "@/lib/translations";
  * table grows, instead of ever falling back to German under a Portuguese flag.
  */
 export const PORTUGUESE_BY_GERMAN: TranslationTable = {
+  ...PORTUGUESE_ADVANCED_BY_GERMAN,
   "das Haus": "a casa",
   "der Apfel": "a maçã",
   "die Stadt": "a cidade",
