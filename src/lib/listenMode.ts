@@ -35,7 +35,7 @@ import {
 } from "@/lib/conversationPriority";
 import { cefrRung, cefrStep, cefrStepLabel, CEFR_STEPS, type CefrStep } from "@/lib/cefr";
 import { withoutMutedPacks } from "@/lib/mutedPacks";
-import { packMeta } from "@/lib/curriculum";
+import { packMeta, packNoteForWord } from "@/lib/curriculum";
 import {
   getAuthUser,
   loadScopedJson,
@@ -935,7 +935,10 @@ export function buildListenQueue(
       en: primaryAnswer(word.en),
       use: word.use,
       senseTag: word.senseTag,
-      tierNote: packMeta(word.partKey).note,
+      // The word's own register, not its pack's: a bare word card has no
+      // pack context, and "die Lust" wearing part28's 18+ badge in a matcher
+      // taught that everyday German is explicit. See packNoteForWord.
+      tierNote: packNoteForWord(word.partKey, word.lookup),
       // `index` is this word's place in the ranking above, which is the
       // course's own count of how often it says the word — the evidence that
       // decides whether a pack label is the last word on how hard it is.

@@ -33,7 +33,7 @@ import {
   type GradeRecord,
 } from "@/lib/memoryStrength";
 import { frequencyInfo, synonymCommonality } from "@/lib/wordFrequency";
-import { packMeta } from "@/lib/curriculum";
+import { packMeta, packNoteForWord } from "@/lib/curriculum";
 import { detectRegister, REGISTER_SHORT, REGISTER_TONE } from "@/lib/register";
 import { tts } from "@/lib/voice";
 import { targetLangTag } from "@/lib/direction";
@@ -644,7 +644,7 @@ export function WordsTracker({ apiParts, user }: {
                           : null;
                       })()}
                     {uiIsEnglish() && (() => {
-                        const note = packMeta(word.partKey).note;
+                        const note = packNoteForWord(word.partKey, word.lookup);
                         return note ? <span className="font-black text-violet-500"> · {ui(note)}</span> : null;
                       })()}
                     {(() => {

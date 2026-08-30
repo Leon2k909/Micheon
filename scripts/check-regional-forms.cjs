@@ -125,6 +125,50 @@ for (const direction of ["learn-de", "learn-en"]) {
     `${direction}: only ${boardFlagged} Matcher pairs carry a register warning — `
     + "MatcherPair is dropping tierNote on its way out of the queue");
 
+  /**
+   * The warning is word-honest.
+   *
+   * A pack's note describes the pack's SENSE, and every sentence in the two
+   * intimate packs genuinely belongs to that register — but the words were
+   * inheriting it wholesale, so "die Lust" (Lust auf Pizza — core, innocent
+   * German) sat in the matcher wearing an 18+ badge, alongside "die Grenze"
+   * (a country border), "übernachten" (what children do at a friend's
+   * house) and "heiß" (the weather). A bare word card has no pack context;
+   * its badge has to be about the word. Both directions pinned: everyday
+   * words carry nothing, and the words whose standard use really is this
+   * register — begehren, devot — keep the badge, as does every sentence.
+   *
+   * These name specific words on purpose: each doubles as a drift guard,
+   * because a rename or a typo in the everyday list brings the badge back
+   * and fails here.
+   */
+  // The German course only: the other direction's queue holds English words.
+  if (direction === "learn-de") {
+    const wordCard = (needle) => queue.find(
+      (item) => item.kind === "word" && String(item.de) === needle
+    );
+    for (const innocent of ["die Lust", "die Grenze", "heiß", "übernachten"]) {
+      const card = wordCard(innocent);
+      if (!card) continue; // combined synonym cards can rename a face; the named ones below still hold
+      assert.ok(!card.tierNote,
+        `${direction}: the word card for ${JSON.stringify(innocent)} carries `
+        + `${JSON.stringify(card.tierNote)} — everyday German wearing its pack's intimate badge again`);
+    }
+    const lust = wordCard("die Lust");
+    assert.ok(lust, `${direction}: "die Lust" is missing from the word queue entirely`);
+    for (const explicit of ["begehren", "devot"]) {
+      const card = wordCard(explicit);
+      if (!card) continue;
+      assert.ok(String(card.tierNote ?? "").includes("18+"),
+        `${direction}: ${JSON.stringify(explicit)} lost its 18+ badge — that word's standard use IS this register`);
+    }
+    const intimateSentence = queue.find(
+      (item) => item.kind === "sentence" && String(item.tierNote ?? "").includes("18+")
+    );
+    assert.ok(intimateSentence,
+      `${direction}: no sentence carries the 18+ badge any more — the word fix has bled into sentences`);
+  }
+
   summary.push(`${direction}: ${flagged.length} of ${queue.length} warned, ${boardFlagged} on the board`);
 }
 

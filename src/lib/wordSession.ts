@@ -20,7 +20,7 @@
 import { cefrRung } from "@/lib/cefr";
 import { frequencyRank, speechPrefers } from "@/lib/wordFrequency";
 import { getLearningMode, type LearningMode } from "@/lib/learningMode";
-import { packMeta } from "@/lib/curriculum";
+import { packMeta, packNoteForWord } from "@/lib/curriculum";
 import { corpusIgnores, corpusReach, corpusUses, wordCommonality, type CorpusIndex } from "@/lib/corpusFrequency";
 import functionWords from "@/data/functionWords.json";
 import { isDueForReview, isSnoozed, overdueBy, type GradeRecord } from "@/lib/memoryStrength";
@@ -336,7 +336,7 @@ function consolidateSynonymGroups(words: WordItem[], mode: LearningMode): WordIt
   // so curriculum order alone put "pennen" in front of "schlafen". A word
   // from a tier-note pack (niche/casual — always labelled) must never front
   // a standard word it happens to tie with.
-  const tierNoted = (word: WordItem): number => (packMeta(word.partKey).note ? 1 : 0);
+  const tierNoted = (word: WordItem): number => (packNoteForWord(word.partKey, word.lookup) ? 1 : 0);
   /**
    * Which same-meaning word fronts the card in Conversation mode.
    *

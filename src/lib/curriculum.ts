@@ -449,6 +449,49 @@ export function packMeta(partKey: string | undefined): PackMeta {
 }
 
 /**
+ * Words taught inside the two intimate packs whose word-level register is
+ * plain everyday German.
+ *
+ * A pack's note describes the pack's SENSE of things, and every sentence in
+ * these packs genuinely belongs to that register. The words are different:
+ * "die Lust" is core A-level German ("Lust auf Pizza" is how you say you
+ * fancy pizza), "die Grenze" is a country border, "übernachten" is what
+ * children do at a friend's house, "heiß" is the weather. Stamping those
+ * with the pack's 18+ badge, everywhere the word appears on its own, teaches
+ * that ordinary German is explicit — the nuance the pack actually teaches
+ * ("Lust auf dich" is another matter) lives in the word's use note, where
+ * there is room to say it properly.
+ *
+ * Authored as the everyday list, not the explicit list, so a NEW word added
+ * to one of these packs inherits the pack's badge until somebody decides
+ * otherwise — for an 18+ pack that is the safe default direction. Words NOT
+ * listed here keep the badge deliberately: begehren is partner-only, devot's
+ * standard use is this register, and Safeword and Fetisch have no other life
+ * worth speaking of.
+ */
+// A Map rather than an object literal, so its keys do not read as a second
+// declaration of the packs to the duplicate-part-key scan, which knows the
+// difference between a blueprint and advice ABOUT a blueprint by shape.
+const EVERYDAY_WORDS_IN_INTIMATE_PACKS = new Map<string, ReadonlySet<string>>([
+  ["part20", new Set(["flirten", "küssen", "Kuss", "berühren", "verführen", "heiß", "zärtlich", "leidenschaftlich", "übernachten", "Zustimmung", "Grenze"])],
+  ["part28", new Set(["Lust", "anmachen", "verführen", "ausprobieren", "Vorliebe", "dominant", "Grenze", "Zustimmung"])],
+]);
+
+/**
+ * The register note for one WORD standing on its own — in the matcher, the
+ * trackers, Listen — as opposed to a sentence, or a word met inside its own
+ * pack's lesson, both of which carry the pack's context and keep packMeta's
+ * note unchanged.
+ */
+export function packNoteForWord(partKey: string | undefined, lookup: string | undefined): string | undefined {
+  const note = packMeta(partKey).note;
+  if (!note) return undefined;
+  const everyday = EVERYDAY_WORDS_IN_INTIMATE_PACKS.get(String(partKey ?? ""));
+  if (everyday?.has(String(lookup ?? ""))) return undefined;
+  return note;
+}
+
+/**
  * Re-key a parts map into curriculum order: listed packs first in the order
  * above, then anything unlisted (tatoeba packs, future content) after,
  * levelled tatoeba packs sorted a1 -> a2 -> b1.
