@@ -2635,4 +2635,10 @@ export const ES: Record<string, string> = {
   "Added — it will come up in Continue learning.": "Añadido: aparecerá en Seguir aprendiendo.",
   "You already have that one.": "Ese ya lo tienes.",
   "Nothing could be read from that.": "No se ha podido leer nada de eso.",
+  "After 3 more cards": "Tras 3 tarjetas más",
+  "After 10 more cards": "Tras 10 tarjetas más",
+  "After 30 more cards": "Tras 30 tarjetas más",
+  "Three other cards go by first. Short enough that you are still holding the word when it comes back, which is the exercise short-term memory actually is.": "Antes pasan otras tres tarjetas. Poco, lo bastante para que sigas sosteniendo la palabra cuando vuelve, que es exactamente el ejercicio que la memoria a corto plazo es.",
+  "Ten other cards go by first. Far enough that you have to fetch the word back rather than still be carrying it, and near enough to do it several times in one sitting.": "Antes pasan otras diez tarjetas. Bastante para que tengas que ir a buscar la palabra en vez de seguir llevándola encima, y poco para hacerlo varias veces en una misma sesión.",
+  "Thirty other cards go by first. About a session's worth on a narrow filter, so a word returns once you have genuinely moved on from it.": "Antes pasan otras treinta tarjetas. Con un filtro estrecho, más o menos una sesión entera, así que una palabra vuelve cuando de verdad has pasado página.",
 };
