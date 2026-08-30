@@ -4,6 +4,7 @@ import { syncLocalStorageItem } from "@/lib/profileStorage";
 import { LIFE_IN_THE_UK_DE } from "@/lib/lifeInTheUkTranslationsDe";
 import { LIFE_IN_THE_UK_PL } from "@/lib/lifeInTheUkTranslationsPl";
 import { LEBEN_IN_DEUTSCHLAND_PL } from "@/lib/lebenInDeutschlandTranslationsPl";
+import { LIFE_IN_THE_UK_FR } from "@/lib/lifeInTheUkTranslationsFr";
 import { LEBEN_IN_DEUTSCHLAND_EN } from "@/lib/lebenInDeutschlandTranslationsEn";
 import { VIVRE_EN_FRANCE_DE } from "@/lib/vivreEnFranceTranslationsDe";
 import { VIVRE_EN_FRANCE_EN } from "@/lib/vivreEnFranceTranslationsEn";
@@ -47,7 +48,7 @@ const KEY = "gl-course-translation";
 export const COURSE_TRANSLATION_CHANGE_EVENT = "gl-course-translation-change";
 
 /** "off" means cards are not tappable and nothing is offered. */
-export type TranslationLanguage = "off" | "de" | "en" | "pl";
+export type TranslationLanguage = "off" | "de" | "en" | "pl" | "fr";
 
 /** The language a course is written in, which decides what can be offered. */
 export type ContentLanguage = "en" | "de" | "fr";
@@ -67,12 +68,17 @@ export const TRANSLATION_LANGUAGES: Array<{
   // course still offers nothing in a Polish app rather than a menu entry that
   // would answer in French.
   { id: "pl", label: "Polish", endonym: "Polski", from: ["en", "de"] },
+  // English so far: the French table covers Life in the UK. Leben in
+  // Deutschland offers nothing in a French app rather than a menu entry that
+  // would answer in German, and Vivre en France is already French.
+  { id: "fr", label: "French", endonym: "Français", from: ["en"] },
 ];
 
 const TRANSLATIONS: Partial<Record<TranslationLanguage, Record<string, string>>> = {
   de: { ...LIFE_IN_THE_UK_DE, ...VIVRE_EN_FRANCE_DE, ...CSHARP_COURSE_DE },
   en: { ...LEBEN_IN_DEUTSCHLAND_EN, ...VIVRE_EN_FRANCE_EN },
   pl: { ...LIFE_IN_THE_UK_PL, ...LEBEN_IN_DEUTSCHLAND_PL },
+  fr: { ...LIFE_IN_THE_UK_FR },
 };
 
 /**
@@ -99,7 +105,7 @@ export function getTranslationLanguage(): TranslationLanguage {
   if (typeof window === "undefined") return "off";
   try {
     const stored = localStorage.getItem(KEY);
-    inMemory = stored === "de" || stored === "en" || stored === "pl" ? stored : "off";
+    inMemory = stored === "de" || stored === "en" || stored === "pl" || stored === "fr" ? stored : "off";
   } catch {
     // Keep the in-memory preference when browser storage is blocked.
   }

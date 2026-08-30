@@ -75,9 +75,10 @@ const CASES = [
   ["pl", "en", "off,pl"],
   ["pl", "de", "off,pl"],
   ["pl", "fr", "off"],
-  // French has no table of its own yet in any direction. Stated here so that
-  // writing one is a deliberate change to this list rather than a surprise.
-  ["fr", "en", "off"],
+  // French reads the English course. Beside Leben in Deutschland it offers
+  // nothing — no table yet — and beside Vivre en France nothing is needed,
+  // because those cards are already French.
+  ["fr", "en", "off,fr"],
   ["fr", "de", "off"],
   ["fr", "fr", "off"],
 ];
