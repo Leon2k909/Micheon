@@ -85,7 +85,7 @@ import {
   useTranslationLanguage,
   type TranslationLanguage,
 } from "@/lib/courseTranslation";
-import { DIRECTION_CHANGE_EVENT, getLearningDirection, learningEnglish, learningFrench, learningPolish, setLearningDirection } from "@/lib/direction";
+import { DIRECTION_CHANGE_EVENT, getLearningDirection, learningEnglish, learningFrench, learningPolish, learningSpanish, setLearningDirection } from "@/lib/direction";
 import { courseSides, translationLanguagesNeeded } from "@/lib/courseLanguages";
 import { getEnglishVariant, resolveEnglishVariant, setEnglishVariant } from "@/lib/englishVariant";
 import { buildCatalogSearchText, normalizeCatalogSearchText } from "@/lib/catalogSearch";
@@ -496,6 +496,7 @@ function languageCardArt(targetCode: string, englishVariant: "british" | "americ
   if (targetCode === "de") return homeLanguagesGermanImage;
   if (targetCode === "fr") return homeLanguagesFrImage;
   if (targetCode === "pl") return homeLanguagesPlImage;
+  if (targetCode === "es") return homeLanguagesEsImage;
   if (targetCode === "en") return englishVariant === "american" ? homeLanguagesImage : homeLanguagesUkImage;
   return PLANNED_CARD_ART[targetCode] ?? homeLanguagesImage;
 }
@@ -2009,11 +2010,13 @@ function CourseHero({
   // The learner's chosen English variant decides the flag: a US-English
   // course must not wear a Union Jack.
   const englishVariant = learnsEnglish ? resolveEnglishVariant(getEnglishVariant()) : null;
-  // German is three <i> bands; English, French and Polish are drawn in CSS.
+  // German is three <i> bands; English, French, Polish and Spanish are drawn
+  // in CSS.
   const badgeClass = learnsEnglish
     ? ` is-english is-${englishVariant}`
     : sides.target.code === "fr" ? " is-french"
-    : sides.target.code === "pl" ? " is-polish" : "";
+    : sides.target.code === "pl" ? " is-polish"
+    : sides.target.code === "es" ? " is-spanish" : "";
   return (
     <div className="np-course-hero-frame">
       <section className="np-course-hero">
@@ -4178,10 +4181,13 @@ export default function NewUiPrototype({
   // The direction is the source of truth for the two built-in courses: an
   // install that has been learning English since before English was listed
   // still has "german" stored, and would otherwise show the wrong course.
-  const activeCourseId = (storedCourseId === "german" || storedCourseId === "french" || storedCourseId === "polish" || storedCourseId.startsWith("english"))
+  const activeCourseId = (storedCourseId === "german" || storedCourseId === "french" || storedCourseId === "polish" || storedCourseId === "spanish" || storedCourseId.startsWith("english"))
     ? (learningEnglish()
         ? (resolveEnglishVariant(getEnglishVariant()) === "american" ? "english-us" : "english-uk")
-        : learningFrench() ? "french" : learningPolish() ? "polish" : "german")
+        : learningFrench() ? "french"
+        : learningPolish() ? "polish"
+        : learningSpanish() ? "spanish"
+        : "german")
     : storedCourseId;
   const [courseReaderOpen, setCourseReaderOpen] = useState(false);
   const [courseReaderLesson, setCourseReaderLesson] = useState<string | undefined>(undefined);
@@ -4492,6 +4498,7 @@ export default function NewUiPrototype({
     else if (courseId === "german") setLearningDirection("learn-de");
     else if (courseId === "french") setLearningDirection("learn-fr");
     else if (courseId === "polish") setLearningDirection("learn-pl");
+    else if (courseId === "spanish") setLearningDirection("learn-es");
     persistActiveCourseId(courseId, profile);
     setActiveCourseId(courseId);
     setCourseReaderOpen(false);

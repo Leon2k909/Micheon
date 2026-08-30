@@ -81,6 +81,9 @@ assert.equal(audio.getTtsSpeechRate("fr-FR"), 0.75, "French is a channel of its 
 assert.equal(audio.getMasterTtsSpeechRate(), null, "Polish still at its old speed keeps this Mixed");
 audio.setTtsLanguageSpeechRate("polish", 0.75);
 assert.equal(audio.getTtsSpeechRate("pl-PL"), 0.75, "Polish is a channel of its own, not the fallback");
+assert.equal(audio.getMasterTtsSpeechRate(), null, "Spanish still at its old speed keeps this Mixed");
+audio.setTtsLanguageSpeechRate("spanish", 0.75);
+assert.equal(audio.getTtsSpeechRate("es-ES"), 0.75, "Spanish is a channel of its own, not the fallback");
 assert.equal(audio.getMasterTtsSpeechRate(), 0.75, "matching channels should restore one Master value");
 audio.setTtsLanguageSpeechRate("german", 99);
 assert.equal(audio.getTtsSpeechRate("de-DE"), 2, "language speed should respect the server ceiling");

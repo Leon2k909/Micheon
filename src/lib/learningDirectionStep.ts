@@ -1,6 +1,7 @@
 import { getLearningDirection, type LearningDirection } from "@/lib/direction";
 import { swapStepForFrench } from "@/lib/frenchCourse";
 import { swapStepForPolish } from "@/lib/polishCourse";
+import { swapStepForSpanish } from "@/lib/spanishCourse";
 
 // Flip a built session step's display fields (de<->en) so English becomes the
 // target and German becomes the meaning. IDs and progress metadata stay put.
@@ -48,7 +49,10 @@ export function swapStepForEnglish(step: any): any {
  * translation tables do not reach has nothing to show, and a blank card is
  * worse than a shorter lesson. The pack narrowing in frenchCourse.ts and
  * polishCourse.ts already removes most of them upstream; this is the backstop
- * for steps built from anywhere else.
+ * for steps built from anywhere else. Spanish covers the whole catalogue and
+ * so drops nothing in practice, but it goes through the same filter — the
+ * cost is nothing and the alternative is a German card in a Spanish lesson
+ * the first time a pack gains an entry.
  */
 export function stepsForLearningDirection(
   steps: any[],
@@ -60,6 +64,9 @@ export function stepsForLearningDirection(
   }
   if (direction === "learn-pl") {
     return steps.map((step) => swapStepForPolish(step)).filter((step) => step !== null);
+  }
+  if (direction === "learn-es") {
+    return steps.map((step) => swapStepForSpanish(step)).filter((step) => step !== null);
   }
   return steps;
 }

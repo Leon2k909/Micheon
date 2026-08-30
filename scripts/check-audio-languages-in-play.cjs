@@ -88,11 +88,18 @@ check("a Polish course lists Polish", () => {
     "the language being taught has no volume control");
 });
 
+check("a Spanish course lists Spanish", () => {
+  assert.ok(audioLanguagesInPlay("learn-es").includes("spanish"),
+    "the language being taught has no volume control");
+});
+
 check("a course never lists a voice it cannot speak", () => {
   assert.ok(!audioLanguagesInPlay("learn-de").includes("polish"),
     "a German course still offers a Polish control");
   assert.ok(!audioLanguagesInPlay("learn-de").includes("french"),
     "a German course still offers a French control");
+  assert.ok(!audioLanguagesInPlay("learn-de").includes("spanish"),
+    "a German course still offers a Spanish control");
 });
 
 // The case that is easy to miss: the pet speaks in the INTERFACE language.
@@ -126,7 +133,7 @@ const mixer = fs.readFileSync(path.join(root, "src/components/MuteButton.tsx"), 
 const speed = fs.readFileSync(path.join(root, "src/components/SpeechSpeedControl.tsx"), "utf8").replace(/\r\n?/gu, "\n");
 
 check("every volume row is conditional, not just the two obvious ones", () => {
-  for (const language of ["english", "german", "french", "polish"]) {
+  for (const language of ["english", "german", "french", "polish", "spanish"]) {
     assert.ok(mixer.includes(`inPlay.includes("${language}")`),
       `the ${language} volume row is shown unconditionally`);
   }

@@ -43,6 +43,8 @@ const VOICE_BY_LANG = {
   fr: "fr-FR-DeniseNeural",
   "pl-PL": "pl-PL-ZofiaNeural",
   pl: "pl-PL-ZofiaNeural",
+  "es-ES": "es-ES-ElviraNeural",
+  es: "es-ES-ElviraNeural",
   "en-US": "en-US-AvaNeural",
   "en-GB": "en-GB-SoniaNeural",
   "en-AU": "en-AU-NatashaNeural",
@@ -55,8 +57,8 @@ const DEFAULT_VOICE = "de-DE-KatjaNeural";
  * The voices offered in the app's voice picker.
  *
  * A curated list rather than all 322 Microsoft voices: these are the ones a
- * German/English/French learner would actually want, named the way a person
- * would describe them.
+ * learner of any of the five courses would actually want, named the way a
+ * person would describe them.
  */
 const VOICE_CHOICES = {
   "de-DE": [
@@ -98,6 +100,10 @@ const VOICE_CHOICES = {
   "pl-PL": [
     { id: "pl-PL-ZofiaNeural", label: "Zofia", note: "Polish — female" },
     { id: "pl-PL-MarekNeural", label: "Marek", note: "Polish — male" },
+  ],
+  "es-ES": [
+    { id: "es-ES-ElviraNeural", label: "Elvira", note: "Spanish — female" },
+    { id: "es-ES-AlvaroNeural", label: "Álvaro", note: "Spanish — male" },
   ],
 };
 

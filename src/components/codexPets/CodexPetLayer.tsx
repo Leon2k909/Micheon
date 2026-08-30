@@ -304,12 +304,24 @@ const POLISH_PET_TIPS = [
   "Polish tip: nouns change their ending for their job in the sentence — “to jest kawa”, but “piję kawę”.",
 ];
 
+const SPANISH_PET_TIPS = [
+  "Spanish tip: the ending already says who \u2014 \u201cvoy\u201d is I go, so \u201cyo voy\u201d puts the stress on the I.",
+  "Spanish tip: ser is what a thing IS, estar is how or where it is \u2014 \u201ces alto\u201d is tall, \u201cest\u00e1 alto\u201d is up high.",
+  "Spanish tip: every noun is el or la, and the article is part of the word worth learning \u2014 \u201cel problema\u201d and \u201cla mano\u201d both break the -o/-a rule.",
+  "Spanish tip: a question opens with \u00bf as well as closing with ? \u2014 the reader is warned before they start, not after.",
+  "Spanish tip: describing words come after the thing \u2014 \u201cuna casa blanca\u201d \u2014 and agree with it: \u201ccasas blancas\u201d.",
+  "Spanish tip: \u00f1 is its own letter, not an n with a mark \u2014 \u201ca\u00f1o\u201d is a year and \u201cano\u201d is not.",
+  "Spanish tip: two negatives are correct \u2014 \u201cno hay nada\u201d is how you say there is nothing.",
+  "Spanish tip: an accent can be the whole word \u2014 \u201c\u00e9l\u201d is he and \u201cel\u201d is the; \u201cs\u00ed\u201d is yes and \u201csi\u201d is if.",
+];
+
 /** The tips for whichever language is being learned. */
 const LANGUAGE_TIPS: Record<CourseLanguage, string[]> = {
   de: GERMAN_PET_TIPS,
   en: ENGLISH_PET_TIPS,
   fr: FRENCH_PET_TIPS,
   pl: POLISH_PET_TIPS,
+  es: SPANISH_PET_TIPS,
 };
 
 type PetBounds = {

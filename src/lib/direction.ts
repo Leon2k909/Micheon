@@ -11,7 +11,10 @@ export const DIRECTION_CHANGE_EVENT = "gl-direction-change";
 // has been written for, with the learner's own language as the meaning.
 // "learn-pl" is that same shape once more, over the Polish table — see
 // polishCourse.ts, which is frenchCourse.ts with its own vocabulary.
-export type LearningDirection = "learn-de" | "learn-en" | "learn-fr" | "learn-pl";
+// "learn-es" is the fourth of that family and the first that is not
+// narrowed: the Spanish table covers the whole catalogue, so the course
+// is the German one entry for entry. See spanishCourse.ts.
+export type LearningDirection = "learn-de" | "learn-en" | "learn-fr" | "learn-pl" | "learn-es";
 
 /**
  * Which translation table a direction cannot be built without.
@@ -24,13 +27,14 @@ export type LearningDirection = "learn-de" | "learn-en" | "learn-fr" | "learn-pl
  */
 export function translationLanguageFor(
   direction: LearningDirection
-): "fr" | "pl" | null {
+): "fr" | "pl" | "es" | null {
   if (direction === "learn-fr") return "fr";
   if (direction === "learn-pl") return "pl";
+  if (direction === "learn-es") return "es";
   return null;
 }
 
-const DIRECTIONS: LearningDirection[] = ["learn-de", "learn-en", "learn-fr", "learn-pl"];
+const DIRECTIONS: LearningDirection[] = ["learn-de", "learn-en", "learn-fr", "learn-pl", "learn-es"];
 
 /** Read a stored value as a direction, defaulting to the original mode. */
 export function asLearningDirection(value: unknown): LearningDirection {
@@ -70,6 +74,10 @@ export function learningPolish(): boolean {
   return getLearningDirection() === "learn-pl";
 }
 
+export function learningSpanish(): boolean {
+  return getLearningDirection() === "learn-es";
+}
+
 /**
  * Is the text being learned German?
  *
@@ -89,6 +97,7 @@ export function targetLangTag(): string {
     case "learn-en": return "en-US";
     case "learn-fr": return "fr-FR";
     case "learn-pl": return "pl-PL";
+    case "learn-es": return "es-ES";
     default: return "de-DE";
   }
 }

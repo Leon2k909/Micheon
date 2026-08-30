@@ -29,11 +29,13 @@ export function learningFlagId(activeCourseId: string): string {
   const reversible = activeCourseId === "german"
     || activeCourseId === "french"
     || activeCourseId === "polish"
+    || activeCourseId === "spanish"
     || activeCourseId.startsWith("english-");
   if (reversible || !hasFlagArt(activeCourseId)) {
     const direction = getLearningDirection();
     if (direction === "learn-fr") return "french";
     if (direction === "learn-pl") return "polish";
+    if (direction === "learn-es") return "spanish";
     if (direction !== "learn-en") return "german";
     return resolveEnglishVariant(getEnglishVariant()) === "american" ? "english-us" : "english-uk";
   }

@@ -45,7 +45,13 @@ export function VoicePicker() {
   }, []);
 
   useEffect(() => {
-    setChosen({ de: voiceForLang("de-DE"), en: voiceForLang("en-GB"), fr: voiceForLang("fr-FR"), pl: voiceForLang("pl-PL") });
+    setChosen({
+      de: voiceForLang("de-DE"),
+      en: voiceForLang("en-GB"),
+      fr: voiceForLang("fr-FR"),
+      pl: voiceForLang("pl-PL"),
+      es: voiceForLang("es-ES"),
+    });
   }, [catalog]);
 
   const british = resolveEnglishVariant(getEnglishVariant()) === "british";
@@ -63,6 +69,7 @@ export function VoicePicker() {
       { lang: "en", voices: english, fallback: catalog.defaults?.[british ? "en-GB" : "en-US"] },
       { lang: "fr", voices: choices["fr-FR"] ?? [], fallback: catalog.defaults?.["fr-FR"] },
       { lang: "pl", voices: choices["pl-PL"] ?? [], fallback: catalog.defaults?.["pl-PL"] },
+      { lang: "es", voices: choices["es-ES"] ?? [], fallback: catalog.defaults?.["es-ES"] },
     ].filter((group) => group.voices.length > 0);
   }, [british, catalog]);
 
@@ -73,6 +80,7 @@ export function VoicePicker() {
     const tag = lang === "en" ? (british ? "en-GB" : "en-US")
       : lang === "de" ? "de-DE"
       : lang === "pl" ? "pl-PL"
+      : lang === "es" ? "es-ES"
       : "fr-FR";
     tts(SAMPLES[lang] ?? SAMPLES.en, 0.95, tag).finally(() => setPlaying(""));
   };
