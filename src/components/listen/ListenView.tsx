@@ -57,6 +57,8 @@ import {
   getListenPetBilingualCaptions,
   getListenQueueOrder,
   getListenQueueWithin,
+  getListenReturnGap,
+  getListenReturnScope,
   DEFAULT_LISTEN_QUEUE_WITHIN,
   getListenLevelFilters,
   getListenUsefulnessFilters,
@@ -78,6 +80,8 @@ import {
   setListenPetBilingualCaptions,
   setListenQueueOrder,
   setListenQueueWithin,
+  setListenReturnGap,
+  setListenReturnScope,
   setListenLevelFilters,
   setListenUsefulnessFilters,
   setListenReviewLevel,
@@ -89,6 +93,8 @@ import {
   type ListenLanguageOrder,
   type ListenQueueOrder,
   type ListenQueueWithin,
+  type ListenReturnGap,
+  type ListenReturnScope,
   type ListenReviewChange,
   type ListenReviewLevel,
 } from "@/lib/listenMode";
@@ -408,6 +414,33 @@ const WITHIN_CHOICES = [
   ["learning", "Reviews & struggles first"],
 ] as const;
 
+/**
+ * The wait, and what each one actually means in hours.
+ *
+ * Written out rather than generated from the millisecond map so the wording is
+ * a decision rather than a rendering: "a day" is what a learner is choosing,
+ * and "86400000 ms" is what the queue is doing about it.
+ */
+const RETURN_GAP_CHOICES = [
+  ["immediate", "Straight away"],
+  ["hours", "After a few hours"],
+  ["day", "After a day"],
+  ["due", "When the review says so"],
+] as const;
+
+const RETURN_GAP_EXPLAINED: Record<string, string> = {
+  immediate: "No wait at all. Anything can play again the moment the order reaches it — which on a narrow filter can mean the same handful of cards all evening. Right for a first pass through a new pack, and not much else.",
+  hours: "About four hours. Long enough that you have to remember it rather than recognise it from a minute ago, and short enough to meet it again the same day.",
+  day: "A full day. This is the shortest gap the review ladder ever asks for, and the point at which hearing something again is recall rather than an echo.",
+  due: "Nothing you have answered correctly comes back until the review ladder says it is due — one day, then three, ten, thirty, a hundred and eighty. Anything you have heard but never answered waits a day.",
+};
+
+const RETURN_SCOPE_CHOICES = [
+  ["both", "Words and sentences"],
+  ["words", "Words only"],
+  ["sentences", "Sentences and phrases only"],
+] as const;
+
 const VOLUME_SETTING = {
   de: "germanVolume",
   en: "englishVolume",
@@ -432,6 +465,12 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   );
   const [queueWithin, setQueueWithin] = useState<ListenQueueWithin>(
     () => getListenQueueWithin(learningDirection)
+  );
+  const [returnGap, setReturnGap] = useState<ListenReturnGap>(
+    () => getListenReturnGap(learningDirection)
+  );
+  const [returnScope, setReturnScope] = useState<ListenReturnScope>(
+    () => getListenReturnScope(learningDirection)
   );
   const [levelFilter, setLevelFilter] = useState<Set<CefrStep>>(
     () => getListenLevelFilters(learningDirection)
@@ -526,11 +565,13 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
         direction: learningDirection,
         order: queueOrder,
         within: queueWithin,
+        returnGap,
+        returnScope,
         levels: levelFilter,
         usefulness: usefulnessFilter,
       })
       : []),
-    [everOpened, apiParts, contentSource, gradesRevision, learningDirection, levelFilter, meaningLanguage, profile, queueOrder, queueWithin, translationsRevision, usefulnessFilter]
+    [everOpened, apiParts, contentSource, gradesRevision, learningDirection, levelFilter, meaningLanguage, profile, queueOrder, queueWithin, returnGap, returnScope, translationsRevision, usefulnessFilter]
   );
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => new Set());
   const queue = useMemo(
@@ -1311,6 +1352,14 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
 
   const chooseContentSource = (source: ListenContentSource) => {
     setContentSource(setListenContentSource(source, learningDirection));
+  };
+
+  const chooseReturnGap = (gap: ListenReturnGap) => {
+    setReturnGap(setListenReturnGap(gap, learningDirection));
+  };
+
+  const chooseReturnScope = (scope: ListenReturnScope) => {
+    setReturnScope(setListenReturnScope(scope, learningDirection));
   };
 
   const chooseQueueWithin = (within: ListenQueueWithin) => {
@@ -2132,21 +2181,106 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               </div>
               <div className="mt-3 space-y-2">
                 {contentSource === "mixed" ? <>
-                  <NumberSetting label={ui("Words in each loop")} max={Math.max(1, 12 - mixedCounts.sentences)} min={1} note={ui("Words before the loop returns")} onCommit={(value) => commitMixedCounts({ ...mixedCounts, words: value }).words} suffix={ui("words")} testId="listen-loop-words" value={mixedCounts.words} />
-                  <NumberSetting label={ui("Sentences in each loop")} max={Math.max(1, 12 - mixedCounts.words)} min={1} note={ui("Sentences and phrases before the loop returns")} onCommit={(value) => commitMixedCounts({ ...mixedCounts, sentences: value }).sentences} suffix={ui("sentences")} testId="listen-loop-sentences" value={mixedCounts.sentences} />
-                </> : <NumberSetting label={ui("Items in each loop")} max={12} min={1} note={ui("How many different items to hear before they return")} onCommit={commitLoopItems} suffix={ui("items")} testId="listen-loop-items" value={loopItems} />}
+                  <NumberSetting label={ui("Words in each loop")} max={Math.max(1, 12 - mixedCounts.sentences)} min={1} note={ui("How many words are in the set before it repeats")} onCommit={(value) => commitMixedCounts({ ...mixedCounts, words: value }).words} suffix={ui("words")} testId="listen-loop-words" value={mixedCounts.words} />
+                  <NumberSetting label={ui("Sentences in each loop")} max={Math.max(1, 12 - mixedCounts.words)} min={1} note={ui("How many sentences and phrases are in the set before it repeats")} onCommit={(value) => commitMixedCounts({ ...mixedCounts, sentences: value }).sentences} suffix={ui("sentences")} testId="listen-loop-sentences" value={mixedCounts.sentences} />
+                </> : <NumberSetting label={ui("Items in each loop")} max={12} min={1} note={ui("How many items are in the set before it repeats")} onCommit={commitLoopItems} suffix={ui("items")} testId="listen-loop-items" value={loopItems} />}
                 <NumberSetting
                   label={ui("Passes through each loop")}
                   max={6}
                   min={1}
-                  note={ui("2 means every item returns once; 1 turns item repetition off")}
+                  note={ui("How many times the set plays before moving on to the next one")}
                   onCommit={commitLoopPasses}
                   suffix="×"
                   testId="listen-loop-passes"
                   value={loopPasses}
                 />
               </div>
+              <p className="mt-3 text-[11px] font-semibold leading-snug text-[var(--text-2)]" data-testid="listen-loop-example">
+                {contentSource === "mixed"
+                  ? uiFmt(
+                    "Right now: {words} words + {sentences} sentences = a set of {total}, played {passes}×. You hear all {total}, then the same {total} again, then the next set.",
+                    {
+                      words: mixedCounts.words,
+                      sentences: mixedCounts.sentences,
+                      total: mixedCounts.words + mixedCounts.sentences,
+                      passes: loopPasses,
+                    }
+                  )
+                  : uiFmt(
+                    "Right now: a set of {total}, played {passes}×. You hear all {total}, then the same {total} again, then the next set.",
+                    { total: loopItems, passes: loopPasses }
+                  )}
+                {loopPasses === 1 ? " " + ui("At 1× a set plays once and nothing repeats inside it.") : ""}
+              </p>
             </div>
+            <fieldset className="mt-4 border-t border-[var(--border)] pt-4">
+              <legend className="text-xs font-black text-[var(--text-2)]">{ui("Coming back")}</legend>
+              <p className="mt-0.5 text-[11px] font-semibold leading-snug text-[var(--text-3)]">
+                {ui("Hearing something once is not learning it. This decides how long Micheon waits before playing you something you have already heard. The loop above repeats a set inside one sitting; this is about the next sitting.")}
+              </p>
+              <p className="mt-2 text-xs font-black text-[var(--text-2)]">{ui("What has to wait")}</p>
+              <div
+                aria-label={ui("What has to wait")}
+                className="mt-1.5 grid grid-cols-1 gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-1.5 sm:grid-cols-3"
+                role="radiogroup"
+              >
+                {RETURN_SCOPE_CHOICES.map(([value, label]) => {
+                  const selected = returnScope === value;
+                  return (
+                    <button
+                      aria-checked={selected}
+                      className={cn(
+                        "min-h-10 rounded-xl border px-2 py-2 text-[11px] font-black leading-tight transition-[background-color,border-color,color,transform,box-shadow] duration-150",
+                        selected
+                          ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-text)] shadow-[0_3px_0_var(--accent-dark)]"
+                          : "border-transparent bg-transparent text-[var(--text-2)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                      )}
+                      data-testid={`listen-return-scope-${value}`}
+                      key={value}
+                      onClick={() => chooseReturnScope(value)}
+                      role="radio"
+                      type="button"
+                    >
+                      {ui(label)}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-3 text-xs font-black text-[var(--text-2)]">{ui("How long it waits")}</p>
+              <div
+                aria-label={ui("How long it waits")}
+                className="mt-1.5 grid grid-cols-1 gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-1.5 sm:grid-cols-2"
+                role="radiogroup"
+              >
+                {RETURN_GAP_CHOICES.map(([value, label]) => {
+                  const selected = returnGap === value;
+                  return (
+                    <button
+                      aria-checked={selected}
+                      className={cn(
+                        "min-h-10 rounded-xl border px-2 py-2 text-[11px] font-black leading-tight transition-[background-color,border-color,color,transform,box-shadow] duration-150",
+                        selected
+                          ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-text)] shadow-[0_3px_0_var(--accent-dark)]"
+                          : "border-transparent bg-transparent text-[var(--text-2)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                      )}
+                      data-testid={`listen-return-gap-${value}`}
+                      key={value}
+                      onClick={() => chooseReturnGap(value)}
+                      role="radio"
+                      type="button"
+                    >
+                      {ui(label)}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-2 text-[11px] font-semibold leading-snug text-[var(--text-2)]" data-testid="listen-return-explained">
+                {ui(RETURN_GAP_EXPLAINED[returnGap] ?? "")}
+              </p>
+              <p className="mt-2 text-[11px] font-semibold leading-snug text-[var(--text-3)]">
+                {ui("Nothing is ever taken out of the queue — a card that is still waiting simply plays after everything else. On the whole course that is thousands of cards away; on a narrow filter it means you will still hear it, just last.")}
+              </p>
+            </fieldset>
             <div className="mt-4">
               <NumberSetting
                 label={ui("Next card delay")}
