@@ -24,6 +24,8 @@ const SAMPLES: Record<string, string> = {
   en: "Hello! Shall we make a start?",
   fr: "Bonjour ! On commence ?",
   pl: "Dzień dobry! Zaczynamy?",
+  es: "¡Hola! ¿Empezamos?",
+  pt: "Olá! Vamos começar?",
 };
 
 const LANGUAGE_LABELS: Record<string, string> = {
@@ -31,6 +33,8 @@ const LANGUAGE_LABELS: Record<string, string> = {
   en: "English voice",
   fr: "French voice",
   pl: "Polish voice",
+  es: "Spanish voice",
+  pt: "Portuguese voice",
 };
 
 export function VoicePicker() {
@@ -51,6 +55,7 @@ export function VoicePicker() {
       fr: voiceForLang("fr-FR"),
       pl: voiceForLang("pl-PL"),
       es: voiceForLang("es-ES"),
+      pt: voiceForLang("pt-PT"),
     });
   }, [catalog]);
 
@@ -70,6 +75,7 @@ export function VoicePicker() {
       { lang: "fr", voices: choices["fr-FR"] ?? [], fallback: catalog.defaults?.["fr-FR"] },
       { lang: "pl", voices: choices["pl-PL"] ?? [], fallback: catalog.defaults?.["pl-PL"] },
       { lang: "es", voices: choices["es-ES"] ?? [], fallback: catalog.defaults?.["es-ES"] },
+      { lang: "pt", voices: choices["pt-PT"] ?? [], fallback: catalog.defaults?.["pt-PT"] },
     ].filter((group) => group.voices.length > 0);
   }, [british, catalog]);
 
@@ -81,6 +87,7 @@ export function VoicePicker() {
       : lang === "de" ? "de-DE"
       : lang === "pl" ? "pl-PL"
       : lang === "es" ? "es-ES"
+      : lang === "pt" ? "pt-PT"
       : "fr-FR";
     tts(SAMPLES[lang] ?? SAMPLES.en, 0.95, tag).finally(() => setPlaying(""));
   };

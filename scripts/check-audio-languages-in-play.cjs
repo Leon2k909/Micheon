@@ -93,6 +93,11 @@ check("a Spanish course lists Spanish", () => {
     "the language being taught has no volume control");
 });
 
+check("a Portuguese course lists Portuguese", () => {
+  assert.ok(audioLanguagesInPlay("learn-pt").includes("portuguese"),
+    "the language being taught has no volume control");
+});
+
 check("a course never lists a voice it cannot speak", () => {
   assert.ok(!audioLanguagesInPlay("learn-de").includes("polish"),
     "a German course still offers a Polish control");
@@ -100,6 +105,8 @@ check("a course never lists a voice it cannot speak", () => {
     "a German course still offers a French control");
   assert.ok(!audioLanguagesInPlay("learn-de").includes("spanish"),
     "a German course still offers a Spanish control");
+  assert.ok(!audioLanguagesInPlay("learn-de").includes("portuguese"),
+    "a German course still offers a Portuguese control");
 });
 
 // The case that is easy to miss: the pet speaks in the INTERFACE language.

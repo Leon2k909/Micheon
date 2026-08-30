@@ -37,6 +37,7 @@ const built = esbuild.buildSync({
       'export { POLISH_BY_GERMAN } from "./src/lib/polishTranslations.ts";',
       'export { SPANISH_BY_GERMAN } from "./src/lib/spanishTranslations.ts";',
   'export { ITALIAN_BY_GERMAN } from "./src/lib/italianTranslations.ts";',
+      'export { PORTUGUESE_BY_GERMAN } from "./src/lib/portugueseTranslations.ts";',
     ].join("\n"),
     resolveDir: root,
     sourcefile: "translations-entry.ts",
@@ -63,6 +64,7 @@ M.primeTranslations("fr", M.FRENCH_BY_GERMAN);
 M.primeTranslations("pl", M.POLISH_BY_GERMAN);
 M.primeTranslations("es", M.SPANISH_BY_GERMAN);
 M.primeTranslations("it", M.ITALIAN_BY_GERMAN);
+M.primeTranslations("pt", M.PORTUGUESE_BY_GERMAN);
 
 // ── read every taught entry out of the packs ────────────────────────────────
 const FIELD = (name) => new RegExp("\\b" + name + ':\\s*"((?:[^"\\\\]|\\\\.)*)"');
@@ -121,6 +123,7 @@ const FLOORS = {
   // rule that matters is that its number never falls, and this check reads
   // the floor from here rather than from the table itself.
   it: 0,
+  pt: 0,
 };
 
 // The percentage is still reported, because it is the honest measure of how

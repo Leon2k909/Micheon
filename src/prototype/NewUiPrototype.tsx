@@ -85,7 +85,7 @@ import {
   useTranslationLanguage,
   type TranslationLanguage,
 } from "@/lib/courseTranslation";
-import { DIRECTION_CHANGE_EVENT, getLearningDirection, learningEnglish, learningFrench, learningPolish, learningSpanish, setLearningDirection } from "@/lib/direction";
+import { DIRECTION_CHANGE_EVENT, getLearningDirection, learningEnglish, learningFrench, learningPolish, learningPortuguese, learningSpanish, setLearningDirection } from "@/lib/direction";
 import { courseSides, translationLanguagesNeeded } from "@/lib/courseLanguages";
 import { getEnglishVariant, resolveEnglishVariant, setEnglishVariant } from "@/lib/englishVariant";
 import { buildCatalogSearchText, normalizeCatalogSearchText } from "@/lib/catalogSearch";
@@ -4180,12 +4180,13 @@ export default function NewUiPrototype({
   // The direction is the source of truth for the two built-in courses: an
   // install that has been learning English since before English was listed
   // still has "german" stored, and would otherwise show the wrong course.
-  const activeCourseId = (storedCourseId === "german" || storedCourseId === "french" || storedCourseId === "polish" || storedCourseId === "spanish" || storedCourseId.startsWith("english"))
+  const activeCourseId = (storedCourseId === "german" || storedCourseId === "french" || storedCourseId === "polish" || storedCourseId === "spanish" || storedCourseId === "portuguese" || storedCourseId.startsWith("english"))
     ? (learningEnglish()
         ? (resolveEnglishVariant(getEnglishVariant()) === "american" ? "english-us" : "english-uk")
         : learningFrench() ? "french"
         : learningPolish() ? "polish"
         : learningSpanish() ? "spanish"
+        : learningPortuguese() ? "portuguese"
         : "german")
     : storedCourseId;
   const [courseReaderOpen, setCourseReaderOpen] = useState(false);
@@ -4498,6 +4499,7 @@ export default function NewUiPrototype({
     else if (courseId === "french") setLearningDirection("learn-fr");
     else if (courseId === "polish") setLearningDirection("learn-pl");
     else if (courseId === "spanish") setLearningDirection("learn-es");
+    else if (courseId === "portuguese") setLearningDirection("learn-pt");
     persistActiveCourseId(courseId, profile);
     setActiveCourseId(courseId);
     setCourseReaderOpen(false);

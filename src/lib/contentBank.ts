@@ -5,6 +5,7 @@ import tatoebaRaw from "./tatoeba.de-en.json";
 import { getLearningDirection, type LearningDirection } from "./direction";
 import { frenchParts, hasFrench } from "./frenchCourse";
 import { hasPolish, polishParts } from "./polishCourse";
+import { hasPortuguese, portugueseParts } from "./portugueseCourse";
 import { hasSpanish, spanishParts } from "./spanishCourse";
 
 /**
@@ -672,6 +673,7 @@ export function filterPartsForLearningDirection<T extends Part>(
   if (direction === "learn-fr") return frenchParts(forDirection);
   if (direction === "learn-pl") return polishParts(forDirection);
   if (direction === "learn-es") return spanishParts(forDirection);
+  if (direction === "learn-pt") return portugueseParts(forDirection);
   return forDirection;
 }
 
@@ -685,6 +687,7 @@ export function getAllBundledSentences(direction: LearningDirection = getLearnin
   if (direction === "learn-fr") return phrases.filter(hasFrench);
   if (direction === "learn-pl") return phrases.filter(hasPolish);
   if (direction === "learn-es") return phrases.filter(hasSpanish);
+  if (direction === "learn-pt") return phrases.filter(hasPortuguese);
   return phrases;
 }
 

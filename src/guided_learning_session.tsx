@@ -19,6 +19,7 @@ import { translationLanguagesNeeded } from "@/lib/courseLanguages";
 import { ensureTranslations } from "@/lib/translations";
 import { frenchFor, frenchMeaningLanguage } from "@/lib/frenchCourse";
 import { polishFor, polishMeaningLanguage } from "@/lib/polishCourse";
+import { portugueseFor, portugueseMeaningLanguage } from "@/lib/portugueseCourse";
 import { spanishFor, spanishMeaningLanguage } from "@/lib/spanishCourse";
 import {
   detectRegister, pickRegisterQuestion, recordRegisterAnswer,
@@ -273,12 +274,14 @@ export default function GuidedLearningSession() {
     const learnsFrench = direction === "learn-fr";
     const learnsPolish = direction === "learn-pl";
     const learnsSpanish = direction === "learn-es";
+    const learnsPortuguese = direction === "learn-pt";
     // The catalogue is German either way round, so a table-backed course has to
     // ask for its own text rather than for whichever column happens to be there.
     const meaningIsGerman = learnsEnglish
       || (learnsFrench && frenchMeaningLanguage() === "de")
       || (learnsPolish && polishMeaningLanguage() === "de")
-      || (learnsSpanish && spanishMeaningLanguage() === "de");
+      || (learnsSpanish && spanishMeaningLanguage() === "de")
+      || (learnsPortuguese && portugueseMeaningLanguage() === "de");
 
     const scheduleQuestion = (delayMs: number) => {
       if (!active) return;
@@ -335,8 +338,9 @@ export default function GuidedLearningSession() {
       const french = learnsFrench ? frenchFor(item.de, item.fr) : null;
       const polish = learnsPolish ? polishFor(item.de) : null;
       const spanish = learnsSpanish ? spanishFor(item.de) : null;
+      const portuguese = learnsPortuguese ? portugueseFor(item.de) : null;
       // A word the tables do not reach cannot be asked about in this course.
-      if ((learnsFrench && !french) || (learnsPolish && !polish) || (learnsSpanish && !spanish)) {
+      if ((learnsFrench && !french) || (learnsPolish && !polish) || (learnsSpanish && !spanish) || (learnsPortuguese && !portuguese)) {
         scheduleQuestion(cadence.intervalMs);
         return;
       }
@@ -344,15 +348,18 @@ export default function GuidedLearningSession() {
       const target = learnsFrench ? french!
         : learnsPolish ? polish!
         : learnsSpanish ? spanish!
+        : learnsPortuguese ? portuguese!
         : learnsEnglish ? item.en
         : item.de;
       const askedLanguageDe = learnsFrench ? "Französisch"
         : learnsPolish ? "Polnisch"
         : learnsSpanish ? "Spanisch"
+        : learnsPortuguese ? "Portugiesisch"
         : "Englisch";
       const askedLanguageEn = learnsFrench ? "French"
         : learnsPolish ? "Polish"
         : learnsSpanish ? "Spanish"
+        : learnsPortuguese ? "Portuguese"
         : "German";
       const question = meaningIsGerman
         ? (reverse
@@ -366,6 +373,7 @@ export default function GuidedLearningSession() {
         : (learnsFrench ? "fr"
           : learnsPolish ? "pl"
           : learnsSpanish ? "es"
+          : learnsPortuguese ? "pt"
           : learnsEnglish ? "en"
           : "de");
       petSpeak(question, {
@@ -379,6 +387,8 @@ export default function GuidedLearningSession() {
           en: item.en,
           fr: french ?? undefined,
           pl: polish ?? undefined,
+          es: spanish ?? undefined,
+          pt: portuguese ?? undefined,
           itemId: item.id,
         },
       });
@@ -583,7 +593,7 @@ export default function GuidedLearningSession() {
           if (swapDirection === "learn-en") {
             return { de: String(step.item?.en ?? ""), en: String(step.item?.de ?? "") };
           }
-          if (swapDirection === "learn-fr" || swapDirection === "learn-pl" || swapDirection === "learn-es") {
+          if (swapDirection === "learn-fr" || swapDirection === "learn-pl" || swapDirection === "learn-es" || swapDirection === "learn-pt") {
             return { de: String(step.item?.originalDe ?? ""), en: String(step.item?.en ?? "") };
           }
           return { de: String(step.item?.de ?? ""), en: String(step.item?.en ?? "") };

@@ -338,11 +338,65 @@ const ES: PlacementQuestion[] = [
   q("es-c1-8", "C1", "Which is correct?", "Fue \u00e9l quien ___ la idea.", ["propone", "propuso", "proponga", "propondr\u00eda"], 1, "The cleft keeps the tense of the event, which is past."),
 ];
 
+// ── Learning Portuguese (European Portuguese) ──────────────────────────────
+const PT: PlacementQuestion[] = [
+  // A1
+  q("pt-a1-1", "A1", "Which is correct?", "Como te ___?", ["chamas", "chama", "chamo", "chamam"], 0, "Como te chamas? is the informal European Portuguese way to ask someone's name."),
+  q("pt-a1-2", "A1", "What does this mean?", "Bom dia", ["good night", "good morning", "goodbye", "please"], 1, "Bom dia is the normal morning greeting."),
+  q("pt-a1-3", "A1", "Which is correct?", "Eu ___ de Londres.", ["sou", "estou", "tenho", "vou"], 0, "ser is used for origin: sou de Londres."),
+  q("pt-a1-4", "A1", "What does this mean?", "a casa", ["the street", "the house", "the city", "the station"], 1, "a casa means the house/home."),
+  q("pt-a1-5", "A1", "Which is correct?", "Tenho duas ___.", ["irmã", "irmãs", "irmãos", "a irmã"], 1, "duas requires the feminine plural irmãs."),
+  q("pt-a1-6", "A1", "What does this mean?", "Não percebo.", ["I don't understand.", "I don't want it.", "I don't know him.", "I can't go."], 0, "Não percebo is a very common way to say I don't understand."),
+  q("pt-a1-7", "A1", "Which is correct?", "Queria um café, ___.", ["obrigado", "desculpa", "por favor", "amanhã"], 2, "por favor makes the request polite."),
+  q("pt-a1-8", "A1", "What is the number?", "sete", ["five", "six", "seven", "nine"], 2, "sete means seven."),
+
+  // A2
+  q("pt-a2-1", "A2", "Which is correct?", "Ontem ___ ao cinema.", ["vou", "fui", "ia", "irei"], 1, "fui is the completed past form of ir used with ontem."),
+  q("pt-a2-2", "A2", "What does this mean?", "Tenho de ir.", ["I want to go.", "I have to go.", "I can go.", "I went already."], 1, "ter de + infinitive expresses obligation in European Portuguese."),
+  q("pt-a2-3", "A2", "Which is correct?", "Estou ___ um livro.", ["ler", "a ler", "lido", "leio"], 1, "European Portuguese normally uses estar a + infinitive for an action happening now."),
+  q("pt-a2-4", "A2", "Which is correct?", "Moro ___ Lisboa.", ["a", "de", "em", "por"], 2, "morar em means to live in a place."),
+  q("pt-a2-5", "A2", "What does this mean?", "Está frio.", ["It is cold.", "He is ill.", "It is late.", "It is raining."], 0, "Está frio means it is cold."),
+  q("pt-a2-6", "A2", "Which is correct?", "Ela é mais alta ___ a irmã.", ["de", "do que", "como", "para"], 1, "mais ... do que forms a comparison."),
+  q("pt-a2-7", "A2", "Which is correct?", "Não há ___ no frigorífico.", ["algo", "nada", "ninguém", "algum"], 1, "não há nada means there is nothing."),
+  q("pt-a2-8", "A2", "What does this mean?", "Ligo-te amanhã.", ["I'll call you tomorrow.", "I saw you yesterday.", "I'll wait here.", "I'll write it down."], 0, "ligar a alguém means to phone someone; ligo-te is the European Portuguese clitic form."),
+
+  // B1
+  q("pt-b1-1", "B1", "Which is correct?", "Quero que ___ comigo.", ["vens", "venhas", "vieste", "virás"], 1, "querer que introduces the present subjunctive: venhas."),
+  q("pt-b1-2", "B1", "What does this mean?", "Estou cá há dois anos.", ["I arrived two years ago.", "I've been here for two years.", "I'll stay for two years.", "I left two years ago."], 1, "há + duration describes how long an ongoing situation has lasted."),
+  q("pt-b1-3", "B1", "Which is correct?", "Se tiver tempo, ___ contigo.", ["vou", "ia", "fosse", "teria ido"], 0, "A real future condition uses the future subjunctive tiver and a normal future/present result."),
+  q("pt-b1-4", "B1", "What does this mean?", "Depende.", ["It depends.", "It is forbidden.", "It is enough.", "It is missing."], 0, "Depende is the everyday answer for it depends."),
+  q("pt-b1-5", "B1", "Which is correct?", "Ainda não sei ___ ele vem.", ["que", "se", "quando de", "porque de"], 1, "se introduces an indirect yes/no question: whether he is coming."),
+  q("pt-b1-6", "B1", "Which is correct?", "Já me habituei ___ acordar cedo.", ["a", "de", "por", "com"], 0, "habituar-se a means to get used to something."),
+  q("pt-b1-7", "B1", "What does this mean?", "Não vale a pena.", ["It isn't worth it.", "It isn't allowed.", "It isn't ready.", "It isn't expensive."], 0, "não vale a pena means it is not worth it."),
+  q("pt-b1-8", "B1", "Which is correct?", "Quanto mais estudo, ___ percebo.", ["menos que", "mais", "tanto", "muito de"], 1, "quanto mais ... mais is the Portuguese 'the more ... the more' pattern."),
+
+  // B2
+  q("pt-b2-1", "B2", "Which is correct?", "Ele agiu como se não ___ nada.", ["sabe", "soubesse", "soube", "saberá"], 1, "como se calls for the imperfect subjunctive: soubesse."),
+  q("pt-b2-2", "B2", "What does this mean?", "Isso está fora de questão.", ["That is beyond doubt.", "That is out of the question.", "That is unanswered.", "That is beside the point."], 1, "fora de questão means out of the question."),
+  q("pt-b2-3", "B2", "Which is correct?", "A ponte ___ construída no ano passado.", ["foi", "teve", "fez", "era de"], 0, "ser + past participle forms the passive: foi construída."),
+  q("pt-b2-4", "B2", "Which is correct?", "Embora ___ caro, comprei-o.", ["é", "seja", "foi de", "será"], 1, "embora normally introduces the subjunctive: seja."),
+  q("pt-b2-5", "B2", "What does this mean?", "Tenho saudades tuas.", ["I'm worried about you.", "I miss you.", "I owe you.", "I remember your name."], 1, "ter saudades de alguém means to miss someone."),
+  q("pt-b2-6", "B2", "Which is correct?", "Assim que ___, telefono-te.", ["chego", "chegar", "cheguei", "chegava"], 1, "A future time clause after assim que uses the future subjunctive; for regular -ar verbs it looks like the infinitive."),
+  q("pt-b2-7", "B2", "What does this mean?", "dar-se conta de", ["to give a discount", "to realise", "to settle a bill", "to introduce oneself"], 1, "dar-se conta de means to realise or become aware of."),
+  q("pt-b2-8", "B2", "Which is correct?", "Fê-lo sem que ninguém ___.", ["sabe", "soubesse", "soube", "saberá"], 1, "sem que takes the subjunctive: soubesse."),
+
+  // C1
+  q("pt-c1-1", "C1", "What does this mean?", "não ter papas na língua", ["to be speechless", "to speak very frankly", "to speak too quietly", "to forget a word"], 1, "não ter papas na língua describes someone who speaks frankly without holding back."),
+  q("pt-c1-2", "C1", "Which is correct?", "Se o tivesse sabido, ___ mais cedo.", ["viria", "teria vindo", "vim", "venho"], 1, "A counterfactual past condition takes tivesse + participle and teria + participle."),
+  q("pt-c1-3", "C1", "What does this mean?", "ficar em águas de bacalhau", ["to become very expensive", "to come to nothing", "to become obvious", "to change the subject"], 1, "ficar em águas de bacalhau means that a plan or matter came to nothing."),
+  q("pt-c1-4", "C1", "Which is correct?", "Por mais que ___, não consigo.", ["tento", "tente", "tentarei", "tentava"], 1, "por mais que generally takes the subjunctive when expressing concession."),
+  q("pt-c1-5", "C1", "What does this mean?", "na sequência de", ["before", "as a result/following", "despite", "instead of"], 1, "na sequência de means following or as a result of something."),
+  q("pt-c1-6", "C1", "Which is correct?", "Oxalá ___ vindo mais cedo.", ["tenhas", "tinhas", "terias", "tens"], 0, "oxalá about a completed past possibility can take the perfect subjunctive: tenhas vindo."),
+  q("pt-c1-7", "C1", "What does this mean?", "deitar a toalha ao chão", ["to do the laundry", "to give up", "to celebrate", "to waste time"], 1, "The expression literally throws the towel down and means to give up."),
+  q("pt-c1-8", "C1", "Which is correct?", "Foi ele quem ___ a ideia.", ["propôs", "proponha", "propunha de", "proporia de"], 0, "The event is completed in the past, so propôs is the natural form here."),
+];
+
 export function placementQuestions(direction: PlacementDirection): PlacementQuestion[] {
   if (direction === "learn-en") return EN;
   if (direction === "learn-fr") return FR;
   if (direction === "learn-pl") return PL;
   if (direction === "learn-es") return ES;
+  if (direction === "learn-pt") return PT;
   return DE;
 }
 

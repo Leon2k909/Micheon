@@ -57,6 +57,8 @@ import { matchFrenchSentence } from "@/lib/frenchTextMatch";
 import { matchPolishSentence, POLISH_SPECIAL_CHARACTERS } from "@/lib/polishTextMatch";
 import { spanishMeaningLanguage } from "@/lib/spanishCourse";
 import { matchSpanishSentence, SPANISH_SPECIAL_CHARACTERS } from "@/lib/spanishTextMatch";
+import { portugueseMeaningLanguage } from "@/lib/portugueseCourse";
+import { matchPortugueseSentence, PORTUGUESE_SPECIAL_CHARACTERS } from "@/lib/portugueseTextMatch";
 import { isElectronApp } from "@/lib/platform";
 import {
   AUDIO_SETTINGS_EVENT,
@@ -392,23 +394,25 @@ function CharBar({ onInsert }: { onInsert: (c: string) => void }) {
  */
 // Written out per language rather than composed, so the German reads as
 // German ("Deutsche Wörter zum Anordnen") rather than as a slot filled in.
-const WORDS_TO_ARRANGE_LABEL: Record<"de" | "en" | "fr" | "pl" | "es", string> = {
+const WORDS_TO_ARRANGE_LABEL: Record<"de" | "en" | "fr" | "pl" | "es" | "pt", string> = {
   de: "German words to arrange",
   en: "English words to arrange",
   fr: "French words to arrange",
   pl: "Polish words to arrange",
   es: "Spanish words to arrange",
+  pt: "Portuguese words to arrange",
 };
 
-function AccentKeys({ language, onInsert }: { language: "de" | "en" | "fr" | "pl" | "es"; onInsert: (c: string) => void }) {
+function AccentKeys({ language, onInsert }: { language: "de" | "en" | "fr" | "pl" | "es" | "pt"; onInsert: (c: string) => void }) {
   if (language === "fr") return <FrenchCharBar onInsert={onInsert} />;
   if (language === "pl") return <PolishCharBar onInsert={onInsert} />;
   if (language === "es") return <SpanishCharBar onInsert={onInsert} />;
+  if (language === "pt") return <PortugueseCharBar onInsert={onInsert} />;
   if (language === "de") return <CharBar onInsert={onInsert} />;
   return null;
 }
 
-function AccentRow({ language, onInsert }: { language: "de" | "en" | "fr" | "pl" | "es"; onInsert: (c: string) => void }) {
+function AccentRow({ language, onInsert }: { language: "de" | "en" | "fr" | "pl" | "es" | "pt"; onInsert: (c: string) => void }) {
   if (language === "en") return null;
   return <div className="fs-charsrow"><AccentKeys language={language} onInsert={onInsert} /></div>;
 }
@@ -470,6 +474,21 @@ function SpanishCharBar({ onInsert }: { onInsert: (c: string) => void }) {
   return (
     <div className="flex flex-wrap justify-center gap-2">
       {SPANISH_SPECIAL_CHARACTERS.map(c => (
+        <motion.button key={c} type="button" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+          title={c}
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-base font-semibold text-zinc-900 hover:border-zinc-300 hover:bg-zinc-50"
+          onMouseDown={e => { e.preventDefault(); onInsert(c); }}>
+          {c}
+        </motion.button>
+      ))}
+    </div>
+  );
+}
+
+function PortugueseCharBar({ onInsert }: { onInsert: (c: string) => void }) {
+  return (
+    <div className="flex flex-wrap justify-center gap-2">
+      {PORTUGUESE_SPECIAL_CHARACTERS.map(c => (
         <motion.button key={c} type="button" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
           title={c}
           className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-base font-semibold text-zinc-900 hover:border-zinc-300 hover:bg-zinc-50"
@@ -1792,19 +1811,21 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const learnFr = direction === "learn-fr";
   const learnPl = direction === "learn-pl";
   const learnEs = direction === "learn-es";
+  const learnPt = direction === "learn-pt";
   // Only the German course teaches German. The umlaut bar, the German matcher
   // and the German synonym groups all hang off this, and every one of them is
   // wrong beside a French sentence — which is why it is asked as its own
   // question rather than as !learnEn.
   const targetIsGermanCourse = direction === "learn-de";
-  const targetLanguage: "de" | "en" | "fr" | "pl" | "es" =
-    learnFr ? "fr" : learnPl ? "pl" : learnEs ? "es" : learnEn ? "en" : "de";
+  const targetLanguage: "de" | "en" | "fr" | "pl" | "es" | "pt" =
+    learnFr ? "fr" : learnPl ? "pl" : learnEs ? "es" : learnPt ? "pt" : learnEn ? "en" : "de";
   // Which language the meaning column is written in: German in the English
   // course, and in the French course whenever the app itself is in German.
   const meaningLanguage: "de" | "en" = learnFr
     ? frenchMeaningLanguage()
     : learnPl ? polishMeaningLanguage()
     : learnEs ? spanishMeaningLanguage()
+    : learnPt ? portugueseMeaningLanguage()
     : learnEn ? "de" : "en";
   const meaningIsGerman = meaningLanguage === "de";
   // A picture of the word, where we have an honest one. It is a cue to the
@@ -1826,6 +1847,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const targetLabel = learnFr ? "French"
     : learnPl ? "Polish"
     : learnEs ? "Spanish"
+    : learnPt ? "Portuguese"
     : learnEn ? "English"
     : "German";
   const meaningLabel = meaningIsGerman ? "German" : "English";
@@ -1860,6 +1882,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     ? matchFrenchSentence
     : learnPl ? matchPolishSentence
     : learnEs ? matchSpanishSentence
+    : learnPt ? matchPortugueseSentence
     : learnEn ? matchEnglish : matchGermanSentence;
   // Where the spoken short form is what we teach, the fuller written form the
   // learner will have met in a book stays correct too. Taking the better of the
@@ -5069,6 +5092,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
   const learnFr = sides.target.code === "fr";
   const learnPl = sides.target.code === "pl";
   const learnEs = sides.target.code === "es";
+  const learnPt = sides.target.code === "pt";
   const result = useMemo(
     () => learnFr
       ? matchFrenchSentence(input, line?.de ?? "")
@@ -5076,10 +5100,12 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
         ? matchPolishSentence(input, line?.de ?? "")
         : learnEs
           ? matchSpanishSentence(input, line?.de ?? "")
+          : learnPt
+            ? matchPortugueseSentence(input, line?.de ?? "")
           : learnEn
             ? matchEnglish(input, line?.de ?? "")
             : matchLearningModeGermanAnswer(input, { de: line?.de ?? "", long: line?.long }),
-    [input, learnEn, learnFr, learnPl, learnEs, line]
+    [input, learnEn, learnFr, learnPl, learnEs, learnPt, line]
   );
   // A German speaker learning English hears this on every stage, so it has to
   // honour their British/American choice — it was pinned to American, which

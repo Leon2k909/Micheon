@@ -440,7 +440,7 @@ const EARLIER_SPLIT_KEYS = ["gl-direction-split-v2", "gl-direction-split"];
 // that runs before either side is initialised. Keep this list in step with
 // LearningDirection — a direction missing from it silently shares the German
 // course's progress instead of getting its own.
-const KNOWN_DIRECTIONS = new Set(["learn-de", "learn-en", "learn-fr", "learn-pl", "learn-es"]);
+const KNOWN_DIRECTIONS = new Set(["learn-de", "learn-en", "learn-fr", "learn-pl", "learn-es", "learn-pt"]);
 
 function currentDirection(): string {
   if (typeof window === "undefined") return "learn-de";

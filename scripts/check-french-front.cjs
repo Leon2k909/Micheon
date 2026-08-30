@@ -39,6 +39,7 @@ const built = esbuild.buildSync({
       'export { POLISH_BY_GERMAN } from "./src/lib/polishTranslations.ts";',
       'export { SPANISH_BY_GERMAN } from "./src/lib/spanishTranslations.ts";',
       'export { ITALIAN_BY_GERMAN } from "./src/lib/italianTranslations.ts";',
+      'export { PORTUGUESE_BY_GERMAN } from "./src/lib/portugueseTranslations.ts";',
       'export { primeTranslations } from "./src/lib/translations.ts";',
       'export { buildCatalog } from "./src/session.ts";',
       'export { buildWordCatalog } from "./src/lib/wordSession.ts";',
@@ -79,6 +80,7 @@ M.primeTranslations("pl", M.POLISH_BY_GERMAN);
 // measured. Two of them were not, and were scored against an empty table.
 M.primeTranslations("es", M.SPANISH_BY_GERMAN);
 M.primeTranslations("it", M.ITALIAN_BY_GERMAN);
+M.primeTranslations("pt", M.PORTUGUESE_BY_GERMAN);
 
 /**
  * The bands REPORT how deep each language reaches; the floor that fails the
@@ -113,7 +115,7 @@ const BANDS = [
 // block onwards. It is here rather than only in check-translation-coverage
 // because a language with a table and no floor here fails the build outright,
 // which is how Italian announced itself on its first day.
-const TRANSLATED_QUEUE_FLOORS = { fr: 17300, pl: 18700, es: 24000, it: 0 };
+const TRANSLATED_QUEUE_FLOORS = { fr: 17300, pl: 18700, es: 24000, it: 0, pt: 0 };
 
 /**
  * How much of the word tracker the French course is allowed to be missing.
