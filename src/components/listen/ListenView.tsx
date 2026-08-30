@@ -55,6 +55,8 @@ import {
   getListenNextCardDelayMs,
   getListenPetBilingualCaptions,
   getListenQueueOrder,
+  getListenQueueWithin,
+  DEFAULT_LISTEN_QUEUE_WITHIN,
   getListenLevelFilter,
   getListenUsefulnessFilter,
   listenLoopPassForPlayhead,
@@ -74,15 +76,18 @@ import {
   setListenNextCardDelayMs,
   setListenPetBilingualCaptions,
   setListenQueueOrder,
+  setListenQueueWithin,
   setListenLevelFilter,
   setListenUsefulnessFilter,
   setListenReviewLevel,
   snoozeListenItem,
+  listenQueueHasGroups,
   undoListenReviewChange,
   type ListenContentSource,
   type ListenItem,
   type ListenLanguageOrder,
   type ListenQueueOrder,
+  type ListenQueueWithin,
   type ListenLevelFilter,
   type ListenUsefulnessFilter,
   type ListenReviewChange,
@@ -367,6 +372,35 @@ const UNMUTE_VOICE_LABEL: Record<CourseLanguage, string> = {
   es: "Unmute Spanish voice",
 };
 
+/**
+ * What the group is called, in the words of the order that made it.
+ *
+ * "Then within each group" is true of all of them and says nothing. A learner
+ * who chose Easiest first is thinking in levels, and one who chose Newest
+ * first is thinking in packs, so the heading says the word they are already
+ * using. Most common first makes no groups and has no entry.
+ */
+const WITHIN_LEGEND: Record<string, string> = {
+  level: "Then within each level",
+  learning: "Then within reviews, struggles and new cards",
+  "least-heard": "Then among cards heard the same number of times",
+  newest: "Then within each pack",
+};
+
+/**
+ * Written out in full rather than derived from the orders above, because two
+ * of them do not appear here and one of these is not an order at all: hardest
+ * first only makes sense once there is a group to sort, so it has never been
+ * something the whole queue could be arranged by.
+ */
+const WITHIN_CHOICES = [
+  ["common", "Most common first"],
+  ["hardest", "Hardest first"],
+  ["least-heard", "Least heard first"],
+  ["newest", "Newest first"],
+  ["learning", "Reviews & struggles first"],
+] as const;
+
 const VOLUME_SETTING = {
   de: "germanVolume",
   en: "englishVolume",
@@ -387,6 +421,9 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   );
   const [queueOrder, setQueueOrder] = useState<ListenQueueOrder>(
     () => getListenQueueOrder(learningDirection)
+  );
+  const [queueWithin, setQueueWithin] = useState<ListenQueueWithin>(
+    () => getListenQueueWithin(learningDirection)
   );
   const [levelFilter, setLevelFilter] = useState<ListenLevelFilter>(
     () => getListenLevelFilter(learningDirection)
@@ -480,11 +517,12 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
         contentSource,
         direction: learningDirection,
         order: queueOrder,
+        within: queueWithin,
         level: levelFilter,
         usefulness: usefulnessFilter,
       })
       : []),
-    [everOpened, apiParts, contentSource, gradesRevision, learningDirection, levelFilter, meaningLanguage, profile, queueOrder, translationsRevision, usefulnessFilter]
+    [everOpened, apiParts, contentSource, gradesRevision, learningDirection, levelFilter, meaningLanguage, profile, queueOrder, queueWithin, translationsRevision, usefulnessFilter]
   );
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => new Set());
   const queue = useMemo(
@@ -497,7 +535,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   const [loopItems, setLoopItems] = useState(() => getListenLoopItems(learningDirection));
   const [loopPasses, setLoopPasses] = useState(() => getListenLoopPasses(learningDirection));
   const [playhead, setPlayhead] = useState(() => {
-    const storedId = getListenCurrentItemId(learningDirection, profile, contentSource, queueOrder);
+    const storedId = getListenCurrentItemId(learningDirection, profile, contentSource, queueOrder, queueWithin);
     const storedIndex = baseQueue.findIndex((candidate) => candidate.id === storedId);
     return listenPlayheadForQueueIndex(
       storedIndex >= 0 ? storedIndex : 0,
@@ -666,7 +704,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   useEffect(() => {
     setHiddenIds(new Set());
     timedHiddenIdsRef.current.clear();
-    const storedId = getListenCurrentItemId(learningDirection, profile, contentSource, queueOrder);
+    const storedId = getListenCurrentItemId(learningDirection, profile, contentSource, queueOrder, queueWithin);
     const restoredCounts = getListenMixedCounts(learningDirection);
     const restoredQueue = contentSource === "mixed"
       ? arrangeListenMixedQueue(baseQueue, restoredCounts)
@@ -680,7 +718,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
         : getListenLoopItems(learningDirection),
       getListenLoopPasses(learningDirection)
     ));
-  }, [apiParts, baseQueue, contentSource, learningDirection, profile?.id, queueOrder]);
+  }, [apiParts, baseQueue, contentSource, learningDirection, profile?.id, queueOrder, queueWithin]);
 
   useEffect(() => {
     const releaseDueItems = () => {
@@ -708,8 +746,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
 
   useEffect(() => {
     if (!item) return;
-    setListenCurrentItemId(item.id, learningDirection, profile, contentSource, queueOrder);
-  }, [contentSource, item?.id, learningDirection, profile?.id, queueOrder]);
+    setListenCurrentItemId(item.id, learningDirection, profile, contentSource, queueOrder, queueWithin);
+  }, [contentSource, item?.id, learningDirection, profile?.id, queueOrder, queueWithin]);
 
   useEffect(() => {
     const sync = () => setAudioSettings(getAudioSettings());
@@ -1262,8 +1300,19 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     setContentSource(setListenContentSource(source, learningDirection));
   };
 
+  const chooseQueueWithin = (within: ListenQueueWithin) => {
+    setQueueWithin(setListenQueueWithin(within, learningDirection));
+  };
+
   const chooseQueueOrder = (order: ListenQueueOrder) => {
     setQueueOrder(setListenQueueOrder(order, learningDirection));
+    // Newest first cannot also be what leads each pack — every card in a
+    // pack shares its pack — so that button is not offered, and a stored
+    // choice that has just become the order would leave the row with
+    // nothing lit and the queue quietly using the default anyway.
+    if ((order as string) === queueWithin) {
+      setQueueWithin(setListenQueueWithin(DEFAULT_LISTEN_QUEUE_WITHIN, learningDirection));
+    }
   };
 
   const chooseLevelFilter = (level: ListenLevelFilter) => {
@@ -1896,6 +1945,50 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                   );
                 })}
               </div>
+              {listenQueueHasGroups(queueOrder) ? (
+                <>
+                  <p className="mt-3 text-xs font-black text-[var(--text-2)]">{ui(WITHIN_LEGEND[queueOrder] ?? "Then within each group")}</p>
+                  <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">
+                    {ui("The order above decides which cards come first as a group. This decides which card leads each group — so A1 can be taught most common first, or hardest first, and A2 still waits until A1 is done.")}
+                  </p>
+                  <div
+                    aria-label={ui(WITHIN_LEGEND[queueOrder] ?? "Then within each group")}
+                    className="mt-2 grid grid-cols-1 gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-1.5 sm:grid-cols-2"
+                    role="radiogroup"
+                  >
+                    {WITHIN_CHOICES
+                      // An order cannot lead its own groups: every card in a
+                      // pack shares its pack, so "newest within newest" would
+                      // be a control that reads as a choice and does nothing.
+                      .filter(([value]) => value !== (queueOrder as string))
+                      .map(([value, label]) => {
+                        const selected = queueWithin === value;
+                        return (
+                          <button
+                            aria-checked={selected}
+                            className={cn(
+                              "min-h-10 rounded-xl border px-2 py-2 text-[11px] font-black leading-tight transition-[background-color,border-color,color,transform,box-shadow] duration-150",
+                              selected
+                                ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-text)] shadow-[0_3px_0_var(--accent-dark)]"
+                                : "border-transparent bg-transparent text-[var(--text-2)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                            )}
+                            data-testid={`listen-queue-within-${value}`}
+                            key={value}
+                            onClick={() => chooseQueueWithin(value)}
+                            role="radio"
+                            type="button"
+                          >
+                            {ui(label)}
+                          </button>
+                        );
+                      })}
+                  </div>
+                </>
+              ) : (
+                <p className="mt-3 text-[11px] font-semibold text-[var(--text-3)]">
+                  {ui("Most common first ranks every card on its own, so there is no group left to order.")}
+                </p>
+              )}
             </fieldset>
             <fieldset className="mt-4 border-t border-[var(--border)] pt-4">
               <legend className="text-xs font-black text-[var(--text-2)]">{ui("Level")}</legend>

@@ -44,7 +44,7 @@ global.localStorage = global.window.localStorage;
 const result = esbuild.buildSync({
   stdin: {
     contents: [
-      'export { buildListenQueue, arrangeListenMixedQueue, getListenMixedCounts, setListenMixedCounts, DEFAULT_LISTEN_MIXED_COUNTS, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenPetBilingualCaptions, setListenPetBilingualCaptions, getListenContentSource, setListenContentSource, getListenQueueOrder, setListenQueueOrder, getListenCurrentItemId, setListenCurrentItemId, getListenTargetRepeats, setListenTargetRepeats, getListenMeaningRepeats, setListenMeaningRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, getListenLanguageGapMs, setListenLanguageGapMs, buildListenSpeechPlan, DEFAULT_LANGUAGE_GAP_MS, DEFAULT_TARGET_REPEATS, DEFAULT_MEANING_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE, DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
+      'export { buildListenQueue, arrangeListenMixedQueue, getListenMixedCounts, setListenMixedCounts, DEFAULT_LISTEN_MIXED_COUNTS, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenPetBilingualCaptions, setListenPetBilingualCaptions, getListenContentSource, setListenContentSource, getListenQueueOrder, setListenQueueOrder, getListenQueueWithin, setListenQueueWithin, listenQueueHasGroups, LISTEN_QUEUE_WITHINS, DEFAULT_LISTEN_QUEUE_WITHIN, getListenCurrentItemId, setListenCurrentItemId, getListenTargetRepeats, setListenTargetRepeats, getListenMeaningRepeats, setListenMeaningRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, getListenLanguageGapMs, setListenLanguageGapMs, buildListenSpeechPlan, DEFAULT_LANGUAGE_GAP_MS, DEFAULT_TARGET_REPEATS, DEFAULT_MEANING_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE, DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
       'export { loadGradeStore, saveGradeStore, statusForId, COMPLETED_KEY } from "./src/lib/activity.ts";',
       'export { setInterfaceLanguage } from "./src/lib/interfaceLanguage.ts";',
       'export { setLearningDirection } from "./src/lib/direction.ts";',
@@ -101,6 +101,8 @@ const {
   DEFAULT_TARGET_REPEATS, DEFAULT_MEANING_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER,
   DEFAULT_LISTEN_CONTENT_SOURCE,
   DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS,
+  getListenQueueWithin, setListenQueueWithin, listenQueueHasGroups,
+  LISTEN_QUEUE_WITHINS, DEFAULT_LISTEN_QUEUE_WITHIN,
   DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS,
   listenCountForId, buildWordCatalog, wordLadderRung,
   loadGradeStore, statusForId, COMPLETED_KEY, getScopedKey,
@@ -327,6 +329,74 @@ const commonPositions = sameRung.map((id) => byCommon.findIndex((item) => item.i
 check("and inside one rung it is still most-common-first",
   sameRung.length > 50
   && commonPositions.every((position, index) => index === 0 || commonPositions[index - 1] < position));
+
+// ── what leads a group is a second question, asked separately ───────────────
+//
+// The line above is the DEFAULT answer to it, not the only one. "All of A1
+// before any of A2" says nothing about the order of A1, and a learner can
+// reasonably want that order to be commonality, or the cards they keep
+// getting wrong, or the ones they have heard least. Before this, wanting any
+// of those meant giving up the levels entirely and taking that order across
+// the whole course — hearing C1 material in week one to get A1 sorted the way
+// they wanted.
+//
+// So the check is in two halves: the second key must actually change the
+// order, and it must never be able to break the first.
+check("the second question defaults to the answer the single-key order gave",
+  DEFAULT_LISTEN_QUEUE_WITHIN === "common");
+check("every way of ordering a group is one the picker can store",
+  LISTEN_QUEUE_WITHINS.length >= 5
+  && LISTEN_QUEUE_WITHINS.every((value) => setListenQueueWithin(value) === value)
+  && setListenQueueWithin("not-an-order") === DEFAULT_LISTEN_QUEUE_WITHIN);
+check("Most common first ranks every card on its own, so it is not asked",
+  listenQueueHasGroups("common") === false
+  && ["level", "learning", "least-heard", "newest"].every(listenQueueHasGroups));
+
+const withinLeast = buildListenQueue(parts, {}, {
+  contentSource: "mixed", order: "level", within: "least-heard",
+});
+const withinNewest = buildListenQueue(parts, {}, {
+  contentSource: "mixed", order: "level", within: "newest",
+});
+const withinCommon = buildListenQueue(parts, {}, {
+  contentSource: "mixed", order: "level", within: "common",
+});
+
+// Same cards either way. A second sort key reorders a queue; it must never
+// add to it or drop from it, which is what would happen if it were reaching
+// past the group it is meant to be ordering.
+const sameCards = (a, b) => a.length === b.length
+  && new Set(a.map((item) => item.id)).size === new Set(b.map((item) => item.id)).size
+  && a.every((item) => b.some((other) => other.id === item.id));
+check("ordering a group changes the order and not the queue",
+  sameCards(withinCommon, withinLeast) && sameCards(withinCommon, withinNewest));
+check("the default second answer is exactly the queue there was before",
+  withinCommon.every((item, index) => item.id === byLevel[index].id));
+
+// The promise the whole feature rests on: whatever leads a level, A2 still
+// waits for A1. A second key that could reach across groups would be the
+// single-key order wearing a different name.
+for (const [name, ordered] of [["least heard", withinLeast], ["newest", withinNewest]]) {
+  check(`${name} inside a level still never puts a harder card before an easier one`,
+    ordered.length > 100
+    && ordered.every((item, index, rows) => index === 0 || rungOf(rows[index - 1]) <= rungOf(item)));
+}
+check("and it really is a different order, not the same queue relabelled",
+  withinNewest.some((item, index) => item.id !== withinCommon[index].id));
+
+// Newest first groups by pack, so "newest within newest" is a control that
+// would read as a choice and do nothing. The picker drops it; this is the
+// reason it can.
+const newestQueue = buildListenQueue(parts, {}, { contentSource: "mixed", order: "newest" });
+const newestWithinNewest = buildListenQueue(parts, {}, {
+  contentSource: "mixed", order: "newest", within: "newest",
+});
+check("an order cannot lead its own groups",
+  newestQueue.every((item, index) => item.id === newestWithinNewest[index].id));
+
+setListenQueueWithin(DEFAULT_LISTEN_QUEUE_WITHIN);
+check("the stored answer survives being written and read back",
+  getListenQueueWithin() === DEFAULT_LISTEN_QUEUE_WITHIN);
 // The failure this replaces, asserted as the thing it was: nothing hard may
 // sit in front of a beginner's material any more.
 const firstHard = byLevel.findIndex((item) => rungOf(item) >= 4);
