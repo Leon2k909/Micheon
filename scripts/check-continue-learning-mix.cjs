@@ -490,6 +490,34 @@ check(
   "Know it does not discard wrong answers made earlier in the same route",
   /updatedAt >= sessionStart\) \{[\s\S]*?performance\?\.attempts[\s\S]*?recordAnswerPerformance\(prior, performance\)[\s\S]*?return;/.test(labSource)
 );
+/**
+ * Every language taught from a translation table, read from the union rather
+ * than listed here.
+ *
+ * German and English are the reversible pair the catalogue is written in; every
+ * other direction is a course that looks its own text up, and every one of them
+ * has to be named in the branch below. Derived rather than counted, because the
+ * first version of this check required exactly two and failed the day a sixth
+ * course landed — for the one reason a check never should, which is that the
+ * code got more right than the test expected.
+ */
+const directionSource = fs.readFileSync(path.join(root, "src/lib/direction.ts"), "utf8");
+const directionUnion = directionSource.slice(
+  directionSource.indexOf("export type LearningDirection"),
+  directionSource.indexOf(";", directionSource.indexOf("export type LearningDirection"))
+);
+const tableBackedDirections = [...directionUnion.matchAll(/"(learn-[a-z]+)"/g)]
+  .map((match) => match[1])
+  .filter((direction) => direction !== "learn-de" && direction !== "learn-en");
+if (tableBackedDirections.length < 4) {
+  console.error(`FAIL only found ${tableBackedDirections.length} table-backed directions — the union scan is broken`);
+  process.exit(1);
+}
+const blockedBranch = labSource.slice(
+  labSource.indexOf("const blockedPairs = current"),
+  labSource.indexOf("const blockedText")
+);
+
 check(
   "preview replacement blocks both named language columns after direction swaps",
   // The candidates are un-swapped German entries, so every direction has to be
@@ -499,7 +527,8 @@ check(
   // the swapped text and match nothing.
   labSource.includes("const blockedPairs = current")
     && labSource.includes('if (swapDirection === "learn-en")')
-    && /if \(swapDirection === "learn-fr"(?:\s*\|\|\s*swapDirection === "learn-(?:pl|es)"){2}\)/.test(labSource)
+    && tableBackedDirections.every((direction) =>
+      new RegExp(`swapDirection === "${direction}"`).test(blockedBranch))
     && labSource.includes("String(step.item?.originalDe ?? \"\")")
 );
 

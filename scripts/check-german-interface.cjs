@@ -183,6 +183,7 @@ const DELIBERATE = new Set([
   "Guten Tag! Wollen wir anfangen?",
   "Bonjour ! On commence ?",
   "Dzień dobry! Zaczynamy?",
+  "Olá! Vamos começar?",
   // Both halves of a locale ternary; the German one is right there beside it.
   "Cache cleared.",
   "Cache geleert.",
