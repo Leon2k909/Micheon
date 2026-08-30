@@ -37,6 +37,8 @@ const built = esbuild.buildSync({
       'export { translate, TRANSLATION_LANGUAGES, TRANSLATION_LANGUAGE_NAMES } from "./src/lib/translations.ts";',
       'export { FRENCH_BY_GERMAN } from "./src/lib/frenchTranslations.ts";',
       'export { POLISH_BY_GERMAN } from "./src/lib/polishTranslations.ts";',
+      'export { SPANISH_BY_GERMAN } from "./src/lib/spanishTranslations.ts";',
+      'export { ITALIAN_BY_GERMAN } from "./src/lib/italianTranslations.ts";',
       'export { primeTranslations } from "./src/lib/translations.ts";',
       'export { buildCatalog } from "./src/session.ts";',
       'export { buildWordCatalog } from "./src/lib/wordSession.ts";',
@@ -73,6 +75,10 @@ const { allPartBlueprints, buildApiPartFromResolved, buildBundledParts,
 const M = compiled.exports;
 M.primeTranslations("fr", M.FRENCH_BY_GERMAN);
 M.primeTranslations("pl", M.POLISH_BY_GERMAN);
+// Every language the loop below measures has to be loaded before it is
+// measured. Two of them were not, and were scored against an empty table.
+M.primeTranslations("es", M.SPANISH_BY_GERMAN);
+M.primeTranslations("it", M.ITALIAN_BY_GERMAN);
 
 /**
  * The bands REPORT how deep each language reaches; the floor that fails the
@@ -101,12 +107,13 @@ const BANDS = [
   { upTo: 12000 },
   { upTo: 16000 },
 ];
-// Spanish is being written now, block by block, and its floor is raised to
+// Italian is being written now, block by block, and its floor is raised to
 // match after each one. Zero is not "no standard" — the rule this check
 // enforces is that a count never falls, and that rule bites from the first
 // block onwards. It is here rather than only in check-translation-coverage
-// because a language with a table and no floor here fails the build outright.
-const TRANSLATED_QUEUE_FLOORS = { fr: 17300, pl: 18700, es: 0 };
+// because a language with a table and no floor here fails the build outright,
+// which is how Italian announced itself on its first day.
+const TRANSLATED_QUEUE_FLOORS = { fr: 17300, pl: 18700, es: 24000, it: 0 };
 
 /**
  * How much of the word tracker the French course is allowed to be missing.
@@ -223,6 +230,30 @@ assert.ok(withPolish.length >= POLISH_WORD_FLOOR,
   + `${(POLISH_WORD_FLOOR - withPolish.length).toLocaleString("en-GB")} have gone missing. This is a `
   + "count, so adding German cannot trip it: a card the Polish course used to teach no longer has "
   + "an answer in POLISH_BY_GERMAN.");
+
+/**
+ * And the same again for the languages that were not being counted at all.
+ *
+ * The two floors above were written when there were two table-backed courses.
+ * There are four, and a word card losing its Spanish would have been as
+ * invisible as the queue gap above: measured, never loaded, and reported as a
+ * number nobody could act on. Same rule as Polish — a count, raised as blocks
+ * land, never lowered.
+ */
+const SPANISH_WORD_FLOOR = 8990;
+const withSpanish = germanWords.filter((word) => translate(String(word.de), "es", null));
+assert.ok(withSpanish.length >= SPANISH_WORD_FLOOR,
+  `${withSpanish.length.toLocaleString("en-GB")} of the ${germanWords.length.toLocaleString("en-GB")} `
+  + `German word cards have Spanish, and the floor is ${SPANISH_WORD_FLOOR.toLocaleString("en-GB")} \u2014 `
+  + `${(SPANISH_WORD_FLOOR - withSpanish.length).toLocaleString("en-GB")} have gone missing.`);
+
+// Italian is being written. Its floor rises with each block; today it is the
+// number it has, which is the only thing a floor can mean on day one.
+const ITALIAN_WORD_FLOOR = 0;
+const withItalian = germanWords.filter((word) => translate(String(word.de), "it", null));
+assert.ok(withItalian.length >= ITALIAN_WORD_FLOOR,
+  `${withItalian.length.toLocaleString("en-GB")} German word cards have Italian, `
+  + `and the floor is ${ITALIAN_WORD_FLOOR.toLocaleString("en-GB")}.`);
 
 /**
  * And the two counts that are actually on screen: what each course BUILDS.

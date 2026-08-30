@@ -43,6 +43,7 @@ const built = esbuild.buildSync({
       'export { FRENCH_BY_GERMAN } from "./src/lib/frenchTranslations.ts";',
       'export { POLISH_BY_GERMAN } from "./src/lib/polishTranslations.ts";',
       'export { SPANISH_BY_GERMAN } from "./src/lib/spanishTranslations.ts";',
+      'export { ITALIAN_BY_GERMAN } from "./src/lib/italianTranslations.ts";',
       'export { primeTranslations } from "./src/lib/translations.ts";',
     ].join("\n"),
     resolveDir: root,
@@ -69,6 +70,7 @@ const M = compiled.exports;
 M.primeTranslations("fr", M.FRENCH_BY_GERMAN);
 M.primeTranslations("pl", M.POLISH_BY_GERMAN);
 M.primeTranslations("es", M.SPANISH_BY_GERMAN);
+M.primeTranslations("it", M.ITALIAN_BY_GERMAN);
 
 const resolved = Object.fromEntries(
   Object.entries(M.allPartBlueprints).map(([key, blueprint]) => [key, M.buildApiPartFromResolved(blueprint, {})])

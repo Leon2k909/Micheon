@@ -95,6 +95,7 @@ const PET_BILINGUAL_CAPTIONS_KEY = "gl-listen-pet-bilingual-captions-v1";
 const CONTENT_SOURCE_KEY = "gl-listen-content-source";
 const MIXED_COUNTS_KEY = "gl-listen-mixed-counts-v1";
 const QUEUE_ORDER_KEY = "gl-listen-queue-order";
+const QUEUE_WITHIN_KEY = "gl-listen-queue-within-v1";
 const LEVEL_FILTER_KEY = "gl-listen-level-filter-v1";
 const USEFULNESS_FILTER_KEY = "gl-listen-usefulness-filter-v1";
 // v2 deliberately separates cursors by queue order. The original key only
@@ -136,6 +137,27 @@ export type ListenQueueOrder = "common" | "learning" | "least-heard" | "newest" 
 export type ListenLevelFilter = "all" | CefrStep;
 export type ListenUsefulnessFilter = "all" | ConversationUsefulness;
 export const LISTEN_QUEUE_ORDERS: ListenQueueOrder[] = ["level", "common", "learning", "least-heard", "newest"];
+/**
+ * What leads each group the queue order makes.
+ *
+ * Easiest first sorts by level, which puts all of A1 before any of A2 and
+ * says nothing about the order of A1 itself. That second answer used to be
+ * hard-coded to commonality, and it is a real choice: the same learner might
+ * want A1 in the order they are most likely to need it, or want the A1 cards
+ * they keep getting wrong to come first, and both are "all of A1 before A2".
+ *
+ * Every order except Most common first makes groups — levels, review
+ * buckets, packs, listen counts — and this decides what happens inside one.
+ * Most common first ranks every card individually, so it leaves no ties for
+ * this to break; the picker says so rather than offering a control that
+ * would do nothing.
+ */
+export type ListenQueueWithin = "common" | "hardest" | "least-heard" | "newest" | "learning";
+export const LISTEN_QUEUE_WITHINS: ListenQueueWithin[] = ["common", "hardest", "least-heard", "newest", "learning"];
+/** The order that leaves no ties to break, so nothing can be asked second. */
+export const LISTEN_QUEUE_ORDERS_WITHOUT_GROUPS: ListenQueueOrder[] = ["common"];
+/** Commonality, which is what the single-key order always used. */
+export const DEFAULT_LISTEN_QUEUE_WITHIN: ListenQueueWithin = "common";
 export const DEFAULT_LISTEN_CONTENT_SOURCE: ListenContentSource = "mixed";
 /**
  * A1 first, then A2, then B1 — the order a course is taught in.
@@ -321,6 +343,33 @@ export function getListenQueueOrder(
     if (LISTEN_QUEUE_ORDERS.includes(value as ListenQueueOrder)) return value as ListenQueueOrder;
   } catch { /* storage blocked: use the documented default */ }
   return DEFAULT_LISTEN_QUEUE_ORDER;
+}
+
+export function getListenQueueWithin(
+  direction: LearningDirection = getLearningDirection()
+): ListenQueueWithin {
+  try {
+    const value = window.localStorage.getItem(courseSettingKey(QUEUE_WITHIN_KEY, direction));
+    if (LISTEN_QUEUE_WITHINS.includes(value as ListenQueueWithin)) return value as ListenQueueWithin;
+  } catch { /* storage blocked: use the documented default */ }
+  return DEFAULT_LISTEN_QUEUE_WITHIN;
+}
+
+export function setListenQueueWithin(
+  within: ListenQueueWithin,
+  direction: LearningDirection = getLearningDirection()
+): ListenQueueWithin {
+  const next = LISTEN_QUEUE_WITHINS.includes(within) ? within : DEFAULT_LISTEN_QUEUE_WITHIN;
+  try {
+    window.localStorage.setItem(courseSettingKey(QUEUE_WITHIN_KEY, direction), next);
+  } catch { /* keep Listen usable */ }
+  return next;
+}
+
+/** True when the order groups its cards, so asking what leads a group means
+ *  something. Most common first ranks every card on its own. */
+export function listenQueueHasGroups(order: ListenQueueOrder): boolean {
+  return !LISTEN_QUEUE_ORDERS_WITHOUT_GROUPS.includes(order);
 }
 
 export function setListenQueueOrder(
@@ -661,22 +710,30 @@ export function setListenPetBilingualCaptions(
 function currentItemStorageKey(
   direction: LearningDirection,
   source: ListenContentSource,
-  order: ListenQueueOrder
+  order: ListenQueueOrder,
+  within: ListenQueueWithin
 ): string {
   // Sentence, word, and mixed queues contain different ids, while each queue
   // order gives those ids a different position. Keep an exact cursor for the
   // full combination so switching filters never drops a learner halfway into
-  // an unrelated ordering.
-  return `${CURRENT_ITEM_KEY}:${direction}:${source}:${order}`;
+  // an unrelated ordering. What leads each group is part of that ordering,
+  // so it is part of the key: without it, changing it would leave the cursor
+  // pointing at a position that no longer holds the card it was left on.
+  //
+  // The default is left out of the key so that every cursor stored before
+  // there was a second question still resolves.
+  const suffix = within === DEFAULT_LISTEN_QUEUE_WITHIN ? "" : `:${within}`;
+  return `${CURRENT_ITEM_KEY}:${direction}:${source}:${order}${suffix}`;
 }
 
 export function getListenCurrentItemId(
   direction: LearningDirection = getLearningDirection(),
   profile: UserProfile | null = getAuthUser(),
   source: ListenContentSource = getListenContentSource(direction),
-  order: ListenQueueOrder = getListenQueueOrder(direction)
+  order: ListenQueueOrder = getListenQueueOrder(direction),
+  within: ListenQueueWithin = getListenQueueWithin(direction)
 ): string {
-  const value = loadScopedJson<unknown>(currentItemStorageKey(direction, source, order), "", profile);
+  const value = loadScopedJson<unknown>(currentItemStorageKey(direction, source, order, within), "", profile);
   return typeof value === "string" ? value : "";
 }
 
@@ -685,10 +742,11 @@ export function setListenCurrentItemId(
   direction: LearningDirection = getLearningDirection(),
   profile: UserProfile | null = getAuthUser(),
   source: ListenContentSource = getListenContentSource(direction),
-  order: ListenQueueOrder = getListenQueueOrder(direction)
+  order: ListenQueueOrder = getListenQueueOrder(direction),
+  within: ListenQueueWithin = getListenQueueWithin(direction)
 ): string {
   const next = typeof itemId === "string" ? itemId.slice(0, 240) : "";
-  saveScopedJson(currentItemStorageKey(direction, source, order), next, profile);
+  saveScopedJson(currentItemStorageKey(direction, source, order, within), next, profile);
   return next;
 }
 
@@ -839,6 +897,7 @@ export type ListenQueueOptions = {
   contentSource?: ListenContentSource;
   direction?: LearningDirection;
   order?: ListenQueueOrder;
+  within?: ListenQueueWithin;
   level?: ListenLevelFilter;
   usefulness?: ListenUsefulnessFilter;
 };
@@ -860,6 +919,7 @@ export function buildListenQueue(
   const direction = options.direction ?? getLearningDirection();
   const content = options.contentSource ?? getListenContentSource(direction);
   const order = options.order ?? getListenQueueOrder(direction);
+  const within = options.within ?? getListenQueueWithin(direction);
   const corpusIndex = buildCorpusIndex(parts);
 
   // Pack position doubles as "how recently was this added": curriculum order
@@ -1107,56 +1167,86 @@ export function buildListenQueue(
     .map((item, index) => ({ item, index, bucket: bucketOf(item) }))
     .filter((entry) => entry.bucket >= 0);
 
+  // What leads a group, once the order above has decided what the groups are.
+  //
+  // Every branch ends on `a.index - b.index`, which is commonality: the list
+  // arrives in that order, so it is both the default answer and the last word
+  // when the chosen one ties. Without that, two cards with the same listen
+  // count or the same difficulty would fall into whatever order the sort
+  // happened to leave them in, and the queue would not be the same twice.
+  const leads = (a: typeof available[number], b: typeof available[number]): number => {
+    if (within === "hardest") {
+      // How often the learner has said this one was hard, which is a different
+      // axis from the level: inside A1 every card is A1, and this is what
+      // separates the ones that are still landing from the ones that are not.
+      const debt = (entry: typeof a) => Number(recordFor(entry.item)?.difficultyDebt) || 0;
+      return debt(b) - debt(a) || a.index - b.index;
+    }
+    if (within === "least-heard") {
+      return (Number(recordFor(a.item)?.listens) || 0) - (Number(recordFor(b.item)?.listens) || 0)
+        || listenStamp(a.item) - listenStamp(b.item)
+        || a.index - b.index;
+    }
+    if (within === "newest") {
+      return (itemPackRank.get(b.item.id) ?? -1) - (itemPackRank.get(a.item.id) ?? -1)
+        || a.index - b.index;
+    }
+    if (within === "learning") {
+      return a.bucket - b.bucket || a.index - b.index;
+    }
+    return a.index - b.index;
+  };
+
+  // Most common first ranks every card on its own, so there is nothing left
+  // for `leads` to decide and applying it would quietly replace the order the
+  // learner asked for. `available` is already in that rank.
   if (order === "common") return available.map((entry) => entry.item);
 
-  // Easiest first. `available` is already in commonality order, so falling
-  // back to its index is what keeps "the most useful A1 card" ahead of the
-  // rest of A1 — the level is asked first and frequency second, rather than
-  // one replacing the other. A pack with no level sorts last (cefrOrder gives
-  // it 99): it applies everywhere, so there is no rung to put it on, and
+  // Easiest first. The level is asked first and what leads it second, rather
+  // than one replacing the other. A pack with no level sorts last (cefrOrder
+  // gives it 99): it applies everywhere, so there is no rung to put it on, and
   // guessing one would push unlevelled material in front of A1.
   if (order === "level") {
     return available
-      .sort((a, b) =>
-        (a.item.rung ?? 3) - (b.item.rung ?? 3)
-        || a.index - b.index
-      )
+      .sort((a, b) => (a.item.rung ?? 3) - (b.item.rung ?? 3) || leads(a, b))
       .map((entry) => entry.item);
   }
-
 
   // Newest first exists because "Most common first" structurally cannot reach
   // new content: a freshly added word is by definition one the frequency bank
   // has never ranked, so it sorts to the very back of a queue thousands of
   // items long and is never actually heard. This order plays the most recent
-  // packs first, most useful item within a pack first.
+  // packs first, and `leads` decides the order within a pack.
   if (order === "newest") {
     return available
       .sort((a, b) =>
         (itemPackRank.get(b.item.id) ?? -1) - (itemPackRank.get(a.item.id) ?? -1)
-        || a.index - b.index
+        || leads(a, b)
       )
       .map((entry) => entry.item);
   }
 
+  // Least heard first. Everything never played is tied at zero, which is most
+  // of the queue on a fresh course, so what leads that group is the whole
+  // question for a while.
   if (order === "least-heard") {
     return available
       .sort((a, b) =>
         (Number(recordFor(a.item)?.listens) || 0) - (Number(recordFor(b.item)?.listens) || 0)
-        || listenStamp(a.item) - listenStamp(b.item)
-        || a.index - b.index
+        || leads(a, b)
       )
       .map((entry) => entry.item);
   }
 
+  // Reviews & struggles first. Inside the due bucket the most overdue leads,
+  // because that is what "due" means and no second question changes it; the
+  // other buckets are ordered by whatever was asked for.
   return available
     .sort((a, b) =>
       a.bucket - b.bucket
       || (a.bucket === 0
         ? overdueBy(recordFor(b.item), now) - overdueBy(recordFor(a.item), now)
-        : a.bucket === 3
-          ? listenStamp(a.item) - listenStamp(b.item)
-          : a.index - b.index)
+        : leads(a, b))
     )
     .map((entry) => entry.item);
 }
