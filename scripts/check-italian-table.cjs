@@ -56,7 +56,33 @@ const blank = pairs.filter((row) => !row.italian.trim());
 check(`no card has an empty Italian side${blank.length ? ` — ${blank[0].german}` : ""}`,
   blank.length === 0);
 
-const stillGerman = pairs.filter((row) => /[äöüßÄÖÜ]/.test(row.italian));
+/**
+ * An umlaut on the Italian side almost always means a line was never
+ * translated. The exception is a handful of cards that quote a German phrase
+ * on purpose — the sign-off a learner has to recognise, the word on the till
+ * display — and those quote it inside guillemets. So the quoted spans come out
+ * before the test, and what is left has to be a real Italian sentence: a line
+ * that is nothing but a German quotation is still an untranslated line.
+ */
+/**
+ * The other exception is a name. Italian does not respell people or places -
+ * Herr Müller is signor Müller - so the surnames and place names the packs
+ * actually use are listed here rather than being translated away. The list is
+ * explicit on purpose: an unknown umlauted word is a missed line, not a name.
+ */
+const PROPER_NAMES = [
+  "Müller", "Schröder", "Grün", "Björn", "Jürgen", "Günther", "Käthe",
+  "München", "Köln", "Düsseldorf", "Nürnberg", "Zürich", "Österreich",
+];
+const outsideQuotes = (italian) => {
+  let rest = italian.replace(/«[^»]*»/g, " ");
+  for (const name of PROPER_NAMES) rest = rest.split(name).join(" ");
+  return rest.trim();
+};
+const stillGerman = pairs.filter((row) => {
+  const rest = outsideQuotes(row.italian);
+  return /[äöüßÄÖÜ]/.test(rest) || (rest.length < 4 && row.italian.includes("«"));
+});
 check(`no Italian line still carries an umlaut${stillGerman.length ? ` — "${stillGerman[0].italian}"` : ""}`,
   stillGerman.length === 0);
 

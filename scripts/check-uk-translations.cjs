@@ -24,7 +24,8 @@ const built = esbuild.buildSync({
   stdin: {
     contents:
       'export { lifeInTheUkCourse } from "./src/lib/lifeInTheUkCourse.ts";\n' +
-      'export { LIFE_IN_THE_UK_DE } from "./src/lib/lifeInTheUkTranslationsDe.ts";',
+      'export { LIFE_IN_THE_UK_DE } from "./src/lib/lifeInTheUkTranslationsDe.ts";\n' +
+      'export { LIFE_IN_THE_UK_PL } from "./src/lib/lifeInTheUkTranslationsPl.ts";',
     resolveDir: root,
     sourcefile: "uk-translations-entry.ts",
   },
@@ -41,7 +42,13 @@ const compiled = new Module("uk-translations-check", module);
 compiled.filename = path.join(root, ".uk-translations-check.cjs");
 compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(built.outputFiles[0].text, compiled.filename);
-const { lifeInTheUkCourse, LIFE_IN_THE_UK_DE } = compiled.exports;
+const { lifeInTheUkCourse, LIFE_IN_THE_UK_DE, LIFE_IN_THE_UK_PL } = compiled.exports;
+
+// One course, one set of rules, two target languages.
+const TABLES = [
+  { language: "German", table: LIFE_IN_THE_UK_DE },
+  { language: "Polish", table: LIFE_IN_THE_UK_PL },
+];
 
 // Every English string the lesson body can offer a translation for. Paragraphs
 // and callouts are included because they are tappable too — the marker only
@@ -72,12 +79,14 @@ for (const lesson of lifeInTheUkCourse.lessons ?? []) {
 
 const failures = [];
 
-const orphans = Object.keys(LIFE_IN_THE_UK_DE).filter((key) => !translatable.has(key));
-if (orphans.length) {
-  failures.push(
-    `${orphans.length} German key(s) match no card or heading in the course, so they can never be shown:\n` +
-      orphans.slice(0, 8).map((key) => `      ${JSON.stringify(key.slice(0, 90))}`).join("\n")
-  );
+for (const { language, table } of TABLES) {
+  const orphans = Object.keys(table).filter((key) => !translatable.has(key));
+  if (orphans.length) {
+    failures.push(
+      `${orphans.length} ${language} key(s) match no card or heading in the course, so they can never be shown:\n` +
+        orphans.slice(0, 8).map((key) => `      ${JSON.stringify(key.slice(0, 90))}`).join("\n")
+    );
+  }
 }
 
 // A translation identical to its English is a forgotten paste — unless the
@@ -96,18 +105,20 @@ const looksLikeSentence = (text) => {
   const words = trimmed.split(/\s+/).length;
   return (words > 1 && /[.!?]$/.test(trimmed)) || words > 6;
 };
-const untranslated = Object.entries(LIFE_IN_THE_UK_DE)
-  .filter(([key, value]) => key === value && looksLikeSentence(key));
-if (untranslated.length > 0) {
-  failures.push(
-    `${untranslated.length} sentence(s) are identical to their English, which is a paste that was never translated: ` +
-      untranslated.slice(0, 4).map(([key]) => JSON.stringify(key.slice(0, 60))).join(", ")
-  );
-}
+for (const { language, table } of TABLES) {
+  const untranslated = Object.entries(table)
+    .filter(([key, value]) => key === value && looksLikeSentence(key));
+  if (untranslated.length > 0) {
+    failures.push(
+      `${untranslated.length} ${language} sentence(s) are identical to their English, which is a paste that was never translated: ` +
+        untranslated.slice(0, 4).map(([key]) => JSON.stringify(key.slice(0, 60))).join(", ")
+    );
+  }
 
-const empty = Object.entries(LIFE_IN_THE_UK_DE).filter(([, value]) => !String(value).trim());
-if (empty.length) {
-  failures.push(`${empty.length} entries have an empty translation`);
+  const empty = Object.entries(table).filter(([, value]) => !String(value).trim());
+  if (empty.length) {
+    failures.push(`${empty.length} ${language} entries have an empty translation`);
+  }
 }
 
 if (failures.length) {
@@ -116,11 +127,13 @@ if (failures.length) {
   process.exit(1);
 }
 
-const covered = Object.keys(LIFE_IN_THE_UK_DE).length;
 const total = translatable.size;
+const coverage = TABLES.map(({ language, table }) => {
+  const covered = Object.keys(table).length;
+  // Floor, not round: 820 of 824 is not "100%", and reporting it as such is
+  // how the last few strings stay missing for ever.
+  return `${covered} of ${total} have ${language} (${Math.floor((covered / total) * 100)}%)`;
+}).join(", ");
 console.log(
-  `check-uk-translations: ${covered} of ${total} translatable strings have German ` +
-    // Floor, not round: 820 of 824 is not "100%", and reporting it as such is
-    // how the last few strings stay missing for ever.
-    `(${Math.floor((covered / total) * 100)}%), and every key matches real course text`
+  `check-uk-translations: ${coverage}, and every key matches real course text`
 );

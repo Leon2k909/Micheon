@@ -187,6 +187,25 @@ assert.ok(
   "both language cards should draw languageCardArt — one of them has gone back to a fixed picture"
 );
 
+/**
+ * The flag survives the card being narrow.
+ *
+ * These paintings hang the flag in the last tenth of the canvas. Cover trims
+ * from both sides, so a centred one loses the flag first — and the failure is
+ * quiet: a card that looks fine until the window is a little narrower.
+ *
+ * Pinned as the DEFAULT rather than as a list of languages. It was a list
+ * once, naming Polish, and every language painted after it had its flag cut
+ * until somebody noticed and added it. What is checked here is that the rule
+ * needs no maintenance when the twelfth painting arrives.
+ */
+const courseArt = /\.np-course-art \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? "";
+assert.ok(
+  /object-position:\s*100%/.test(courseArt),
+  "the language card's painting is not anchored right any more. Every one of them keeps its flag at "
+    + "the right edge, so a centred trim takes the flag off first"
+);
+
 // ── the country card wears the country you picked ─────────────────────────
 // One picture served both countries and it draws Berlin — the Brandenburg
 // Gate, the Fernsehturm, a yellow Deutsche Post box — so choosing the United
