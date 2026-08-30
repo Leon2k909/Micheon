@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Every string the app looks up exists in German, French and Polish.
+ * Every string the app looks up exists in every language the picker offers.
  *
  * The existing language checks each covered a slice and between them left a
  * gap wide enough to lose a course card in. check-german-interface scans two
@@ -16,11 +16,12 @@
  * This asks the whole question in one place: walk src, collect every literal
  * handed to ui()/uiFmt()/uiOr(), and require a translation in each table.
  *
- * SPANISH IS EXEMPT, deliberately and visibly. That table covers the app shell
- * and falls back to English past it — a real scope, stated in its own file and
- * pinned by check-spanish-interface. Holding it to this bar would fail on the
- * day it shipped and get loosened, which is how a check dies. The exemption is
- * counted below so it can never quietly become the norm.
+ * Spanish was exempt while its table covered only the app shell — a stated
+ * scope rather than a silent gap, reported on every run so it could not drift
+ * into looking finished. It is finished now, so the exemption is gone and it
+ * is held to the same bar as the rest. That is the only honest end for an
+ * exemption: meet it, or keep printing the shortfall. Quietly keeping one
+ * after the reason expired is how a check stops meaning anything.
  *
  * Keys are compared by the string the app RESOLVES, never by the source text:
  * "— nothing" and "— nothing" are one key at runtime and two different
@@ -45,6 +46,7 @@ const TABLES = {
   German: readTable("src/lib/i18nDe.ts", "export const DE"),
   French: readTable("src/lib/i18nFr.ts", "export const FR"),
   Polish: readTable("src/lib/i18nPl.ts", "export const PL"),
+  Spanish: readTable("src/lib/i18nEs.ts", "export const ES"),
 };
 
 function walk(dir, out = []) {
@@ -99,15 +101,13 @@ for (const [language, table] of Object.entries(TABLES)) {
   }
 }
 
-// The Spanish shortfall is a known, stated scope rather than a silent gap.
-// Reported so it stays visible, and so a sudden jump in it is noticed.
-const spanish = readTable("src/lib/i18nEs.ts", "export const ES");
-const spanishMissing = [...asked.keys()].filter((key) => /[A-Za-z]{2}/.test(key) && !(key in spanish)).length;
-console.log(`note Spanish covers the shell: ${asked.size - spanishMissing} of ${asked.size}, the rest falls back to English (see i18nEs.ts)`);
 
 if (failed) {
   console.error("\nA string outside the two shell files is seen by no other language check — that is the gap this exists to close.");
   process.exit(1);
 }
-console.log("check-interface-coverage: every string the app looks up has German, French and Polish");
+console.log(
+  `check-interface-coverage: every one of the ${asked.size} strings the app looks up has `
+    + `${Object.keys(TABLES).join(", ")}`
+);
 process.exit(0);
