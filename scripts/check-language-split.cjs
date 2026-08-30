@@ -99,9 +99,24 @@ check(
       fs.readFileSync(path.join(root, "src/prototype/NewUiPrototype.tsx"), "utf8")
     ),
 );
+// Against the list the picker is built from, not against the order of three
+// <option> tags. The tags were an implementation of "these three are
+// offerable" and the setting appeared in two layouts spelling them out twice
+// — the duplication one shared component removed. The property is the same:
+// matching the course, English and German must all be choosable.
 check(
   "the interface picker offers auto, English and German",
-  /value="auto"[\s\S]{0,300}value="en"[\s\S]{0,120}value="de"/.test(settings),
+  (() => {
+    const languages = fs.readFileSync(path.join(root, "src/lib/interfaceLanguage.ts"), "utf8");
+    const viaPicker = /<AppLanguagePicker/.test(settings)
+      && /\{ value: "en", label: "English"/u.test(languages)
+      && /\{ value: "de", label: "Deutsch"/u.test(languages)
+      // "auto" is not in the list — it is the setting's default, drawn by the
+      // picker itself, so its absence from the list is not its absence here.
+      && /pick\("auto"\)/u.test(fs.readFileSync(path.join(root, "src/components/AppLanguagePicker.tsx"), "utf8"));
+    const viaOptions = /value="auto"[\s\S]{0,300}value="en"[\s\S]{0,120}value="de"/.test(settings);
+    return viaPicker || viaOptions;
+  })(),
 );
 
 // ── and the tree is subscribed, or the setting needs a reload to show ─────

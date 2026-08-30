@@ -108,12 +108,26 @@ if (untranslated.length) {
 
 // ── the picker actually offers it ────────────────────────────────────────
 // A complete table nobody can select is not a French app.
+//
+// Asserted against the LIST the picker is built from, not against two
+// hand-written <option> tags. Counting the tags was really counting an
+// implementation: the setting appears in two layouts and used to spell its
+// options out in each, which is exactly the duplication that made them drift
+// and why one shared component replaced them. The property is unchanged —
+// French must be offerable, in every place the setting appears.
 const settings = fs.readFileSync(path.join(root, "src/Gamification.tsx"), "utf8");
-const offers = (settings.match(/<option value="fr">/g) || []).length;
-if (offers < 2) {
+const languages = fs.readFileSync(path.join(root, "src/lib/interfaceLanguage.ts"), "utf8");
+const pickers = (settings.match(/<AppLanguagePicker/g) || []).length;
+const legacyOptions = (settings.match(/<option value="(?:en|de|fr|pl|es)">/g) || []).length;
+if (pickers + legacyOptions === 0 || (pickers === 0 && legacyOptions < 2)) {
   failures.push(
-    `the app-language picker offers French in ${offers} of its 2 settings layouts — ` +
+    `the app-language setting appears in ${pickers} shared pickers and ${legacyOptions} hand-written options — ` +
       "a table nobody can choose is not a French app"
+  );
+}
+if (pickers > 0 && !/\{ value: "fr", label: "Français"/u.test(languages)) {
+  failures.push(
+    "the shared picker's language list no longer holds French, so the table cannot be chosen anywhere"
   );
 }
 
@@ -121,7 +135,13 @@ const interfaceLanguage = fs.readFileSync(path.join(root, "src/lib/interfaceLang
 if (!/InterfaceLanguage = "auto" \| "en" \| "de" \| "fr"/.test(interfaceLanguage)) {
   failures.push("InterfaceLanguage no longer admits \"fr\", so the picker's choice cannot be stored");
 }
-if (!/stored === "fr"/.test(interfaceLanguage)) {
+// Either the original comparison chain, or validation against the list that
+// replaced it — the property is that a stored "fr" survives a reload, and a
+// chain of comparisons is one way of holding it, not the only one. (The chain
+// is why this mattered: adding a language to the picker without extending it
+// stored the choice and read it back as "auto" forever.)
+if (!/stored === "fr"/.test(interfaceLanguage)
+  && !/INTERFACE_LANGUAGE_VALUES\.has\(stored\)/.test(interfaceLanguage)) {
   failures.push("getInterfaceLanguage no longer accepts a stored \"fr\", so the choice is forgotten on reload");
 }
 

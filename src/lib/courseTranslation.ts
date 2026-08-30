@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import { resolveInterfaceLanguage } from "@/lib/interfaceLanguage";
+import { resolveInterfaceLanguage, type ResolvedInterfaceLanguage } from "@/lib/interfaceLanguage";
 import { syncLocalStorageItem } from "@/lib/profileStorage";
 import { LIFE_IN_THE_UK_DE } from "@/lib/lifeInTheUkTranslationsDe";
 import { LEBEN_IN_DEUTSCHLAND_EN } from "@/lib/lebenInDeutschlandTranslationsEn";
@@ -167,7 +167,11 @@ export function useTranslationLanguage(): TranslationLanguage {
  * branch, and check-french-interface is refusing the branch on exactly that
  * reasoning.
  */
-const PROGRAMMING_COURSE_TRANSLATIONS: Partial<Record<"en" | "de" | "fr" | "pl", TranslationLanguage>> = {
+// Keyed on the interface languages themselves rather than on a copy of that
+// union: adding one to the picker should be a line of data here or nothing at
+// all, not a type error in an unrelated file — and the Partial is what says
+// "nothing written for that reader yet", which the ?? below already answers.
+const PROGRAMMING_COURSE_TRANSLATIONS: Partial<Record<ResolvedInterfaceLanguage, TranslationLanguage>> = {
   de: "de",
 };
 

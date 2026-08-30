@@ -95,6 +95,7 @@ import { VoicePicker } from "@/components/VoicePicker";
 import { UpdateStatusCard } from "@/components/UpdateStatusCard";
 import { SettingsCategory, SettingsCategoryLayout } from "@/components/SettingsCategory";
 import { getMeaningLenience, setMeaningLenience, type MeaningLenience } from "@/lib/meaningLenience";
+import { AppLanguagePicker } from "@/components/AppLanguagePicker";
 import { DataAndStorage } from "@/components/DataAndStorage";
 import { BROWSER_EXTENSION_ICON, BrowserExtension } from "@/components/BrowserExtension";
 import { AppZoomControl } from "@/components/AppZoomControl";
@@ -1833,19 +1834,11 @@ export default function GamificationPanel({
 <label className="mt-3 block text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
                       {ui("App language")}
                     </label>
-                    <select
-                      className="mt-1 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 text-sm font-bold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
-                      onChange={(event) => updateInterfaceLanguage(event.target.value as InterfaceLanguage)}
+                    <AppLanguagePicker
+                      autoLabel={direction === "learn-en" ? "Deutsch" : ui("English")}
+                      onChange={updateInterfaceLanguage}
                       value={interfaceLanguage}
-                    >
-                      <option value="auto">
-                        {ui("Match my course")} ({direction === "learn-en" ? "Deutsch" : ui("English")})
-                      </option>
-                      <option value="en">English</option>
-                      <option value="de">Deutsch</option>
-                      <option value="fr">Français</option>
-                      <option value="pl">Polski</option>
-                    </select>
+                    />
                   </div>
                   <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
@@ -2030,19 +2023,11 @@ export default function GamificationPanel({
 <label className="mt-3 block text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
                 {ui("App language")}
               </label>
-              <select
-                className="mt-1 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 text-sm font-bold text-[var(--text-1)] outline-none focus:border-[var(--accent)]"
-                onChange={(event) => updateInterfaceLanguage(event.target.value as InterfaceLanguage)}
+              <AppLanguagePicker
+                autoLabel={direction === "learn-en" ? "Deutsch" : ui("English")}
+                onChange={updateInterfaceLanguage}
                 value={interfaceLanguage}
-              >
-                <option value="auto">
-                  {ui("Match my course")} ({direction === "learn-en" ? "Deutsch" : ui("English")})
-                </option>
-                <option value="en">English</option>
-                <option value="de">Deutsch</option>
-                <option value="fr">Français</option>
-                <option value="pl">Polski</option>
-              </select>
+              />
             </div>
             <div className="mt-5 rounded-[18px] bg-[var(--surface)] p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">

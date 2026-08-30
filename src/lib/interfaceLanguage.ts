@@ -32,7 +32,56 @@ export const INTERFACE_STRINGS_READY_EVENT = "gl-interface-strings-ready";
  * app French on its own, because the people learning French from here are
  * reading German or English while they do it. It is chosen, or it is not.
  */
-export type InterfaceLanguage = "auto" | "en" | "de" | "fr" | "pl";
+export type InterfaceLanguage = "auto" | "en" | "de" | "fr" | "pl" | "es";
+
+/** The languages the app itself can be written in, without "auto". */
+export type ResolvedInterfaceLanguage = "en" | "de" | "fr" | "pl" | "es";
+
+/**
+ * The app languages, as a list rather than as options typed out twice.
+ *
+ * They were written inline in two separate `<select>`s — the settings page and
+ * the profile sheet — so adding one meant editing both and nothing said if you
+ * forgot. `search` carries the names a person might type instead of the one on
+ * the button: somebody looking for Spanish is as likely to type "spanish" or
+ * "espanol" (no accent, because the keyboard they are typing on is the reason
+ * they are looking for this setting) as "Español".
+ */
+export const INTERFACE_LANGUAGES: ReadonlyArray<{
+  value: ResolvedInterfaceLanguage;
+  /** The language's own name, which is what a speaker of it looks for. */
+  label: string;
+  search: readonly string[];
+}> = [
+  { value: "en", label: "English", search: ["english", "englisch", "anglais", "angielski", "ingles", "inglés"] },
+  { value: "de", label: "Deutsch", search: ["german", "deutsch", "allemand", "niemiecki", "aleman", "alemán"] },
+  { value: "fr", label: "Français", search: ["french", "französisch", "francais", "français", "francuski", "frances", "francés"] },
+  { value: "pl", label: "Polski", search: ["polish", "polnisch", "polonais", "polski", "polaco"] },
+  { value: "es", label: "Español", search: ["spanish", "spanisch", "espagnol", "hiszpański", "hiszpanski", "espanol", "español", "castellano"] },
+];
+
+const INTERFACE_LANGUAGE_VALUES = new Set<string>(INTERFACE_LANGUAGES.map((entry) => entry.value));
+
+/**
+ * Which languages a typed query matches, in the list's own order.
+ *
+ * Accents are folded on both sides, so "espanol" finds Español and "francais"
+ * finds Français — the search box is most useful to somebody whose keyboard
+ * does not make the character in the name they are looking for.
+ */
+export function searchInterfaceLanguages(query: string): typeof INTERFACE_LANGUAGES {
+  const fold = (value: string) => value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .trim();
+  const needle = fold(query);
+  if (!needle) return INTERFACE_LANGUAGES;
+  return INTERFACE_LANGUAGES.filter((entry) =>
+    fold(entry.label).includes(needle)
+    || entry.search.some((name) => fold(name).includes(needle))
+    || fold(entry.value) === needle);
+}
 
 let inMemory: InterfaceLanguage = "auto";
 
@@ -40,7 +89,10 @@ export function getInterfaceLanguage(): InterfaceLanguage {
   if (typeof window === "undefined") return "auto";
   try {
     const stored = localStorage.getItem(KEY);
-    inMemory = stored === "en" || stored === "de" || stored === "fr" || stored === "pl" ? stored : "auto";
+    // Against the list, so a language added to it is one this accepts back
+    // out of storage — written as a chain of comparisons, adding Spanish to
+    // the picker would have stored "es" and read it back as "auto" forever.
+    inMemory = stored && INTERFACE_LANGUAGE_VALUES.has(stored) ? (stored as InterfaceLanguage) : "auto";
   } catch {
     // Keep the in-memory preference when browser storage is blocked.
   }
@@ -48,7 +100,7 @@ export function getInterfaceLanguage(): InterfaceLanguage {
 }
 
 /** The language actually in force, with "auto" resolved against the course. */
-export function resolveInterfaceLanguage(): "en" | "de" | "fr" | "pl" {
+export function resolveInterfaceLanguage(): ResolvedInterfaceLanguage {
   const chosen = getInterfaceLanguage();
   if (chosen !== "auto") return chosen;
   return learningEnglish() ? "de" : "en";
