@@ -2595,30 +2595,36 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   height: 100%;
 }
 
+/*
+ * Anchored right, because that is where these paintings keep their flag.
+ *
+ * Every one of them hangs it in the last tenth of the canvas, with a sliver
+ * of sky after it and nothing beyond. object-fit: cover trims from BOTH
+ * sides, so a card even slightly narrower than the picture eats that sliver
+ * and then the flag, and the cut lands mid-stripe. Anchored right, the trim
+ * comes off the left only: the flag keeps its sky at every card size, and the
+ * left gives up more of the mist, which is empty there anyway.
+ *
+ * This was written the other way round once — centred, with Polish listed as
+ * the exception. Then Spanish, Italian, Russian, Hindi, Chinese and
+ * Portuguese were painted in the same series, and each one had its flag cut
+ * until somebody noticed it was missing from the list. A list of exceptions
+ * that has to be extended by hand for every new language is the wrong shape
+ * for a rule that holds for all of them.
+ *
+ * No exceptions left, German included. Its flag sits halfway in, so centring
+ * would have done — but measured on a 429px card, anchoring right keeps the
+ * first 71% of that painting and centring keeps the middle 43%: the
+ * half-timbered house survives one and not the other.
+ */
 .np-course-art {
   z-index: 0;
   left: 0;
   width: 100%;
   object-fit: cover;
-  object-position: center 58%;
-}
-
-/*
- * The Polish painting hangs its flag at the very edge of the canvas, with
- * forty pixels of sky after it and nothing beyond. object-fit: cover trims
- * from BOTH sides, so a card even slightly narrower than the picture eats
- * that sky and then the flag, and the cut lands mid-stripe.
- *
- * Anchoring this one to the right means the trim comes off the left only.
- * The flag keeps its sky at every card size instead of at some of them, and
- * the left gives up more of the river — which is empty mist there anyway.
- *
- * Per-language and not a general rule: the other three paintings hold their
- * flags well inside, and centring is the better framing for them.
- */
-.np-course-art[data-course="pl"] {
   object-position: 100% 58%;
 }
+
 
 .np-course-shade {
   z-index: 1;
