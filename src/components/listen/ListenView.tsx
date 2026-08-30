@@ -415,14 +415,24 @@ const WITHIN_CHOICES = [
 ] as const;
 
 /**
- * The wait, and what each one actually means in hours.
+ * The wait, from a few cards to a whole review ladder.
  *
- * Written out rather than generated from the millisecond map so the wording is
- * a decision rather than a rendering: "a day" is what a learner is choosing,
- * and "86400000 ms" is what the queue is doing about it.
+ * The short end is counted in cards and the long end in time, because those
+ * are two different exercises. Coming back after three other cards is
+ * short-term memory — you are still holding the word when it returns. Coming
+ * back after a day is recall. A scale that started at four hours could only
+ * ever train the second, and the first is the one most people mean when they
+ * say they want to hear something again soon.
+ *
+ * Written out rather than generated from the maps so the wording is a decision
+ * rather than a rendering: "after three cards" is what a learner is choosing,
+ * and a rank comparison is what the queue is doing about it.
  */
 const RETURN_GAP_CHOICES = [
   ["immediate", "Straight away"],
+  ["three", "After 3 more cards"],
+  ["ten", "After 10 more cards"],
+  ["thirty", "After 30 more cards"],
   ["hours", "After a few hours"],
   ["day", "After a day"],
   ["due", "When the review says so"],
@@ -430,6 +440,9 @@ const RETURN_GAP_CHOICES = [
 
 const RETURN_GAP_EXPLAINED: Record<string, string> = {
   immediate: "No wait at all. Anything can play again the moment the order reaches it — which on a narrow filter can mean the same handful of cards all evening. Right for a first pass through a new pack, and not much else.",
+  three: "Three other cards go by first. Short enough that you are still holding the word when it comes back, which is the exercise short-term memory actually is.",
+  ten: "Ten other cards go by first. Far enough that you have to fetch the word back rather than still be carrying it, and near enough to do it several times in one sitting.",
+  thirty: "Thirty other cards go by first. About a session's worth on a narrow filter, so a word returns once you have genuinely moved on from it.",
   hours: "About four hours. Long enough that you have to remember it rather than recognise it from a minute ago, and short enough to meet it again the same day.",
   day: "A full day. This is the shortest gap the review ladder ever asks for, and the point at which hearing something again is recall rather than an echo.",
   due: "Nothing you have answered correctly comes back until the review ladder says it is due — one day, then three, ten, thirty, a hundred and eighty. Anything you have heard but never answered waits a day.",

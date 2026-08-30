@@ -171,19 +171,56 @@ export const LISTEN_QUEUE_WITHINS: ListenQueueWithin[] = ["common", "hardest", "
  * one day, then three, ten, thirty, a hundred and eighty. It is the strictest
  * setting and the one that matches how the rest of the app schedules.
  */
-export type ListenReturnGap = "immediate" | "hours" | "day" | "due";
-export const LISTEN_RETURN_GAPS: ListenReturnGap[] = ["immediate", "hours", "day", "due"];
+export type ListenReturnGap =
+  | "immediate"
+  | "three"
+  | "ten"
+  | "thirty"
+  | "hours"
+  | "day"
+  | "due";
+export const LISTEN_RETURN_GAPS: ListenReturnGap[] = [
+  "immediate", "three", "ten", "thirty", "hours", "day", "due",
+];
 /** A day is the default because a wait you can sit through is not a wait. */
 export const DEFAULT_LISTEN_RETURN_GAP: ListenReturnGap = "day";
 const HOUR_MS = 60 * 60 * 1000;
 export const LISTEN_RETURN_GAP_MS: Record<ListenReturnGap, number> = {
   immediate: 0,
+  // The counted gaps are not durations at all; see LISTEN_RETURN_GAP_CARDS.
+  three: 0,
+  ten: 0,
+  thirty: 0,
   hours: 4 * HOUR_MS,
   day: 24 * HOUR_MS,
   // Not a duration: "due" asks the review ladder instead of the clock, and the
   // number here is only what a caller sees if it reads the map directly.
   due: Number.POSITIVE_INFINITY,
 };
+
+/**
+ * The short waits, counted in cards rather than in time.
+ *
+ * Hours and days are the wrong unit for the thing a learner is usually trying
+ * to build. Holding a word for the length of three other cards is short-term
+ * memory: you are still carrying it when it comes back. Four hours is not that
+ * exercise at all — by then the word is either in long-term memory or gone,
+ * and the setting has stopped training the thing it was reached for.
+ *
+ * So the scale reaches down below the clock. Three, ten and thirty are far
+ * enough apart to feel different in use: three is "still in your head", ten is
+ * "you have to fetch it back", thirty is "a session ago".
+ */
+export const LISTEN_RETURN_GAP_CARDS: Partial<Record<ListenReturnGap, number>> = {
+  three: 3,
+  ten: 10,
+  thirty: 30,
+};
+
+/** Is this wait measured in cards heard rather than in time passed? */
+export function listenReturnGapIsCounted(gap: ListenReturnGap): boolean {
+  return LISTEN_RETURN_GAP_CARDS[gap] !== undefined;
+}
 
 /**
  * Which cards the wait applies to.
@@ -1291,6 +1328,23 @@ export function buildListenQueue(
   };
 
   /**
+   * How many cards have been heard since this one.
+   *
+   * Every play stamps a time, so the number of cards carrying a LATER stamp is
+   * exactly the number that have gone by since — no counter to keep, nothing
+   * extra to store, and it survives a reload because the stamps do. Rank 0 is
+   * the card heard most recently.
+   */
+  const heardRank = new Map<string, number>();
+  combined
+    .map((item) => ({ id: item.id, at: listenStamp(item) }))
+    .filter((entry) => entry.at > 0)
+    .sort((a, b) => b.at - a.at)
+    .forEach((entry, position) => {
+      if (!heardRank.has(entry.id)) heardRank.set(entry.id, position);
+    });
+
+  /**
    * Is this card still resting?
    *
    * Resting is not the same as excluded. A filter can empty a queue, and a
@@ -1308,6 +1362,14 @@ export function buildListenQueue(
     if (!listenReturnCovers(returnScope, item.kind)) return false;
     const heardAt = listenStamp(item);
     if (!heardAt) return false;
+    // A counted wait asks how many cards ago, not how long ago. Three cards is
+    // a wait a learner can actually feel inside one session, which four hours
+    // is not, and it is the whole point of the short end of this scale.
+    const cards = LISTEN_RETURN_GAP_CARDS[returnGap];
+    if (cards !== undefined) {
+      const rank = heardRank.get(item.id);
+      return rank !== undefined && rank < cards;
+    }
     // "Due" hands the decision to the review ladder rather than the clock, so
     // a card rests exactly as long as the ladder says and no longer. One that
     // has never been graded has no ladder to consult and rests a day, which is

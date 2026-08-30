@@ -44,7 +44,7 @@ global.localStorage = global.window.localStorage;
 const result = esbuild.buildSync({
   stdin: {
     contents: [
-      'export { buildListenQueue, arrangeListenMixedQueue, listenMixGroupFor, getListenMixedCounts, setListenMixedCounts, DEFAULT_LISTEN_MIXED_COUNTS, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenPetBilingualCaptions, setListenPetBilingualCaptions, getListenContentSource, setListenContentSource, getListenQueueOrder, setListenQueueOrder, getListenQueueWithin, setListenQueueWithin, listenQueueHasGroups, LISTEN_QUEUE_WITHINS, DEFAULT_LISTEN_QUEUE_WITHIN, getListenReturnGap, setListenReturnGap, getListenReturnScope, setListenReturnScope, listenReturnCovers, LISTEN_RETURN_GAPS, LISTEN_RETURN_SCOPES, DEFAULT_LISTEN_RETURN_GAP, DEFAULT_LISTEN_RETURN_SCOPE, LISTEN_RETURN_GAP_MS, getListenCurrentItemId, setListenCurrentItemId, getListenTargetRepeats, setListenTargetRepeats, getListenMeaningRepeats, setListenMeaningRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, getListenLanguageGapMs, setListenLanguageGapMs, buildListenSpeechPlan, DEFAULT_LANGUAGE_GAP_MS, DEFAULT_TARGET_REPEATS, DEFAULT_MEANING_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE, DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
+      'export { buildListenQueue, arrangeListenMixedQueue, listenMixGroupFor, getListenMixedCounts, setListenMixedCounts, DEFAULT_LISTEN_MIXED_COUNTS, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenPetBilingualCaptions, setListenPetBilingualCaptions, getListenContentSource, setListenContentSource, getListenQueueOrder, setListenQueueOrder, getListenQueueWithin, setListenQueueWithin, listenQueueHasGroups, LISTEN_QUEUE_WITHINS, DEFAULT_LISTEN_QUEUE_WITHIN, getListenReturnGap, setListenReturnGap, getListenReturnScope, setListenReturnScope, listenReturnCovers, LISTEN_RETURN_GAPS, LISTEN_RETURN_SCOPES, DEFAULT_LISTEN_RETURN_GAP, DEFAULT_LISTEN_RETURN_SCOPE, LISTEN_RETURN_GAP_MS, LISTEN_RETURN_GAP_CARDS, listenReturnGapIsCounted, getListenCurrentItemId, setListenCurrentItemId, getListenTargetRepeats, setListenTargetRepeats, getListenMeaningRepeats, setListenMeaningRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, getListenLanguageGapMs, setListenLanguageGapMs, buildListenSpeechPlan, DEFAULT_LANGUAGE_GAP_MS, DEFAULT_TARGET_REPEATS, DEFAULT_MEANING_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE, DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
       'export { loadGradeStore, saveGradeStore, statusForId, COMPLETED_KEY } from "./src/lib/activity.ts";',
       'export { setInterfaceLanguage } from "./src/lib/interfaceLanguage.ts";',
       'export { setLearningDirection } from "./src/lib/direction.ts";',
@@ -106,6 +106,7 @@ const {
   getListenReturnGap, setListenReturnGap, getListenReturnScope, setListenReturnScope,
   listenReturnCovers, LISTEN_RETURN_GAPS, LISTEN_RETURN_SCOPES,
   DEFAULT_LISTEN_RETURN_GAP, DEFAULT_LISTEN_RETURN_SCOPE, LISTEN_RETURN_GAP_MS,
+  LISTEN_RETURN_GAP_CARDS, listenReturnGapIsCounted,
   DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS,
   listenCountForId, buildWordCatalog, wordLadderRung,
   loadGradeStore, statusForId, COMPLETED_KEY, getScopedKey,
@@ -535,6 +536,56 @@ const untouched = buildListenQueue(parts, {}, {
 });
 check("on a fresh course nothing is resting, so the strictest wait changes nothing",
   untouched.every((entry, index) => entry.id === heardNow[index].id));
+
+// ── the short end of the scale, counted in cards ───────────────────────
+//
+// Hours and days cannot express the wait most people actually want, which is
+// "let a few other things go by first". That is short-term memory, and it is
+// measured in cards, not on a clock. These checks pin the difference: five
+// cards all heard a fortnight ago are long past every timed wait, and a
+// counted wait still holds the three most recent of them back.
+check("the short waits are counted in cards and the long ones are not",
+  LISTEN_RETURN_GAP_CARDS.three === 3
+  && LISTEN_RETURN_GAP_CARDS.ten === 10
+  && LISTEN_RETURN_GAP_CARDS.thirty === 30
+  && ["three", "ten", "thirty"].every(listenReturnGapIsCounted)
+  && !["immediate", "hours", "day", "due"].some(listenReturnGapIsCounted));
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const fortnightAgo = withoutWait.slice(0, 5);
+const longAgo = {};
+fortnightAgo.forEach((entry, position) => {
+  // position 0 is the oldest, position 4 the most recently heard.
+  longAgo[entry.id] = {
+    listenedAt: new Date(Date.now() - (14 - position) * DAY_MS).toISOString(),
+    listens: 1,
+  };
+});
+const idsOf = (queue, tail) => new Set(queue.slice(queue.length - tail).map((e) => e.id));
+
+const timedOnOld = buildListenQueue(parts, longAgo, {
+  contentSource: "mixed", order: "level", returnGap: "day",
+});
+check("a fortnight is longer than a day, so a timed wait rests none of them",
+  timedOnOld[0]?.id === withoutWait[0]?.id);
+
+const countedThree = buildListenQueue(parts, longAgo, {
+  contentSource: "mixed", order: "level", returnGap: "three",
+});
+const restedByThree = idsOf(countedThree, 3);
+check("counting three cards rests the three heard most recently, however long ago that was",
+  restedByThree.size === 3
+  && [2, 3, 4].every((position) => restedByThree.has(fortnightAgo[position].id))
+  && [0, 1].every((position) => !restedByThree.has(fortnightAgo[position].id)));
+
+const countedTen = buildListenQueue(parts, longAgo, {
+  contentSource: "mixed", order: "level", returnGap: "ten",
+});
+check("counting ten reaches further back and rests all five that were heard",
+  fortnightAgo.every((entry) => idsOf(countedTen, 5).has(entry.id)));
+check("and a counted wait still never removes anything",
+  countedThree.length === withoutWait.length
+  && countedTen.length === withoutWait.length);
 
 setListenReturnGap(DEFAULT_LISTEN_RETURN_GAP);
 setListenReturnScope(DEFAULT_LISTEN_RETURN_SCOPE);
