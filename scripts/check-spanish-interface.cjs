@@ -8,13 +8,17 @@
  * problem. So the same rule German is held to applies here — every string the
  * shell asks for has a Spanish entry, or the build fails naming the strings.
  *
- * SCOPE IS DELIBERATE AND STATED. French and Polish also carry the strings
- * inside lessons and the trackers; Spanish does not yet, and those fall back
- * to English. That is the documented behaviour of a missing key rather than a
- * failure invented for this language. This check holds the line that exists
- * instead of pretending the wider one does — a check asserting a coverage the
- * table does not have would fail on the day it shipped and get loosened,
- * which is how a check dies.
+ * THE SHELL IS NO LONGER THE LIMIT. This check was written while Spanish
+ * covered the shell alone, and said so: French and Polish carried the strings
+ * inside lessons and the trackers, Spanish did not, and those fell back to
+ * English. Asserting the wider coverage then would have failed on the day it
+ * shipped and been loosened, which is how a check dies.
+ *
+ * Spanish is complete now, and check-interface-coverage holds every language
+ * to the whole app. What is left here is the part that check cannot do: the
+ * shell strings it finds by field name and by map lookup rather than by a
+ * ui() literal, the Spanish-specific ¿ and ¡, and the picker wiring. The
+ * narrow scope stayed; the reason for it did not.
  */
 const assert = require("assert");
 const fs = require("fs");
@@ -84,16 +88,33 @@ for (const [, key, value] of table.matchAll(/^\s*"((?:[^"\\]|\\.)*)"\s*:\s*"((?:
 check("every {slot} survives translation", slotMismatch.length === 0,
   slotMismatch.slice(0, 4).map((k) => JSON.stringify(k)).join(", "));
 
-// Spanish opens a question and an exclamation as well as closing it. A line
-// that closes without opening is a translation done as if it were English.
+/**
+ * Spanish opens a question and an exclamation as well as closing it. A line
+ * that closes without opening is a translation done as if it were English.
+ *
+ * Text inside « » is exempt, because a language tip quotes the language it is
+ * about: the Polish tip carries «Czy mówi Pan po angielsku?» and the French
+ * one «Tu viens ?». Putting ¿ in front of either would be a Spanish mark
+ * stamped on somebody else's sentence — the check would be enforcing a real
+ * error rather than catching one.
+ *
+ * The blind spot that opens up is a genuinely Spanish question written inside
+ * quotes, which this would now skip. It is counted and printed rather than
+ * waved through, so the exemption stays visible instead of becoming a place
+ * where things quietly stop being checked.
+ */
 const unopened = [];
+let quotedSkipped = 0;
 for (const [, , value] of table.matchAll(/^\s*"((?:[^"\\]|\\.)*)"\s*:\s*"((?:[^"\\]|\\.)*)"/gm)) {
-  const text = String(value);
+  const full = String(value);
+  for (const [, quoted] of full.matchAll(/«([^»]*)»/g)) if (/[?!]/.test(quoted)) quotedSkipped += 1;
+  const text = full.replace(/«[^»]*»/g, "");
   if ((text.includes("?") && !text.includes("¿")) || (text.includes("!") && !text.includes("¡"))) {
-    unopened.push(text);
+    unopened.push(full);
   }
 }
-check("questions and exclamations are opened as well as closed", unopened.length === 0,
+check(`questions and exclamations are opened as well as closed (${quotedSkipped} quoted foreign example(s) exempt)`,
+  unopened.length === 0,
   unopened.slice(0, 3).map((t) => JSON.stringify(t)).join(", "));
 
 check("the app can actually load the table",

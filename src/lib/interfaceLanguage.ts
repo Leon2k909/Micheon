@@ -32,10 +32,10 @@ export const INTERFACE_STRINGS_READY_EVENT = "gl-interface-strings-ready";
  * app French on its own, because the people learning French from here are
  * reading German or English while they do it. It is chosen, or it is not.
  */
-export type InterfaceLanguage = "auto" | "en" | "de" | "fr" | "pl" | "es";
+export type InterfaceLanguage = "auto" | "en" | "de" | "fr" | "pl" | "es" | "pt";
 
 /** The languages the app itself can be written in, without "auto". */
-export type ResolvedInterfaceLanguage = "en" | "de" | "fr" | "pl" | "es";
+export type ResolvedInterfaceLanguage = "en" | "de" | "fr" | "pl" | "es" | "pt";
 
 /**
  * The app languages, as a list rather than as options typed out twice.
@@ -58,6 +58,7 @@ export const INTERFACE_LANGUAGES: ReadonlyArray<{
   { value: "fr", label: "Français", search: ["french", "französisch", "francais", "français", "francuski", "frances", "francés"] },
   { value: "pl", label: "Polski", search: ["polish", "polnisch", "polonais", "polski", "polaco"] },
   { value: "es", label: "Español", search: ["spanish", "spanisch", "espagnol", "hiszpański", "hiszpanski", "espanol", "español", "castellano"] },
+  { value: "pt", label: "Português", search: ["portuguese", "portugiesisch", "portugais", "portugalski", "portugues", "português", "brasileiro", "brazilian"] },
 ];
 
 const INTERFACE_LANGUAGE_VALUES = new Set<string>(INTERFACE_LANGUAGES.map((entry) => entry.value));
@@ -169,7 +170,11 @@ function subscribe(onStoreChange: () => void) {
  * when the language changes. Calling this near the root is what turns a
  * setting change into a re-render instead of a reload.
  */
-export function useInterfaceLanguage(): "en" | "de" | "fr" | "pl" {
+export function useInterfaceLanguage(): ResolvedInterfaceLanguage {
   const snapshot = useSyncExternalStore(subscribe, currentSnapshot, () => "en|0");
-  return snapshot.slice(0, snapshot.indexOf("|")) as "en" | "de" | "fr" | "pl";
+  // Named, not spelled out: written as a literal union it was still "en" | "de"
+  // | "fr" | "pl" two languages after Spanish and Portuguese shipped, so a
+  // caller switching on the result had no case for either and TypeScript
+  // agreed with it.
+  return snapshot.slice(0, snapshot.indexOf("|")) as ResolvedInterfaceLanguage;
 }
