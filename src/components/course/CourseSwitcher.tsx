@@ -18,7 +18,7 @@ import { ui, uiFmt } from "@/lib/i18n";
  * use, and adding a language means a line here beside the one in
  * translations.ts.
  */
-const COURSE_BY_PACK: Record<string, string> = { fr: "french", pl: "polish" };
+const COURSE_BY_PACK: Record<string, string> = { fr: "french", pl: "polish", es: "spanish" };
 
 const COURSE_SEARCH_ALIASES: Record<string, string> = {
   german: "de deutsch germany deutschland alemann allemand",

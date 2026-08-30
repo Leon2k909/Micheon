@@ -175,11 +175,17 @@ export { setEnglishVariant } from "./src/lib/englishVariant.ts";`,
   assert.strictEqual(learningFlagId("german"), "french", "the French course flies the French flag");
   assert.strictEqual(learningFlagId("french"), "french", "...whichever of its two names is stored");
 
+  setLearningDirection("learn-es");
+  assert.strictEqual(learningFlagId("german"), "spanish", "the Spanish course flies the Spanish flag");
+  assert.strictEqual(learningFlagId("spanish"), "spanish", "...whichever of its two names is stored");
+
   // A language course of its OWN — one that is not part of the reversible set
-  // — names itself, whichever way the set is pointed.
-  for (const direction of ["learn-de", "learn-en", "learn-fr"]) {
+  // — names itself, whichever way the set is pointed. Italian is only planned,
+  // so it is nobody's direction and has nothing to follow; the day it becomes
+  // a course it joins the block above instead and this line has to move.
+  for (const direction of ["learn-de", "learn-en", "learn-fr", "learn-es"]) {
     setLearningDirection(direction);
-    assert.strictEqual(learningFlagId("spanish"), "spanish", "Spanish is Spanish either way");
+    assert.strictEqual(learningFlagId("italian"), "italian", "Italian is Italian either way");
   }
 
   // And the two courses that are not languages never reach the globe.

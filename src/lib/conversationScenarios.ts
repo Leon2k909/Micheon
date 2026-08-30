@@ -2,6 +2,7 @@ import { conversationPriorityScore } from "@/lib/conversationPriority";
 import { courseSides } from "@/lib/courseLanguages";
 import { frenchFor } from "@/lib/frenchCourse";
 import { polishFor } from "@/lib/polishCourse";
+import { spanishFor } from "@/lib/spanishCourse";
 import { sentenceIdentityKey } from "@/lib/germanTextMatch";
 
 /**
@@ -64,14 +65,16 @@ const LEARNER_SIDE = "B";
 export const MIN_SCENARIO_TURNS = 4;
 
 export function buildScenarios(apiParts: Record<string, any>): Scenario[] {
-  // The dialogues are German with an English line under each one. The French
-  // and Polish courses read the same exchanges with their own language on top
-  // — an exchange one of whose turns the tables do not reach is left out,
-  // because a conversation that changes language halfway through is not one.
+  // The dialogues are German with an English line under each one. The French,
+  // Polish and Spanish courses read the same exchanges with their own language
+  // on top — an exchange one of whose turns the tables do not reach is left
+  // out, because a conversation that changes language halfway through is not
+  // one. Spanish reaches all 3,482 lines, so it loses none of them.
   const sides = courseSides();
   const french = sides.target.code === "fr";
   const polish = sides.target.code === "pl";
-  const translatedCourse = french || polish;
+  const spanish = sides.target.code === "es";
+  const translatedCourse = french || polish || spanish;
   const meaningIsGerman = sides.meaning.code === "de";
   const scenarios: Scenario[] = [];
   for (const [partKey, part] of Object.entries(apiParts ?? {})) {
@@ -84,7 +87,10 @@ export function buildScenarios(apiParts: Record<string, any>): Scenario[] {
         const de = String(line?.de ?? "").trim();
         const en = String(line?.en ?? "").trim();
         if (!de || !en) { turns.length = 0; break; }
-        const translated = french ? frenchFor(de, line?.fr) : polish ? polishFor(de) : null;
+        const translated = french ? frenchFor(de, line?.fr)
+          : polish ? polishFor(de)
+          : spanish ? spanishFor(de)
+          : null;
         if (translatedCourse && !translated) { turns.length = 0; break; }
         turns.push({
           side: String(line?.speaker ?? "").toUpperCase() === LEARNER_SIDE ? "you" : "them",

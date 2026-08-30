@@ -2,6 +2,7 @@ import { targetLangTag } from "@/lib/direction";
 import { courseSides } from "@/lib/courseLanguages";
 import { frenchFor } from "@/lib/frenchCourse";
 import { polishFor } from "@/lib/polishCourse";
+import { spanishFor } from "@/lib/spanishCourse";
 import type { CatalogItem } from "@/session";
 
 /**
@@ -99,6 +100,7 @@ export function practiceCandidates(items: readonly CatalogItem[]): PracticeCandi
   const toEnglish = sides.target.code === "en";
   const toFrench = sides.target.code === "fr";
   const toPolish = sides.target.code === "pl";
+  const toSpanish = sides.target.code === "es";
   const seen = new Set<string>();
   const out: PracticeCandidate[] = [];
   for (const item of items) {
@@ -115,7 +117,9 @@ export function practiceCandidates(items: readonly CatalogItem[]): PracticeCandi
     if (toFrench && !french) continue;
     const polish = toPolish ? polishFor(item.de ?? "") : null;
     if (toPolish && !polish) continue;
-    const answer = firstWording(french ?? polish ?? ((toEnglish ? item.en : item.de) ?? ""));
+    const spanish = toSpanish ? spanishFor(item.de ?? "") : null;
+    if (toSpanish && !spanish) continue;
+    const answer = firstWording(french ?? polish ?? spanish ?? ((toEnglish ? item.en : item.de) ?? ""));
     const prompt = firstWording((sides.meaning.code === "de" ? item.de : item.en) ?? "");
     if (!usable(answer) || !usable(prompt)) continue;
     // Same wording on both sides teaches nothing and reads as a bug.

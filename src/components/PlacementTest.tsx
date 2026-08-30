@@ -11,6 +11,7 @@ import { learningEnglish } from "@/lib/direction";
 import { courseSides } from "@/lib/courseLanguages";
 import { matchFrenchPhrase } from "@/lib/frenchTextMatch";
 import { matchPolishPhrase } from "@/lib/polishTextMatch";
+import { matchSpanishPhrase } from "@/lib/spanishTextMatch";
 import { ui, uiFmt } from "@/lib/i18n";
 
 // One word per language per row, so the same ten questions work whichever
@@ -42,6 +43,7 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
   const sides = courseSides();
   const learnFr = sides.target.code === "fr";
   const learnPl = sides.target.code === "pl";
+  const learnEs = sides.target.code === "es";
   const reverse = learningEnglish();
   const prompt = learnFr || learnPl
     ? (sides.meaning.code === "de" ? current.de : current.en)
@@ -55,6 +57,8 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
     ? matchFrenchPhrase(typed, target).ok
     : learnPl
       ? matchPolishPhrase(typed, target).ok
+      : learnEs
+      ? matchSpanishPhrase(typed, target).ok
       : normalize(typed) === normalize(target);
 
   const recordAnswer = (isCorrect: boolean) => {

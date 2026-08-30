@@ -297,7 +297,7 @@ function NumberSetting({
 /**
  * What the player says while it holds the gap open.
  *
- * A map rather than a ternary because the answer is one of three languages
+ * A map rather than a ternary because the answer is one of five languages
  * now, and because the sentence has to be written out in full for the
  * translations to find it.
  */
@@ -306,6 +306,7 @@ const YOUR_TURN_LABEL: Record<CourseLanguage, string> = {
   en: "Your turn — say it in English",
   fr: "Your turn — say it in French",
   pl: "Your turn — say it in Polish",
+  es: "Your turn — say it in Spanish",
 };
 
 const REPEATS_LABEL: Record<CourseLanguage, string> = {
@@ -313,6 +314,7 @@ const REPEATS_LABEL: Record<CourseLanguage, string> = {
   en: "English repeats",
   fr: "French repeats",
   pl: "Polish repeats",
+  es: "Spanish repeats",
 };
 
 const MUTED_VOICE_LABEL: Record<CourseLanguage, string> = {
@@ -320,6 +322,7 @@ const MUTED_VOICE_LABEL: Record<CourseLanguage, string> = {
   en: "English voice is muted and will be skipped.",
   fr: "French voice is muted and will be skipped.",
   pl: "Polish voice is muted and will be skipped.",
+  es: "Spanish voice is muted and will be skipped.",
 };
 
 const SAY_IT_FIRST_LABEL: Record<CourseLanguage, string> = {
@@ -327,6 +330,7 @@ const SAY_IT_FIRST_LABEL: Record<CourseLanguage, string> = {
   en: "Your turn to say the English before it is spoken",
   fr: "Your turn to say the French before it is spoken",
   pl: "Your turn to say the Polish before it is spoken",
+  es: "Your turn to say the Spanish before it is spoken",
 };
 
 const FIRST_LABEL: Record<CourseLanguage, string> = {
@@ -334,6 +338,7 @@ const FIRST_LABEL: Record<CourseLanguage, string> = {
   en: "English first",
   fr: "French first",
   pl: "Polish first",
+  es: "Spanish first",
 };
 
 // Written out rather than composed from a "{language} voice" pattern, because
@@ -343,6 +348,7 @@ const VOICE_LABEL: Record<CourseLanguage, string> = {
   en: "English voice",
   fr: "French voice",
   pl: "Polish voice",
+  es: "Spanish voice",
 };
 
 const MUTE_VOICE_LABEL: Record<CourseLanguage, string> = {
@@ -350,6 +356,7 @@ const MUTE_VOICE_LABEL: Record<CourseLanguage, string> = {
   en: "Mute English voice",
   fr: "Mute French voice",
   pl: "Mute Polish voice",
+  es: "Mute Spanish voice",
 };
 
 const UNMUTE_VOICE_LABEL: Record<CourseLanguage, string> = {
@@ -357,9 +364,16 @@ const UNMUTE_VOICE_LABEL: Record<CourseLanguage, string> = {
   en: "Unmute English voice",
   fr: "Unmute French voice",
   pl: "Unmute Polish voice",
+  es: "Unmute Spanish voice",
 };
 
-const VOLUME_SETTING = { de: "germanVolume", en: "englishVolume", fr: "frenchVolume", pl: "polishVolume" } as const;
+const VOLUME_SETTING = {
+  de: "germanVolume",
+  en: "englishVolume",
+  fr: "frenchVolume",
+  pl: "polishVolume",
+  es: "spanishVolume",
+} as const;
 
 export function ListenView({ active, apiParts, learningDirection, onOpen, profile }: {
   active: boolean;
@@ -448,7 +462,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
    */
   const [translationsRevision, setTranslationsRevision] = useState(0);
   useEffect(() => {
-    if (meaningLanguage !== "fr" && meaningLanguage !== "pl") return undefined;
+    if (meaningLanguage !== "fr" && meaningLanguage !== "pl" && meaningLanguage !== "es") return undefined;
     if (isTranslationLoaded(meaningLanguage)) return undefined;
     let live = true;
     const onLoaded = () => { if (live) setTranslationsRevision((n) => n + 1); };

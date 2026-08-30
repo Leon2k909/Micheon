@@ -2759,6 +2759,12 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   background: linear-gradient(180deg, #ffffff 0 50%, #dc143c 50% 100%);
 }
 
+/* Spain is red, yellow, red \u2014 and the yellow band is twice the depth of
+   either red one, which a three-equal-bands gradient would get wrong. */
+.np-language-badge.is-spanish {
+  background: linear-gradient(180deg, #aa151b 0 25%, #f1bf00 25% 75%, #aa151b 75% 100%);
+}
+
 .np-language-badge i:nth-child(1) { background: #292725; }
 .np-language-badge i:nth-child(2) { background: #df3941; }
 .np-language-badge i:nth-child(3) { background: #f7c83a; }

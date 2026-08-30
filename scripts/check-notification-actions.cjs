@@ -74,13 +74,17 @@ for (const expected of ["japanese", "arabic", "mandarin", "swahili", "hindi"]) {
   }
 }
 const registry = read("src/lib/courseRegistry.ts");
-// Polish used to sit in the Coming soon catalogue. It is a course now, so it
-// has to be findable as one — listed outright, not behind "Show more".
-if (catalogue.includes('id: "polish"')) {
-  failures.push("languageCatalogue.ts: Polish is a course now and must not also say Coming soon");
-}
-if (!/id: "polish",[\s\S]{0,200}?available: true/.test(registry)) {
-  failures.push("courseRegistry.ts: Polish is taught and must be selectable");
+// Polish and Spanish both used to sit in the Coming soon catalogue. They are
+// courses now, so each has to be findable as one — listed outright, not
+// behind "Show more" — and neither may be in both places at once.
+for (const taught of ["polish", "spanish"]) {
+  const name = taught[0].toUpperCase() + taught.slice(1);
+  if (catalogue.includes(`id: "${taught}"`)) {
+    failures.push(`languageCatalogue.ts: ${name} is a course now and must not also say Coming soon`);
+  }
+  if (!new RegExp(`id: "${taught}",[\\s\\S]{0,400}?available: true`).test(registry)) {
+    failures.push(`courseRegistry.ts: ${name} is taught and must be selectable`);
+  }
 }
 if (!/PLANNED_LANGUAGES\.map/.test(registry)) {
   failures.push("courseRegistry.ts: the catalogue is not being listed in the picker");

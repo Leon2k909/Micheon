@@ -40,6 +40,7 @@ import { targetLangTag } from "@/lib/direction";
 import { courseSides } from "@/lib/courseLanguages";
 import { frenchFor } from "@/lib/frenchCourse";
 import { polishFor } from "@/lib/polishCourse";
+import { spanishFor } from "@/lib/spanishCourse";
 import {
   WORD_PART_OF_SPEECH_FILTERS,
   wordMatchesPartOfSpeech,
@@ -608,7 +609,8 @@ export function WordsTracker({ apiParts, user }: {
             const record = recordFor(word);
             const french = sides.target.code === "fr" ? frenchFor(word.de) : null;
             const polish = sides.target.code === "pl" ? polishFor(word.de) : null;
-            const primaryText = french ?? polish ?? (learnsEnglish ? word.en : word.de);
+            const spanish = sides.target.code === "es" ? spanishFor(word.de) : null;
+            const primaryText = french ?? polish ?? spanish ?? (learnsEnglish ? word.en : word.de);
             const meaningText = sides.meaning.code === "de" ? word.de : word.en;
             const example = exampleIndex.exampleFor(word);
             return (

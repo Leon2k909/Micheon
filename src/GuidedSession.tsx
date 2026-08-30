@@ -55,6 +55,8 @@ import { frenchMeaningLanguage } from "@/lib/frenchCourse";
 import { polishMeaningLanguage } from "@/lib/polishCourse";
 import { matchFrenchSentence } from "@/lib/frenchTextMatch";
 import { matchPolishSentence, POLISH_SPECIAL_CHARACTERS } from "@/lib/polishTextMatch";
+import { spanishMeaningLanguage } from "@/lib/spanishCourse";
+import { matchSpanishSentence, SPANISH_SPECIAL_CHARACTERS } from "@/lib/spanishTextMatch";
 import { isElectronApp } from "@/lib/platform";
 import {
   AUDIO_SETTINGS_EVENT,
@@ -390,21 +392,23 @@ function CharBar({ onInsert }: { onInsert: (c: string) => void }) {
  */
 // Written out per language rather than composed, so the German reads as
 // German ("Deutsche Wörter zum Anordnen") rather than as a slot filled in.
-const WORDS_TO_ARRANGE_LABEL: Record<"de" | "en" | "fr" | "pl", string> = {
+const WORDS_TO_ARRANGE_LABEL: Record<"de" | "en" | "fr" | "pl" | "es", string> = {
   de: "German words to arrange",
   en: "English words to arrange",
   fr: "French words to arrange",
   pl: "Polish words to arrange",
+  es: "Spanish words to arrange",
 };
 
-function AccentKeys({ language, onInsert }: { language: "de" | "en" | "fr" | "pl"; onInsert: (c: string) => void }) {
+function AccentKeys({ language, onInsert }: { language: "de" | "en" | "fr" | "pl" | "es"; onInsert: (c: string) => void }) {
   if (language === "fr") return <FrenchCharBar onInsert={onInsert} />;
   if (language === "pl") return <PolishCharBar onInsert={onInsert} />;
+  if (language === "es") return <SpanishCharBar onInsert={onInsert} />;
   if (language === "de") return <CharBar onInsert={onInsert} />;
   return null;
 }
 
-function AccentRow({ language, onInsert }: { language: "de" | "en" | "fr" | "pl"; onInsert: (c: string) => void }) {
+function AccentRow({ language, onInsert }: { language: "de" | "en" | "fr" | "pl" | "es"; onInsert: (c: string) => void }) {
   if (language === "en") return null;
   return <div className="fs-charsrow"><AccentKeys language={language} onInsert={onInsert} /></div>;
 }
@@ -439,6 +443,33 @@ function PolishCharBar({ onInsert }: { onInsert: (c: string) => void }) {
   return (
     <div className="flex flex-wrap justify-center gap-2">
       {POLISH_SPECIAL_CHARACTERS.map(c => (
+        <motion.button key={c} type="button" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+          title={c}
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-base font-semibold text-zinc-900 hover:border-zinc-300 hover:bg-zinc-50"
+          onMouseDown={e => { e.preventDefault(); onInsert(c); }}>
+          {c}
+        </motion.button>
+      ))}
+    </div>
+  );
+}
+/**
+ * Spanish accent helper row.
+ *
+ * No Alt+NNNN hint, for the same reason the Polish row has none: those codes
+ * address the active Windows code page, and the one a British or German
+ * machine is set to does hold á é í ó ú ü ñ — but ¿ and ¡ are on it at 0191
+ * and 0161 while the letters are not where a learner would guess. The buttons
+ * are the whole answer here.
+ *
+ * ñ leads the row on purpose. Every other character on it passes with a
+ * spelling note when it is missed; ñ does not, because año and ano are two
+ * words. The one the matcher will not forgive is the one nearest the thumb.
+ */
+function SpanishCharBar({ onInsert }: { onInsert: (c: string) => void }) {
+  return (
+    <div className="flex flex-wrap justify-center gap-2">
+      {SPANISH_SPECIAL_CHARACTERS.map(c => (
         <motion.button key={c} type="button" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
           title={c}
           className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-base font-semibold text-zinc-900 hover:border-zinc-300 hover:bg-zinc-50"
@@ -1760,17 +1791,20 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const learnEn = direction === "learn-en";
   const learnFr = direction === "learn-fr";
   const learnPl = direction === "learn-pl";
+  const learnEs = direction === "learn-es";
   // Only the German course teaches German. The umlaut bar, the German matcher
   // and the German synonym groups all hang off this, and every one of them is
   // wrong beside a French sentence — which is why it is asked as its own
   // question rather than as !learnEn.
   const targetIsGermanCourse = direction === "learn-de";
-  const targetLanguage: "de" | "en" | "fr" | "pl" = learnFr ? "fr" : learnPl ? "pl" : learnEn ? "en" : "de";
+  const targetLanguage: "de" | "en" | "fr" | "pl" | "es" =
+    learnFr ? "fr" : learnPl ? "pl" : learnEs ? "es" : learnEn ? "en" : "de";
   // Which language the meaning column is written in: German in the English
   // course, and in the French course whenever the app itself is in German.
   const meaningLanguage: "de" | "en" = learnFr
     ? frenchMeaningLanguage()
     : learnPl ? polishMeaningLanguage()
+    : learnEs ? spanishMeaningLanguage()
     : learnEn ? "de" : "en";
   const meaningIsGerman = meaningLanguage === "de";
   // A picture of the word, where we have an honest one. It is a cue to the
@@ -1789,7 +1823,11 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // honour their British/American choice — it was pinned to American, which
   // made the setting look broken to anyone who picked British.
   const targetLang = guidedTargetLanguageTag();
-  const targetLabel = learnFr ? "French" : learnEn ? "English" : "German";
+  const targetLabel = learnFr ? "French"
+    : learnPl ? "Polish"
+    : learnEs ? "Spanish"
+    : learnEn ? "English"
+    : "German";
   const meaningLabel = meaningIsGerman ? "German" : "English";
   // Spoken gap-fill: sentence with 1-2 words blanked, learner says the missing word(s).
   const gap = useMemo(() => computeGap(item.de), [item.de]);
@@ -1821,6 +1859,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const matchTarget = learnFr
     ? matchFrenchSentence
     : learnPl ? matchPolishSentence
+    : learnEs ? matchSpanishSentence
     : learnEn ? matchEnglish : matchGermanSentence;
   // Where the spoken short form is what we teach, the fuller written form the
   // learner will have met in a book stays correct too. Taking the better of the
@@ -5029,15 +5068,18 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
   const learnEn = sides.target.code === "en";
   const learnFr = sides.target.code === "fr";
   const learnPl = sides.target.code === "pl";
+  const learnEs = sides.target.code === "es";
   const result = useMemo(
     () => learnFr
       ? matchFrenchSentence(input, line?.de ?? "")
       : learnPl
         ? matchPolishSentence(input, line?.de ?? "")
-        : learnEn
-          ? matchEnglish(input, line?.de ?? "")
-          : matchLearningModeGermanAnswer(input, { de: line?.de ?? "", long: line?.long }),
-    [input, learnEn, learnFr, learnPl, line]
+        : learnEs
+          ? matchSpanishSentence(input, line?.de ?? "")
+          : learnEn
+            ? matchEnglish(input, line?.de ?? "")
+            : matchLearningModeGermanAnswer(input, { de: line?.de ?? "", long: line?.long }),
+    [input, learnEn, learnFr, learnPl, learnEs, line]
   );
   // A German speaker learning English hears this on every stage, so it has to
   // honour their British/American choice — it was pinned to American, which

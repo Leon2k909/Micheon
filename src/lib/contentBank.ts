@@ -5,6 +5,7 @@ import tatoebaRaw from "./tatoeba.de-en.json";
 import { getLearningDirection, type LearningDirection } from "./direction";
 import { frenchParts, hasFrench } from "./frenchCourse";
 import { hasPolish, polishParts } from "./polishCourse";
+import { hasSpanish, spanishParts } from "./spanishCourse";
 
 /**
  * Bundled, always-available content.
@@ -670,6 +671,7 @@ export function filterPartsForLearningDirection<T extends Part>(
   ) as Record<string, T>;
   if (direction === "learn-fr") return frenchParts(forDirection);
   if (direction === "learn-pl") return polishParts(forDirection);
+  if (direction === "learn-es") return spanishParts(forDirection);
   return forDirection;
 }
 
@@ -682,6 +684,7 @@ export function getAllBundledSentences(direction: LearningDirection = getLearnin
   // course being studied rather than for the catalogue as a whole.
   if (direction === "learn-fr") return phrases.filter(hasFrench);
   if (direction === "learn-pl") return phrases.filter(hasPolish);
+  if (direction === "learn-es") return phrases.filter(hasSpanish);
   return phrases;
 }
 

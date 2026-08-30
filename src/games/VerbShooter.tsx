@@ -108,6 +108,53 @@ const POLISH_VERBS: typeof VERBS = [
   { infinitive: "wiedzieć",  en: "to know",  pronoun: "ty", correct: "wiesz",    wrong: ["wiem", "wie", "wiecie"] },
   { infinitive: "wiedzieć",  en: "to know",  pronoun: "on", correct: "wie",      wrong: ["wiem", "wiesz", "wiedzą"] },
 ];
+// And in Spanish. Same principle again: the verbs worth drilling first are the
+// irregular ones, every decoy is a real form of the same verb, and the four
+// persons are the ones a beginner meets. The stem-changers (poder, querer,
+// venir) are here because the change happens in three persons out of four and
+// disappears in nosotros \u2014 which is exactly the shape nobody guesses.
+const SPANISH_VERBS: typeof VERBS = [
+  { infinitive: "ser",    en: "to be",    pronoun: "yo",       correct: "soy",      wrong: ["eres", "es", "somos"] },
+  { infinitive: "ser",    en: "to be",    pronoun: "t\u00fa",       correct: "eres",     wrong: ["soy", "es", "sois"] },
+  { infinitive: "ser",    en: "to be",    pronoun: "\u00e9l",       correct: "es",       wrong: ["soy", "eres", "son"] },
+  { infinitive: "ser",    en: "to be",    pronoun: "nosotros", correct: "somos",    wrong: ["soy", "es", "sois"] },
+  { infinitive: "estar",  en: "to be",    pronoun: "yo",       correct: "estoy",    wrong: ["est\u00e1s", "est\u00e1", "estamos"] },
+  { infinitive: "estar",  en: "to be",    pronoun: "t\u00fa",       correct: "est\u00e1s",    wrong: ["estoy", "est\u00e1", "est\u00e1is"] },
+  { infinitive: "estar",  en: "to be",    pronoun: "\u00e9l",       correct: "est\u00e1",     wrong: ["estoy", "est\u00e1s", "est\u00e1n"] },
+  { infinitive: "estar",  en: "to be",    pronoun: "nosotros", correct: "estamos",  wrong: ["estoy", "est\u00e1", "est\u00e1is"] },
+  { infinitive: "tener",  en: "to have",  pronoun: "yo",       correct: "tengo",    wrong: ["tienes", "tiene", "tenemos"] },
+  { infinitive: "tener",  en: "to have",  pronoun: "t\u00fa",       correct: "tienes",   wrong: ["tengo", "tiene", "ten\u00e9is"] },
+  { infinitive: "tener",  en: "to have",  pronoun: "\u00e9l",       correct: "tiene",    wrong: ["tengo", "tienes", "tienen"] },
+  { infinitive: "tener",  en: "to have",  pronoun: "nosotros", correct: "tenemos",  wrong: ["tengo", "tiene", "ten\u00e9is"] },
+  { infinitive: "ir",     en: "to go",    pronoun: "yo",       correct: "voy",      wrong: ["vas", "va", "vamos"] },
+  { infinitive: "ir",     en: "to go",    pronoun: "t\u00fa",       correct: "vas",      wrong: ["voy", "va", "vais"] },
+  { infinitive: "ir",     en: "to go",    pronoun: "\u00e9l",       correct: "va",       wrong: ["voy", "vas", "van"] },
+  { infinitive: "ir",     en: "to go",    pronoun: "nosotros", correct: "vamos",    wrong: ["voy", "va", "vais"] },
+  { infinitive: "hacer",  en: "to do",    pronoun: "yo",       correct: "hago",     wrong: ["haces", "hace", "hacemos"] },
+  { infinitive: "hacer",  en: "to do",    pronoun: "t\u00fa",       correct: "haces",    wrong: ["hago", "hace", "hac\u00e9is"] },
+  { infinitive: "hacer",  en: "to do",    pronoun: "\u00e9l",       correct: "hace",     wrong: ["hago", "haces", "hacen"] },
+  { infinitive: "hacer",  en: "to do",    pronoun: "nosotros", correct: "hacemos",  wrong: ["hago", "hace", "hac\u00e9is"] },
+  { infinitive: "poder",  en: "can",      pronoun: "yo",       correct: "puedo",    wrong: ["puedes", "puede", "podemos"] },
+  { infinitive: "poder",  en: "can",      pronoun: "t\u00fa",       correct: "puedes",   wrong: ["puedo", "puede", "pod\u00e9is"] },
+  { infinitive: "poder",  en: "can",      pronoun: "\u00e9l",       correct: "puede",    wrong: ["puedo", "puedes", "pueden"] },
+  { infinitive: "poder",  en: "can",      pronoun: "nosotros", correct: "podemos",  wrong: ["puedo", "puede", "pueden"] },
+  { infinitive: "querer", en: "to want",  pronoun: "yo",       correct: "quiero",   wrong: ["quieres", "quiere", "queremos"] },
+  { infinitive: "querer", en: "to want",  pronoun: "t\u00fa",       correct: "quieres",  wrong: ["quiero", "quiere", "quer\u00e9is"] },
+  { infinitive: "querer", en: "to want",  pronoun: "\u00e9l",       correct: "quiere",   wrong: ["quiero", "quieres", "quieren"] },
+  { infinitive: "querer", en: "to want",  pronoun: "nosotros", correct: "queremos", wrong: ["quiero", "quiere", "quieren"] },
+  { infinitive: "decir",  en: "to say",   pronoun: "yo",       correct: "digo",     wrong: ["dices", "dice", "decimos"] },
+  { infinitive: "decir",  en: "to say",   pronoun: "t\u00fa",       correct: "dices",    wrong: ["digo", "dice", "dec\u00eds"] },
+  { infinitive: "decir",  en: "to say",   pronoun: "\u00e9l",       correct: "dice",     wrong: ["digo", "dices", "dicen"] },
+  { infinitive: "venir",  en: "to come",  pronoun: "yo",       correct: "vengo",    wrong: ["vienes", "viene", "venimos"] },
+  { infinitive: "venir",  en: "to come",  pronoun: "t\u00fa",       correct: "vienes",   wrong: ["vengo", "viene", "ven\u00eds"] },
+  { infinitive: "venir",  en: "to come",  pronoun: "\u00e9l",       correct: "viene",    wrong: ["vengo", "vienes", "vienen"] },
+  { infinitive: "ver",    en: "to see",   pronoun: "yo",       correct: "veo",      wrong: ["ves", "ve", "vemos"] },
+  { infinitive: "ver",    en: "to see",   pronoun: "t\u00fa",       correct: "ves",      wrong: ["veo", "ve", "veis"] },
+  { infinitive: "ver",    en: "to see",   pronoun: "\u00e9l",       correct: "ve",       wrong: ["veo", "ves", "ven"] },
+  { infinitive: "saber",  en: "to know",  pronoun: "yo",       correct: "s\u00e9",       wrong: ["sabes", "sabe", "sabemos"] },
+  { infinitive: "saber",  en: "to know",  pronoun: "t\u00fa",       correct: "sabes",    wrong: ["s\u00e9", "sabe", "sab\u00e9is"] },
+  { infinitive: "saber",  en: "to know",  pronoun: "\u00e9l",       correct: "sabe",     wrong: ["s\u00e9", "sabes", "saben"] },
+];
 
 const COLS = 5;
 const CELL_W = 90;
@@ -147,12 +194,18 @@ export default function VerbShooter() {
   const learnsEnglish = sides.target.code === "en";
   const learnsFrench = sides.target.code === "fr";
   const learnsPolish = sides.target.code === "pl";
+  const learnsSpanish = sides.target.code === "es";
 
   const buildPrompt = useCallback(() => {
-    // French and Polish each have their own table; English is derived from the
-    // German one, because the two are the same sentences read the other way
-    // round.
-    const source = pickVerb(learnsFrench ? FRENCH_VERBS : learnsPolish ? POLISH_VERBS : VERBS);
+    // French, Polish and Spanish each have their own table; English is derived
+    // from the German one, because the two are the same sentences read the
+    // other way round.
+    const source = pickVerb(
+      learnsFrench ? FRENCH_VERBS
+        : learnsPolish ? POLISH_VERBS
+        : learnsSpanish ? SPANISH_VERBS
+        : VERBS
+    );
     if (!learnsEnglish) return source;
 
     const pronouns: Record<string, string> = {

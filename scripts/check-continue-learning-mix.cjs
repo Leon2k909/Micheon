@@ -493,11 +493,13 @@ check(
 check(
   "preview replacement blocks both named language columns after direction swaps",
   // The candidates are un-swapped German entries, so every direction has to be
-  // read back to that pair — a French or Polish card through the originalDe it
-  // kept. Both table-backed courses take that same route, so they share a branch.
+  // read back to that pair — a French, Polish or Spanish card through the
+  // originalDe it kept. All three table-backed courses take that same route, so
+  // they share a branch, and a fourth one added without joining it would read
+  // the swapped text and match nothing.
   labSource.includes("const blockedPairs = current")
     && labSource.includes('if (swapDirection === "learn-en")')
-    && labSource.includes('if (swapDirection === "learn-fr" || swapDirection === "learn-pl")')
+    && /if \(swapDirection === "learn-fr"(?:\s*\|\|\s*swapDirection === "learn-(?:pl|es)"){2}\)/.test(labSource)
     && labSource.includes("String(step.item?.originalDe ?? \"\")")
 );
 
@@ -538,10 +540,12 @@ check(
   "the proactive desktop pet remains responsible for later memory questions",
   labSource.includes('getCodexPetCadence("questions", petCoachingFrequencies.questions)')
     // The question names the course it is asking about, in whichever interface
-    // language the learner reads — four courses now, so the name is picked once
-    // and dropped into both sentences rather than spelled out inside each.
-    && labSource.includes('const askedLanguageDe = learnsFrench ? "Französisch" : learnsPolish ? "Polnisch" : "Englisch";')
-    && labSource.includes('const askedLanguageEn = learnsFrench ? "French" : learnsPolish ? "Polish" : "German";')
+    // language the learner reads — five courses now, so the name is picked once
+    // and dropped into both sentences rather than spelled out inside each. Matched
+    // on the languages rather than on one line of source, so adding a sixth is a
+    // failure here and not a silent "Englisch" for a course that is not English.
+    && /const askedLanguageDe = learnsFrench \? "Französisch"[\s\S]{0,120}?learnsPolish \? "Polnisch"[\s\S]{0,120}?learnsSpanish \? "Spanisch"[\s\S]{0,60}?: "Englisch";/.test(labSource)
+    && /const askedLanguageEn = learnsFrench \? "French"[\s\S]{0,120}?learnsPolish \? "Polish"[\s\S]{0,120}?learnsSpanish \? "Spanish"[\s\S]{0,60}?: "German";/.test(labSource)
     && labSource.includes('Do you remember how to say “${meaning}” in ${askedLanguageEn}?')
     && labSource.includes('Erinnerst du dich, wie man „${meaning}“ auf ${askedLanguageDe} sagt?')
     && petProviderSource.includes("setItemStatus(")

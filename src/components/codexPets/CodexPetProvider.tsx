@@ -54,18 +54,20 @@ const MAX_PET_HISTORY = 200;
 const PET_DUPLICATE_WINDOW_MS = 30 * 60 * 1000;
 
 export type CodexPetSpeechMood = "greeting" | "success" | "encourage" | "celebrate";
-export type CodexPetVoiceLanguage = "de-DE" | "en-GB" | "en-US" | "fr-FR" | "pl-PL";
+export type CodexPetVoiceLanguage = "de-DE" | "en-GB" | "en-US" | "fr-FR" | "pl-PL" | "es-ES";
 
 export type CodexPetQuestion = {
   aliases?: string[];
   /** Which of the fields below the learner is being asked to produce. */
-  answerLanguage: "de" | "en" | "fr" | "pl";
+  answerLanguage: "de" | "en" | "fr" | "pl" | "es";
   de: string;
   en: string;
   /** Set by the French course, where the answer is neither of the other two. */
   fr?: string;
   /** Set by the Polish course, for the same reason. */
   pl?: string;
+  /** Set by the Spanish course, for the same reason. */
+  es?: string;
   itemId: string;
   /** Sequence of the scheduled memory question, persisted across app restarts. */
   recallSequence?: number;
@@ -307,7 +309,7 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
           // reads off the opposite side. French is never the question's own
           // language, so it falls to whichever the app is written in.
           ? question.answerLanguage === "en" ? "de-DE"
-            : question.answerLanguage === "fr" || question.answerLanguage === "pl" ? uiSpeechLang()
+            : question.answerLanguage === "fr" || question.answerLanguage === "pl" || question.answerLanguage === "es" ? uiSpeechLang()
               : "en-US"
           : uiSpeechLang()),
     };
@@ -336,7 +338,9 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
         ? (question.fr ?? question.de)
         : question.answerLanguage === "pl"
           ? (question.pl ?? question.de)
-          : question.en;
+          : question.answerLanguage === "es"
+            ? (question.es ?? question.de)
+            : question.en;
 
     const nextEntry: CodexPetSpeech = {
       ...entry,

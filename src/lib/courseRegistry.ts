@@ -68,13 +68,20 @@ export const COURSES: Course[] = [
     available: true,
     builtIn: true,
   },
+  // Spanish is the fifth, and the first of the table-backed courses that is
+  // NOT narrowed. French covers about a third of the catalogue and Polish a
+  // quarter, so both drop what they cannot say; spanishTranslations.ts covers
+  // all of it — 9,000 word cards, 12,000 sentences, 3,482 dialogue lines —
+  // so the Spanish course is the German one entry for entry, and nothing a
+  // learner meets in German is missing from it. See spanishCourse.ts.
   {
     id: "spanish",
     kind: "language",
     name: "Spanish",
-    tagline: "Coming soon.",
+    tagline: "Read, listen, type and translate real Spanish.",
     icon: "🇪🇸",
-    available: false,
+    available: true,
+    builtIn: true,
   },
   // Everything else people might come looking for. Listed, searchable and
   // honest about not being ready — a picker with three rows makes someone

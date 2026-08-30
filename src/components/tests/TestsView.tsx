@@ -34,6 +34,8 @@ import { frenchFor, frenchMeaningLanguage } from "@/lib/frenchCourse";
 import { matchFrenchMeaning } from "@/lib/frenchTextMatch";
 import { polishFor, polishMeaningLanguage } from "@/lib/polishCourse";
 import { matchPolishMeaning } from "@/lib/polishTextMatch";
+import { spanishFor, spanishMeaningLanguage } from "@/lib/spanishCourse";
+import { matchSpanishMeaning } from "@/lib/spanishTextMatch";
 import { PlacementLadder } from "@/components/tests/PlacementLadder";
 import { matchEnglishPhrase, matchParagraphAnswer } from "@/lib/germanTextMatch";
 import { ui, uiFmt, uiNumber } from "@/lib/i18n";
@@ -80,7 +82,7 @@ type AnswerLanguage = "de" | "en";
 
 function slotLanguages(): { de: CourseLanguage; en: CourseLanguage } {
   const sides = courseSides();
-  return sides.target.code === "fr" || sides.target.code === "pl"
+  return sides.target.code === "fr" || sides.target.code === "pl" || sides.target.code === "es"
     ? { de: sides.target.code, en: sides.meaning.code }
     : { de: "de", en: "en" };
 }
@@ -943,8 +945,10 @@ function buildTestBank(apiParts: Record<string, Part>, profile: UserProfile): Te
   // is swapped.
   const frenchCourse = courseSides().target.code === "fr";
   const polishCourse = courseSides().target.code === "pl";
+  const spanishCourse = courseSides().target.code === "es";
   const meaningIsGerman = (frenchCourse && frenchMeaningLanguage() === "de")
-    || (polishCourse && polishMeaningLanguage() === "de");
+    || (polishCourse && polishMeaningLanguage() === "de")
+    || (spanishCourse && spanishMeaningLanguage() === "de");
   const grades = loadGradeStore(profile);
   const catalog = buildCatalog(apiParts);
   const seen = new Set<string>();
@@ -1035,6 +1039,11 @@ function buildTestBank(apiParts: Record<string, Part>, profile: UserProfile): Te
     if (!polish) return [];
     return [{ ...item, de: polish, en: meaningIsGerman ? item.de : item.en }];
   });
+  if (spanishCourse) return bank.flatMap((item) => {
+    const spanish = spanishFor(item.de);
+    if (!spanish) return [];
+    return [{ ...item, de: spanish, en: meaningIsGerman ? item.de : item.en }];
+  });
 
   for (const paragraph of PARAGRAPH_TEST_ITEMS) {
     const status = statusForId(grades, paragraph.id);
@@ -1095,6 +1104,8 @@ function matchTestAnswer(input: string, target: string, language: AnswerLanguage
       ? matchFrenchMeaning(input, alternative)
       : answerLanguage === "pl"
         ? matchPolishMeaning(input, alternative)
+        : answerLanguage === "es"
+        ? matchSpanishMeaning(input, alternative)
         : answerLanguage === "de"
         ? matchLearningModeGermanAnswer(input, { de: alternative, long: item.long })
         : matchEnglishPhrase(input, alternative)

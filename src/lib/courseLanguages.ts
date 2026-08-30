@@ -17,10 +17,10 @@ import { resolveInterfaceLanguage } from "@/lib/interfaceLanguage";
  * So the question is asked in one place. A fourth course is one more case
  * here rather than a hunt through six screens.
  */
-export type CourseLanguage = "de" | "en" | "fr" | "pl";
+export type CourseLanguage = "de" | "en" | "fr" | "pl" | "es";
 
 /** Every BCP-47 tag the app asks a voice for. */
-export type VoiceTag = "de-DE" | "en-GB" | "en-US" | "fr-FR" | "pl-PL";
+export type VoiceTag = "de-DE" | "en-GB" | "en-US" | "fr-FR" | "pl-PL" | "es-ES";
 
 export type CourseSide = {
   code: CourseLanguage;
@@ -39,6 +39,7 @@ export const LANGUAGE_LABEL: Record<CourseLanguage, string> = {
   en: "English",
   fr: "French",
   pl: "Polish",
+  es: "Spanish",
 };
 
 /** The name the audio mixer knows each language by. */
@@ -47,6 +48,7 @@ export const AUDIO_LANGUAGE: Record<CourseLanguage, TtsAudioLanguage> = {
   en: "english",
   fr: "french",
   pl: "polish",
+  es: "spanish",
 };
 
 export function courseSide(code: CourseLanguage): CourseSide {
@@ -54,7 +56,11 @@ export function courseSide(code: CourseLanguage): CourseSide {
   return {
     code,
     label: LANGUAGE_LABEL[code],
-    voice: code === "de" ? "de-DE" : code === "fr" ? "fr-FR" : code === "pl" ? "pl-PL" : englishVoice,
+    voice: code === "de" ? "de-DE"
+      : code === "fr" ? "fr-FR"
+      : code === "pl" ? "pl-PL"
+      : code === "es" ? "es-ES"
+      : englishVoice,
     htmlLang: code,
   };
 }
@@ -64,6 +70,7 @@ export function targetLanguage(direction: LearningDirection = getLearningDirecti
   if (direction === "learn-en") return "en";
   if (direction === "learn-fr") return "fr";
   if (direction === "learn-pl") return "pl";
+  if (direction === "learn-es") return "es";
   return "de";
 }
 
@@ -109,11 +116,11 @@ export function meaningLanguageFor(
  */
 export function translationLanguagesNeeded(
   direction: LearningDirection = getLearningDirection()
-): Array<"fr" | "pl"> {
+): Array<"fr" | "pl" | "es"> {
   const target = targetLanguage(direction);
-  const wanted = new Set<"fr" | "pl">();
+  const wanted = new Set<"fr" | "pl" | "es">();
   for (const code of [target, meaningLanguageFor(target)]) {
-    if (code === "fr" || code === "pl") wanted.add(code);
+    if (code === "fr" || code === "pl" || code === "es") wanted.add(code);
   }
   return [...wanted];
 }
@@ -128,6 +135,13 @@ export function courseSides(direction: LearningDirection = getLearningDirection(
     // so the row would be labelled French and filled with English.
     const app = meaningLanguageFor("pl");
     return { target: courseSide("pl"), meaning: courseSide(app === "de" ? "de" : "en") };
+  }
+  if (direction === "learn-es") {
+    // Same narrowing as Polish, and for the same reason: the Spanish
+    // table is keyed by the German, so German and English are the only
+    // two meanings that exist for every card.
+    const app = meaningLanguageFor("es");
+    return { target: courseSide("es"), meaning: courseSide(app === "de" ? "de" : "en") };
   }
   return { target: courseSide("de"), meaning: courseSide("en") };
 }

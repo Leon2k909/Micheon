@@ -287,10 +287,62 @@ const PL: PlacementQuestion[] = [
   q("pl-c1-8", "C1", "What does this mean?", "rzucać słowa na wiatr", ["obiecywać bez pokrycia", "mówić bardzo głośno", "mówić o pogodzie", "szybko odpowiadać"], 0, "rzucać słowa na wiatr — to make empty promises."),
 ];
 
+/**
+ * SPANISH. Written to the same rule as the others: every question is answerable
+ * from the language rather than from the shape of the options, and the note
+ * says WHY rather than repeating the answer. The pairs Spanish learners
+ * actually trip on — ser/estar, preterite/imperfect, indicative/subjunctive —
+ * are what the levels are built from, and the C1 rows are idioms because that
+ * is what separates someone fluent from someone correct.
+ */
+const ES: PlacementQuestion[] = [
+  q("es-a1-1", "A1", "Which is correct?", "\u00bfC\u00f3mo ___ llamas?", ["te", "se", "me", "le"], 0, "llamarse \u2014 the reflexive pronoun for t\u00fa is te."),
+  q("es-a1-2", "A1", "What does this mean?", "Buenas noches", ["por la ma\u00f1ana", "al mediod\u00eda", "por la tarde", "por la noche"], 3, "Buenas noches is the night greeting; buenos d\u00edas covers the morning."),
+  q("es-a1-3", "A1", "Which is correct?", "Ella ___ mi hermana.", ["son", "es", "ser", "eres"], 1, "es \u2014 third person singular of ser."),
+  q("es-a1-4", "A1", "Which is correct?", "Tengo dos ___.", ["perro", "perros", "el perro", "los perro"], 1, "A number above one takes the plural noun on its own."),
+  q("es-a1-5", "A1", "What is the number?", "cuarenta y dos", ["24", "42", "52", "72"], 1, "cuarenta = 40, dos = 2."),
+  q("es-a1-6", "A1", "What does this mean?", "muchas gracias", ["de nada", "adi\u00f3s", "much\u00edsimas gracias", "por favor"], 2, "muchas makes the thanks bigger, not the reply to it."),
+  q("es-a1-7", "A1", "Which is correct?", "Nosotros ___ espa\u00f1ol.", ["hablo", "habla", "hablamos", "hablan"], 2, "nosotros hablamos \u2014 first person plural."),
+  q("es-a1-8", "A1", "Which is correct?", "Vivo ___ Madrid.", ["a", "de", "en", "por"], 2, "en for the place you live in."),
+  q("es-a2-1", "A2", "Which is correct?", "Ayer ___ al cine.", ["voy", "iba", "fui", "ir\u00e9"], 2, "fui \u2014 the preterite, because ayer closes the action."),
+  q("es-a2-2", "A2", "Which is correct?", "___ gusta el caf\u00e9.", ["Yo", "Me", "Mi", "M\u00ed"], 1, "gustar takes an indirect object: the coffee pleases me."),
+  q("es-a2-3", "A2", "What does this mean?", "hace fr\u00edo", ["it is cold", "he is cold", "it is hot", "he makes cold"], 0, "Weather is hacer plus a noun, not ser or estar."),
+  q("es-a2-4", "A2", "Which is correct?", "Estoy ___ un libro.", ["leer", "leyendo", "le\u00eddo", "leo"], 1, "estar plus the gerund for what is happening now."),
+  q("es-a2-5", "A2", "Which is correct?", "Es ___ alta que su hermana.", ["mas", "m\u00e1s", "muy", "tan"], 1, "m\u00e1s with the accent is the comparative; mas without it means but."),
+  q("es-a2-6", "A2", "What does this mean?", "tengo que irme", ["I want to go", "I have to go", "I can go", "I am going"], 1, "tener que plus infinitive is obligation."),
+  q("es-a2-7", "A2", "Which is correct?", "No hay ___ en la nevera.", ["algo", "nada", "nadie", "alguno"], 1, "Spanish doubles the negative: no ... nada."),
+  q("es-a2-8", "A2", "Which is correct?", "\u00bf___ es tu cumplea\u00f1os?", ["Cu\u00e1ndo", "Cu\u00e1nto", "C\u00f3mo", "D\u00f3nde"], 0, "cu\u00e1ndo asks for a time."),
+  q("es-b1-1", "B1", "Which is correct?", "Quiero que ___ conmigo.", ["vienes", "vengas", "viniste", "vendr\u00e1s"], 1, "A wish about someone else takes the subjunctive."),
+  q("es-b1-2", "B1", "Which is correct?", "Si tuviera dinero, ___ un coche.", ["compro", "comprar\u00e9", "comprar\u00eda", "comprara"], 2, "Imperfect subjunctive in the if, conditional in the result."),
+  q("es-b1-3", "B1", "What does this mean?", "llevo dos a\u00f1os aqu\u00ed", ["I came two years ago", "I have been here two years", "I am staying two years", "I took two years"], 1, "llevar plus a period is how long something has been going on."),
+  q("es-b1-4", "B1", "Which is correct?", "Yo se lo ___ ayer.", ["di", "d\u00ed", "dio", "di\u00f3"], 0, "One syllable, so no accent \u2014 and dio is the third person."),
+  q("es-b1-5", "B1", "Which is correct?", "El libro ___ le\u00ed es bueno.", ["que", "cual", "quien", "lo que"], 0, "que is the relative for a thing."),
+  q("es-b1-6", "B1", "What does this mean?", "por si acaso", ["at last", "just in case", "by chance", "on purpose"], 1, "The phrase covers the thing you do in case."),
+  q("es-b1-7", "B1", "Which is correct?", "Hace dos horas que ___.", ["esperando", "espero", "esper\u00e9", "esperar\u00e9"], 1, "hace ... que takes the present for something still going on."),
+  q("es-b1-8", "B1", "Which is correct?", "Me alegro de que ___ aqu\u00ed.", ["est\u00e1s", "est\u00e9s", "estabas", "estar\u00e1s"], 1, "An emotion about someone else takes the subjunctive."),
+  q("es-b2-1", "B2", "Which is correct?", "Aunque ___ caro, lo comprar\u00eda.", ["es", "sea", "fuera", "ser\u00e1"], 2, "A hypothetical concession pairs the imperfect subjunctive with the conditional."),
+  q("es-b2-2", "B2", "What does this mean?", "echar de menos", ["to throw away", "to miss someone", "to lose count", "to add less"], 1, "Nothing in the words says it; it is simply the phrase for missing."),
+  q("es-b2-3", "B2", "Which is correct?", "En cuanto ___, te llamo.", ["llego", "llegue", "llegar\u00e9", "llegaba"], 1, "A time clause about the future takes the subjunctive."),
+  q("es-b2-4", "B2", "Which is correct?", "Es la mejor pel\u00edcula que ___ visto.", ["he", "haya", "hab\u00eda", "habr\u00eda"], 1, "A superlative followed by que takes the subjunctive."),
+  q("es-b2-5", "B2", "What does this mean?", "dar por sentado", ["to sit down", "to take for granted", "to offer a seat", "to settle a debt"], 1, "sentado here is settled, not seated."),
+  q("es-b2-6", "B2", "Which is correct?", "Se ___ construido tres puentes.", ["ha", "han", "hab\u00edan", "hubo"], 1, "The passive se agrees with what was built, and three bridges are plural."),
+  q("es-b2-7", "B2", "What does this mean?", "a duras penas", ["with great sorrow", "hardly, barely", "with hard labour", "in great pain"], 1, "It measures how narrowly something happened."),
+  q("es-b2-8", "B2", "Which is correct?", "Lo hizo sin que nadie lo ___.", ["supo", "sab\u00eda", "supiera", "sabr\u00e1"], 2, "sin que always takes the subjunctive."),
+  q("es-c1-1", "C1", "What does this mean?", "no tener pelos en la lengua", ["to be speechless", "to speak bluntly", "to have a sore throat", "to talk very fast"], 1, "Nothing slows the words down."),
+  q("es-c1-2", "C1", "Which is correct?", "De haberlo sabido, ___ venido.", ["habr\u00eda", "hab\u00eda", "hubiera de", "he"], 0, "de plus infinitive replaces the if, and the result stays conditional."),
+  q("es-c1-3", "C1", "What does this mean?", "estar en el aire", ["estar volando", "estar sin decidir", "estar contento", "estar cansado"], 1, "Said of a plan nobody has settled yet."),
+  q("es-c1-4", "C1", "Which is correct?", "Por m\u00e1s que lo ___, no lo entiendo.", ["intento", "intente", "intentaba", "intentar\u00e9"], 1, "por m\u00e1s que takes the subjunctive when the effort is general."),
+  q("es-c1-5", "C1", "What does this mean?", "a ra\u00edz de", ["at the root of", "as a result of", "in spite of", "in the middle of"], 1, "The root is what it grew from, so the phrase means following on from."),
+  q("es-c1-6", "C1", "Which is correct?", "Ojal\u00e1 ___ venido antes.", ["has", "hab\u00edas", "hubieras", "habr\u00edas"], 2, "Ojal\u00e1 about the past takes the pluperfect subjunctive."),
+  q("es-c1-7", "C1", "What does this mean?", "tirar la toalla", ["to do the laundry", "to give up", "to throw a party", "to waste money"], 1, "The same towel a boxer's corner throws in."),
+  q("es-c1-8", "C1", "Which is correct?", "Fue \u00e9l quien ___ la idea.", ["propone", "propuso", "proponga", "propondr\u00eda"], 1, "The cleft keeps the tense of the event, which is past."),
+];
+
 export function placementQuestions(direction: PlacementDirection): PlacementQuestion[] {
   if (direction === "learn-en") return EN;
   if (direction === "learn-fr") return FR;
   if (direction === "learn-pl") return PL;
+  if (direction === "learn-es") return ES;
   return DE;
 }
 
