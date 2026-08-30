@@ -25,7 +25,8 @@ const built = esbuild.buildSync({
     contents:
       'export { lifeInTheUkCourse } from "./src/lib/lifeInTheUkCourse.ts";\n' +
       'export { LIFE_IN_THE_UK_DE } from "./src/lib/lifeInTheUkTranslationsDe.ts";\n' +
-      'export { LIFE_IN_THE_UK_PL } from "./src/lib/lifeInTheUkTranslationsPl.ts";',
+      'export { LIFE_IN_THE_UK_PL } from "./src/lib/lifeInTheUkTranslationsPl.ts";\n' +
+      'export { LIFE_IN_THE_UK_FR } from "./src/lib/lifeInTheUkTranslationsFr.ts";',
     resolveDir: root,
     sourcefile: "uk-translations-entry.ts",
   },
@@ -42,12 +43,13 @@ const compiled = new Module("uk-translations-check", module);
 compiled.filename = path.join(root, ".uk-translations-check.cjs");
 compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(built.outputFiles[0].text, compiled.filename);
-const { lifeInTheUkCourse, LIFE_IN_THE_UK_DE, LIFE_IN_THE_UK_PL } = compiled.exports;
+const { lifeInTheUkCourse, LIFE_IN_THE_UK_DE, LIFE_IN_THE_UK_PL, LIFE_IN_THE_UK_FR } = compiled.exports;
 
 // One course, one set of rules, two target languages.
 const TABLES = [
   { language: "German", table: LIFE_IN_THE_UK_DE },
   { language: "Polish", table: LIFE_IN_THE_UK_PL },
+  { language: "French", table: LIFE_IN_THE_UK_FR },
 ];
 
 // Every English string the lesson body can offer a translation for. Paragraphs
