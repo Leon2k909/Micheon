@@ -493,14 +493,43 @@ check(
 check(
   "preview replacement blocks both named language columns after direction swaps",
   // The candidates are un-swapped German entries, so every direction has to be
-  // read back to that pair — a French, Polish or Spanish card through the
-  // originalDe it kept. All three table-backed courses take that same route, so
-  // they share a branch, and a fourth one added without joining it would read
+  // read back to that pair — a French, Polish, Spanish or Portuguese card
+  // through the originalDe it kept. Every table-backed course takes that same
+  // route, so they share a branch, and one added without joining it would read
   // the swapped text and match nothing.
-  labSource.includes("const blockedPairs = current")
-    && labSource.includes('if (swapDirection === "learn-en")')
-    && /if \(swapDirection === "learn-fr"(?:\s*\|\|\s*swapDirection === "learn-(?:pl|es)"){2}\)/.test(labSource)
-    && labSource.includes("String(step.item?.originalDe ?? \"\")")
+  //
+  // Counted against the courses that exist rather than spelled out as a fixed
+  // number of them: naming three meant the check failed when a fourth joined
+  // correctly, which reports a language being ADDED as a regression and
+  // teaches whoever adds the fifth to edit the number until it goes quiet.
+  // What matters is that none is left out.
+  (() => {
+    if (!labSource.includes("const blockedPairs = current")) return false;
+    if (!labSource.includes('if (swapDirection === "learn-en")')) return false;
+    if (!labSource.includes("String(step.item?.originalDe ?? \"\")")) return false;
+    const branch = /if \((swapDirection === "learn-[a-z]{2}"(?:\s*\|\|\s*swapDirection === "learn-[a-z]{2}")*)\) \{\s*\n\s*return \{ de: String\(step\.item\?\.originalDe/u.exec(labSource);
+    if (!branch) return false;
+    const joined = new Set([...branch[1].matchAll(/learn-([a-z]{2})/g)].map((m) => m[1]));
+    // Read from the DIRECTIONS a learner can actually be in, not from which
+    // translation files exist: a table can be half-written for a course that
+    // is not selectable yet (Italian was, when this was rewritten), and
+    // demanding a branch for a direction nobody can choose reports work in
+    // progress as a fault. German is the source side and English has its own
+    // branch above; every other direction is table-backed and must be here.
+    const directionSource = fs.readFileSync(path.join(root, "src/lib/direction.ts"), "utf8");
+    const declared = /const DIRECTIONS: LearningDirection\[\] = \[([^\]]*)\]/u.exec(directionSource);
+    if (!declared) return false;
+    const tableBacked = [...declared[1].matchAll(/"learn-([a-z]{2})"/g)]
+      .map((m) => m[1])
+      .filter((code) => code !== "de" && code !== "en");
+    if (tableBacked.length < 3) return false;
+    const missing = tableBacked.filter((code) => !joined.has(code));
+    if (missing.length) {
+      console.error(`     learn-${missing.join(", learn-")} can be learned but are not in the originalDe branch`);
+      return false;
+    }
+    return true;
+  })()
 );
 
 let queuedAfterStorageFailure = 0;

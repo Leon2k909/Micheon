@@ -466,6 +466,13 @@ export const ES: Record<string, string> = {
   "Ready to learn today?": "¿Listo para aprender hoy?",
   "What would you like to change?": "¿Qué te gustaría cambiar?",
   "How far have you come?": "¿Hasta dónde has llegado?",
+  "Portuguese voice": "Voz portuguesa",
+  "Mute Portuguese voice": "Silenciar la voz portuguesa",
+  "Unmute Portuguese voice": "Reactivar la voz portuguesa",
+  "Portuguese tip: the article belongs with the noun — a casa, o trabalho, a cidade.": "Consejo de portugués: el artículo acompaña al sustantivo — a casa, o trabalho, a cidade.",
+  "Portuguese tip: ão is a very common nasal ending — listen for it in words such as não and estação.": "Consejo de portugués: ão es una terminación nasal muy común: escúchala en palabras como não y estação.",
+  "Portuguese tip: ç is pronounced like s before a, o and u — as in começar.": "Consejo de portugués: la ç suena como una s ante a, o y u, como en começar.",
+  "Portuguese tip: estar is used for states and locations, while ser is used for identity and more lasting characteristics.": "Consejo de portugués: estar sirve para estados y lugares, y ser para la identidad y los rasgos más duraderos.",
   "Packs": "Paquetes",
   "Any pack you pause on the Learn screen is left out of Listen too — nothing from it is played, and unpausing brings it straight back.": "Un paquete que pauses en la pantalla de aprendizaje también queda fuera de la escucha: no suena nada de él, y al reanudarlo vuelve al instante.",
 
