@@ -32,7 +32,8 @@ const built = esbuild.buildSync({
     contents:
       'export { lebenInDeutschlandCourse } from "./src/lib/lebenInDeutschlandCourse.ts";\n' +
       'export { LEBEN_IN_DEUTSCHLAND_EN } from "./src/lib/lebenInDeutschlandTranslationsEn.ts";\n' +
-      'export { LEBEN_IN_DEUTSCHLAND_PL } from "./src/lib/lebenInDeutschlandTranslationsPl.ts";',
+      'export { LEBEN_IN_DEUTSCHLAND_PL } from "./src/lib/lebenInDeutschlandTranslationsPl.ts";\n' +
+      'export { LEBEN_IN_DEUTSCHLAND_FR } from "./src/lib/lebenInDeutschlandTranslationsFr.ts";',
     resolveDir: root,
     sourcefile: "de-translations-entry.ts",
   },
@@ -49,12 +50,14 @@ const compiled = new Module("de-translations-check", module);
 compiled.filename = path.join(root, ".de-translations-check.cjs");
 compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(built.outputFiles[0].text, compiled.filename);
-const { lebenInDeutschlandCourse: course, LEBEN_IN_DEUTSCHLAND_EN, LEBEN_IN_DEUTSCHLAND_PL } = compiled.exports;
+const { lebenInDeutschlandCourse: course, LEBEN_IN_DEUTSCHLAND_EN, LEBEN_IN_DEUTSCHLAND_PL, LEBEN_IN_DEUTSCHLAND_FR } =
+  compiled.exports;
 
-// One course, one set of rules, two target languages.
+// One course, one set of rules, three target languages.
 const TABLES = [
   { language: "English", table: LEBEN_IN_DEUTSCHLAND_EN },
   { language: "Polish", table: LEBEN_IN_DEUTSCHLAND_PL },
+  { language: "French", table: LEBEN_IN_DEUTSCHLAND_FR },
 ];
 
 // Every German string the lesson body can offer a translation for. Paragraphs
@@ -148,6 +151,14 @@ assert.ok(
 assert.ok(
   /pl: \{[^}]*LEBEN_IN_DEUTSCHLAND_PL/.test(lib),
   "the Polish table is not registered in TRANSLATIONS, so nothing would ever look it up"
+);
+assert.ok(
+  /id: "fr"[^}]*from: \[[^\]]*"de"/.test(lib),
+  "French must be registered as translating FROM German, or it is never offered beside this course"
+);
+assert.ok(
+  /fr: \{[^}]*LEBEN_IN_DEUTSCHLAND_FR/.test(lib),
+  "the French table is not registered in TRANSLATIONS, so nothing would ever look it up"
 );
 const shell = fs.readFileSync(path.join(root, "src/prototype/NewUiPrototype.tsx"), "utf8");
 assert.ok(

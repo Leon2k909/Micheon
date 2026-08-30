@@ -75,11 +75,10 @@ const CASES = [
   ["pl", "en", "off,pl"],
   ["pl", "de", "off,pl"],
   ["pl", "fr", "off"],
-  // French reads the English course. Beside Leben in Deutschland it offers
-  // nothing — no table yet — and beside Vivre en France nothing is needed,
-  // because those cards are already French.
+  // French reads both country courses. Beside Vivre en France nothing is
+  // needed, because those cards are already French.
   ["fr", "en", "off,fr"],
-  ["fr", "de", "off"],
+  ["fr", "de", "off,fr"],
   ["fr", "fr", "off"],
 ];
 
