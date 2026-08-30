@@ -58,8 +58,8 @@ import {
   getListenQueueOrder,
   getListenQueueWithin,
   DEFAULT_LISTEN_QUEUE_WITHIN,
-  getListenLevelFilter,
-  getListenUsefulnessFilter,
+  getListenLevelFilters,
+  getListenUsefulnessFilters,
   listenLoopPassForPlayhead,
   listenPlayheadForQueueIndex,
   listenQueueIndexForPlayhead,
@@ -78,8 +78,8 @@ import {
   setListenPetBilingualCaptions,
   setListenQueueOrder,
   setListenQueueWithin,
-  setListenLevelFilter,
-  setListenUsefulnessFilter,
+  setListenLevelFilters,
+  setListenUsefulnessFilters,
   setListenReviewLevel,
   snoozeListenItem,
   listenQueueHasGroups,
@@ -89,13 +89,11 @@ import {
   type ListenLanguageOrder,
   type ListenQueueOrder,
   type ListenQueueWithin,
-  type ListenLevelFilter,
-  type ListenUsefulnessFilter,
   type ListenReviewChange,
   type ListenReviewLevel,
 } from "@/lib/listenMode";
 import { cefrRungLabel, cefrStepLabel, CEFR_STEPS, type CefrStep } from "@/lib/cefr";
-import { USEFULNESS_FILTERS } from "@/lib/conversationPriority";
+import { USEFULNESS_FILTERS, type ConversationUsefulness } from "@/lib/conversationPriority";
 import { ListenTest } from "@/components/listen/ListenTest";
 import { LISTEN_TEST_MAX_QUESTIONS } from "@/lib/listenTest";
 import { TappableSentence } from "@/components/shared/TappableSentence";
@@ -426,11 +424,11 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   const [queueWithin, setQueueWithin] = useState<ListenQueueWithin>(
     () => getListenQueueWithin(learningDirection)
   );
-  const [levelFilter, setLevelFilter] = useState<ListenLevelFilter>(
-    () => getListenLevelFilter(learningDirection)
+  const [levelFilter, setLevelFilter] = useState<Set<CefrStep>>(
+    () => getListenLevelFilters(learningDirection)
   );
-  const [usefulnessFilter, setUsefulnessFilter] = useState<ListenUsefulnessFilter>(
-    () => getListenUsefulnessFilter(learningDirection)
+  const [usefulnessFilter, setUsefulnessFilter] = useState<Set<ConversationUsefulness>>(
+    () => getListenUsefulnessFilters(learningDirection)
   );
   const [mixedCounts, setMixedCounts] = useState(() => getListenMixedCounts(learningDirection));
   useEffect(() => { setMixedCounts(getListenMixedCounts(learningDirection)); }, [learningDirection, profile?.id]);
@@ -519,7 +517,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
         direction: learningDirection,
         order: queueOrder,
         within: queueWithin,
-        level: levelFilter,
+        levels: levelFilter,
         usefulness: usefulnessFilter,
       })
       : []),
@@ -1321,12 +1319,24 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     }
   };
 
-  const chooseLevelFilter = (level: ListenLevelFilter) => {
-    setLevelFilter(setListenLevelFilter(level, learningDirection));
+  /**
+   * Tick and untick, rather than pick one.
+   *
+   * An empty set is every level, so unticking the last box returns to
+   * playing everything instead of emptying the queue — "none selected" and
+   * "no filter" are the same statement, and treating them differently would
+   * leave a control whose only escape is the button that clears both.
+   */
+  const toggleLevelFilter = (level: CefrStep) => {
+    const next = new Set(levelFilter);
+    if (next.has(level)) next.delete(level); else next.add(level);
+    setLevelFilter(setListenLevelFilters(next, learningDirection));
   };
 
-  const chooseUsefulnessFilter = (usefulness: ListenUsefulnessFilter) => {
-    setUsefulnessFilter(setListenUsefulnessFilter(usefulness, learningDirection));
+  const toggleUsefulnessFilter = (band: ConversationUsefulness) => {
+    const next = new Set(usefulnessFilter);
+    if (next.has(band)) next.delete(band); else next.add(band);
+    setUsefulnessFilter(setListenUsefulnessFilters(next, learningDirection));
   };
 
   const commitDelaySeconds = (seconds: number) => {
@@ -1355,7 +1365,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     // usual. Told to wait for content that is already loaded, with the only
     // controls that would undo it no longer on screen, there is no way back
     // except clearing storage. The narrowing says so and offers the way out.
-    const narrowed = levelFilter !== "all" || usefulnessFilter !== "all";
+    const narrowed = levelFilter.size > 0 || usefulnessFilter.size > 0;
     return active ? (
       <section className="card p-6 text-center">
         <Headphones className="mx-auto h-8 w-8 text-[var(--text-3)]" />
@@ -1371,7 +1381,10 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
           <button
             className="mt-4 min-h-10 rounded-xl border border-[var(--accent)] bg-[var(--accent)] px-4 py-2 text-xs font-black text-[var(--accent-text)] shadow-[0_3px_0_var(--accent-dark)]"
             data-testid="listen-clear-filters"
-            onClick={() => { chooseLevelFilter("all"); chooseUsefulnessFilter("all"); }}
+            onClick={() => {
+              setLevelFilter(setListenLevelFilters([], learningDirection));
+              setUsefulnessFilter(setListenUsefulnessFilters([], learningDirection));
+            }}
             type="button"
           >
             {ui("Play everything again")}
@@ -2001,16 +2014,32 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">
                 {ui("Order decides what comes first and still plays everything. This decides what is in the queue at all, so you can work through one level and stop.")}
               </p>
+              {/* Checkboxes, not radios: several levels can be on at once,
+                  and none on means every level rather than none. */}
               <div
                 aria-label={ui("Level")}
                 className="mt-2 grid grid-cols-3 gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-1.5 sm:grid-cols-4"
-                role="radiogroup"
+                role="group"
               >
-                {(["all", ...CEFR_STEPS] as ListenLevelFilter[]).map((value) => {
-                  const selected = levelFilter === value;
+                <button
+                  aria-pressed={levelFilter.size === 0}
+                  className={cn(
+                    "min-h-10 rounded-xl border px-2 py-2 text-[11px] font-black transition-[background-color,border-color,color,transform,box-shadow] duration-150",
+                    levelFilter.size === 0
+                      ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-text)] shadow-[0_3px_0_var(--accent-dark)]"
+                      : "border-transparent bg-transparent text-[var(--text-2)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                  )}
+                  data-testid="listen-level-all"
+                  onClick={() => setLevelFilter(setListenLevelFilters([], learningDirection))}
+                  type="button"
+                >
+                  {ui("All levels")}
+                </button>
+                {CEFR_STEPS.map((value) => {
+                  const selected = levelFilter.has(value);
                   return (
                     <button
-                      aria-checked={selected}
+                      aria-pressed={selected}
                       className={cn(
                         "min-h-10 rounded-xl border px-2 py-2 text-[11px] font-black transition-[background-color,border-color,color,transform,box-shadow] duration-150",
                         selected
@@ -2019,11 +2048,10 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                       )}
                       data-testid={`listen-level-${value}`}
                       key={value}
-                      onClick={() => chooseLevelFilter(value)}
-                      role="radio"
+                      onClick={() => toggleLevelFilter(value)}
                       type="button"
                     >
-                      {value === "all" ? ui("All levels") : cefrStepLabel(value as CefrStep)}
+                      {cefrStepLabel(value)}
                     </button>
                   );
                 })}
@@ -2037,13 +2065,18 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               <div
                 aria-label={ui("Usefulness")}
                 className="mt-2 grid grid-cols-1 gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-1.5 sm:grid-cols-2"
-                role="radiogroup"
+                role="group"
               >
                 {USEFULNESS_FILTERS.map((option) => {
-                  const selected = usefulnessFilter === option.key;
+                  // "all" is the OFF switch for the whole group, not a band —
+                  // it clears the set rather than joining it.
+                  const isAll = option.key === "all";
+                  const selected = isAll
+                    ? usefulnessFilter.size === 0
+                    : usefulnessFilter.has(option.key as ConversationUsefulness);
                   return (
                     <button
-                      aria-checked={selected}
+                      aria-pressed={selected}
                       className={cn(
                         "min-h-10 rounded-xl border px-2 py-2 text-[11px] font-black leading-tight transition-[background-color,border-color,color,transform,box-shadow] duration-150",
                         selected
@@ -2052,8 +2085,10 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                       )}
                       data-testid={`listen-usefulness-${option.key}`}
                       key={option.key}
-                      onClick={() => chooseUsefulnessFilter(option.key)}
-                      role="radio"
+                      onClick={() => {
+                        if (isAll) setUsefulnessFilter(setListenUsefulnessFilters([], learningDirection));
+                        else toggleUsefulnessFilter(option.key as ConversationUsefulness);
+                      }}
                       type="button"
                     >
                       {ui(option.label)}
@@ -2061,6 +2096,18 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                   );
                 })}
               </div>
+            </fieldset>
+            {/* Filtering by PACK already exists and already applies here —
+                buildListenQueue drops paused packs before it builds anything.
+                It lives on the Learn screen, where the whole pack list can be
+                searched and paused in bulk, and rebuilding a second copy of
+                that here would be two lists to keep agreeing. What was
+                missing is that nothing said it reaches Listen. */}
+            <fieldset className="mt-4 border-t border-[var(--border)] pt-4">
+              <legend className="text-xs font-black text-[var(--text-2)]">{ui("Packs")}</legend>
+              <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">
+                {ui("Any pack you pause on the Learn screen is left out of Listen too — nothing from it is played, and unpausing brings it straight back.")}
+              </p>
             </fieldset>
             <div className="mt-4 rounded-2xl border border-[var(--accent)]/25 bg-[var(--accent-dim)] p-3.5">
               <div className="flex items-start gap-3">

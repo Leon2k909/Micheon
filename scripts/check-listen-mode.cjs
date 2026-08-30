@@ -1300,9 +1300,9 @@ check("the card says which rung it is on, and the picker offers the order by nam
  * and asking for it in the word list mean the same thing.
  */
 const everything = buildListenQueue(parts, {}, { contentSource: "mixed", order: "level" });
-const justA2 = buildListenQueue(parts, {}, { contentSource: "mixed", order: "level", level: "a2" });
+const justA2 = buildListenQueue(parts, {}, { contentSource: "mixed", order: "level", levels: ["a2"] });
 const justEssential = buildListenQueue(parts, {}, {
-  contentSource: "mixed", order: "level", usefulness: "essential",
+  contentSource: "mixed", order: "level", usefulness: ["essential"],
 });
 check(`the level filter narrows the queue (${everything.length} to ${justA2.length})`,
   justA2.length > 0 && justA2.length < everything.length
@@ -1311,8 +1311,35 @@ check(`the usefulness filter narrows the queue (${everything.length} to ${justEs
   justEssential.length > 0 && justEssential.length < everything.length);
 check("narrowing by both is narrower than either alone",
   buildListenQueue(parts, {}, {
-    contentSource: "mixed", order: "level", level: "a2", usefulness: "essential",
+    contentSource: "mixed", order: "level", levels: ["a2"], usefulness: ["essential"],
   }).length <= Math.min(justA2.length, justEssential.length));
+
+/**
+ * SEVERAL levels at once, which is the whole reason these stopped being
+ * radios: "A1 and A2, nothing above" is the question a learner near the start
+ * of a course actually has, and one-of-six cannot ask it.
+ */
+const justA1 = buildListenQueue(parts, {}, { contentSource: "mixed", order: "level", levels: ["a1"] });
+const a1PlusA2 = buildListenQueue(parts, {}, { contentSource: "mixed", order: "level", levels: ["a1", "a2"] });
+check(`two levels together is the sum of both, not one of them (${justA1.length} + ${justA2.length} = ${a1PlusA2.length})`,
+  a1PlusA2.length === justA1.length + justA2.length && justA1.length > 0);
+check("and every card in it is one of the two levels asked for",
+  a1PlusA2.every((card) => !card.levelLabel || card.levelLabel === "A1" || card.levelLabel === "A2"));
+
+// Empty means everything, not nothing — unticking the last box has to be the
+// same as never having filtered, or the control is a trap.
+check("no levels selected plays every level",
+  buildListenQueue(parts, {}, { contentSource: "mixed", order: "level", levels: [] }).length === everything.length);
+check("no bands selected plays every band",
+  buildListenQueue(parts, {}, { contentSource: "mixed", order: "level", usefulness: [] }).length === everything.length);
+
+// Several bands, and a value the controls cannot show is ignored rather than
+// silently narrowing the queue to something nothing can undo.
+const twoBands = buildListenQueue(parts, {}, {
+  contentSource: "mixed", order: "level", usefulness: ["essential", "everyday"],
+});
+check(`two usefulness bands is wider than one (${justEssential.length} -> ${twoBands.length})`,
+  twoBands.length > justEssential.length);
 
 /**
  * And a filter must never be a one-way door. The no-cards return sits above
@@ -1323,13 +1350,24 @@ check("narrowing by both is narrower than either alone",
  */
 check("an empty queue caused by a filter says so and offers the way back",
   view.includes('data-testid="listen-clear-filters"')
-  && view.includes('const narrowed = levelFilter !== "all" || usefulnessFilter !== "all"')
+  && view.includes("const narrowed = levelFilter.size > 0 || usefulnessFilter.size > 0")
   && view.includes('ui("Nothing matches those filters")'));
 check("the filters are offered as controls, not just honoured in code",
   view.includes("data-testid={`listen-level-${value}`}")
   && view.includes("data-testid={`listen-usefulness-${option.key}`}")
-  && view.includes("chooseLevelFilter(")
-  && view.includes("chooseUsefulnessFilter("));
+  && view.includes("toggleLevelFilter(")
+  && view.includes("toggleUsefulnessFilter("));
+// Ticking rather than picking. aria-pressed is what tells a screen reader
+// these combine; role="radio" would say the opposite of what they now do.
+check("the filter buttons say they are toggles, not a one-of-six choice",
+  view.includes("aria-pressed={selected}")
+  && !/aria-label=\{ui\("Level"\)\}[\s\S]{0,200}?role="radiogroup"/u.test(view)
+  && !/aria-label=\{ui\("Usefulness"\)\}[\s\S]{0,200}?role="radiogroup"/u.test(view));
+// Pack filtering already reaches Listen through withoutMutedPacks. What was
+// missing is that nothing said so, which is why it read as absent.
+check("the panel says pausing a pack keeps it out of Listen",
+  view.includes('ui("Packs")')
+  && /paused? on the Learn screen is left out of Listen/u.test(view));
 
 // The same failure the two trackers shipped with: a filter read by the memo
 // but missing from its dependency array is a control that moves and changes

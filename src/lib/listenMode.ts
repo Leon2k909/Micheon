@@ -399,46 +399,71 @@ export function setListenQueueOrder(
  * learner who filters the word list to A2 and then opens Listen should be able
  * to ask for the same thing in the same words.
  */
-export function getListenLevelFilter(
-  direction: LearningDirection = getLearningDirection()
-): ListenLevelFilter {
+/**
+ * A SET of levels, not one of them.
+ *
+ * The first version of these was a radio group, which answers "only A1" and
+ * cannot answer "A1 and A2, nothing above" — and the second is the more
+ * useful question, because a learner working through the start of a course
+ * wants both of the levels they have met and none of the four they have not.
+ * Radio also has no way to say "everything except the specialist packs":
+ * excluding one band meant naming every band you did want, one at a time,
+ * which a single-select cannot hold at all.
+ *
+ * The empty set means no restriction rather than nothing — a filter nobody
+ * has touched must not empty the queue, and unticking the last box is the
+ * same thing as not having filtered.
+ */
+function readSetSetting<T extends string>(key: string, allowed: readonly T[], direction: LearningDirection): Set<T> {
   try {
-    const value = window.localStorage.getItem(courseSettingKey(LEVEL_FILTER_KEY, direction));
-    if (value === "all" || CEFR_STEPS.includes(value as CefrStep)) return value as ListenLevelFilter;
+    const raw = window.localStorage.getItem(courseSettingKey(key, direction));
+    if (!raw) return new Set();
+    const wanted = new Set(raw.split(",").map((entry) => entry.trim()).filter(Boolean));
+    // Filtered against the allowed list, so a value left over from an older
+    // build (or a hand-edited store) cannot silently narrow the queue to
+    // something the controls cannot show and therefore cannot undo.
+    return new Set(allowed.filter((value) => wanted.has(value)));
   } catch { /* storage blocked: play everything */ }
-  return "all";
+  return new Set();
 }
 
-export function setListenLevelFilter(
-  level: ListenLevelFilter,
-  direction: LearningDirection = getLearningDirection()
-): ListenLevelFilter {
-  const next = level === "all" || CEFR_STEPS.includes(level as CefrStep) ? level : "all";
+function writeSetSetting<T extends string>(key: string, values: Iterable<T>, allowed: readonly T[], direction: LearningDirection): Set<T> {
+  const wanted = new Set(values);
+  const next = new Set(allowed.filter((value) => wanted.has(value)));
   try {
-    window.localStorage.setItem(courseSettingKey(LEVEL_FILTER_KEY, direction), next);
+    window.localStorage.setItem(courseSettingKey(key, direction), [...next].join(","));
   } catch { /* keep Listen usable */ }
   return next;
 }
 
-export function getListenUsefulnessFilter(
+export function getListenLevelFilters(
   direction: LearningDirection = getLearningDirection()
-): ListenUsefulnessFilter {
-  try {
-    const value = window.localStorage.getItem(courseSettingKey(USEFULNESS_FILTER_KEY, direction));
-    if (USEFULNESS_FILTERS.some((option) => option.key === value)) return value as ListenUsefulnessFilter;
-  } catch { /* storage blocked: play everything */ }
-  return "all";
+): Set<CefrStep> {
+  return readSetSetting(LEVEL_FILTER_KEY, CEFR_STEPS, direction);
 }
 
-export function setListenUsefulnessFilter(
-  usefulness: ListenUsefulnessFilter,
+export function setListenLevelFilters(
+  levels: Iterable<CefrStep>,
   direction: LearningDirection = getLearningDirection()
-): ListenUsefulnessFilter {
-  const next = USEFULNESS_FILTERS.some((option) => option.key === usefulness) ? usefulness : "all";
-  try {
-    window.localStorage.setItem(courseSettingKey(USEFULNESS_FILTER_KEY, direction), next);
-  } catch { /* keep Listen usable */ }
-  return next;
+): Set<CefrStep> {
+  return writeSetSetting(LEVEL_FILTER_KEY, levels, CEFR_STEPS, direction);
+}
+
+const USEFULNESS_KEYS = USEFULNESS_FILTERS
+  .map((option) => option.key)
+  .filter((key): key is ConversationUsefulness => key !== "all");
+
+export function getListenUsefulnessFilters(
+  direction: LearningDirection = getLearningDirection()
+): Set<ConversationUsefulness> {
+  return readSetSetting(USEFULNESS_FILTER_KEY, USEFULNESS_KEYS, direction);
+}
+
+export function setListenUsefulnessFilters(
+  bands: Iterable<ConversationUsefulness>,
+  direction: LearningDirection = getLearningDirection()
+): Set<ConversationUsefulness> {
+  return writeSetSetting(USEFULNESS_FILTER_KEY, bands, USEFULNESS_KEYS, direction);
 }
 
 export function getListenNextCardDelayMs(): number {
@@ -898,8 +923,10 @@ export type ListenQueueOptions = {
   direction?: LearningDirection;
   order?: ListenQueueOrder;
   within?: ListenQueueWithin;
-  level?: ListenLevelFilter;
-  usefulness?: ListenUsefulnessFilter;
+  /** Levels to keep. Empty or absent plays every level. */
+  levels?: Iterable<CefrStep>;
+  /** Usefulness bands to keep. Empty or absent plays every band. */
+  usefulness?: Iterable<ConversationUsefulness>;
 };
 
 /**
@@ -974,20 +1001,23 @@ export function buildListenQueue(
   // Narrowing happens BEFORE ranking, not after: popularity is stored as a
   // percentile of the queue, so filtering afterwards would leave a queue whose
   // positions were normalised against cards that are no longer in it.
-  const levelFilter = options.level ?? getListenLevelFilter(direction);
-  const usefulnessFilter = options.usefulness ?? getListenUsefulnessFilter(direction);
-  const narrowing = levelFilter !== "all" || usefulnessFilter !== "all";
+  // Empty means no restriction, in both. Anything else is the set of things
+  // to keep, so a learner can ask for A1 AND A2 and nothing above, or for
+  // everything except one band — neither of which a single choice can say.
+  const levelFilter = new Set(options.levels ?? getListenLevelFilters(direction));
+  const usefulnessFilter = new Set(options.usefulness ?? getListenUsefulnessFilters(direction));
+  const narrowing = levelFilter.size > 0 || usefulnessFilter.size > 0;
   const keep = (partKey: unknown, ownLevel?: string) => {
     if (!narrowing) return true;
     const key = String(partKey ?? "");
-    if (levelFilter !== "all") {
+    if (levelFilter.size > 0) {
       // A word carries its own level and a sentence takes its pack's, which is
       // exactly how the two trackers filter them. Asking for A2 in Listen and
       // asking for it in the word list must not answer differently.
       const level = ownLevel ?? parts[key]?.level;
-      if (cefrStep(level) !== levelFilter) return false;
+      if (!levelFilter.has(cefrStep(level))) return false;
     }
-    if (usefulnessFilter !== "all" && conversationPriorityInfo(key).key !== usefulnessFilter) return false;
+    if (usefulnessFilter.size > 0 && !usefulnessFilter.has(conversationPriorityInfo(key).key)) return false;
     return true;
   };
 
