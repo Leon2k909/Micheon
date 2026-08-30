@@ -3,6 +3,7 @@ import { resolveInterfaceLanguage, type ResolvedInterfaceLanguage } from "@/lib/
 import { syncLocalStorageItem } from "@/lib/profileStorage";
 import { LIFE_IN_THE_UK_DE } from "@/lib/lifeInTheUkTranslationsDe";
 import { LIFE_IN_THE_UK_PL } from "@/lib/lifeInTheUkTranslationsPl";
+import { LEBEN_IN_DEUTSCHLAND_PL } from "@/lib/lebenInDeutschlandTranslationsPl";
 import { LEBEN_IN_DEUTSCHLAND_EN } from "@/lib/lebenInDeutschlandTranslationsEn";
 import { VIVRE_EN_FRANCE_DE } from "@/lib/vivreEnFranceTranslationsDe";
 import { VIVRE_EN_FRANCE_EN } from "@/lib/vivreEnFranceTranslationsEn";
@@ -62,16 +63,16 @@ export const TRANSLATION_LANGUAGES: Array<{
   { id: "off", label: "No translation", endonym: "No translation", from: null },
   { id: "de", label: "German", endonym: "Deutsch", from: ["en", "fr"] },
   { id: "en", label: "English", endonym: "English", from: ["de", "fr"] },
-  // Only beside English so far: the Polish table covers Life in the UK. The
-  // German and French courses offer nothing in a Polish app rather than a menu
-  // entry that would answer in English.
-  { id: "pl", label: "Polish", endonym: "Polski", from: ["en"] },
+  // English and German: those two courses have Polish tables. The French
+  // course still offers nothing in a Polish app rather than a menu entry that
+  // would answer in French.
+  { id: "pl", label: "Polish", endonym: "Polski", from: ["en", "de"] },
 ];
 
 const TRANSLATIONS: Partial<Record<TranslationLanguage, Record<string, string>>> = {
   de: { ...LIFE_IN_THE_UK_DE, ...VIVRE_EN_FRANCE_DE, ...CSHARP_COURSE_DE },
   en: { ...LEBEN_IN_DEUTSCHLAND_EN, ...VIVRE_EN_FRANCE_EN },
-  pl: { ...LIFE_IN_THE_UK_PL },
+  pl: { ...LIFE_IN_THE_UK_PL, ...LEBEN_IN_DEUTSCHLAND_PL },
 };
 
 /**

@@ -31,7 +31,8 @@ const built = esbuild.buildSync({
   stdin: {
     contents:
       'export { lebenInDeutschlandCourse } from "./src/lib/lebenInDeutschlandCourse.ts";\n' +
-      'export { LEBEN_IN_DEUTSCHLAND_EN } from "./src/lib/lebenInDeutschlandTranslationsEn.ts";',
+      'export { LEBEN_IN_DEUTSCHLAND_EN } from "./src/lib/lebenInDeutschlandTranslationsEn.ts";\n' +
+      'export { LEBEN_IN_DEUTSCHLAND_PL } from "./src/lib/lebenInDeutschlandTranslationsPl.ts";',
     resolveDir: root,
     sourcefile: "de-translations-entry.ts",
   },
@@ -48,7 +49,13 @@ const compiled = new Module("de-translations-check", module);
 compiled.filename = path.join(root, ".de-translations-check.cjs");
 compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(built.outputFiles[0].text, compiled.filename);
-const { lebenInDeutschlandCourse: course, LEBEN_IN_DEUTSCHLAND_EN: table } = compiled.exports;
+const { lebenInDeutschlandCourse: course, LEBEN_IN_DEUTSCHLAND_EN, LEBEN_IN_DEUTSCHLAND_PL } = compiled.exports;
+
+// One course, one set of rules, two target languages.
+const TABLES = [
+  { language: "English", table: LEBEN_IN_DEUTSCHLAND_EN },
+  { language: "Polish", table: LEBEN_IN_DEUTSCHLAND_PL },
+];
 
 // Every German string the lesson body can offer a translation for. Paragraphs
 // and callouts count because they are tappable too — the marker only appears
@@ -71,12 +78,14 @@ translatable.delete(undefined);
 
 const failures = [];
 
-const orphans = Object.keys(table).filter((key) => !translatable.has(key));
-if (orphans.length) {
-  failures.push(
-    `${orphans.length} English key(s) match no card or heading in the course, so they can never be shown:\n`
-    + orphans.slice(0, 8).map((key) => `      ${JSON.stringify(key.slice(0, 90))}`).join("\n")
-  );
+for (const { language, table } of TABLES) {
+  const orphans = Object.keys(table).filter((key) => !translatable.has(key));
+  if (orphans.length) {
+    failures.push(
+      `${orphans.length} ${language} key(s) match no card or heading in the course, so they can never be shown:\n`
+      + orphans.slice(0, 8).map((key) => `      ${JSON.stringify(key.slice(0, 90))}`).join("\n")
+    );
+  }
 }
 
 // A translation identical to its German is a paste that was never translated
@@ -90,31 +99,35 @@ const looksLikeSentence = (text) => {
   const words = trimmed.split(/\s+/).length;
   return (words > 1 && /[.!?]$/.test(trimmed)) || words > 6;
 };
-const untranslated = Object.entries(table).filter(([key, value]) => key === value && looksLikeSentence(key));
-if (untranslated.length) {
-  failures.push(
-    `${untranslated.length} sentence(s) are identical to their German, which is a paste that was never translated: `
-    + untranslated.slice(0, 4).map(([key]) => JSON.stringify(key.slice(0, 60))).join(", ")
-  );
-}
+for (const { language, table } of TABLES) {
+  const untranslated = Object.entries(table).filter(([key, value]) => key === value && looksLikeSentence(key));
+  if (untranslated.length) {
+    failures.push(
+      `${untranslated.length} ${language} sentence(s) are identical to their German, which is a paste that was never translated: `
+      + untranslated.slice(0, 4).map(([key]) => JSON.stringify(key.slice(0, 60))).join(", ")
+    );
+  }
 
-const empty = Object.entries(table).filter(([, value]) => !String(value).trim());
-if (empty.length) failures.push(`${empty.length} entries have an empty translation`);
+  const empty = Object.entries(table).filter(([, value]) => !String(value).trim());
+  if (empty.length) failures.push(`${empty.length} ${language} entries have an empty translation`);
+}
 
 // The names of laws and institutions are the point of sitting the test in
 // German. A table that had translated "Grundgesetz" into "Basic Law"
 // everywhere would teach the wrong word for the day itself.
 const KEEP_GERMAN = ["Grundgesetz", "Bundestag", "Bundesrat", "Bundeskanzler", "Bundespräsident"];
-for (const term of KEEP_GERMAN) {
-  const withTerm = Object.entries(table).filter(([key]) => key.includes(term));
-  const dropped = withTerm.filter(([, value]) => !value.includes(term));
-  // A handful may legitimately reword; a majority losing the term is the
-  // failure worth catching.
-  if (withTerm.length >= 4 && dropped.length > withTerm.length / 2) {
-    failures.push(
-      `"${term}" survives into the English in only ${withTerm.length - dropped.length} of ${withTerm.length} entries — `
-      + "the German name is what the test asks for and should stay in the sentence"
-    );
+for (const { language, table } of TABLES) {
+  for (const term of KEEP_GERMAN) {
+    const withTerm = Object.entries(table).filter(([key]) => key.includes(term));
+    const dropped = withTerm.filter(([, value]) => !value.includes(term));
+    // A handful may legitimately reword; a majority losing the term is the
+    // failure worth catching.
+    if (withTerm.length >= 4 && dropped.length > withTerm.length / 2) {
+      failures.push(
+        `"${term}" survives into the ${language} in only ${withTerm.length - dropped.length} of ${withTerm.length} entries — `
+        + "the German name is what the test asks for and should stay in the sentence"
+      );
+    }
   }
 }
 
@@ -126,7 +139,15 @@ assert.ok(
 );
 assert.ok(
   /en: \{[^}]*LEBEN_IN_DEUTSCHLAND_EN/.test(lib),
-  "the table is not registered in TRANSLATIONS, so nothing would ever look it up"
+  "the English table is not registered in TRANSLATIONS, so nothing would ever look it up"
+);
+assert.ok(
+  /id: "pl"[^}]*from: \[[^\]]*"de"/.test(lib),
+  "Polish must be registered as translating FROM German, or it is never offered beside this course"
+);
+assert.ok(
+  /pl: \{[^}]*LEBEN_IN_DEUTSCHLAND_PL/.test(lib),
+  "the Polish table is not registered in TRANSLATIONS, so nothing would ever look it up"
 );
 const shell = fs.readFileSync(path.join(root, "src/prototype/NewUiPrototype.tsx"), "utf8");
 assert.ok(
@@ -144,12 +165,11 @@ if (failures.length) {
   process.exit(1);
 }
 
-const covered = Object.keys(table).length;
 const total = translatable.size;
+const coverage = TABLES.map(({ language, table }) => {
+  const covered = Object.keys(table).length;
+  return `${covered} of ${total} have ${language} (${Math.floor((covered / total) * 100)}%)`;
+}).join(", ");
 console.log(
-  `check-de-translations: ${covered} of ${total} translatable strings have English `
-  // Floor, not round: 630 of 633 is not "100%", and reporting it as such is
-  // how the last few strings stay missing for ever.
-  + `(${Math.floor((covered / total) * 100)}%), every key matches real course text, `
-  + "and the picker offers it beside the German course"
+  `check-de-translations: ${coverage}, every key matches real course text, and the picker offers them beside the German course`
 );
