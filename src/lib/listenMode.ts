@@ -97,6 +97,8 @@ const CONTENT_SOURCE_KEY = "gl-listen-content-source";
 const MIXED_COUNTS_KEY = "gl-listen-mixed-counts-v1";
 const QUEUE_ORDER_KEY = "gl-listen-queue-order";
 const QUEUE_WITHIN_KEY = "gl-listen-queue-within-v1";
+const RETURN_GAP_KEY = "gl-listen-return-gap-v1";
+const RETURN_SCOPE_KEY = "gl-listen-return-scope-v1";
 const LEVEL_FILTER_KEY = "gl-listen-level-filter-v1";
 const USEFULNESS_FILTER_KEY = "gl-listen-usefulness-filter-v1";
 // v2 deliberately separates cursors by queue order. The original key only
@@ -155,6 +157,47 @@ export const LISTEN_QUEUE_ORDERS: ListenQueueOrder[] = ["level", "common", "lear
  */
 export type ListenQueueWithin = "common" | "hardest" | "least-heard" | "newest" | "learning";
 export const LISTEN_QUEUE_WITHINS: ListenQueueWithin[] = ["common", "hardest", "least-heard", "newest", "learning"];
+/**
+ * How long after hearing something before it may play again.
+ *
+ * "immediate" is what Listen did before there was a choice: anything the order
+ * put in front of you played, whether you heard it a minute ago or never. That
+ * is right for a first pass through a new pack and wrong for everything after
+ * it — a narrow filter turns into the same twenty cards all evening, which
+ * feels like studying and is not.
+ *
+ * "due" defers to the review ladder rather than a clock: nothing you have
+ * already answered correctly comes back until the ladder says it is due, at
+ * one day, then three, ten, thirty, a hundred and eighty. It is the strictest
+ * setting and the one that matches how the rest of the app schedules.
+ */
+export type ListenReturnGap = "immediate" | "hours" | "day" | "due";
+export const LISTEN_RETURN_GAPS: ListenReturnGap[] = ["immediate", "hours", "day", "due"];
+/** A day is the default because a wait you can sit through is not a wait. */
+export const DEFAULT_LISTEN_RETURN_GAP: ListenReturnGap = "day";
+const HOUR_MS = 60 * 60 * 1000;
+export const LISTEN_RETURN_GAP_MS: Record<ListenReturnGap, number> = {
+  immediate: 0,
+  hours: 4 * HOUR_MS,
+  day: 24 * HOUR_MS,
+  // Not a duration: "due" asks the review ladder instead of the clock, and the
+  // number here is only what a caller sees if it reads the map directly.
+  due: Number.POSITIVE_INFINITY,
+};
+
+/**
+ * Which cards the wait applies to.
+ *
+ * Words and sentences are learned differently and a learner may well want the
+ * wait on one and not the other: a word met once is worth meeting again soon,
+ * while a whole sentence heard twice in an evening teaches the rhythm and not
+ * much else. Both by default, because that is what "already heard it" means
+ * to somebody who has not thought about it.
+ */
+export type ListenReturnScope = "words" | "sentences" | "both";
+export const LISTEN_RETURN_SCOPES: ListenReturnScope[] = ["both", "words", "sentences"];
+export const DEFAULT_LISTEN_RETURN_SCOPE: ListenReturnScope = "both";
+
 /** The order that leaves no ties to break, so nothing can be asked second. */
 export const LISTEN_QUEUE_ORDERS_WITHOUT_GROUPS: ListenQueueOrder[] = ["common"];
 /** Commonality, which is what the single-key order always used. */
@@ -365,6 +408,54 @@ export function setListenQueueWithin(
     window.localStorage.setItem(courseSettingKey(QUEUE_WITHIN_KEY, direction), next);
   } catch { /* keep Listen usable */ }
   return next;
+}
+
+export function getListenReturnGap(
+  direction: LearningDirection = getLearningDirection()
+): ListenReturnGap {
+  try {
+    const value = window.localStorage.getItem(courseSettingKey(RETURN_GAP_KEY, direction));
+    if (LISTEN_RETURN_GAPS.includes(value as ListenReturnGap)) return value as ListenReturnGap;
+  } catch { /* storage blocked: use the documented default */ }
+  return DEFAULT_LISTEN_RETURN_GAP;
+}
+
+export function setListenReturnGap(
+  gap: ListenReturnGap,
+  direction: LearningDirection = getLearningDirection()
+): ListenReturnGap {
+  const next = LISTEN_RETURN_GAPS.includes(gap) ? gap : DEFAULT_LISTEN_RETURN_GAP;
+  try {
+    window.localStorage.setItem(courseSettingKey(RETURN_GAP_KEY, direction), next);
+  } catch { /* keep Listen usable */ }
+  return next;
+}
+
+export function getListenReturnScope(
+  direction: LearningDirection = getLearningDirection()
+): ListenReturnScope {
+  try {
+    const value = window.localStorage.getItem(courseSettingKey(RETURN_SCOPE_KEY, direction));
+    if (LISTEN_RETURN_SCOPES.includes(value as ListenReturnScope)) return value as ListenReturnScope;
+  } catch { /* storage blocked: use the documented default */ }
+  return DEFAULT_LISTEN_RETURN_SCOPE;
+}
+
+export function setListenReturnScope(
+  scope: ListenReturnScope,
+  direction: LearningDirection = getLearningDirection()
+): ListenReturnScope {
+  const next = LISTEN_RETURN_SCOPES.includes(scope) ? scope : DEFAULT_LISTEN_RETURN_SCOPE;
+  try {
+    window.localStorage.setItem(courseSettingKey(RETURN_SCOPE_KEY, direction), next);
+  } catch { /* keep Listen usable */ }
+  return next;
+}
+
+/** Whether the wait covers this kind of card at all. */
+export function listenReturnCovers(scope: ListenReturnScope, kind: "word" | "sentence"): boolean {
+  if (scope === "both") return true;
+  return scope === "words" ? kind === "word" : kind === "sentence";
 }
 
 /** True when the order groups its cards, so asking what leads a group means
@@ -899,6 +990,8 @@ export type ListenQueueOptions = {
   direction?: LearningDirection;
   order?: ListenQueueOrder;
   within?: ListenQueueWithin;
+  returnGap?: ListenReturnGap;
+  returnScope?: ListenReturnScope;
   level?: ListenLevelFilter;
   usefulness?: ListenUsefulnessFilter;
 };
@@ -921,6 +1014,8 @@ export function buildListenQueue(
   const content = options.contentSource ?? getListenContentSource(direction);
   const order = options.order ?? getListenQueueOrder(direction);
   const within = options.within ?? getListenQueueWithin(direction);
+  const returnGap = options.returnGap ?? getListenReturnGap(direction);
+  const returnScope = options.returnScope ?? getListenReturnScope(direction);
   const corpusIndex = buildCorpusIndex(parts);
 
   // Pack position doubles as "how recently was this added": curriculum order
@@ -1165,8 +1260,43 @@ export function buildListenQueue(
     return 3;
   };
 
+  /**
+   * Is this card still resting?
+   *
+   * Resting is not the same as excluded. A filter can empty a queue, and a
+   * listening mode with nothing in it is a bug rather than a lesson, so a
+   * rested card sorts to the BACK instead of leaving. On the whole course the
+   * back is twenty thousand cards away and amounts to not coming back; on a
+   * narrow filter it means "after everything else", which is the most this
+   * setting can honestly promise there.
+   *
+   * Never heard means never rested: a card that has not played yet cannot be
+   * one you have already had.
+   */
+  const resting = (item: ListenItem): boolean => {
+    if (returnGap === "immediate") return false;
+    if (!listenReturnCovers(returnScope, item.kind)) return false;
+    const heardAt = listenStamp(item);
+    if (!heardAt) return false;
+    // "Due" hands the decision to the review ladder rather than the clock, so
+    // a card rests exactly as long as the ladder says and no longer. One that
+    // has never been graded has no ladder to consult and rests a day, which is
+    // the shortest thing the ladder ever asks for.
+    if (returnGap === "due") {
+      const record = recordFor(item);
+      if (record?.lastGrade === "know") return !isDueForReview(record, now);
+      return now - heardAt < LISTEN_RETURN_GAP_MS.day;
+    }
+    return now - heardAt < LISTEN_RETURN_GAP_MS[returnGap];
+  };
+
   const available = combined
-    .map((item, index) => ({ item, index, bucket: bucketOf(item) }))
+    .map((item, index) => ({
+      item,
+      index,
+      bucket: bucketOf(item),
+      resting: resting(item) ? 1 : 0,
+    }))
     .filter((entry) => entry.bucket >= 0);
 
   // What leads a group, once the order above has decided what the groups are.
@@ -1201,8 +1331,13 @@ export function buildListenQueue(
 
   // Most common first ranks every card on its own, so there is nothing left
   // for `leads` to decide and applying it would quietly replace the order the
-  // learner asked for. `available` is already in that rank.
-  if (order === "common") return available.map((entry) => entry.item);
+  // learner asked for. `available` is already in that rank, and the only thing
+  // asked of it here is that a card still resting waits behind the rest.
+  if (order === "common") {
+    return available
+      .sort((a, b) => a.resting - b.resting || a.index - b.index)
+      .map((entry) => entry.item);
+  }
 
   // Easiest first. The level is asked first and what leads it second, rather
   // than one replacing the other. A pack with no level sorts last (cefrOrder
@@ -1210,7 +1345,9 @@ export function buildListenQueue(
   // guessing one would push unlevelled material in front of A1.
   if (order === "level") {
     return available
-      .sort((a, b) => (a.item.rung ?? 3) - (b.item.rung ?? 3) || leads(a, b))
+      .sort((a, b) => a.resting - b.resting
+        || (a.item.rung ?? 3) - (b.item.rung ?? 3)
+        || leads(a, b))
       .map((entry) => entry.item);
   }
 
@@ -1222,7 +1359,8 @@ export function buildListenQueue(
   if (order === "newest") {
     return available
       .sort((a, b) =>
-        (itemPackRank.get(b.item.id) ?? -1) - (itemPackRank.get(a.item.id) ?? -1)
+        a.resting - b.resting
+        || (itemPackRank.get(b.item.id) ?? -1) - (itemPackRank.get(a.item.id) ?? -1)
         || leads(a, b)
       )
       .map((entry) => entry.item);
@@ -1234,7 +1372,8 @@ export function buildListenQueue(
   if (order === "least-heard") {
     return available
       .sort((a, b) =>
-        (Number(recordFor(a.item)?.listens) || 0) - (Number(recordFor(b.item)?.listens) || 0)
+        a.resting - b.resting
+        || (Number(recordFor(a.item)?.listens) || 0) - (Number(recordFor(b.item)?.listens) || 0)
         || leads(a, b)
       )
       .map((entry) => entry.item);
@@ -1245,7 +1384,8 @@ export function buildListenQueue(
   // other buckets are ordered by whatever was asked for.
   return available
     .sort((a, b) =>
-      a.bucket - b.bucket
+      a.resting - b.resting
+      || a.bucket - b.bucket
       || (a.bucket === 0
         ? overdueBy(recordFor(b.item), now) - overdueBy(recordFor(a.item), now)
         : leads(a, b))

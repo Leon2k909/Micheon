@@ -44,7 +44,7 @@ global.localStorage = global.window.localStorage;
 const result = esbuild.buildSync({
   stdin: {
     contents: [
-      'export { buildListenQueue, arrangeListenMixedQueue, listenMixGroupFor, getListenMixedCounts, setListenMixedCounts, DEFAULT_LISTEN_MIXED_COUNTS, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenPetBilingualCaptions, setListenPetBilingualCaptions, getListenContentSource, setListenContentSource, getListenQueueOrder, setListenQueueOrder, getListenQueueWithin, setListenQueueWithin, listenQueueHasGroups, LISTEN_QUEUE_WITHINS, DEFAULT_LISTEN_QUEUE_WITHIN, getListenCurrentItemId, setListenCurrentItemId, getListenTargetRepeats, setListenTargetRepeats, getListenMeaningRepeats, setListenMeaningRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, getListenLanguageGapMs, setListenLanguageGapMs, buildListenSpeechPlan, DEFAULT_LANGUAGE_GAP_MS, DEFAULT_TARGET_REPEATS, DEFAULT_MEANING_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE, DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
+      'export { buildListenQueue, arrangeListenMixedQueue, listenMixGroupFor, getListenMixedCounts, setListenMixedCounts, DEFAULT_LISTEN_MIXED_COUNTS, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenPetBilingualCaptions, setListenPetBilingualCaptions, getListenContentSource, setListenContentSource, getListenQueueOrder, setListenQueueOrder, getListenQueueWithin, setListenQueueWithin, listenQueueHasGroups, LISTEN_QUEUE_WITHINS, DEFAULT_LISTEN_QUEUE_WITHIN, getListenReturnGap, setListenReturnGap, getListenReturnScope, setListenReturnScope, listenReturnCovers, LISTEN_RETURN_GAPS, LISTEN_RETURN_SCOPES, DEFAULT_LISTEN_RETURN_GAP, DEFAULT_LISTEN_RETURN_SCOPE, LISTEN_RETURN_GAP_MS, getListenCurrentItemId, setListenCurrentItemId, getListenTargetRepeats, setListenTargetRepeats, getListenMeaningRepeats, setListenMeaningRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, getListenLanguageGapMs, setListenLanguageGapMs, buildListenSpeechPlan, DEFAULT_LANGUAGE_GAP_MS, DEFAULT_TARGET_REPEATS, DEFAULT_MEANING_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE, DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
       'export { loadGradeStore, saveGradeStore, statusForId, COMPLETED_KEY } from "./src/lib/activity.ts";',
       'export { setInterfaceLanguage } from "./src/lib/interfaceLanguage.ts";',
       'export { setLearningDirection } from "./src/lib/direction.ts";',
@@ -103,6 +103,9 @@ const {
   DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS,
   getListenQueueWithin, setListenQueueWithin, listenQueueHasGroups,
   LISTEN_QUEUE_WITHINS, DEFAULT_LISTEN_QUEUE_WITHIN,
+  getListenReturnGap, setListenReturnGap, getListenReturnScope, setListenReturnScope,
+  listenReturnCovers, LISTEN_RETURN_GAPS, LISTEN_RETURN_SCOPES,
+  DEFAULT_LISTEN_RETURN_GAP, DEFAULT_LISTEN_RETURN_SCOPE, LISTEN_RETURN_GAP_MS,
   DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS,
   listenCountForId, buildWordCatalog, wordLadderRung,
   loadGradeStore, statusForId, COMPLETED_KEY, getScopedKey,
@@ -441,6 +444,132 @@ check("an order cannot lead its own groups",
 setListenQueueWithin(DEFAULT_LISTEN_QUEUE_WITHIN);
 check("the stored answer survives being written and read back",
   getListenQueueWithin() === DEFAULT_LISTEN_QUEUE_WITHIN);
+
+// ── how long something waits before it comes back ─────────────────────
+//
+// Listen played whatever the order put in front of it, and hearing a word is
+// not learning it: on a narrow filter the same twenty cards could come round
+// all evening, which feels like studying and is not. The wait is what stops
+// that, and it has two halves — how long, and over which kind of card.
+//
+// The design decision worth protecting is that a rested card is sorted to the
+// BACK of the queue rather than removed from it. A filter can empty a queue,
+// and a listening mode with nothing in it is a bug rather than a lesson. So
+// every assertion below about resting is paired with one about the queue
+// still holding every card it held before.
+check("the wait defaults to a day, which is the shortest the ladder ever asks",
+  DEFAULT_LISTEN_RETURN_GAP === "day" && LISTEN_RETURN_GAP_MS.day === 24 * 60 * 60 * 1000);
+check("and it covers both kinds of card until told otherwise",
+  DEFAULT_LISTEN_RETURN_SCOPE === "both");
+check("every wait and every scope is one the picker can store",
+  LISTEN_RETURN_GAPS.every((value) => setListenReturnGap(value) === value)
+  && LISTEN_RETURN_SCOPES.every((value) => setListenReturnScope(value) === value)
+  && setListenReturnGap("whenever") === DEFAULT_LISTEN_RETURN_GAP
+  && setListenReturnScope("everything") === DEFAULT_LISTEN_RETURN_SCOPE);
+check("what has to wait is exactly what the learner chose",
+  listenReturnCovers("both", "word") && listenReturnCovers("both", "sentence")
+  && listenReturnCovers("words", "word") && !listenReturnCovers("words", "sentence")
+  && listenReturnCovers("sentences", "sentence") && !listenReturnCovers("sentences", "word"));
+
+// A queue where the first card was heard a minute ago. Immediate leaves it
+// where the order put it; a day pushes it behind everything else.
+const heardNow = buildListenQueue(parts, {}, {
+  contentSource: "mixed", order: "level", returnGap: "immediate",
+});
+const firstHeard = heardNow[0];
+const justPlayed = {
+  [firstHeard.id]: {
+    listenedAt: new Date(Date.now() - 60 * 1000).toISOString(),
+    listens: 1,
+  },
+};
+const withoutWait = buildListenQueue(parts, justPlayed, {
+  contentSource: "mixed", order: "level", returnGap: "immediate",
+});
+const withWait = buildListenQueue(parts, justPlayed, {
+  contentSource: "mixed", order: "level", returnGap: "day",
+});
+check("with no wait, something heard a minute ago still leads the queue",
+  withoutWait[0]?.id === firstHeard.id);
+check("with a day's wait it is not first any more",
+  withWait[0]?.id !== firstHeard.id);
+check("and it is at the very back rather than gone",
+  withWait[withWait.length - 1]?.id === firstHeard.id
+  && withWait.length === withoutWait.length);
+
+// The whole point of the floor: a wait must never be able to empty a queue,
+// however much of it has been heard.
+const everythingHeard = {};
+for (const item of withoutWait.slice(0, 400)) {
+  everythingHeard[item.id] = {
+    listenedAt: new Date(Date.now() - 60 * 1000).toISOString(),
+    listens: 1,
+  };
+}
+const allRested = buildListenQueue(parts, everythingHeard, {
+  contentSource: "mixed", order: "level", returnGap: "due",
+});
+check("even with hundreds of cards resting the queue is the same size",
+  allRested.length === withoutWait.length);
+
+// Scope. A wait on words alone must leave the sentences exactly where they were.
+const wordFirst = withoutWait.find((entry) => entry.kind === "word");
+const sentenceFirst = withoutWait.find((entry) => entry.kind === "sentence");
+const bothHeard = {
+  [wordFirst.id]: { listenedAt: new Date(Date.now() - 60 * 1000).toISOString(), listens: 1 },
+  [sentenceFirst.id]: { listenedAt: new Date(Date.now() - 60 * 1000).toISOString(), listens: 1 },
+};
+const wordsOnly = buildListenQueue(parts, bothHeard, {
+  contentSource: "mixed", order: "level", returnGap: "day", returnScope: "words",
+});
+const restedWordAt = wordsOnly.findIndex((entry) => entry.id === wordFirst.id);
+const keptSentenceAt = wordsOnly.findIndex((entry) => entry.id === sentenceFirst.id);
+const sentenceWasAt = withoutWait.findIndex((entry) => entry.id === sentenceFirst.id);
+check("a wait on words alone rests the word and leaves the sentence alone",
+  restedWordAt > keptSentenceAt && keptSentenceAt === sentenceWasAt);
+
+// Never heard means never rested — a card that has not played yet cannot be
+// one you have already had, whatever the wait is set to.
+const untouched = buildListenQueue(parts, {}, {
+  contentSource: "mixed", order: "level", returnGap: "due",
+});
+check("on a fresh course nothing is resting, so the strictest wait changes nothing",
+  untouched.every((entry, index) => entry.id === heardNow[index].id));
+
+setListenReturnGap(DEFAULT_LISTEN_RETURN_GAP);
+setListenReturnScope(DEFAULT_LISTEN_RETURN_SCOPE);
+check("the wait survives being written and read back",
+  getListenReturnGap() === DEFAULT_LISTEN_RETURN_GAP
+  && getListenReturnScope() === DEFAULT_LISTEN_RETURN_SCOPE);
+
+// The settings are only real if the panel offers them, and the loop's numbers
+// are only clear if the panel says what they add up to.
+const listenPanel = fs.readFileSync(path.join(root, "src/components/listen/ListenView.tsx"), "utf8");
+// The buttons are rendered from a list with a templated test id, so the id
+// never appears in the source spelled out. What can be read is the list the
+// panel maps over, and that is the thing that has to hold every value: a wait
+// the library knows and the panel does not offer is one nobody can choose.
+const panelChoices = (name) => {
+  const block = listenPanel.slice(listenPanel.indexOf(`const ${name} = [`));
+  return [...block.slice(0, block.indexOf("] as const;")).matchAll(/\["([a-z-]+)",/g)]
+    .map((match) => match[1]);
+};
+const offeredGaps = panelChoices("RETURN_GAP_CHOICES");
+const offeredScopes = panelChoices("RETURN_SCOPE_CHOICES");
+check(`the picker offers every wait and every scope${
+  LISTEN_RETURN_GAPS.filter((v) => !offeredGaps.includes(v)).length
+    ? " — missing " + LISTEN_RETURN_GAPS.filter((v) => !offeredGaps.includes(v)).join(", ")
+    : ""}`,
+  LISTEN_RETURN_GAPS.every((value) => offeredGaps.includes(value))
+  && LISTEN_RETURN_SCOPES.every((value) => offeredScopes.includes(value))
+  && listenPanel.includes("listen-return-gap-")
+  && listenPanel.includes("listen-return-scope-"));
+check("choosing one explains in words what it means in hours",
+  listenPanel.includes("RETURN_GAP_EXPLAINED")
+  && listenPanel.includes("listen-return-explained"));
+check("and the loop says what the learner's own numbers add up to",
+  listenPanel.includes("listen-loop-example")
+  && listenPanel.includes("You hear all {total}, then the same {total} again"));
 // The failure this replaces, asserted as the thing it was: nothing hard may
 // sit in front of a beginner's material any more.
 const firstHard = byLevel.findIndex((item) => rungOf(item) >= 4);
