@@ -123,7 +123,7 @@ const FLOORS = {
   // rule that matters is that its number never falls, and this check reads
   // the floor from here rather than from the table itself.
   it: 0,
-  pt: 510,
+  pt: 900,
 };
 
 // The percentage is still reported, because it is the honest measure of how
