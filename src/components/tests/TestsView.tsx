@@ -36,6 +36,8 @@ import { polishFor, polishMeaningLanguage } from "@/lib/polishCourse";
 import { matchPolishMeaning } from "@/lib/polishTextMatch";
 import { spanishFor, spanishMeaningLanguage } from "@/lib/spanishCourse";
 import { matchSpanishMeaning } from "@/lib/spanishTextMatch";
+import { portugueseFor, portugueseMeaningLanguage } from "@/lib/portugueseCourse";
+import { matchPortugueseMeaning } from "@/lib/portugueseTextMatch";
 import { PlacementLadder } from "@/components/tests/PlacementLadder";
 import { matchEnglishPhrase, matchParagraphAnswer } from "@/lib/germanTextMatch";
 import { ui, uiFmt, uiNumber } from "@/lib/i18n";
@@ -946,9 +948,11 @@ function buildTestBank(apiParts: Record<string, Part>, profile: UserProfile): Te
   const frenchCourse = courseSides().target.code === "fr";
   const polishCourse = courseSides().target.code === "pl";
   const spanishCourse = courseSides().target.code === "es";
+  const portugueseCourse = courseSides().target.code === "pt";
   const meaningIsGerman = (frenchCourse && frenchMeaningLanguage() === "de")
     || (polishCourse && polishMeaningLanguage() === "de")
-    || (spanishCourse && spanishMeaningLanguage() === "de");
+    || (spanishCourse && spanishMeaningLanguage() === "de")
+    || (portugueseCourse && portugueseMeaningLanguage() === "de");
   const grades = loadGradeStore(profile);
   const catalog = buildCatalog(apiParts);
   const seen = new Set<string>();
@@ -1044,6 +1048,11 @@ function buildTestBank(apiParts: Record<string, Part>, profile: UserProfile): Te
     if (!spanish) return [];
     return [{ ...item, de: spanish, en: meaningIsGerman ? item.de : item.en }];
   });
+  if (portugueseCourse) return bank.flatMap((item) => {
+    const portuguese = portugueseFor(item.de);
+    if (!portuguese) return [];
+    return [{ ...item, de: portuguese, en: meaningIsGerman ? item.de : item.en }];
+  });
 
   for (const paragraph of PARAGRAPH_TEST_ITEMS) {
     const status = statusForId(grades, paragraph.id);
@@ -1104,8 +1113,10 @@ function matchTestAnswer(input: string, target: string, language: AnswerLanguage
       ? matchFrenchMeaning(input, alternative)
       : answerLanguage === "pl"
         ? matchPolishMeaning(input, alternative)
-        : answerLanguage === "es"
+      : answerLanguage === "es"
         ? matchSpanishMeaning(input, alternative)
+        : answerLanguage === "pt"
+        ? matchPortugueseMeaning(input, alternative)
         : answerLanguage === "de"
         ? matchLearningModeGermanAnswer(input, { de: alternative, long: item.long })
         : matchEnglishPhrase(input, alternative)

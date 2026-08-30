@@ -18,11 +18,12 @@ import { ui, uiFmt } from "@/lib/i18n";
  * use, and adding a language means a line here beside the one in
  * translations.ts.
  */
-const COURSE_BY_PACK: Record<string, string> = { fr: "french", pl: "polish", es: "spanish" };
+const COURSE_BY_PACK: Record<string, string> = { fr: "french", pl: "polish", es: "spanish", pt: "portuguese" };
 
 const COURSE_SEARCH_ALIASES: Record<string, string> = {
   german: "de deutsch germany deutschland alemann allemand",
   spanish: "es espanol español spain spanisch espagnol",
+  portuguese: "pt portugues português portugal portugiesisch portugais",
   french: "fr francais français france franzosisch französisch",
   csharp: "c# c sharp dotnet .net programming coding sandbox sbox s&box",
   // Searching a variant by name still reaches it, even though the two share

@@ -315,6 +315,14 @@ const SPANISH_PET_TIPS = [
   "Spanish tip: an accent can be the whole word \u2014 \u201c\u00e9l\u201d is he and \u201cel\u201d is the; \u201cs\u00ed\u201d is yes and \u201csi\u201d is if.",
 ];
 
+const PORTUGUESE_PET_TIPS = [
+  "Portuguese tip: the article belongs with the noun — a casa, o trabalho, a cidade.",
+  "Portuguese tip: European Portuguese often drops the subject pronoun because the verb ending already tells you who is speaking.",
+  "Portuguese tip: ão is a very common nasal ending — listen for it in words such as não and estação.",
+  "Portuguese tip: ç is pronounced like s before a, o and u — as in começar.",
+  "Portuguese tip: estar is used for states and locations, while ser is used for identity and more lasting characteristics.",
+];
+
 /** The tips for whichever language is being learned. */
 const LANGUAGE_TIPS: Record<CourseLanguage, string[]> = {
   de: GERMAN_PET_TIPS,
@@ -322,6 +330,7 @@ const LANGUAGE_TIPS: Record<CourseLanguage, string[]> = {
   fr: FRENCH_PET_TIPS,
   pl: POLISH_PET_TIPS,
   es: SPANISH_PET_TIPS,
+  pt: PORTUGUESE_PET_TIPS,
 };
 
 type PetBounds = {

@@ -90,17 +90,15 @@ assert.deepStrictEqual(M.loadHiddenNav(), [], "a corrupt preference should read 
 // ── the way back is rendered ────────────────────────────────────────────────
 const prototype = fs.readFileSync(path.join(root, "src/prototype/NewUiPrototype.tsx"), "utf8");
 //
-// This used to require the control to appear only once something was hidden.
-// It is a permanent entry at the foot of the nav now, visually separated
-// from the sections above it — so what is guaranteed here is now
-// stronger than what it replaces: the way back is always on screen, and says
-// how many are waiting behind it.
+// The restore control belongs at the foot of the nav, but an empty restore
+// control is just dead chrome. It should only exist once at least one item is
+// hidden, then say how many items are waiting behind it.
 assert.ok(
-  /np-nav-hidden-toggle/.test(prototype) && /ui\("Hidden apps"\)/.test(prototype),
-  "the way back must be a permanent row at the foot of the nav"
+  /\{hidden\.length > 0 && \(\s*<div className="np-nav-footer">/.test(prototype),
+  "the Hidden apps footer must stay out of the nav until something is hidden"
 );
 assert.ok(
-  /\{hidden\.length > 0 && <b className="np-nav-hidden-count">/.test(prototype),
+  /<b className="np-nav-hidden-count">\{hidden\.length\}<\/b>/.test(prototype),
   "that row must say how many are put away, or nobody knows there is anything to restore"
 );
 assert.ok(

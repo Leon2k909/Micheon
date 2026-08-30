@@ -18,6 +18,7 @@ import {
 import { courseSides, type CourseLanguage, type VoiceTag } from "@/lib/courseLanguages";
 import { frenchFor } from "@/lib/frenchCourse";
 import { polishFor } from "@/lib/polishCourse";
+import { portugueseFor } from "@/lib/portugueseCourse";
 import { spanishFor } from "@/lib/spanishCourse";
 import { tts } from "@/lib/voice";
 import { buildCatalog, type CatalogItem } from "@/session";
@@ -118,6 +119,7 @@ function buildGameEntries(
   const learnsFrench = sides.target.code === "fr";
   const learnsPolish = sides.target.code === "pl";
   const learnsSpanish = sides.target.code === "es";
+  const learnsPortuguese = sides.target.code === "pt";
   const entries: GameContentEntry[] = [];
 
   for (const item of source) {
@@ -138,8 +140,10 @@ function buildGameEntries(
     if (learnsPolish && !polish) continue;
     const spanish = learnsSpanish ? spanishFor(de) : null;
     if (learnsSpanish && !spanish) continue;
+    const portuguese = learnsPortuguese ? portugueseFor(de) : null;
+    if (learnsPortuguese && !portuguese) continue;
 
-    const target = french ?? polish ?? spanish ?? (sides.target.code === "en" ? en : de);
+    const target = french ?? polish ?? spanish ?? portuguese ?? (sides.target.code === "en" ? en : de);
     const letters = gameLetters(target);
     if (letters.length === 0) continue;
 
@@ -184,6 +188,7 @@ export function buildGameWords(
   const learnsPolish = sides.target.code === "pl";
   const learnsFrench = sides.target.code === "fr";
   const learnsSpanish = sides.target.code === "es";
+  const learnsPortuguese = sides.target.code === "pt";
   const seen = new Set<string>();
   const words: GameWordEntry[] = [];
 
@@ -203,6 +208,8 @@ export function buildGameWords(
     // of the word being spelled, which is the point of teaching it.
     const spanish = learnsSpanish ? spanishFor(de) : null;
     if (learnsSpanish && !spanish) continue;
+    const portuguese = learnsPortuguese ? portugueseFor(de) : null;
+    if (learnsPortuguese && !portuguese) continue;
 
     const article = LEADING_ARTICLE.exec(de);
     const bareDe = article ? de.slice(article[0].length).trim() : de;

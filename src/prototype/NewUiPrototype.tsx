@@ -85,7 +85,7 @@ import {
   useTranslationLanguage,
   type TranslationLanguage,
 } from "@/lib/courseTranslation";
-import { DIRECTION_CHANGE_EVENT, getLearningDirection, learningEnglish, learningFrench, learningPolish, learningSpanish, setLearningDirection } from "@/lib/direction";
+import { DIRECTION_CHANGE_EVENT, getLearningDirection, learningEnglish, learningFrench, learningPolish, learningPortuguese, learningSpanish, setLearningDirection } from "@/lib/direction";
 import { courseSides, translationLanguagesNeeded } from "@/lib/courseLanguages";
 import { getEnglishVariant, resolveEnglishVariant, setEnglishVariant } from "@/lib/englishVariant";
 import { buildCatalogSearchText, normalizeCatalogSearchText } from "@/lib/catalogSearch";
@@ -1338,66 +1338,65 @@ function Sidebar({
           The foot of the nav: the overflow drawer, and the way back.
 
           Hiding something with no visible route to undo it is how a nav ends
-          up permanently missing an entry nobody can find again. The put-away
-          list used to appear only once something was in it; it is a permanent
-            row now, separated from the sections above, sitting at the bottom
-            as one entry of its own.
+          up permanently missing an entry nobody can find again. Once anything
+          is put away, the restore control appears at the bottom of the nav;
+          until then there is nothing here to restore, so no empty footer is
+          shown.
         */}
-        <div className="np-nav-footer">
-          {/* Dragging a row here puts it away, which is where a row dragged
-              off the nav was already going — it used to be dropped on More,
-              and the row it landed on is the one that lists it afterwards.
-              The zone keeps its name so both ends of the drag still agree. */}
-          <button
-            aria-expanded={restoreOpen}
-            aria-label={hidden.length > 0 ? uiFmt("Hidden ({n})", { n: hidden.length }) : undefined}
-            className={`np-nav-hidden-toggle${dropTarget === "more" ? " is-drop-target" : ""}`}
-            onClick={() => setRestoreOpen((open) => !open)}
-            type="button"
-            {...acceptDrop("more", "sidebar", (id) => setHidden(hideNavItem(id)))}
-          >
-            <span aria-hidden="true" className="np-nav-visual"><EyeOff className="np-nav-icon" /></span>
-            <span>{ui("Hidden apps")}</span>
-            {hidden.length > 0 && <b className="np-nav-hidden-count">{hidden.length}</b>}
-          </button>
-          {restoreOpen && (
-            <div className="np-nav-hidden-list">
-              {hidden.length === 0 && (
-                <p className="np-nav-hidden-empty">{ui("Nothing is hidden.")}</p>
-              )}
-              {hidden.map((id) => {
-                const item = ALL_NAV_ITEMS.find((entry) => entry.id === id);
-                const label = item ? ui(item.label) : navHideLabel(id);
-                return (
+        {hidden.length > 0 && (
+          <div className="np-nav-footer">
+            {/* Dragging a row here puts it away, which is where a row dragged
+                off the nav was already going — it used to be dropped on More,
+                and the row it landed on is the one that lists it afterwards.
+                The zone keeps its name so both ends of the drag still agree. */}
+            <button
+              aria-expanded={restoreOpen}
+              aria-label={uiFmt("Hidden ({n})", { n: hidden.length })}
+              className={`np-nav-hidden-toggle${dropTarget === "more" ? " is-drop-target" : ""}`}
+              onClick={() => setRestoreOpen((open) => !open)}
+              type="button"
+              {...acceptDrop("more", "sidebar", (id) => setHidden(hideNavItem(id)))}
+            >
+              <span aria-hidden="true" className="np-nav-visual"><EyeOff className="np-nav-icon" /></span>
+              <span>{ui("Hidden apps")}</span>
+              <b className="np-nav-hidden-count">{hidden.length}</b>
+            </button>
+            {restoreOpen && (
+              <div className="np-nav-hidden-list">
+                {hidden.map((id) => {
+                  const item = ALL_NAV_ITEMS.find((entry) => entry.id === id);
+                  const label = item ? ui(item.label) : navHideLabel(id);
+                  return (
+                    <button
+                      aria-label={uiFmt("Show {label}", { label })}
+                      className="np-nav-hidden-row"
+                      key={id}
+                      onClick={() => setHidden(showNavItem(id))}
+                      type="button"
+                    >
+                      <span className="truncate">{label}</span>
+                      {/* The eye lives here and only here. On a visible row it was
+                          eleven standing invitations to dismantle the nav, and
+                          with a mouse things are put away by dragging; on a
+                          put-away row it is the whole point of opening the
+                          drawer. */}
+                      <span aria-hidden="true" className="np-nav-hidden-show"><Eye className="h-3.5 w-3.5" /></span>
+                    </button>
+                  );
+                })}
+                {hidden.length > 1 && (
                   <button
-                    aria-label={uiFmt("Show {label}", { label })}
-                    className="np-nav-hidden-row"
-                    key={id}
-                    onClick={() => setHidden(showNavItem(id))}
+                    className="np-nav-hidden-row is-all"
+                    onClick={() => setHidden(showAllNavItems())}
                     type="button"
                   >
-                    <span className="truncate">{label}</span>
-                    {/* The eye lives here and only here. On a visible row it was
-                        eleven standing invitations to dismantle the nav, and
-                        with a mouse things are put away by dragging; on a
-                        put-away row it is the whole point of opening the
-                        drawer. */}
-                    <span aria-hidden="true" className="np-nav-hidden-show"><Eye className="h-3.5 w-3.5" /></span>
+                    {ui("Show all")}
                   </button>
-                );
-              })}
-              {hidden.length > 1 && (
-                <button
-                  className="np-nav-hidden-row is-all"
-                  onClick={() => setHidden(showAllNavItems())}
-                  type="button"
-                >
-                  {ui("Show all")}
-                </button>
-              )}
-            </div>
-          )}
-        </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </nav>
 
       <div className="np-sidebar-spacer" />
@@ -4181,12 +4180,13 @@ export default function NewUiPrototype({
   // The direction is the source of truth for the two built-in courses: an
   // install that has been learning English since before English was listed
   // still has "german" stored, and would otherwise show the wrong course.
-  const activeCourseId = (storedCourseId === "german" || storedCourseId === "french" || storedCourseId === "polish" || storedCourseId === "spanish" || storedCourseId.startsWith("english"))
+  const activeCourseId = (storedCourseId === "german" || storedCourseId === "french" || storedCourseId === "polish" || storedCourseId === "spanish" || storedCourseId === "portuguese" || storedCourseId.startsWith("english"))
     ? (learningEnglish()
         ? (resolveEnglishVariant(getEnglishVariant()) === "american" ? "english-us" : "english-uk")
         : learningFrench() ? "french"
         : learningPolish() ? "polish"
         : learningSpanish() ? "spanish"
+        : learningPortuguese() ? "portuguese"
         : "german")
     : storedCourseId;
   const [courseReaderOpen, setCourseReaderOpen] = useState(false);
@@ -4499,6 +4499,7 @@ export default function NewUiPrototype({
     else if (courseId === "french") setLearningDirection("learn-fr");
     else if (courseId === "polish") setLearningDirection("learn-pl");
     else if (courseId === "spanish") setLearningDirection("learn-es");
+    else if (courseId === "portuguese") setLearningDirection("learn-pt");
     persistActiveCourseId(courseId, profile);
     setActiveCourseId(courseId);
     setCourseReaderOpen(false);

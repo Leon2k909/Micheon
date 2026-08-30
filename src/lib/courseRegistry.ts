@@ -83,6 +83,15 @@ export const COURSES: Course[] = [
     available: true,
     builtIn: true,
   },
+  {
+    id: "portuguese",
+    kind: "language",
+    name: "Portuguese",
+    tagline: "Read, listen, type and translate real Portuguese.",
+    icon: "🇵🇹",
+    available: true,
+    builtIn: true,
+  },
   // Everything else people might come looking for. Listed, searchable and
   // honest about not being ready — a picker with three rows makes someone
   // wonder whether their language was considered and rejected.

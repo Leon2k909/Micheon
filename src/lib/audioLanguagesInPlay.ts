@@ -35,7 +35,7 @@ export function audioLanguagesInPlay(direction?: LearningDirection): TtsAudioLan
   inPlay.add(audioLanguageForVoiceTag(uiSpeechLang()));
   // A stable order rather than the order they happened to be added, so the
   // panel does not rearrange itself when the interface language changes.
-  return (["english", "german", "french", "polish", "spanish"] as TtsAudioLanguage[])
+  return (["english", "german", "french", "polish", "spanish", "portuguese"] as TtsAudioLanguage[])
     .filter((language) => inPlay.has(language));
 }
 
@@ -44,5 +44,6 @@ function audioLanguageForVoiceTag(tag: string): TtsAudioLanguage {
   if (tag.startsWith("fr")) return "french";
   if (tag.startsWith("pl")) return "polish";
   if (tag.startsWith("es")) return "spanish";
+  if (tag.startsWith("pt")) return "portuguese";
   return "english";
 }

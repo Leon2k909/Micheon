@@ -23,6 +23,7 @@ import { frequencyInfo, synonymCommonality } from "@/lib/wordFrequency";
 import { meaningLanguageFor, targetLanguage, type CourseLanguage } from "@/lib/courseLanguages";
 import { frenchFor } from "@/lib/frenchCourse";
 import { polishFor } from "@/lib/polishCourse";
+import { portugueseFor } from "@/lib/portugueseCourse";
 import { spanishFor } from "@/lib/spanishCourse";
 import { primaryAnswer } from "@/lib/germanTextMatch";
 import { buildCatalog } from "@/session";
@@ -1145,6 +1146,7 @@ export function buildListenQueue(
       if (language === "en") return item.en;
       if (language === "pl") return polishFor(item.de);
       if (language === "es") return spanishFor(item.de);
+      if (language === "pt") return portugueseFor(item.de);
       return frenchFor(item.de);
     };
     combined = combined.flatMap((item) => {
