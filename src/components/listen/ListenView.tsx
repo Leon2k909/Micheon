@@ -51,6 +51,7 @@ import {
   getListenLoopItems,
   getListenMixedCounts,
   arrangeListenMixedQueue,
+  listenMixGroupFor,
   getListenLoopPasses,
   getListenNextCardDelayMs,
   getListenPetBilingualCaptions,
@@ -490,9 +491,14 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   const queue = useMemo(
     () => {
       const visible = baseQueue.filter((candidate) => !hiddenIds.has(candidate.id));
-      return contentSource === "mixed" ? arrangeListenMixedQueue(visible, mixedCounts) : visible;
+      return contentSource === "mixed"
+        ? arrangeListenMixedQueue(visible, mixedCounts, listenMixGroupFor(queueOrder))
+        : visible;
     },
-    [baseQueue, contentSource, hiddenIds, mixedCounts]
+    // queueOrder is read through listenMixGroupFor: switching to or from
+    // easiest-first changes whether the deal is grouped, and without the
+    // dependency the queue would keep the previous order's arrangement.
+    [baseQueue, contentSource, hiddenIds, mixedCounts, queueOrder]
   );
   const [loopItems, setLoopItems] = useState(() => getListenLoopItems(learningDirection));
   const [loopPasses, setLoopPasses] = useState(() => getListenLoopPasses(learningDirection));
@@ -669,7 +675,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     const storedId = getListenCurrentItemId(learningDirection, profile, contentSource, queueOrder);
     const restoredCounts = getListenMixedCounts(learningDirection);
     const restoredQueue = contentSource === "mixed"
-      ? arrangeListenMixedQueue(baseQueue, restoredCounts)
+      ? arrangeListenMixedQueue(baseQueue, restoredCounts, listenMixGroupFor(queueOrder))
       : baseQueue;
     const storedIndex = restoredQueue.findIndex((candidate) => candidate.id === storedId);
     setPlayhead(listenPlayheadForQueueIndex(
@@ -1235,7 +1241,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     const currentId = item?.id ?? "";
     const next = setListenMixedCounts(counts, learningDirection);
     const visible = baseQueue.filter((candidate) => !hiddenIds.has(candidate.id));
-    const nextQueue = arrangeListenMixedQueue(visible, next);
+    const nextQueue = arrangeListenMixedQueue(visible, next, listenMixGroupFor(queueOrder));
     const nextIndex = Math.max(0, nextQueue.findIndex((candidate) => candidate.id === currentId));
     setMixedCounts(next);
     setPlayhead(listenPlayheadForQueueIndex(

@@ -44,7 +44,7 @@ global.localStorage = global.window.localStorage;
 const result = esbuild.buildSync({
   stdin: {
     contents: [
-      'export { buildListenQueue, arrangeListenMixedQueue, getListenMixedCounts, setListenMixedCounts, DEFAULT_LISTEN_MIXED_COUNTS, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenPetBilingualCaptions, setListenPetBilingualCaptions, getListenContentSource, setListenContentSource, getListenQueueOrder, setListenQueueOrder, getListenCurrentItemId, setListenCurrentItemId, getListenTargetRepeats, setListenTargetRepeats, getListenMeaningRepeats, setListenMeaningRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, getListenLanguageGapMs, setListenLanguageGapMs, buildListenSpeechPlan, DEFAULT_LANGUAGE_GAP_MS, DEFAULT_TARGET_REPEATS, DEFAULT_MEANING_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE, DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
+      'export { buildListenQueue, arrangeListenMixedQueue, listenMixGroupFor, getListenMixedCounts, setListenMixedCounts, DEFAULT_LISTEN_MIXED_COUNTS, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenPetBilingualCaptions, setListenPetBilingualCaptions, getListenContentSource, setListenContentSource, getListenQueueOrder, setListenQueueOrder, getListenCurrentItemId, setListenCurrentItemId, getListenTargetRepeats, setListenTargetRepeats, getListenMeaningRepeats, setListenMeaningRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, getListenLanguageGapMs, setListenLanguageGapMs, buildListenSpeechPlan, DEFAULT_LANGUAGE_GAP_MS, DEFAULT_TARGET_REPEATS, DEFAULT_MEANING_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE, DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
       'export { loadGradeStore, saveGradeStore, statusForId, COMPLETED_KEY } from "./src/lib/activity.ts";',
       'export { setInterfaceLanguage } from "./src/lib/interfaceLanguage.ts";',
       'export { setLearningDirection } from "./src/lib/direction.ts";',
@@ -91,7 +91,7 @@ const {
   getListenMeaningRepeats, setListenMeaningRepeats,
   getListenLanguageOrder, setListenLanguageOrder,
   getListenLoopItems, setListenLoopItems,
-  arrangeListenMixedQueue, getListenMixedCounts, setListenMixedCounts, DEFAULT_LISTEN_MIXED_COUNTS,
+  arrangeListenMixedQueue, listenMixGroupFor, getListenMixedCounts, setListenMixedCounts, DEFAULT_LISTEN_MIXED_COUNTS,
   getListenLoopPasses, setListenLoopPasses,
   listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead,
   getListenNextCardDelayMs, setListenNextCardDelayMs,
@@ -299,6 +299,50 @@ check("a sentence shows the level the tracker filters it by",
  * together at the same rung and the screen showed A1, A2, A1, A2 while the
  * sort was working exactly as written.
  */
+/**
+ * ...including after the mixed deal, which is where it actually broke.
+ *
+ * Every check above this one measured the queue the SORT produced. The
+ * learner hears the queue the mixed deal produced, and the deal split it into
+ * a word stream and a sentence stream and re-dealt them one-to-two — so the
+ * two walked the level ladder at different speeds. The German course has
+ * 1,147 A1 words against 366 A1 sentences: at two sentences a round the
+ * sentences leave A1 while the words are a sixth of the way through it, and
+ * every round after that reads A1 word, A2 sentence, A2 sentence. Three and a
+ * half thousand backward steps, with the sort itself perfect and every
+ * assertion about it passing.
+ *
+ * Asserted on the RUNG rather than the badge text, because words and
+ * sentences label the top of the ladder differently — cefrRungLabel folds C1
+ * and C2 into ranges, so a word says "B2–C1" where a sentence at the same
+ * rung says "C1". That is a real cosmetic mismatch and worth its own fix; it
+ * is not this promise, and ranking label strings would fail on it while
+ * missing an actual regression at A1.
+ */
+const mixedCounts = { words: 1, sentences: 2 };
+const dealt = arrangeListenMixedQueue(
+  buildListenQueue(parts, {}, { contentSource: "mixed", order: "level" }),
+  mixedCounts,
+  listenMixGroupFor("level")
+);
+let dealtBackwards = 0;
+for (let i = 1; i < dealt.length; i += 1) {
+  if ((dealt[i].rung ?? 3) < (dealt[i - 1].rung ?? 3)) dealtBackwards += 1;
+}
+check(`easiest first stays easiest first after the words and sentences are dealt together (${dealt.length} cards)`,
+  dealt.length > 1000 && dealtBackwards === 0);
+
+// And the deal is still a deal: grouping must not quietly stop mixing.
+const firstNine = dealt.slice(0, 9).map((item) => item.kind);
+check(`the mix is still one word to two sentences (${firstNine.join(", ")})`,
+  firstNine.filter((kind) => kind === "word").length >= 2
+  && firstNine.filter((kind) => kind === "sentence").length >= 4);
+
+// The orders that promise nothing about level must keep the flat deal, or
+// grouping would impose a level order on a most-common-first queue.
+check("a most-common-first queue is not grouped by level",
+  listenMixGroupFor("common") === undefined && typeof listenMixGroupFor("level") === "function");
+
 const easiest = buildListenQueue(parts, {}, { contentSource: "sentences", order: "level" });
 const shownRank = (item) => CEFR_STEPS.indexOf(String(item.levelLabel ?? "").toLowerCase());
 const backwards = [];

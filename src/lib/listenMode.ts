@@ -760,17 +760,70 @@ export type ListenItem = {
   popularity: number;
 };
 
-export function arrangeListenMixedQueue(queue: ListenItem[], counts: ListenMixedCounts = DEFAULT_LISTEN_MIXED_COUNTS): ListenItem[] {
+/**
+ * Deal words and sentences together, WITHOUT undoing the order that produced
+ * them.
+ *
+ * Splitting the queue into two streams and dealing one word to two sentences
+ * is right for an order that is a flat priority list. It is wrong for
+ * easiest-first, because the two streams then walk the level ladder at
+ * completely different speeds: the German course has 1,147 A1 words against
+ * 366 A1 sentences, so at two sentences a round the sentence stream is out of
+ * A1 while the word stream is a sixth of the way through it. Every round
+ * after that reads A1 word, A2 sentence, A2 sentence — the level jumping
+ * forward and back forever, 3,543 times across the queue, with the sort
+ * itself working perfectly. The learner is told they are working up through
+ * the levels and is not.
+ *
+ * So when the queue is grouped, the deal happens inside each group and the
+ * groups stay in order. `groupOf` is what makes a group: the rung for
+ * easiest-first, nothing at all for the orders that have no such promise to
+ * keep, where the flat deal is still exactly right.
+ */
+export function arrangeListenMixedQueue(
+  queue: ListenItem[],
+  counts: ListenMixedCounts = DEFAULT_LISTEN_MIXED_COUNTS,
+  groupOf?: (item: ListenItem) => number | string | undefined
+): ListenItem[] {
   const wanted = normalizeListenMixedCounts(counts);
-  const words = queue.filter((item) => item.kind === "word");
-  const sentences = queue.filter((item) => item.kind === "sentence");
+  const deal = (rows: ListenItem[], out: ListenItem[]) => {
+    const words = rows.filter((item) => item.kind === "word");
+    const sentences = rows.filter((item) => item.kind === "sentence");
+    let wi = 0; let si = 0;
+    while (wi < words.length || si < sentences.length) {
+      for (let i = 0; i < wanted.words && wi < words.length; i += 1) out.push(words[wi++]);
+      for (let i = 0; i < wanted.sentences && si < sentences.length; i += 1) out.push(sentences[si++]);
+    }
+  };
   const out: ListenItem[] = [];
-  let wi = 0; let si = 0;
-  while (wi < words.length || si < sentences.length) {
-    for (let i = 0; i < wanted.words && wi < words.length; i += 1) out.push(words[wi++]);
-    for (let i = 0; i < wanted.sentences && si < sentences.length; i += 1) out.push(sentences[si++]);
+  if (!groupOf) {
+    deal(queue, out);
+    return out;
   }
+  // Insertion order, so the groups come out in the order the sort put them —
+  // this must never re-sort, only preserve.
+  const groups = new Map<string, ListenItem[]>();
+  for (const item of queue) {
+    const key = String(groupOf(item) ?? "");
+    const bucket = groups.get(key);
+    if (bucket) bucket.push(item);
+    else groups.set(key, [item]);
+  }
+  for (const rows of groups.values()) deal(rows, out);
   return out;
+}
+
+/**
+ * What counts as one group for the mixed deal, for a given queue order.
+ *
+ * Only easiest-first promises anything about level, so only easiest-first
+ * constrains the deal. The others are flat priority lists where interleaving
+ * across the whole queue is the point.
+ */
+export function listenMixGroupFor(
+  order: ListenQueueOrder
+): ((item: ListenItem) => number | string | undefined) | undefined {
+  return order === "level" ? (item) => item.rung ?? 3 : undefined;
 }
 
 export function formatListenPetCaption(
