@@ -20325,4 +20325,134 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Das war wirklich nett von dir.": "Foi mesmo simpático da tua parte.",
   "Ich hätte es sonst nicht geschafft.": "De outra maneira eu não teria conseguido.",
   "Melde dich, wenn du was brauchst.": "Diz alguma coisa se precisares de alguma coisa.",
+
+  // ── Glasses, hearing, a ramp and an open door (part118) ─────────────────
+  //
+  // Die Brille is os óculos, plural, so ich trage eine Brille is uso óculos
+  // with no article at all. Barrierefrei has no single word: o edifício tem
+  // acessibilidade is how a Portuguese building is asked about.
+  //
+  // Nimm dir ruhig Zeit is não tenhas pressa. The ruhig is not calm, it is
+  // permission, and Portuguese gives that permission by removing the hurry.
+  "Ich trage eine Brille.": "Uso óculos.",
+  "Ich brauche eine neue Brille.": "Preciso de óculos novos.",
+  "Ohne Brille sehe ich fast nichts.": "Sem óculos quase não vejo nada.",
+  "Ich habe meine Brille vergessen.": "Esqueci-me dos óculos.",
+  "Trägst du Kontaktlinsen?": "Usas lentes de contacto?",
+  "Ich brauche mal wieder einen Sehtest.": "Já me faz falta outro exame à vista.",
+  "Ich muss zum Optiker.": "Tenho de ir ao oculista.",
+  "Mein Vater hört schlecht.": "O meu pai ouve mal.",
+  "Er hat seit Kurzem ein Hörgerät.": "Há pouco tempo passou a usar aparelho auditivo.",
+  "Kannst du bitte etwas lauter sprechen?": "Importas-te de falar um bocadinho mais alto?",
+  "Mein Bruder sitzt im Rollstuhl.": "O meu irmão anda de cadeira de rodas.",
+  "Ist das Gebäude barrierefrei?": "O edifício tem acessibilidade?",
+  "Er hat eine körperliche Behinderung.": "Ele tem uma deficiência motora.",
+  "Gibt es hier eine Rampe?": "Há aqui uma rampa?",
+  "Der Aufzug ist leider außer Betrieb.": "O elevador está avariado, infelizmente.",
+  "Der Eingang ist auf der anderen Seite.": "A entrada é do outro lado.",
+  "Brauchst du Hilfe beim Einsteigen?": "Queres ajuda para entrar?",
+  "Nimm dir ruhig Zeit.": "Não tenhas pressa.",
+  "Kann ich Ihnen die Tür aufhalten?": "Quer que lhe segure a porta?",
+  "Danke, das ist lieb, aber es geht schon.": "Obrigada, é simpático, mas não é preciso.",
+  "Wann war Ihr letzter Sehtest?": "Quando é que fez o último exame à vista?",
+  "Das ist bestimmt drei Jahre her.": "De certeza que já vai para três anos.",
+  "Dann machen wir am besten einen neuen.": "Então é melhor fazermos um novo.",
+  "Geht das heute noch?": "Ainda dá hoje?",
+  "Ja, nehmen Sie sich ruhig Zeit.": "Dá sim, esteja à vontade.",
+
+  // ── Saturday morning, divided up (part119) ──────────────────────────────
+  //
+  // Wäsche waschen is pôr uma máquina de roupa, aufhängen is estender, and
+  // durchsaugen is passar o aspirador. Den Boden wischen is passar a esfregona,
+  // as everywhere else in this table.
+  //
+  // Das Bad ist dran is agora é a vez da casa de banho, and lass das ruhig
+  // stehen is deixa lá estar — the ruhig again becomes a small permission
+  // rather than a word.
+  "Ich mache jetzt die Küche sauber.": "Vou agora limpar a cozinha.",
+  "Ich muss noch abwaschen.": "Ainda tenho de lavar a loiça.",
+  "Räumst du bitte die Spülmaschine aus?": "Importas-te de tirar a loiça da máquina?",
+  "Ich putze am Samstag immer die Wohnung.": "Ao sábado limpo sempre a casa.",
+  "Ich räume schnell auf.": "Arrumo isto num instante.",
+  "Ich wasche heute meine Wäsche.": "Hoje vou pôr uma máquina de roupa.",
+  "Hängst du die Wäsche auf?": "Estendes a roupa?",
+  "Das muss noch gebügelt werden.": "Isso ainda tem de ser passado a ferro.",
+  "Ich sauge kurz durch.": "Vou passar o aspirador num instante.",
+  "Den Boden wische ich morgen.": "O chão passo a esfregona amanhã.",
+  "Der Müll muss noch runter.": "Ainda falta descer o lixo.",
+  "Wir müssen den Müll trennen.": "Temos de separar o lixo.",
+  "Das Bad ist dran.": "Agora é a vez da casa de banho.",
+  "Ich habe schon Staub gewischt.": "Já tirei o pó.",
+  "Machst du das oder mache ich das?": "Fazes tu ou faço eu?",
+  "Die Küche sieht wieder gut aus.": "A cozinha está outra vez com bom aspeto.",
+  "Ich bin gleich fertig damit.": "Estou quase a acabar isso.",
+  "Lass das ruhig stehen, ich mache das.": "Deixa lá estar, eu trato disso.",
+  "Können wir das morgen machen?": "Podemos fazer isso amanhã?",
+  "Machst du das Bad oder mache ich das?": "A casa de banho fazes tu ou faço eu?",
+  "Ich räume erst mal auf.": "Eu primeiro arrumo.",
+  "Gut, dann sauge ich kurz durch.": "Está bem, então passo eu o aspirador.",
+  "Der Müll muss auch noch runter.": "E ainda falta descer o lixo.",
+  "Das mache ich gleich, versprochen.": "Faço isso já a seguir, prometo.",
+  "Dann sind wir in einer Stunde fertig.": "Assim numa hora estamos despachados.",
+
+  // ── A parcel, packed and tracked (part120) ──────────────────────────────
+  //
+  // Der Versand is os portes when it costs money and o envio when it takes
+  // time, and Portuguese uses the two words for the two meanings German packs
+  // into one. Ein Paket abholen is levantar uma encomenda, never ir buscar.
+  //
+  // Die Packstation keeps its German name, like every other German counter in
+  // this course.
+  "Vorsicht, das ist zerbrechlich.": "Cuidado, isso é frágil.",
+  "Bitte vorsichtig behandeln.": "Manusear com cuidado, se faz favor.",
+  "Ich muss das noch gut verpacken.": "Ainda tenho de embalar isto bem.",
+  "Die Verpackung war völlig kaputt.": "A embalagem vinha completamente desfeita.",
+  "Hast du Luftpolsterfolie?": "Tens plástico-bolha?",
+  "Ich schicke dir ein Päckchen.": "Vou mandar-te uma encomenda.",
+  "Die Sendung ist unterwegs.": "O envio vem a caminho.",
+  "Der Empfänger war nicht da.": "O destinatário não estava.",
+  "Ich hole das Paket morgen ab.": "Amanhã vou levantar a encomenda.",
+  "Es liegt in der Filiale.": "Está na estação de correios.",
+  "Wie lange dauert der Versand?": "O envio demora quanto tempo?",
+  "Der Versand ist ab dreißig Euro kostenlos.": "Os portes são grátis a partir de trinta euros.",
+  "Schreib bitte die Adresse deutlich drauf.": "Escreve a morada bem legível, se faz favor.",
+  "Ich habe die Sendungsnummer.": "Tenho o número de seguimento.",
+  "Die Kiste war schon offen.": "A caixa já vinha aberta.",
+  "Kann ich das zurückschicken?": "Posso devolver isto?",
+  "Ich lasse es an die Packstation liefern.": "Mando entregar na Packstation.",
+  "Der Nachbar hat es angenommen.": "Foi o vizinho que a recebeu.",
+  "Bitte nicht knicken.": "Não dobrar, se faz favor.",
+  "Ich möchte das als Päckchen schicken.": "Queria mandar isto como encomenda.",
+  "Ja, Vorsicht, das ist aus Glas.": "Sim, cuidado, isso é de vidro.",
+  "Dann kleben wir einen Hinweis drauf.": "Então pomos-lhe um autocolante a avisar.",
+  "Etwa drei Tage, je nach Ziel.": "Uns três dias, conforme o destino.",
+
+  // ── Working for yourself, and being recommended (part121) ───────────────
+  //
+  // Ein Gewerbe anmelden is abrir atividade, which is what the tax office
+  // calls it in Portugal and therefore what people call it too. Ein Angebot
+  // schicken is mandar um orçamento — an offer with a price on it is a
+  // different word from an offer of help.
+  //
+  // Mundpropaganda is o passa-palavra, and das spricht sich schnell herum is
+  // isso corre depressa de boca em boca.
+  "Ich brauche eine Webseite für mein Geschäft.": "Preciso de um site para o meu negócio.",
+  "Ich lasse gerade eine Website bauen.": "Estou a mandar fazer um site.",
+  "Ich muss mehr Werbung machen.": "Tenho de fazer mais publicidade.",
+  "Wie gewinne ich neue Kunden?": "Como é que arranjo clientes novos?",
+  "Wir werben vor allem online.": "Fazemos publicidade sobretudo na internet.",
+  "Wir sind auch auf Instagram.": "Também estamos no Instagram.",
+  "Ich schicke Ihnen ein Angebot.": "Mando-lhe um orçamento.",
+  "Die Rechnung kommt Ende des Monats.": "A fatura chega no fim do mês.",
+  "Zahlbar innerhalb von vierzehn Tagen.": "Pagamento a catorze dias.",
+  "Wir haben sehr gute Bewertungen.": "Temos avaliações muito boas.",
+  "Ich arbeite selbstständig.": "Trabalho por conta própria.",
+  "Ich habe ein Gewerbe angemeldet.": "Abri atividade.",
+  "Mundpropaganda funktioniert am besten.": "O passa-palavra é o que resulta melhor.",
+  "Können Sie mich weiterempfehlen?": "Pode recomendar-me a outras pessoas?",
+  "Was kostet das ungefähr?": "Isso fica mais ou menos por quanto?",
+  "Ich melde mich mit einem Termin.": "Depois digo-lhe uma data.",
+  "Wir sind telefonisch gut erreichbar.": "Pelo telefone é fácil falar connosco.",
+  "Die Nachfrage ist gerade sehr groß.": "A procura neste momento é muito grande.",
+  "Das spricht sich schnell herum.": "Isso corre depressa de boca em boca.",
 };
