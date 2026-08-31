@@ -166,9 +166,18 @@ check("the app can actually load the table",
   i18n.includes('pt: () => import("@/lib/i18nPt").then((m) => m.PT)'),
   "i18n.ts has no loader for Portuguese, so choosing it would leave the app in English");
 
+// The union is read out and searched rather than matched as a whole, because
+// a pattern that spells every member out fails the day a language is added
+// before this one — which is exactly what happened when Italian landed
+// between Spanish and Portuguese. The question is whether "pt" is in the
+// type, not where in it.
+const resolvedUnion = languages.slice(
+  languages.indexOf("ResolvedInterfaceLanguage ="),
+  languages.indexOf(";", languages.indexOf("ResolvedInterfaceLanguage =")) + 1
+);
 check("Portuguese is a language the picker offers and storage accepts",
   /\{ value: "pt", label: "Português"/u.test(languages)
-    && /ResolvedInterfaceLanguage = (?:"(?:en|de|fr|pl|es|pt)"\s*\|?\s*)*"pt"/u.test(languages)
+    && /"pt"/u.test(resolvedUnion)
     && languages.includes("INTERFACE_LANGUAGE_VALUES.has(stored)"),
   "either the option is missing, or \"pt\" is not in ResolvedInterfaceLanguage, or storage validates "
     + "against a hand-written list that would read \"pt\" back as \"auto\"");

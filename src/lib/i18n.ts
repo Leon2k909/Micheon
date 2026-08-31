@@ -29,6 +29,7 @@ const UI_LOADERS: Record<string, () => Promise<Record<string, string>>> = {
   fr: () => import("@/lib/i18nFr").then((m) => m.FR),
   pl: () => import("@/lib/i18nPl").then((m) => m.PL),
   es: () => import("@/lib/i18nEs").then((m) => m.ES),
+  it: () => import("@/lib/i18nIt").then((m) => m.IT),
   pt: () => import("@/lib/i18nPt").then((m) => m.PT),
 };
 

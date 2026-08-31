@@ -32,10 +32,10 @@ export const INTERFACE_STRINGS_READY_EVENT = "gl-interface-strings-ready";
  * app French on its own, because the people learning French from here are
  * reading German or English while they do it. It is chosen, or it is not.
  */
-export type InterfaceLanguage = "auto" | "en" | "de" | "fr" | "pl" | "es" | "pt";
+export type InterfaceLanguage = "auto" | "en" | "de" | "fr" | "pl" | "es" | "it" | "pt";
 
 /** The languages the app itself can be written in, without "auto". */
-export type ResolvedInterfaceLanguage = "en" | "de" | "fr" | "pl" | "es" | "pt";
+export type ResolvedInterfaceLanguage = "en" | "de" | "fr" | "pl" | "es" | "it" | "pt";
 
 /**
  * The app languages, as a list rather than as options typed out twice.
@@ -58,6 +58,7 @@ export const INTERFACE_LANGUAGES: ReadonlyArray<{
   { value: "fr", label: "Français", search: ["french", "französisch", "francais", "français", "francuski", "frances", "francés"] },
   { value: "pl", label: "Polski", search: ["polish", "polnisch", "polonais", "polski", "polaco"] },
   { value: "es", label: "Español", search: ["spanish", "spanisch", "espagnol", "hiszpański", "hiszpanski", "espanol", "español", "castellano"] },
+  { value: "it", label: "Italiano", search: ["italian", "italienisch", "italien", "włoski", "wloski", "italiano"] },
   { value: "pt", label: "Português", search: ["portuguese", "portugiesisch", "portugais", "portugalski", "portugues", "português", "brasileiro", "brazilian"] },
 ];
 

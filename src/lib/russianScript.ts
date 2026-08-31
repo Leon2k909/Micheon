@@ -335,6 +335,51 @@ const ES_TABLE: ScriptTable = {
   я: { base: "ia", initial: "ya", afterVowel: "ya", afterSign: "ia" },
 };
 
+const IT_TABLE: ScriptTable = {
+  а: { base: "a" },
+  б: { base: "b" },
+  в: { base: "v" },
+  // Italian softens g before e and i, so the hard sound needs the h that
+  // Italian spelling already uses for it: Serghei, not Sergei.
+  г: { base: "g", beforeAny: [["еи", "gh"]] },
+  д: { base: "d" },
+  е: { base: "e" },
+  ё: { base: "io", afterAny: [["жчшщ", "o"]] },
+  // No Italian letter says this sound. The press writes z, which is what
+  // Breznev and Zivago are spelled with, and the ambiguity with з below is
+  // real rather than an oversight — ambiguousLetters reports it.
+  ж: { base: "z" },
+  з: { base: "z" },
+  и: { base: "i" },
+  й: { base: "i", afterAny: [["иы", ""]] },
+  к: { base: "k" },
+  л: { base: "l" },
+  м: { base: "m" },
+  н: { base: "n" },
+  о: { base: "o" },
+  п: { base: "p" },
+  р: { base: "r" },
+  с: { base: "s" },
+  т: { base: "t" },
+  у: { base: "u" },
+  ф: { base: "f" },
+  // Read as k in Italian, which is the sound: Chruscev.
+  х: { base: "ch" },
+  // Italian z already says ts, so Cvetaeva needs nothing extra.
+  ц: { base: "z" },
+  // ci and sci before a, o and u; the i comes off before e and i, exactly as
+  // Italian spelling does it: Ciaikovski but Cechov, Sciostakovic but Scevcenko.
+  ч: { base: "ci", beforeAny: [["еиэ", "c"]] },
+  ш: { base: "sci", beforeAny: [["еиэ", "sc"]] },
+  щ: { base: "sci", beforeAny: [["еиэ", "sc"]] },
+  ъ: { base: "" },
+  ы: { base: "y" },
+  ь: { base: "" },
+  э: { base: "e" },
+  ю: { base: "iu" },
+  я: { base: "ia" },
+};
+
 /**
  * Which table each interface language reads.
  *
@@ -349,6 +394,7 @@ const TABLES: Record<ResolvedInterfaceLanguage, ScriptTable> = {
   fr: FR_TABLE,
   pl: PL_TABLE,
   es: ES_TABLE,
+  it: IT_TABLE,
   pt: EN_TABLE,
 };
 
@@ -497,6 +543,7 @@ const AMBIGUOUS: Record<ResolvedInterfaceLanguage, Set<string>> = {
   fr: ambiguousLetters(FR_TABLE),
   pl: ambiguousLetters(PL_TABLE),
   es: ambiguousLetters(ES_TABLE),
+  it: ambiguousLetters(IT_TABLE),
   pt: ambiguousLetters(EN_TABLE),
 };
 
