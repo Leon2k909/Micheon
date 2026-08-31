@@ -474,6 +474,7 @@ const VOLUME_SETTING = {
   ru: "russianVolume",
 } as const;
 
+
 export function ListenView({ active, apiParts, learningDirection, onOpen, profile }: {
   active: boolean;
   apiParts: Record<string, any>;
@@ -1629,9 +1630,14 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               bands of the clip being spoken — the same reading the guided
               session uses — rather than a loop that runs whether or not
               anything is playing. Flanking the card because that is where the
-              room is; they are decoration and are hidden from the reader. */}
-          <TtsWaveform active={playing} bars={44} className="listen-wave listen-wave--left" />
-          <TtsWaveform active={playing} bars={44} className="listen-wave listen-wave--right" />
+              room is; they are decoration and are hidden from the reader.
+              Listening always, rather than only while the queue is running:
+              tapping a single word speaks too, and gating this on the player
+              meant the row sat still through the one kind of playback you are
+              looking straight at when you start it. Nothing arrives while
+              nothing is spoken, so listening costs nothing then. */}
+          <TtsWaveform active bars={44} className="listen-wave listen-wave--left" />
+          <TtsWaveform active bars={44} className="listen-wave listen-wave--right" />
           {/* The level sits in the line that already says what this card is,
               because the default order is now a walk up through the levels and
               there was no way to see where in that walk you were. A CEFR label

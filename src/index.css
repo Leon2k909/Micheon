@@ -12413,17 +12413,26 @@ html[data-theme="dark"] {
   border-radius: 999px;
   background: var(--accent);
   opacity: 0.45;
-  /* The larger of the two: a band the voice is actually driving rises above
-     its resting height, and one it is not stays where the shape put it. */
-  transform: scaleY(max(var(--listen-wave-rest, 0.14), var(--tts-wave-level, 0)));
+  /* Silent: the resting shape, so the row says what this card is rather than
+     drawing a line of dots. The reading takes over below. */
+  transform: scaleY(var(--listen-wave-rest, 0.08));
   transform-origin: center;
   transition: transform 70ms linear, opacity 160ms ease;
   will-change: transform;
 }
 
-/* Brighter only while the reading is real. Without this the bars look the
-   same whether they are showing sound or showing their resting floor. */
-.listen-wave[data-audio-reactive="true"] i { opacity: 0.85; }
+/* Speaking: the reading, and only the reading.
+   Combining the two - the larger of the resting height and the live band -
+   is the cautious version and is what it looked like at first, but it hides
+   the movement: a band quieter than its resting height stays exactly where
+   the shape put it, and the tall ones in the shape never move at all. While
+   a real reading is arriving the shape steps out of the way and every bar is
+   the voice. The floor keeps the gap between two clips reading as a quiet
+   moment rather than as the row switching off. */
+.listen-wave[data-audio-reactive="true"] i {
+  transform: scaleY(clamp(0.06, var(--tts-wave-level, 0), 1));
+  opacity: 0.85;
+}
 
 /* A resting shape, not a flat line.
 
@@ -12439,16 +12448,16 @@ html[data-theme="dark"] {
 
    Ten values repeating, chosen to break up rather than to mean anything: a
    waveform's own heights carry no information here either. */
-.listen-wave i:nth-child(10n + 1) { --listen-wave-rest: 0.10; }
-.listen-wave i:nth-child(10n + 2) { --listen-wave-rest: 0.15; }
-.listen-wave i:nth-child(10n + 3) { --listen-wave-rest: 0.07; }
-.listen-wave i:nth-child(10n + 4) { --listen-wave-rest: 0.30; }
-.listen-wave i:nth-child(10n + 5) { --listen-wave-rest: 0.11; }
-.listen-wave i:nth-child(10n + 6) { --listen-wave-rest: 0.68; }
-.listen-wave i:nth-child(10n + 7) { --listen-wave-rest: 0.08; }
-.listen-wave i:nth-child(10n + 8) { --listen-wave-rest: 0.19; }
-.listen-wave i:nth-child(10n + 9) { --listen-wave-rest: 0.12; }
-.listen-wave i:nth-child(10n + 10) { --listen-wave-rest: 0.06; }
+.listen-wave i:nth-child(10n + 1) { --listen-wave-rest: 0.07; }
+.listen-wave i:nth-child(10n + 2) { --listen-wave-rest: 0.11; }
+.listen-wave i:nth-child(10n + 3) { --listen-wave-rest: 0.05; }
+.listen-wave i:nth-child(10n + 4) { --listen-wave-rest: 0.20; }
+.listen-wave i:nth-child(10n + 5) { --listen-wave-rest: 0.08; }
+.listen-wave i:nth-child(10n + 6) { --listen-wave-rest: 0.34; }
+.listen-wave i:nth-child(10n + 7) { --listen-wave-rest: 0.06; }
+.listen-wave i:nth-child(10n + 8) { --listen-wave-rest: 0.13; }
+.listen-wave i:nth-child(10n + 9) { --listen-wave-rest: 0.09; }
+.listen-wave i:nth-child(10n + 10) { --listen-wave-rest: 0.05; }
 
 /* A note about the mode, in something, rather than a caption floating under
    the last card. */
