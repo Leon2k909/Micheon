@@ -2,13 +2,13 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Check, Lock, Search, Star, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { COURSES, visibleLanguageRows } from "@/lib/courseRegistry";
+import { COURSES, sortCoursesByName, visibleLanguageRows } from "@/lib/courseRegistry";
 import { availablePacks, removePack } from "@/lib/contentPacks";
 import { FAVOURITE_COURSES_EVENT, getFavouriteCourses, getFavouritesOpen, setFavouritesOpen, toggleFavouriteCourse } from "@/lib/favouriteCourses";
 import { COUNTRY_PACKS } from "@/lib/countryPacks";
 import { PLANNED_LANGUAGES } from "@/lib/languageCatalogue";
 import { FlagRoundel, hasFlagArt } from "@/components/course/FlagRoundel";
-import { ui, uiFmt } from "@/lib/i18n";
+import { ui, uiFmt, uiLocale } from "@/lib/i18n";
 
 /**
  * Which course a language pack belongs to.
@@ -165,10 +165,13 @@ export function CourseSwitcher({
   const englishUk = allLanguages.find((c) => c.id === "english-uk");
   const englishUs = allLanguages.find((c) => c.id === "english-us");
   const mergedEnglish = englishUk && englishUs ? { uk: englishUk, us: englishUs } : null;
+  // english-uk stays in the list and stands for the merged card, so the card
+  // sorts into place under its own name instead of being pinned above a
+  // sorted list, where it read as the one row out of order.
   const languages = mergedEnglish
-    ? allLanguages.filter((c) => c.id !== "english-uk" && c.id !== "english-us")
+    ? allLanguages.filter((c) => c.id !== "english-us")
     : allLanguages;
-  const languageRowCount = languages.length + (mergedEnglish ? 1 : 0);
+  const languageRowCount = languages.length;
 
   /**
    * Only German is taught; the other eighty-odd rows say Coming soon.
@@ -247,11 +250,21 @@ export function CourseSwitcher({
   const groupFavourites = !searching && favourites.length > 0;
   const isPickedOut = (id: string) => groupFavourites && isFavourite(id);
 
-  const shownLanguages = visibleLanguageRows(languages, { searching, showAll: showAllLanguages })
-    .filter((c) => !isPickedOut(c.id));
+  // Read in the interface language, so sorted by the name on the row rather
+  // than the English one underneath it. Favourites are left alone: they are
+  // in the order they were starred, on purpose, so the section a learner
+  // arranged does not rearrange itself.
+  const inNameOrder = <T extends { name: string }>(list: T[]) => sortCoursesByName(list, ui, uiLocale());
+  const shownLanguages = inNameOrder(
+    visibleLanguageRows(languages, { searching, showAll: showAllLanguages })
+      .filter((c) => !isPickedOut(c.id))
+      // The merged card is starred under either spelling, so it leaves the
+      // list whenever the favourites section is the one drawing it.
+      .filter((c) => !(mergedEnglish && c.id === "english-uk" && groupFavourites && englishStarred))
+  );
   const hiddenLanguageCount = languages.length - visibleLanguageRows(languages, { searching, showAll: showAllLanguages }).length;
-  const programming = visibleCourses.filter((c) => c.kind === "programming" && !isPickedOut(c.id));
-  const citizenship = visibleCourses.filter((c) => c.kind === "citizenship" && !isPickedOut(c.id));
+  const programming = inNameOrder(visibleCourses.filter((c) => c.kind === "programming" && !isPickedOut(c.id)));
+  const citizenship = inNameOrder(visibleCourses.filter((c) => c.kind === "citizenship" && !isPickedOut(c.id)));
 
   /**
    * In the order they were starred, so the section does not reshuffle.
@@ -591,11 +604,15 @@ export function CourseSwitcher({
                     </span>
                   </p>
                   <div className="mt-2 grid gap-2">
-                    {/* English sits at the top of the list: it is the one a
-                        German speaker here is most likely to want, and the
-                        merged card is taller than the rest. */}
-                    {mergedEnglish && !(groupFavourites && englishStarred) && <EnglishCard uk={mergedEnglish.uk} us={mergedEnglish.us} />}
-                    {shownLanguages.map((c) => <Card key={c.id} {...c} />)}
+                    {/* English used to sit pinned at the top as the likeliest
+                        pick. In a sorted list that reads as the one row out of
+                        order, so it takes its place under its own name and the
+                        merged card is drawn where english-uk lands. */}
+                    {shownLanguages.map((c) => (
+                      mergedEnglish && c.id === "english-uk"
+                        ? <EnglishCard key={c.id} uk={mergedEnglish.uk} us={mergedEnglish.us} />
+                        : <Card key={c.id} {...c} />
+                    ))}
                   </div>
                   {hiddenLanguageCount > 0 && (
                     <button
