@@ -3131,4 +3131,6 @@ export const FR: Record<string, string> = {
   "Feedback and wishes": "Retours et souhaits",
   "Say what is missing, what got in the way, or what you would like next.": "Dis ce qui manque, ce qui t'a gêné ou ce que tu aimerais ensuite.",
   "What did you notice, and what would you like?": "Qu'as-tu remarqué, et qu'aimerais-tu ?",
+  "What are you looking for?": "Que cherches-tu ?",
+  "Here are your friends.": "Voici tes amis.",
 };
