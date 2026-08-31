@@ -480,7 +480,10 @@ export function WordsTracker({ apiParts, user }: {
         </div>
       </div>
 
-      <div className="mt-5 flex flex-wrap items-center gap-2">
+      {/* Sticky for the same reason as the sentence tracker: the list runs
+       *  down the page now, so the filters have to stay reachable. Caught at
+       *  --titlebar-h rather than 0 because of the desktop app's title bar. */}
+      <div className="sticky top-[var(--titlebar-h)] z-10 -mx-1 mt-5 flex flex-wrap items-center gap-2 bg-[var(--surface)] px-1 py-2">
         <SelectBox
           checked={allFilteredSelected}
           indeterminate={someFilteredSelected && !allFilteredSelected}
@@ -600,10 +603,13 @@ export function WordsTracker({ apiParts, user }: {
         </div>
       )}
 
+      {/* One scroll area, not two — see the note in VocabTracker. This list
+       *  was the worse of the pair: it has no automatic loading, so it really
+       *  did reach its end, and overscroll-contain then left the wheel doing
+       *  nothing at all until the pointer was moved off it. */}
       <div
-        className="mt-4 h-[min(34rem,65vh)] min-h-[24rem] overflow-y-auto overscroll-contain rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4"
+        className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4"
         aria-label={ui("Words tracker")}
-        tabIndex={0}
       >
         <div className="divide-y divide-[var(--border)]">
           {visible.map((word) => {

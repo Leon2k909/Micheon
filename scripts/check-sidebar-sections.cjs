@@ -55,7 +55,12 @@ assert.ok(
   // here failed a change that left the behaviour below untouched.
   /kind: "view", icon: \w+, label: "Vocabulary library", view: "progress"/.test(languageBlock)
     && /onNavigate\(row\.view\); scrollToVocabularyLibrary\(\)/.test(shell)
-    && /className="np-vocabulary-anchor"/.test(read("src/Gamification.tsx")),
+    // The anchor class, whatever else rides along with it: this pins where the
+    // jump LANDS, and it read className="np-vocabulary-anchor" with a closing
+    // quote, so adding a utility class beside it failed a gate about
+    // navigation. What that card's overflow is set to is check-tracker-
+    // scrolling's business.
+    && /className="np-vocabulary-anchor[^"]*"/.test(read("src/Gamification.tsx")),
   "vocabulary opens the tracker that already exists, and lands on it rather than near it"
 );
 assert.ok(

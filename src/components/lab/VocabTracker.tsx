@@ -892,16 +892,25 @@ export function VocabTracker({
   const visible = filtered.slice(0, limit);
 
   useEffect(() => {
-    const root = listRef.current;
     const target = loadMoreRef.current;
-    if (!root || !target || visible.length >= filtered.length) return undefined;
+    if (!target || visible.length >= filtered.length) return undefined;
 
+    /**
+     * Watched against the VIEWPORT, not against the list.
+     *
+     * The list used to be its own 542px scroller and was the observer root.
+     * It no longer scrolls, and an element that does not scroll does not clip:
+     * its root rect is the whole run of rows, so the sentinel would sit inside
+     * it permanently. Every fresh observer reports an initial intersection, and
+     * this effect makes a fresh one on each page — which would have walked
+     * straight through all 18,000 rows in one go instead of following a scroll.
+     */
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (!entry?.isIntersecting) return;
         setLimit((current) => Math.min(filtered.length, current + PAGE_SIZE));
       },
-      { root, rootMargin: "180px 0px", threshold: 0.01 }
+      { rootMargin: "180px 0px", threshold: 0.01 }
     );
     observer.observe(target);
     return () => observer.disconnect();
@@ -909,7 +918,13 @@ export function VocabTracker({
 
   const resetList = () => {
     setLimit(PAGE_SIZE);
-    window.requestAnimationFrame(() => listRef.current?.scrollTo({ top: 0 }));
+    // Nothing to rewind inside the list any more. Bring the top of the results
+    // back only when it has already scrolled off, so changing a filter does
+    // not yank a page that is showing them anyway.
+    window.requestAnimationFrame(() => {
+      const list = listRef.current;
+      if (list && list.getBoundingClientRect().top < 0) list.scrollIntoView({ block: "start" });
+    });
   };
 
   // "Select all" targets every FILTERED item, not just the currently
@@ -1031,7 +1046,12 @@ export function VocabTracker({
 
       <CustomContentEditor />
 
-      <div className="mt-5 flex flex-wrap items-center gap-2">
+      {/* Sticky, because the list now runs down the page rather than inside a
+       *  window of its own: without this the filters scroll away and there is
+       *  no way back to them but scrolling up through everything.
+       *  top is --titlebar-h, not 0: the desktop app has a 38px title bar
+       *  above the shell, and catching at 0 would park this underneath it. */}
+      <div className="sticky top-[var(--titlebar-h)] z-10 -mx-1 mt-5 flex flex-wrap items-center gap-2 bg-[var(--surface)] px-1 py-2">
         <SelectBox
           checked={allFilteredSelected}
           indeterminate={someFilteredSelected && !allFilteredSelected}
@@ -1154,11 +1174,18 @@ export function VocabTracker({
         </div>
       )}
 
+      {/* One scroll area, not two.
+       *
+       * This was a 542px window with its own scrollbar sitting inside a page
+       * that scrolls. With the pointer over it the wheel went to the list and
+       * never to the page, and overscroll-contain stopped it being handed on
+       * even at the end — so the page could not be moved past the tracker at
+       * all while the pointer happened to be here. The list grows with the
+       * page instead; the filter row above stays put in its place. */}
       <div
         ref={listRef}
-        className="mt-4 h-[min(34rem,65vh)] min-h-[24rem] overflow-y-auto overscroll-contain rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4"
+        className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4"
         aria-label={ui("Word & sentence tracker")}
-        tabIndex={0}
       >
         <div className="divide-y divide-[var(--border)]">
           {visible.map((item) => {

@@ -1071,8 +1071,16 @@ export default function GamificationPanel({
             the sidebar's own row and the home page's fading line both jump
             here, and a jump has to land on something that exists whether the
             block is open or not. Both ask it to open on the way. */}
+        {/* overflow-clip, not the fold's usual overflow-hidden — twMerge lets
+            this one card override it. Both clip the same way, but `hidden`
+            makes the card a scroll container, and a scroll container is what
+            position:sticky measures against: the tracker's filter row computed
+            as sticky and then never stuck, because the box it was sticking
+            inside does not scroll. `clip` clips without creating one. The
+            shell above already does this — .np-window and .new-ui-prototype
+            are both `clip` for the same reason. */}
         <ProfileFold
-          className="np-vocabulary-anchor"
+          className="np-vocabulary-anchor overflow-clip"
           icon={WholeWord}
           id="vocabulary"
           onOpenRequest={onVocabLibraryOpen}
