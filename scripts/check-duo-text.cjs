@@ -100,17 +100,6 @@ assert.strictEqual(
   `${truncated} catalogue entries are still shown truncated:\n    ${samples.join("\n    ")}`
 );
 
-// ── the quick path asks for the display form, not the match form ────────────
-const duo = fs.readFileSync(path.join(root, "src/lib/duoLesson.ts"), "utf8");
-assert.ok(
-  !/primary(German|English)Meaning/.test(duo),
-  "duoLesson is back on the comma-splitting helper — everything it renders would truncate again"
-);
-assert.ok(duo.includes("displayMeaning(item.de)") && duo.includes("displayMeaning(item.en)"),
-  "the prompt and answer are not built from displayMeaning");
-assert.ok(duo.includes("displayMeaning(candidate.de)") && duo.includes("displayMeaning(candidate.en)"),
-  "the distractors are not built from displayMeaning");
-
 console.log(
   `check-duo-text: ${catalog.length.toLocaleString()} catalogue entries, none shown truncated; `
   + "display splits on an explicit slash only, matching keeps its comma leniency"

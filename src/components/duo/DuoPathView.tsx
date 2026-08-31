@@ -1,27 +1,32 @@
 import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Check, ChevronRight, Lock, MessagesSquare, Play, Rocket, Shuffle, Star, Zap } from "lucide-react";
+import { Check, ChevronRight, Lock, MessagesSquare, Play, Rocket, Shuffle, Star } from "lucide-react";
 import { ui, uiFmt } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import { buildDuoPath, type DuoNode } from "@/lib/duoPath";
-import { DuoLesson } from "@/components/duo/DuoLesson";
+import { buildDuoPath } from "@/lib/duoPath";
 import { MatcherView } from "@/components/matcher/MatcherView";
 import { ConversationView } from "@/components/conversation/ConversationView";
 import { duoUnitAnchorId } from "@/lib/scrollToAnchor";
 
 /**
- * Five ways in, side by side.
+ * Four ways in, side by side.
  *
  * The app already had one: a button that hands you the next thing you should
  * see. It is efficient and it is opaque — you cannot tell where you are, what
  * this unit is called, or what comes after it. This screen keeps that button
- * exactly as it was and puts a second one beside it, leading into a path: the
- * same curriculum, the same grades, drawn as a route with your position on it.
+ * exactly as it was and puts the path beside it: the same curriculum, the same
+ * grades, drawn as a route with your position on it.
  *
- * They are not alternatives to choose between once. They suit different
- * moments — the guided session for sitting down properly, the path for five
- * minutes standing up — which is why both are on screen at the same time
- * rather than behind a setting.
+ * The path is a map rather than a mode. Every stop on it opens the guided
+ * session on that unit, which is the one place a phrase gets taught properly.
+ * It used to open a lesson of its own — ten quick turns and five hearts — and
+ * that was a second opinion about how to teach, kept alongside the first: the
+ * same five exercise shapes the guided session already runs, in a shorter
+ * order, grading into the same store. Two teachers for one course is how the
+ * two drift apart. So the map now points at the session, and what the quick
+ * lesson was actually for — variety, and not being marched through the same
+ * stages every time — belongs to the session it points at.
+ *
  *
  * The fast track answers a different question again: not where am I in the
  * course, but what do I need to hold a conversation. The curriculum has the
@@ -32,24 +37,20 @@ export function DuoPathView({
   apiParts,
   onGuidedSession,
   onFastTrack,
+  onOpenLesson,
   lessonsCompleted,
 }: {
   apiParts: Record<string, unknown>;
   onGuidedSession: () => void;
   onFastTrack: () => void;
+  /** Opens the guided session on one pack — a stop on the path. */
+  onOpenLesson: (packKey: string) => void;
   lessonsCompleted: number;
 }) {
-  const [activeNode, setActiveNode] = useState<DuoNode | null>(null);
   const [matching, setMatching] = useState(false);
   const [conversing, setConversing] = useState(false);
-  const [refreshToken, setRefreshToken] = useState(0);
 
-  // Rebuilt after a lesson so finished nodes fill in without a reload.
-  const path = useMemo(
-    () => buildDuoPath(apiParts),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [apiParts, refreshToken]
-  );
+  const path = useMemo(() => buildDuoPath(apiParts), [apiParts]);
 
   if (matching) {
     return <MatcherView apiParts={apiParts} profile={null} onExit={() => setMatching(false)} />;
@@ -71,31 +72,17 @@ export function DuoPathView({
     );
   }
 
-  if (activeNode) {
-    return (
-      <DuoLesson
-        apiParts={apiParts}
-        packKey={activeNode.key}
-        packTitle={activeNode.title}
-        onExit={() => { setActiveNode(null); setRefreshToken((value) => value + 1); }}
-      />
-    );
-  }
-
-  const current = path.current;
-
   return (
     <div className="space-y-4">
       {/*
         The ways in, side by side.
 
-        Five of them, so the breakpoints are not the obvious 2-then-5: five
-        cards across a laptop leaves each one too narrow for the sentence it
-        has to carry, and the last row of a 2-column layout would be a single
-        card on its own. Three at laptop width and five only when there is
-        room for five keeps every card wide enough to read.
+        Four of them: the quick path came out — it was a second teacher for
+        one course — and the fast track went in beside Continue learning. The
+        widest row has to seat all four, or whichever was added last sits
+        alone underneath looking like an afterthought.
       */}
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <button
           type="button"
           onClick={onGuidedSession}
@@ -153,39 +140,14 @@ export function DuoPathView({
           </span>
         </button>
 
-        <button
-          type="button"
-          disabled={!current}
-          onClick={() => current && setActiveNode(current)}
-          className={cn(
-            "card flex flex-col items-start gap-3 p-5 text-left transition-all",
-            current ? "card-hover border-[var(--accent)]" : "opacity-60"
-          )}
-        >
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--accent)] text-[var(--accent-text)]">
-            <Zap className="h-5 w-5" />
-          </span>
-          <span>
-            <span className="block text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
-              {ui("Quick path")}
-            </span>
-            <strong className="mt-1 block text-lg font-black tracking-tight text-[var(--text-1)]">
-              {current ? ui("Continue the path") : ui("Path complete")}
-            </strong>
-            <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">
-              {current
-                ? uiFmt("{title} — ten quick turns, five hearts.", { title: current.title })
-                : ui("Every unit in the course is finished.")}
-            </span>
-          </span>
-          <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-black text-[var(--accent)]">
-            {ui("Start")} <ChevronRight className="h-3.5 w-3.5" />
-          </span>
-        </button>
         {/*
-          The third way in: the tracker, in pairs, endlessly. It sits beside
-          the other two rather than under Games because it walks the same
+          The second way in: the tracker, in pairs, endlessly. It sits beside
+          the guided session rather than under Games because it walks the same
           queue the course does — it is practice, not a diversion.
+
+          It is also a stage inside the session now, on the phrases that
+          session is teaching. Both are wanted: here it is the whole course to
+          dip into, there it is today's material to warm up on.
         */}
         <button
           type="button"
@@ -211,9 +173,9 @@ export function DuoPathView({
           </span>
         </button>
         {/*
-          The fourth: a conversation rather than a drill. The other three teach
-          a phrase; this one puts somebody in front of you saying something and
-          asks what you say back, which is the only one of the four that is
+          The third: a conversation rather than a drill. The other two teach a
+          phrase; this one puts somebody in front of you saying something and
+          asks what you say back, which is the only one of the three that is
           about knowing WHEN to use what you know.
         */}
         <button
@@ -299,7 +261,7 @@ export function DuoPathView({
                       <motion.button
                         type="button"
                         disabled={locked}
-                        onClick={() => setActiveNode(node)}
+                        onClick={() => onOpenLesson(node.key)}
                         whileTap={locked ? undefined : { scale: 0.94 }}
                         aria-label={`${node.title} — ${node.done}/${node.total}`}
                         className={cn(

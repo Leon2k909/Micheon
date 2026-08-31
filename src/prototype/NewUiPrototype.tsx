@@ -4785,6 +4785,7 @@ export default function NewUiPrototype({
           lessonsCompleted={stats.sessionsCompleted}
           onFastTrack={openFastTrack}
           onGuidedSession={openGuidedSession}
+          onOpenLesson={openGuidedLesson}
         />
       </Suspense>
     </div>

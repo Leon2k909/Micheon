@@ -128,16 +128,30 @@ check("the fast track card is on the home row", /onClick=\{onFastTrack\}/.test(v
  * beside the one it offers an alternative to. Compared by the order the
  * labels appear in the source, because that is the order they render in.
  */
-const labels = ["Guided session", "Fast track", "Quick path", "Matcher", "Conversation"];
-const positions = labels.map((label) => ({ label, at: view.indexOf(`ui("${label}")`) }));
-const unfound = positions.filter((p) => p.at < 0).map((p) => p.label);
-check("all five cards are present", unfound.length === 0, `not found: ${unfound.join(", ")}`);
-if (!unfound.length) {
-  const inOrder = positions.every((p, i) => i === 0 || positions[i - 1].at < p.at);
-  check("they are in order, with the fast track second",
-    inOrder,
-    positions.map((p) => p.label).join(" -> ") + " is not the order in the source");
-}
+/**
+ * Counted from what is on the row, not from a list written here.
+ *
+ * The first draft of this named five cards outright — including the quick
+ * path, which was removed the same day for being a second teacher of one
+ * course. That is precisely the failure this check was extended to stop, and
+ * writing it down did not stop me repeating it one file over.
+ *
+ * So the candidates are the cards that could be there, and the ways in are
+ * whichever of them actually are, in the order the source renders them. What
+ * is asserted is the part that was asked for and cannot be inferred: Continue
+ * learning first, the fast track immediately after it.
+ */
+const CANDIDATES = ["Guided session", "Fast track", "Quick path", "Matcher", "Conversation"];
+const labels = CANDIDATES
+  .map((label) => ({ label, at: view.indexOf(`ui("${label}")`) }))
+  .filter((entry) => entry.at >= 0)
+  .sort((a, b) => a.at - b.at)
+  .map((entry) => entry.label);
+
+check("Continue learning still leads the row", labels[0] === "Guided session", labels.join(" -> "));
+check("the fast track sits immediately after it",
+  labels[1] === "Fast track",
+  `the row reads ${labels.join(" -> ")}`);
 
 /**
  * The row has to fit them all at its widest, or the last card added sits
@@ -176,6 +190,6 @@ if (failed) {
 }
 console.log(
   `check-fast-track: ${FAST_TRACK_PACKS.length} conversational packs, no rooms or furniture among them, `
-  + "second of five on the home row, and it always resolves to something teachable"
+  + `second of ${labels.length} on the home row, and it always resolves to something teachable`
 );
 process.exit(0);

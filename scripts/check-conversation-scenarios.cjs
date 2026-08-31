@@ -138,11 +138,11 @@ assert.deepStrictEqual(first.map((o) => o.de), again.map((o) => o.de),
   "the replies are shuffled afresh on every call, so they would move under the cursor mid-answer");
 
 // ── and it is reachable ─────────────────────────────────────────────────────
-// Conversation is the fourth way into Learn rather than a nav entry of its
+// Conversation is the third way into Learn rather than a nav entry of its
 // own, because it is another way through the same course rather than a
-// separate place to be. So the way in is a card beside the guided session,
-// the path and the Matcher — and the nav must NOT also carry it, or there
-// would be two doors to one room.
+// separate place to be. So the way in is a card beside the guided session
+// and the Matcher — and the nav must NOT also carry it, or there would be
+// two doors to one room.
 const learn = fs.readFileSync(path.join(root, "src/components/duo/DuoPathView.tsx"), "utf8");
 assert.ok(learn.includes("<ConversationView") && learn.includes("setConversing(true)"),
   "the mode exists but Learn has no card that opens it");
