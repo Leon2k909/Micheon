@@ -94,8 +94,14 @@ const PROPER_NAMES = [
   "Bürgeramt", "Ausländerbehörde", "Straße", "Goethestraße", "TÜV", "BAföG",
 ];
 const KEPT_GREETINGS = ["Grüß dich", "Grüß Gott", "Grüezi", "Tschüss", "Tschüs"];
+/**
+ * Street names are not worth listing one at a time. Anything ending in
+ * -straße is an address, and an address is read out as it is written —
+ * Gartenstraße acht is Gartenstraße oito.
+ */
+const STREET = /\b[A-ZÄÖÜ][\wäöüß-]*straße\b/g;
 const stillGerman = pairs.filter((row) => {
-  let rest = row.portuguese;
+  let rest = row.portuguese.replace(STREET, " ");
   for (const name of [...PROPER_NAMES, ...KEPT_GREETINGS]) rest = rest.split(name).join(" ");
   return /[äöüßÄÖÜ]/.test(rest);
 });
