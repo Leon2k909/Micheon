@@ -107,7 +107,10 @@ check("no document means no crash", () => {
 
 // ── both ends agree on the id ───────────────────────────────────────────────
 const view = fs.readFileSync(path.join(root, "src/prototype/NewUiPrototype.tsx"), "utf8").replace(/\r\n?/gu, "\n");
-const pathView = fs.readFileSync(path.join(root, "src/components/duo/DuoPathView.tsx"), "utf8").replace(/\r\n?/gu, "\n");
+// The path is its own component now — it moved out of the Learn screen and
+// into Lessons as a view of the same catalogue. Search still scrolls to the
+// unit cards it draws, so this is where the anchor ids live.
+const pathView = fs.readFileSync(path.join(root, "src/components/duo/DuoPath.tsx"), "utf8").replace(/\r\n?/gu, "\n");
 
 check("the unit card carries the id search aims at", () => {
   assert.ok(pathView.includes("id={duoUnitAnchorId(unit.number)}"),
@@ -132,6 +135,24 @@ check("units are searchable by number as well as by name", () => {
 check("search reads the units the path actually shows", () => {
   assert.ok(view.includes("buildDuoPath(apiParts).units"),
     "search works out its own units, so its numbering can drift from the path's");
+});
+
+/**
+ * And it sends you where the units are.
+ *
+ * They used to be drawn under the Learn screen's cards; they are a view of
+ * Lessons now. A search that still navigated to Learn would scroll to an
+ * anchor that is not on that page — no error, no movement, and no way to tell
+ * it apart from search having done nothing at all, which is the exact failure
+ * scrollToAnchorWhenReady was written for.
+ */
+check("search opens the screen the units are on, on the view that draws them", () => {
+  assert.ok(view.includes('setLessonsInitialView("path");\n        navigate("learn");'),
+    "search opens Lessons on the lesson list, or opens a screen the units have left");
+  assert.ok(view.includes("initialView={lessonsInitialView}"),
+    "Lessons is never told which view to open, so the request goes nowhere");
+  assert.ok(view.includes('if (activeView !== "learn") setLessonsInitialView("list");'),
+    "one search leaves Lessons opening on the path for the rest of the session");
 });
 
 // ── and there are units to find ─────────────────────────────────────────────

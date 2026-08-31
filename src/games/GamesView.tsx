@@ -9,6 +9,7 @@ import {
   Gamepad2,
   Grid3X3,
   Search,
+  Shuffle,
   Target,
   X,
 } from "lucide-react";
@@ -23,7 +24,29 @@ const VocabMinesweeper = lazy(() => import("@/games/VocabMinesweeper"));
 const VocabSlither = lazy(() => import("@/games/VocabSlither"));
 const HoleGame = lazy(() => import("@/games/HoleGame"));
 
-const GAMES = [
+const MatcherView = lazy(() => import("@/components/matcher/MatcherView").then((m) => ({ default: m.MatcherView })));
+
+/**
+ * A game is either a component that takes the catalogue from context, or one
+ * that wants it handed over.
+ *
+ * Every game here draws its words through GameContentProvider and needs no
+ * props at all. The Matcher does not: it walks the tracker queue itself, it
+ * keeps its own place across visits, and it takes an onExit so its own back
+ * button lands where the library expects. Rather than bend it into the
+ * provider's shape, an entry may bring a `render` instead of a `component`.
+ */
+type GameEntry = {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+  component?: React.ComponentType;
+  /** Given the catalogue and a way back to the library, draw the game. */
+  render?: (context: { apiParts: Record<string, unknown>; onExit: () => void }) => React.ReactNode;
+};
+
+const GAMES: GameEntry[] = [
   {
     id: "snake",
     title: "Word Snake",
@@ -72,6 +95,24 @@ const GAMES = [
     description: "Swallow a German city. Everything you eat teaches you its name.",
     icon: Blocks,
     component: HoleGame,
+  },
+  /**
+   * The Matcher, which used to be a card on the Learn row.
+   *
+   * It belongs here. Everything else on that row teaches: the guided session
+   * and the fast track walk you up the stages, the conversation asks what you
+   * would say. Matching six pairs with both answers on screen is recognition
+   * — it grades nothing, by design, exactly like the games — so sitting among
+   * the ways to LEARN overstated what it does.
+   */
+  {
+    id: "matcher",
+    title: "Matcher",
+    description: "German against English, six pairs at a time — words or sentences, refilling until you stop.",
+    icon: Shuffle,
+    render: ({ apiParts, onExit }) => (
+      <MatcherView apiParts={apiParts} profile={null} onExit={onExit} />
+    ),
   },
 ];
 
@@ -139,9 +180,17 @@ export function GamesView({
             }
           >
             {catalogueReady ? (
-              <GameContentProvider apiParts={apiParts}>
-                <game.component />
-              </GameContentProvider>
+              // An entry brings a render OR a component; the render is handed
+              // the catalogue directly because it does not read the provider.
+              game.render
+                ? game.render({ apiParts, onExit: () => setActiveGame(null) })
+                : game.component
+                  ? (
+                    <GameContentProvider apiParts={apiParts}>
+                      <game.component />
+                    </GameContentProvider>
+                  )
+                  : null
             ) : (
               // Without this the provider would build a catalogue from an
               // empty parts map, fall through to the three-item FALLBACK_ITEMS

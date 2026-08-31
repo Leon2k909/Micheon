@@ -137,36 +137,17 @@ const again = replyOptions(sample.turns[learnerTurnIndexes(sample)[0]], pool, 4,
 assert.deepStrictEqual(first.map((o) => o.de), again.map((o) => o.de),
   "the replies are shuffled afresh on every call, so they would move under the cursor mid-answer");
 
-// ── and it is reachable ─────────────────────────────────────────────────────
-// Conversation is the third way into Learn rather than a nav entry of its
-// own, because it is another way through the same course rather than a
-// separate place to be. So the way in is a card beside the guided session
-// and the Matcher — and the nav must NOT also carry it, or there would be
-// two doors to one room.
-const learn = fs.readFileSync(path.join(root, "src/components/duo/DuoPathView.tsx"), "utf8");
-assert.ok(learn.includes("<ConversationView") && learn.includes("setConversing(true)"),
-  "the mode exists but Learn has no card that opens it");
-assert.ok(learn.includes('ui("Say something back")'),
-  "the Conversation card has no label");
-/**
- * The row's column count is NOT asserted here any more.
+/*
+ * Where the mode LIVES is asserted in check-conversation-merge, not here.
  *
- * Three separate checks had a copy of it, each naming the number of cards
- * there were on the day it was written — four here, four in check-matcher.
- * Adding a fifth broke two of them at once, neither for a reason that had
- * anything to do with conversations or with matching. A layout rule repeated
- * in three files is a rule that will be wrong in at least one of them.
- *
- * check-fast-track owns it now, in one place, expressed against however many
- * ways into Learn there actually are. What belongs here is only what this
- * check is about: that the conversation mode has a card, and that the card
- * opens it.
+ * It used to be asserted at the bottom of this file, which meant every
+ * question about a card, a nav entry or a mounted component cost the whole
+ * scenario build — 778 dialogues and a French course — to answer. Worse, it
+ * made proving those assertions bite (by removing the fix and watching them
+ * fail) a minutes-long job per case, which is how a check ends up trusted
+ * rather than tested. Placement is a text question; it now lives in a check
+ * that only reads text. This file is about the scenarios themselves.
  */
-
-const shell = fs.readFileSync(path.join(root, "src/prototype/NewUiPrototype.tsx"), "utf8");
-assert.ok(!shell.includes("CONVERSATION_NAVIGATION_ITEM") && !shell.includes("conversationUnlocked"),
-  "Conversation has a nav entry as well as its card in Learn — one room, two doors, and the "
-  + "nav copy is dead code the moment the card moves");
 
 // ── scenes are being lengthened, and stay lengthened ────────────────────────
 // Almost every authored dialogue was four lines, which is two turns for the

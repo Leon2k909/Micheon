@@ -44,9 +44,12 @@ for (const label of ["Tests", "Grammar"]) {
     `${label} fills the page with no way back to the Practice hub it was opened from`
   );
 }
+// The `passages` route holds both halves of Conversation now — somebody
+// speaking to you and somebody writing to you — so the bar is labelled for
+// what it opens rather than for the half it used to be.
 assert.ok(
-  view.includes(`<FeatureBackBar back={ui("Back to Home")} label={ui("Passages")} onBack={() => navigate("home")} />`),
-  "Passages either has no way back, or still backs out to the Practice hub — which no longer "
+  view.includes(`<FeatureBackBar back={ui("Back to Home")} label={ui("Conversation")} onBack={() => navigate("home")} />`),
+  "Conversation either has no way back, or still backs out to the Practice hub — which no longer "
   + "offers it, so it would land somewhere with no sign of where you had just been"
 );
 assert.ok(styles.includes(".np-feature-back__btn {"), "the back control has no styling of its own");

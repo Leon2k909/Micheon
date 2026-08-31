@@ -177,19 +177,31 @@ for (const kind of ["words", "sentences"]) {
   assert.ok(view.includes("pickedRef.current"),
     "the Matcher reads its selection from render state, so fast clicking mis-scores");
 
-  const cards = fs.readFileSync(path.join(root, "src/components/duo/DuoPathView.tsx"), "utf8");
-  assert.ok(cards.includes('ui("Matcher")'), "the Matcher card is missing from the ways in");
   /**
-   * The row's column count is NOT asserted here.
+   * The way in is the games library, not the Learn row.
    *
-   * It used to be, as `lg:grid-cols-4`, and so did check-conversation-
-   * scenarios — each hard-coding the number of cards on the day it was
-   * written. Adding a fifth broke both at once, neither for a reason that had
-   * anything to do with matching or with conversations. check-fast-track owns
-   * that rule now, once, expressed against however many ways into Learn there
-   * actually are.
+   * It used to be a card beside the guided session. Everything else on that
+   * row teaches — the session and the fast track walk you up the stages, the
+   * conversation asks what you would say. Matching six pairs with both
+   * answers on screen is recognition, and it grades nothing by design, which
+   * is exactly what the games are. Sitting among the ways to LEARN overstated
+   * what it does.
+   *
+   * The row's column count is NOT asserted here, and never should be again:
+   * this file and check-conversation-scenarios each used to hard-code the
+   * number of cards on the day it was written, so adding one broke both for
+   * reasons that had nothing to do with matching or with conversations.
+   * check-fast-track owns that rule now, once.
    */
-  assert.ok(cards.includes("<MatcherView"), "the Matcher card opens nothing");
+  const games = fs.readFileSync(path.join(root, "src/games/GamesView.tsx"), "utf8");
+  assert.ok(/id:\s*"matcher"/.test(games), "the Matcher is not in the games library");
+  assert.ok(games.includes("<MatcherView"), "the Matcher entry opens nothing");
+  assert.ok(/onExit:\s*\(\)\s*=>\s*setActiveGame\(null\)/.test(games),
+    "the Matcher's own back button does not return to the library, so it would be a dead end");
+
+  const cards = fs.readFileSync(path.join(root, "src/components/duo/DuoPathView.tsx"), "utf8");
+  assert.ok(!cards.includes("MatcherView") && !cards.includes('ui("Matcher")'),
+    "the Matcher is in the games library AND still on the Learn row — two doors to one room");
 
   // German, because the app offers a German interface and this is new copy.
   const i18n = fs.readFileSync(path.join(root, "src/lib/i18n.ts"), "utf8")

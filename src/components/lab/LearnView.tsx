@@ -1,7 +1,9 @@
 import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, BookOpen, Check, CheckCircle2, Clock3, Headphones, Minus, PauseCircle, PlayCircle, Search, SquareCheck, TrendingDown, X } from "lucide-react";
+import { ArrowRight, BookOpen, Check, CheckCircle2, Clock3, Headphones, List, Minus, PauseCircle, PlayCircle, Route, Search, SquareCheck, TrendingDown, X } from "lucide-react";
 import { Part } from "@/lib/types";
+import { cn } from "@/lib/utils";
+import { DuoPath } from "@/components/duo/DuoPath";
 import { isBulkPartKey, partItemCount } from "@/lib/contentBank";
 import { loadGradeStore } from "@/lib/activity";
 import { getAuthUser } from "@/lib/profileStorage";
@@ -99,13 +101,64 @@ function searchCorpus(key: string, part: Part) {
   ].filter(Boolean));
 }
 
+/** Which of the two views of the course Lessons is showing. */
+type LessonsView = "list" | "path";
+
+/**
+ * The switch between them.
+ *
+ * Two buttons rather than a dropdown: there are two, both fit, and a menu
+ * that hides one of two options is a menu for the sake of one.
+ */
+function LessonsViewChoice({
+  value,
+  onChange,
+}: {
+  value: LessonsView;
+  onChange: (next: LessonsView) => void;
+}) {
+  const option = (key: LessonsView, label: string, Icon: typeof List) => (
+    <button
+      aria-pressed={value === key}
+      className={cn(
+        "inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-black transition-colors",
+        value === key
+          ? "bg-[var(--accent)] text-[var(--accent-text)]"
+          : "text-[var(--text-2)] hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
+      )}
+      onClick={() => onChange(key)}
+      type="button"
+    >
+      <Icon className="h-3.5 w-3.5" />
+      {label}
+    </button>
+  );
+
+  return (
+    <div className="inline-flex items-center gap-1 rounded-2xl bg-[var(--surface-2)] p-1">
+      {option("list", ui("All lessons"), List)}
+      {option("path", ui("Your path"), Route)}
+    </div>
+  );
+}
+
 export function LearnView({
   apiParts,
   onOpenLesson,
+  initialView = "list",
 }: {
   apiParts: Record<string, Part>;
   onOpenLesson: (id: string) => void;
+  /**
+   * Which view opens, for the one caller that knows better than the default.
+   *
+   * Search can send somebody to Unit 12, and the unit cards are drawn by the
+   * path — so arriving on the lesson list would scroll to an anchor that is
+   * not on screen, which looks exactly like search having done nothing.
+   */
+  initialView?: LessonsView;
 }) {
+  const [view, setView] = useState<LessonsView>(initialView);
   const [query, setQuery] = useState("");
   const [levelFilter, setLevelFilter] = useState<LevelFilter>("all");
   const [kindFilter, setKindFilter] = useState<KindFilter>("all");
@@ -241,8 +294,28 @@ export function LearnView({
       : "bg-[var(--surface-2)] text-[var(--text-2)] hover:text-[var(--text-1)]",
   ].join(" ");
 
+  /**
+   * The same course, two ways of looking at it.
+   *
+   * The list is for finding a lesson: filters, levels, search, pausing. The
+   * path is for seeing where you are: the same packs in curriculum order,
+   * drawn as a route with your position on it. Those are two views of one
+   * thing, and they were two places — the path lived behind its own nav
+   * entry, so knowing where you were and choosing what to do next meant
+   * holding the same course in your head twice.
+   */
+  if (view === "path") {
+    return (
+      <div className="space-y-4">
+        <LessonsViewChoice value={view} onChange={setView} />
+        <DuoPath apiParts={apiParts} onOpenLesson={onOpenLesson} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
+      <LessonsViewChoice value={view} onChange={setView} />
       <section className="card p-5 sm:p-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>

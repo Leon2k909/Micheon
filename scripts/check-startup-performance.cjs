@@ -57,13 +57,21 @@ check(
   // exact literal meant that adding any new catalogue-backed view failed this
   // check, which is about profile and has no opinion on how many other views
   // there are.
+  //
+  // The list is NEEDS_CATALOGUE, which is now read in both the places that
+  // decide — prefetch on intent, and navigation. It used to be written out a
+  // second time inside navigate(), so this check was reading one of two
+  // copies and could have passed while the other said something else.
   (() => {
-    const gate = /if \(\[([^\]]+)\]\.includes\(view\)\) setPartsRequested\(true\);/.exec(prototype);
+    const gate = /const NEEDS_CATALOGUE: PrototypeView\[\] = \[([^\]]+)\];/.exec(prototype);
     if (!gate) return false;
     const views = gate[1].split(",").map((entry) => entry.trim().replace(/"/g, ""));
+    const decisions = (prototype.match(/NEEDS_CATALOGUE\.includes\(view\)/g) || []).length;
     return !views.includes("profile")
       && !views.includes("home")
       && views.includes("listen")
+      && decisions === 2
+      && !/if \(\["[a-z-]+", "[a-z-]+"[^\]]*\]\.includes\(view\)\) setPartsRequested\(true\);/.test(prototype)
       && prototype.includes("onRequestCatalogue={requestParts}");
   })(),
 );

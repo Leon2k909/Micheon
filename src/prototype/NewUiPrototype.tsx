@@ -61,7 +61,7 @@ import {
   UsersRound,
   Volume2,
   X,
-  ScrollText,
+  MessagesSquare,
   FlaskConical,
 } from "lucide-react";
 import {
@@ -224,7 +224,7 @@ const ListenView = lazy(() => import("@/components/listen/ListenView").then((mod
 const GamesView = lazy(() => import("@/games/GamesView").then((module) => ({ default: module.GamesView })));
 const ClozeTabContent = lazy(() => import("@/lab/ClozeTabContent"));
 const GrammarTabContent = lazy(() => import("@/lab/GrammarTabContent"));
-const PassagesView = lazy(() => import("@/components/passages/PassagesView").then((module) => ({ default: module.PassagesView })));
+const ConversationAndReading = lazy(() => import("@/components/conversation/ConversationAndReading").then((module) => ({ default: module.ConversationAndReading })));
 const CourseDashboardView = lazy(() => import("@/components/course/CourseDashboardView").then((module) => ({ default: module.CourseDashboardView })));
 const CourseLessonsView = lazy(() => import("@/components/course/CourseLessonsView").then((module) => ({ default: module.CourseLessonsView })));
 const CourseSession = lazy(() => import("@/components/course/CourseSession").then((module) => ({ default: module.CourseSession })));
@@ -299,12 +299,20 @@ const CREATE_NAVIGATION_ITEM: NavigationItem = { id: "create", label: "Create", 
 // Learn is the lesson path, and it is still being worked on, so it sits with
 // the other beta entries rather than in the main navigation everyone sees.
 const LEARN_PATH_NAVIGATION_ITEM: NavigationItem = { id: "path", label: "Learn", icon: Route };
-// Passages is a reading exercise still finding its shape, so it sits with the
-// beta entries rather than in the Practice hub everyone sees.
-const PASSAGES_NAVIGATION_ITEM: NavigationItem = { id: "passages", label: "Passages", icon: ScrollText };
-// Conversation has no nav entry of its own: it is the fourth way into Learn,
-// beside the guided session, the path and the Matcher, because it is another
-// way through the same course rather than a separate place to be.
+/**
+ * Conversation: somebody speaking to you, or somebody writing to you.
+ *
+ * This entry used to say Passages and carry only the reading half, while the
+ * talking half was a card on the Learn row with no nav entry at all. They were
+ * never two features — both put real language in front of you and ask you to
+ * follow a whole thought — so they are one destination now, and this is its
+ * door. The id stays `passages` because it is written into stored nav
+ * preferences; renaming it would orphan anybody who had hidden or restored it.
+ *
+ * Still beta, and still gated with the rest: it is one of the newer things
+ * here and the accounts that can see beta are the two people using the app.
+ */
+const PASSAGES_NAVIGATION_ITEM: NavigationItem = { id: "passages", label: "Conversation", icon: MessagesSquare };
 
 /**
  * Every destination that can appear in a nav, for looking a hidden one up.
@@ -779,14 +787,27 @@ function BrandMark() {
  */
 const VIEW_PREFETCH: Partial<Record<PrototypeView, () => void>> = {
   path: () => { void import("@/components/duo/DuoPathView"); },
+  // Lessons holds the unit path now, which is what search scrolls to — so
+  // this chunk is on the critical path of a search result, not just of a
+  // click on the nav row.
+  learn: () => { void import("@/components/lab/LearnView"); },
   games: () => { void import("@/games/GamesView"); },
   listen: () => { void import("@/components/listen/ListenView"); },
   tests: () => { void import("@/components/tests/TestsView"); },
   "life-in-uk": () => { void import("@/components/course/CourseLessonsView"); },
 };
 
-/** Views whose content needs the full catalogue before they can render. */
-const NEEDS_CATALOGUE: PrototypeView[] = ["path", "learn", "games", "tests", "listen"];
+/**
+ * Views whose content needs the full catalogue before they can render.
+ *
+ * `path` is not one of them any more: the Learn screen is three cards and a
+ * lesson count now that the unit path moved into Lessons, and it read nothing
+ * from the catalogue to draw them. `passages` is, because Conversation lives
+ * there and builds its scenarios from the packs — a route that never asked
+ * would show "0 scenes" and an empty grid, which reads as broken rather than
+ * loading.
+ */
+const NEEDS_CATALOGUE: PrototypeView[] = ["learn", "games", "tests", "listen", "passages"];
 
 function Sidebar({
   courseFlagId,
@@ -3983,9 +4004,9 @@ function MoreView({
     // Same reasoning, and narrow only for the same reason: wider, the beta
     // list in the sidebar already carries it.
     ...(passagesUnlocked ? [{
-      title: ui("Passages"),
-      description: ui("Real messages and notes in German. Read the whole thing, then put it into English."),
-      icon: ScrollText,
+      title: ui("Conversation"),
+      description: ui("Somebody speaks and you answer, or somebody writes and you say what they meant."),
+      icon: MessagesSquare,
       tone: "violet",
       narrowOnly: true,
       action: () => onNavigate("passages"),
@@ -4495,6 +4516,19 @@ export default function NewUiPrototype({
     VIEW_PREFETCH[view]?.();
   };
 
+  /**
+   * Which view Lessons opens on, for the one caller that knows better.
+   *
+   * Search sending somebody to Unit 12 has to land on the path, because that
+   * is what draws unit cards. Everything else opens the lesson list, so this
+   * is cleared on the way out — otherwise a search once would leave Lessons
+   * opening on the path for the rest of the session.
+   */
+  const [lessonsInitialView, setLessonsInitialView] = useState<"list" | "path">("list");
+  useEffect(() => {
+    if (activeView !== "learn") setLessonsInitialView("list");
+  }, [activeView]);
+
   // Which way round the progress page is built this visit. The vocabulary
   // card is the last thing on that page and the thing two rows are named
   // after, so those rows ask for it first — see takeVocabLibraryFirst.
@@ -4505,7 +4539,10 @@ export default function NewUiPrototype({
       setActiveView("home");
       return;
     }
-    if (["path", "learn", "games", "tests", "listen"].includes(view)) setPartsRequested(true);
+    // The same list the prefetch uses, and read from the same place: it was
+    // written out twice, so a view added to one copy silently missed the
+    // other — arriving with no catalogue, or dragging 3.9 MB it never needs.
+    if (NEEDS_CATALOGUE.includes(view)) setPartsRequested(true);
     setVocabFirst(view === "progress" && takeVocabLibraryFirst());
     setActiveView(view);
     const scrollToTop = () => window.scrollTo({ top: 0, behavior: "auto" });
@@ -4702,7 +4739,11 @@ export default function NewUiPrototype({
         ...unit.nodeTitles,
       ]),
       onSelect: () => {
-        navigate("path");
+        // The units are drawn by the path, and the path is a view of Lessons
+        // now — landing on the lesson list would scroll to an anchor that is
+        // not on screen, which looks exactly like search having done nothing.
+        setLessonsInitialView("path");
+        navigate("learn");
         scrollToAnchorWhenReady(duoUnitAnchorId(unit.number));
       },
     })),
@@ -4781,11 +4822,10 @@ export default function NewUiPrototype({
     <div className="np-feature-host">
       <Suspense fallback={<FeatureLoading />}>
         <DuoPathView
-          apiParts={apiParts}
           lessonsCompleted={stats.sessionsCompleted}
+          onConversation={() => navigate("passages")}
           onFastTrack={openFastTrack}
           onGuidedSession={openGuidedSession}
-          onOpenLesson={openGuidedLesson}
         />
       </Suspense>
     </div>
@@ -4801,7 +4841,7 @@ export default function NewUiPrototype({
         </Suspense>
       ) : partsReady ? (
         <Suspense fallback={<FeatureLoading />}>
-          <LearningLibraryView apiParts={apiParts} onOpenLesson={openGuidedLesson} />
+          <LearningLibraryView apiParts={apiParts} initialView={lessonsInitialView} onOpenLesson={openGuidedLesson} />
         </Suspense>
       ) : <FeatureLoading />}
     </div>
@@ -4846,9 +4886,9 @@ export default function NewUiPrototype({
     </div>
   ) : activeView === "passages" && passagesUnlocked ? (
     <div className="np-feature-host">
-      <FeatureBackBar back={ui("Back to Home")} label={ui("Passages")} onBack={() => navigate("home")} />
+      <FeatureBackBar back={ui("Back to Home")} label={ui("Conversation")} onBack={() => navigate("home")} />
       <Suspense fallback={<FeatureLoading />}>
-        <PassagesView />
+        <ConversationAndReading apiParts={apiParts} />
       </Suspense>
     </div>
   ) : activeView === "grammar" ? (

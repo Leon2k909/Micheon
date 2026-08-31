@@ -1474,9 +1474,15 @@ check("Listen sits in the left menu", /id: "listen", label: "Listen", icon: Head
 // ["learn", "games", "tests", "listen"] verbatim, which meant adding a fifth
 // view that also needs the catalogue broke a Listen check for no Listen
 // reason. What matters is that navigating to Listen asks for the catalogue.
-const navigateGate = /if \(\[([^\]]+)\]\.includes\(view\)\) setPartsRequested\(true\);/.exec(prototype);
+//
+// That list was then written out twice — once as NEEDS_CATALOGUE for the
+// prefetch, once inline in navigate() — so this was reading one of two copies
+// that could disagree. It is one list again, and this reads it.
+const navigateGate = /const NEEDS_CATALOGUE: PrototypeView\[\] = \[([^\]]+)\];/.exec(prototype);
 check("navigating to Listen loads the course catalogue",
-  Boolean(navigateGate) && navigateGate[1].includes('"listen"'));
+  Boolean(navigateGate)
+  && navigateGate[1].includes('"listen"')
+  && prototype.includes("if (NEEDS_CATALOGUE.includes(view)) setPartsRequested(true);"));
 check("the Listen view stays mounted behind the catalogue gate across dashboard navigation",
   prototype.includes('activeView === "listen"')
   && prototype.includes("<ListenView")

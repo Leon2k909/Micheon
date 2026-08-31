@@ -54,11 +54,29 @@ assert.ok(
   "the games view is gated on partsReady again — the library is a list of titles and needs no catalogue"
 );
 
-// ...but a game still does.
-assert.ok(
-  /catalogueReady \?\s*\(\s*<GameContentProvider/.test(gamesView),
-  "GameContentProvider must only mount once the catalogue is ready, or a game starts on FALLBACK_ITEMS"
-);
+/**
+ * ...but a game still does — every game, however it is drawn.
+ *
+ * This used to read `catalogueReady ? ( <GameContentProvider`, which asserted
+ * the shape of the JSX rather than the rule. An entry may now bring its own
+ * `render` instead of a component — the Matcher does, because it walks the
+ * tracker queue itself and takes an onExit — so the provider is no longer the
+ * first thing inside the gate, and a check pinned to adjacency called a
+ * correct file wrong.
+ *
+ * What matters is that NOTHING that reads vocabulary mounts before the
+ * catalogue is ready. So the gated branch is read out and both ways of
+ * drawing a game have to be inside it.
+ */
+const gateAt = gamesView.indexOf("catalogueReady ? (");
+assert.ok(gateAt > 0, "the games view no longer gates on catalogueReady at all");
+const gatedBranch = gamesView.slice(gateAt, gamesView.indexOf(") : (", gateAt));
+assert.ok(gatedBranch.includes("<GameContentProvider"),
+  "GameContentProvider must only mount once the catalogue is ready, or a game starts on FALLBACK_ITEMS");
+assert.ok(gatedBranch.includes("game.render({ apiParts"),
+  "a game that draws itself is handed the catalogue outside the gate, so it starts on an empty one");
+assert.strictEqual((gamesView.match(/<GameContentProvider/g) || []).length, 1,
+  "the provider is mounted in more than one place, so only one of them can be behind the gate");
 assert.ok(
   /catalogueReady\?: boolean/.test(gamesView),
   "GamesView should accept catalogueReady"
