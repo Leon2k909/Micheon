@@ -225,6 +225,13 @@ Locally, `npm run electron:dist` produces a build under `release/` for testing. 
 
 ---
 
+## Third-party data
+
+The spoken word frequencies that order the vocabulary queue come from a
+subtitle-derived frequency list. See [NOTICE.md](NOTICE.md).
+
+---
+
 ## Design principles
 
 - **Offline first, free forever.** Content is bundled; no subscriptions, no per-request AI costs, no telemetry.
