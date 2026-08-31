@@ -33,7 +33,7 @@ export const WORD_TRACKER_SORTS: ReadonlyArray<{ key: WordTrackerSort; label: st
 ];
 
 type RecordForWord = (word: WordItem) => GradeRecord | undefined;
-type AlphabetLanguage = "de" | "en" | "fr" | "pl" | "es" | "pt";
+type AlphabetLanguage = "de" | "en" | "fr" | "pl" | "es" | "pt" | "ru";
 
 const COLLATOR: Record<AlphabetLanguage, Intl.Collator> = {
   de: new Intl.Collator("de", { numeric: true, sensitivity: "base" }),
@@ -46,6 +46,10 @@ const COLLATOR: Record<AlphabetLanguage, Intl.Collator> = {
   pl: new Intl.Collator("pl", { numeric: true, sensitivity: "base" }),
   es: new Intl.Collator("es", { numeric: true, sensitivity: "base" }),
   pt: new Intl.Collator("pt-PT", { numeric: true, sensitivity: "base" }),
+  // Cyrillic has an order of its own and Intl knows it: а б в … я, not the
+  // Latin one the other six share. A tracker sorted with the German collator
+  // would file every Russian word under one heading.
+  ru: new Intl.Collator("ru", { numeric: true, sensitivity: "base" }),
 };
 
 const parsedTime = (value: string | undefined) => {

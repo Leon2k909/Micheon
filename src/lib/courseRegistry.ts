@@ -3,6 +3,7 @@ import { csharpCourse } from "@/lib/csharpCourse";
 import { lifeInTheUkCourse } from "@/lib/lifeInTheUkCourse";
 import { lebenInDeutschlandCourse } from "@/lib/lebenInDeutschlandCourse";
 import { vivreEnFranceCourse } from "@/lib/vivreEnFranceCourse";
+import { zycieWPolsceCourse } from "@/lib/zycieWPolsceCourse";
 import { PLANNED_LANGUAGES } from "@/lib/languageCatalogue";
 import { localiseCourse } from "@/lib/courseTranslation";
 
@@ -107,6 +108,10 @@ export const COURSES: Course[] = [
   lifeInTheUkCourse,
   lebenInDeutschlandCourse,
   vivreEnFranceCourse,
+  // A country pack is not enough on its own: the chooser lists COURSES,
+  // so Poland shipped complete and unreachable — four packs on the home
+  // card, three rows in the dialog that is the only way in.
+  zycieWPolsceCourse,
 ];
 
 /**
@@ -146,4 +151,30 @@ export function visibleLanguageRows(
 ): Course[] {
   if (searching || showAll) return languages;
   return languages.filter((course) => !PLANNED_IDS.has(course.id));
+}
+
+/**
+ * The picker's lists, in the order they are read.
+ *
+ * Every row carries an English name underneath, but it shows the name in the
+ * interface language, so the order has to follow what is actually on the row:
+ * Spanish belongs under S in German and espagnol under E in French. Sorting
+ * the English names would have looked shuffled in every language but one.
+ *
+ * Intl does the comparing rather than a plain string sort, which is what puts
+ * Ae beside A and L-stroke beside L instead of after Z - the picker lists
+ * eighty-seven languages and plenty of them are spelled with marks.
+ *
+ * A function here rather than a sort written into the component, so a course
+ * added tomorrow lands in its place without anybody remembering a list, and
+ * so the order can be checked against real names instead of by reading the
+ * source.
+ */
+export function sortCoursesByName<T extends { name: string }>(
+  courses: T[],
+  shownName: (name: string) => string,
+  locale: string
+): T[] {
+  const collator = new Intl.Collator(locale, { sensitivity: "base", numeric: true });
+  return [...courses].sort((a, b) => collator.compare(shownName(a.name), shownName(b.name)));
 }

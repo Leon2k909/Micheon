@@ -244,6 +244,57 @@ assert.strictEqual(
   flagIds.length, ids.length,
   `${ids.length} country packs but ${flagIds.length} flags — a country would fall back to the globe`
 );
+// ── and is listed as a course, or the dialog cannot show it ─────────────
+//
+// The dialog builds from COURSES. A pack that is not also registered there
+// is complete, correct, shipped and unreachable: Poland spent a release
+// like that, four countries on the home card and three in the only dialog
+// that can change them.
+const registry = read("src/lib/courseRegistry.ts");
+const courseSymbols = [...packs.matchAll(/\n {2}course: (\w+),/g)].map((m) => m[1]);
+assert.strictEqual(
+  courseSymbols.length, ids.length,
+  `${ids.length} country packs but ${courseSymbols.length} courses`
+);
+for (const symbol of courseSymbols) {
+  assert.ok(
+    new RegExp(`import \\{ ${symbol} \\} from`).test(registry),
+    `${symbol} is not imported by courseRegistry.ts, so that country has no course to list`
+  );
+  assert.ok(
+    new RegExp(`\\n {2}${symbol},`).test(registry),
+    `${symbol} is missing from COURSES, so its country would not appear in the chooser at all`
+  );
+}
+
+// ── and its row reads in the app's language, not the country's ──────────
+//
+// Both lines of a row go through ui(). Poland's went through untranslated,
+// so a German app listed three German rows and one Polish one; Germany's
+// tagline was written in German and never translated, which is the same
+// row reading German in a French app. Neither is a typecheck error and
+// neither shows up in the language the author happens to be testing in.
+const INTERFACE_TABLES = ["i18nDe", "i18nFr", "i18nPl", "i18nEs", "i18nPt"];
+const translations = INTERFACE_TABLES.map((table) => [table, read(`src/lib/${table}.ts`)]);
+for (const symbol of courseSymbols) {
+  const from = new RegExp(`import \\{ ${symbol} \\} from "@/lib/(\\w+)"`).exec(packs)?.[1];
+  assert.ok(from, `${symbol} is not imported by countryPacks.ts`);
+  const course = read(`src/lib/${from}.ts`);
+  const rowLines = [
+    /\n {2}name: "([^"]+)",/.exec(course)?.[1],
+    /\n {2}tagline: "([^"]+)",/.exec(course)?.[1],
+  ];
+  for (const line of rowLines) {
+    assert.ok(line, `${from}.ts has no name or tagline, so its row would be blank`);
+    for (const [table, text] of translations) {
+      assert.ok(
+        text.includes(`${JSON.stringify(line)}:`),
+        `${table} has no entry for ${JSON.stringify(line)}, so that row would be read in the wrong language`
+      );
+    }
+  }
+}
+
 const flagArt = read("src/components/course/FlagRoundel.tsx");
 for (const flagId of flagIds) {
   assert.ok(
@@ -253,7 +304,9 @@ for (const flagId of flagIds) {
 }
 
 console.log(
-  `check-country-picker: ${ids.length} countries, each named by its own pack and translated, `
+  `check-country-picker: ${ids.length} countries, each registered as a course, `
+  + `named and described in ${INTERFACE_TABLES.length} interface languages, `
+  + "named by its own pack and translated, "
   + "flying its own flag in the dialog, changed through the same dialog as a language, "
   + "ticked there, and routed to the country choice rather than the language course"
 );

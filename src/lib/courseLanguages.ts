@@ -17,10 +17,10 @@ import { resolveInterfaceLanguage } from "@/lib/interfaceLanguage";
  * So the question is asked in one place. A fourth course is one more case
  * here rather than a hunt through six screens.
  */
-export type CourseLanguage = "de" | "en" | "fr" | "pl" | "es" | "pt";
+export type CourseLanguage = "de" | "en" | "fr" | "pl" | "es" | "pt" | "ru";
 
 /** Every BCP-47 tag the app asks a voice for. */
-export type VoiceTag = "de-DE" | "en-GB" | "en-US" | "fr-FR" | "pl-PL" | "es-ES" | "pt-PT";
+export type VoiceTag = "de-DE" | "en-GB" | "en-US" | "fr-FR" | "pl-PL" | "es-ES" | "pt-PT" | "ru-RU";
 
 export type CourseSide = {
   code: CourseLanguage;
@@ -41,6 +41,7 @@ export const LANGUAGE_LABEL: Record<CourseLanguage, string> = {
   pl: "Polish",
   es: "Spanish",
   pt: "Portuguese",
+  ru: "Russian",
 };
 
 /** The name the audio mixer knows each language by. */
@@ -51,6 +52,7 @@ export const AUDIO_LANGUAGE: Record<CourseLanguage, TtsAudioLanguage> = {
   pl: "polish",
   es: "spanish",
   pt: "portuguese",
+  ru: "russian",
 };
 
 export function courseSide(code: CourseLanguage): CourseSide {
@@ -63,6 +65,7 @@ export function courseSide(code: CourseLanguage): CourseSide {
       : code === "pl" ? "pl-PL"
       : code === "es" ? "es-ES"
       : code === "pt" ? "pt-PT"
+      : code === "ru" ? "ru-RU"
       : englishVoice,
     htmlLang: code,
   };
@@ -75,6 +78,7 @@ export function targetLanguage(direction: LearningDirection = getLearningDirecti
   if (direction === "learn-pl") return "pl";
   if (direction === "learn-es") return "es";
   if (direction === "learn-pt") return "pt";
+  if (direction === "learn-ru") return "ru";
   return "de";
 }
 
@@ -120,11 +124,11 @@ export function meaningLanguageFor(
  */
 export function translationLanguagesNeeded(
   direction: LearningDirection = getLearningDirection()
-): Array<"fr" | "pl" | "es" | "pt"> {
+): Array<"fr" | "pl" | "es" | "pt" | "ru"> {
   const target = targetLanguage(direction);
-  const wanted = new Set<"fr" | "pl" | "es" | "pt">();
+  const wanted = new Set<"fr" | "pl" | "es" | "pt" | "ru">();
   for (const code of [target, meaningLanguageFor(target)]) {
-    if (code === "fr" || code === "pl" || code === "es" || code === "pt") wanted.add(code);
+    if (code === "fr" || code === "pl" || code === "es" || code === "pt" || code === "ru") wanted.add(code);
   }
   return [...wanted];
 }
@@ -150,6 +154,14 @@ export function courseSides(direction: LearningDirection = getLearningDirection(
   if (direction === "learn-pt") {
     const app = meaningLanguageFor("pt");
     return { target: courseSide("pt"), meaning: courseSide(app === "de" ? "de" : "en") };
+  }
+  if (direction === "learn-ru") {
+    // Same narrowing again. It matters more here than anywhere else: the
+    // Russian card is the only target written in an alphabet the meaning row
+    // never uses, so a meaning language the table cannot fill would put
+    // Cyrillic on both rows and label one of them French.
+    const app = meaningLanguageFor("ru");
+    return { target: courseSide("ru"), meaning: courseSide(app === "de" ? "de" : "en") };
   }
   return { target: courseSide("de"), meaning: courseSide("en") };
 }

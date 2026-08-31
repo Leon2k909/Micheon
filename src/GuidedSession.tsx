@@ -59,6 +59,17 @@ import { spanishMeaningLanguage } from "@/lib/spanishCourse";
 import { matchSpanishSentence, SPANISH_SPECIAL_CHARACTERS } from "@/lib/spanishTextMatch";
 import { portugueseMeaningLanguage } from "@/lib/portugueseCourse";
 import { matchPortugueseSentence, PORTUGUESE_SPECIAL_CHARACTERS } from "@/lib/portugueseTextMatch";
+import { matchRussianSentence } from "@/lib/russianTextMatch";
+import { INTERFACE_LANGUAGE_CHANGE_EVENT } from "@/lib/interfaceLanguage";
+import {
+  formatRussianText,
+  getRussianScript,
+  resolveRussianScript,
+  russianScriptLabel,
+  RUSSIAN_SCRIPT_EVENT,
+  RUSSIAN_SPECIAL_CHARACTERS,
+  setRussianScript,
+} from "@/lib/russianScript";
 import { isElectronApp } from "@/lib/platform";
 import {
   AUDIO_SETTINGS_EVENT,
@@ -403,16 +414,17 @@ const WORDS_TO_ARRANGE_LABEL: Record<"de" | "en" | "fr" | "pl" | "es" | "pt", st
   pt: "Portuguese words to arrange",
 };
 
-function AccentKeys({ language, onInsert }: { language: "de" | "en" | "fr" | "pl" | "es" | "pt"; onInsert: (c: string) => void }) {
+function AccentKeys({ language, onInsert }: { language: "de" | "en" | "fr" | "pl" | "es" | "pt" | "ru"; onInsert: (c: string) => void }) {
   if (language === "fr") return <FrenchCharBar onInsert={onInsert} />;
   if (language === "pl") return <PolishCharBar onInsert={onInsert} />;
   if (language === "es") return <SpanishCharBar onInsert={onInsert} />;
   if (language === "pt") return <PortugueseCharBar onInsert={onInsert} />;
+  if (language === "ru") return <RussianCharBar onInsert={onInsert} />;
   if (language === "de") return <CharBar onInsert={onInsert} />;
   return null;
 }
 
-function AccentRow({ language, onInsert }: { language: "de" | "en" | "fr" | "pl" | "es" | "pt"; onInsert: (c: string) => void }) {
+function AccentRow({ language, onInsert }: { language: "de" | "en" | "fr" | "pl" | "es" | "pt" | "ru"; onInsert: (c: string) => void }) {
   if (language === "en") return null;
   return <div className="fs-charsrow"><AccentKeys language={language} onInsert={onInsert} /></div>;
 }
@@ -443,6 +455,36 @@ function FrenchCharBar({ onInsert }: { onInsert: (c: string) => void }) {
  * ą. A wrong instruction is worse than a missing one, so the buttons are the
  * whole answer here.
  */
+/**
+ * Russian character row.
+ *
+ * Every other row on this screen offers the handful of letters a foreign
+ * keyboard cannot reach. Russian has no such handful: not one of its
+ * thirty-three letters is on a German, French or Polish keyboard, so this row
+ * is not a helper beside the keyboard, it IS the keyboard. Both cases are
+ * offered because a Russian sentence capitalises proper nouns mid-line —
+ * "Я живу в Москве" — and with lower case alone that М could not be typed at
+ * all.
+ *
+ * Only shown when the learner is reading Cyrillic. On the Latin setting the
+ * transcriptions are written in letters the keyboard already has, which is
+ * the point of them.
+ */
+function RussianCharBar({ onInsert }: { onInsert: (c: string) => void }) {
+  return (
+    <div className="flex flex-wrap justify-center gap-2">
+      {RUSSIAN_SPECIAL_CHARACTERS.map(c => (
+        <motion.button key={c} type="button" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+          title={c}
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-base font-semibold text-zinc-900 hover:border-zinc-300 hover:bg-zinc-50"
+          onMouseDown={e => { e.preventDefault(); onInsert(c); }}>
+          {c}
+        </motion.button>
+      ))}
+    </div>
+  );
+}
+
 function PolishCharBar({ onInsert }: { onInsert: (c: string) => void }) {
   return (
     <div className="flex flex-wrap justify-center gap-2">
@@ -1244,9 +1286,37 @@ function useEnglishVariant() {
   return variant;
 }
 
+/**
+ * The Russian script, watched the same way and for the same reason.
+ *
+ * A separate hook rather than a second use of the one above: the two settings
+ * are stored apart, announced on different events and mean different things,
+ * and the English switch has worked for months. It listens to the interface
+ * language too, because that is what chooses the transcription — switching
+ * the app to German must move the card from Khorosho to Choroscho without a
+ * reload.
+ */
+function useRussianScript() {
+  const [script, setScript] = useState(() => getRussianScript());
+  const [, setLanguageChanges] = useState(0);
+  useEffect(() => {
+    const sync = () => setScript(getRussianScript());
+    const relabel = () => setLanguageChanges((count) => count + 1);
+    window.addEventListener(RUSSIAN_SCRIPT_EVENT, sync);
+    window.addEventListener(INTERFACE_LANGUAGE_CHANGE_EVENT, relabel);
+    return () => {
+      window.removeEventListener(RUSSIAN_SCRIPT_EVENT, sync);
+      window.removeEventListener(INTERFACE_LANGUAGE_CHANGE_EVENT, relabel);
+    };
+  }, []);
+  return script;
+}
+
 function PromptLanguageBadge({ label }: { label: string }) {
   const isGerman = label === "German";
   const isEnglish = label === "English";
+  const isRussian = label === "Russian";
+  const storedScript = useRussianScript();
   // The English side mirrors the German flag treatment, but honours the
   // profile's English-variant setting so British learners see their own flag.
   const stored = useEnglishVariant();
@@ -1276,6 +1346,34 @@ function PromptLanguageBadge({ label }: { label: string }) {
           className={cn("fs-english-flag", englishVariant === "british" ? "is-british" : "is-american")}
           aria-hidden="true"
         />
+      </button>
+    );
+  }
+
+  /**
+   * The Russian badge switches the ALPHABET, where the English one switches
+   * the spelling — the same gesture in the same place, for the same reason:
+   * the badge already says what you are being marked against, so it is the
+   * obvious thing to press to change it, and leaving a lesson to find
+   * Settings is not a switch.
+   *
+   * It shows the two letters themselves rather than a flag or a code. Аа
+   * against Aa is the choice, drawn in the thing being chosen, and it needs
+   * no translation to read.
+   */
+  if (isRussian) {
+    const script = resolveRussianScript(storedScript);
+    const scriptTitle = `${ui(russianScriptLabel(script))} — ${ui("tap to switch")}`;
+    return (
+      <button
+        type="button"
+        data-testid="russian-script-switch"
+        className={cn("fs-prompt-language", "is-switchable")}
+        aria-label={scriptTitle}
+        title={scriptTitle}
+        onClick={() => setRussianScript(script === "cyrillic" ? "latin" : "cyrillic")}
+      >
+        {script === "cyrillic" ? "Аа" : "Aa"}
       </button>
     );
   }
@@ -1812,6 +1910,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const learnPl = direction === "learn-pl";
   const learnEs = direction === "learn-es";
   const learnPt = direction === "learn-pt";
+  const learnRu = direction === "learn-ru";
   // Only the German course teaches German. The umlaut bar, the German matcher
   // and the German synonym groups all hang off this, and every one of them is
   // wrong beside a French sentence — which is why it is asked as its own
@@ -1883,6 +1982,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     : learnPl ? matchPolishSentence
     : learnEs ? matchSpanishSentence
     : learnPt ? matchPortugueseSentence
+    : learnRu ? matchRussianSentence
     : learnEn ? matchEnglish : matchGermanSentence;
   // Where the spoken short form is what we teach, the fuller written form the
   // learner will have met in a book stays correct too. Taking the better of the
@@ -5093,6 +5193,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
   const learnPl = sides.target.code === "pl";
   const learnEs = sides.target.code === "es";
   const learnPt = sides.target.code === "pt";
+  const learnRu = sides.target.code === "ru";
   const result = useMemo(
     () => learnFr
       ? matchFrenchSentence(input, line?.de ?? "")
@@ -5102,10 +5203,12 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
           ? matchSpanishSentence(input, line?.de ?? "")
           : learnPt
             ? matchPortugueseSentence(input, line?.de ?? "")
+          : learnRu
+            ? matchRussianSentence(input, line?.de ?? "")
           : learnEn
             ? matchEnglish(input, line?.de ?? "")
             : matchLearningModeGermanAnswer(input, { de: line?.de ?? "", long: line?.long }),
-    [input, learnEn, learnFr, learnPl, learnEs, learnPt, line]
+    [input, learnEn, learnFr, learnPl, learnEs, learnPt, learnRu, line]
   );
   // A German speaker learning English hears this on every stage, so it has to
   // honour their British/American choice — it was pinned to American, which

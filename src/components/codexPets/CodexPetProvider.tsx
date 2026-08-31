@@ -54,7 +54,7 @@ const MAX_PET_HISTORY = 200;
 const PET_DUPLICATE_WINDOW_MS = 30 * 60 * 1000;
 
 export type CodexPetSpeechMood = "greeting" | "success" | "encourage" | "celebrate";
-export type CodexPetVoiceLanguage = "de-DE" | "en-GB" | "en-US" | "fr-FR" | "pl-PL" | "es-ES" | "pt-PT";
+export type CodexPetVoiceLanguage = "de-DE" | "en-GB" | "en-US" | "fr-FR" | "pl-PL" | "es-ES" | "pt-PT" | "ru-RU";
 
 export type CodexPetQuestion = {
   aliases?: string[];

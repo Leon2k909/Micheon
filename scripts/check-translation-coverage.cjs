@@ -38,6 +38,7 @@ const built = esbuild.buildSync({
       'export { SPANISH_BY_GERMAN } from "./src/lib/spanishTranslations.ts";',
   'export { ITALIAN_BY_GERMAN } from "./src/lib/italianTranslations.ts";',
       'export { PORTUGUESE_BY_GERMAN } from "./src/lib/portugueseTranslations.ts";',
+      'export { RUSSIAN_BY_GERMAN } from "./src/lib/russianTranslations.ts";',
     ].join("\n"),
     resolveDir: root,
     sourcefile: "translations-entry.ts",
@@ -65,6 +66,7 @@ M.primeTranslations("pl", M.POLISH_BY_GERMAN);
 M.primeTranslations("es", M.SPANISH_BY_GERMAN);
 M.primeTranslations("it", M.ITALIAN_BY_GERMAN);
 M.primeTranslations("pt", M.PORTUGUESE_BY_GERMAN);
+M.primeTranslations("ru", M.RUSSIAN_BY_GERMAN);
 
 // ── read every taught entry out of the packs ────────────────────────────────
 const FIELD = (name) => new RegExp("\\b" + name + ':\\s*"((?:[^"\\\\]|\\\\.)*)"');
@@ -118,12 +120,17 @@ const FLOORS = {
   // entry. What the learner actually meets is floored by
   // check-spanish-course, which holds it to Polish card by card.
   es: 17000,
-  // Italian is being written now, and the floor follows it up block by
-  // block. Zero is not "no standard": while a language is in progress the
-  // rule that matters is that its number never falls, and this check reads
-  // the floor from here rather than from the table itself.
-  it: 0,
+  // Italian is finished, and covers the catalogue entry for entry the way
+  // Spanish does — the two read the same number to the card. Its floor is set
+  // close to that number rather than well under it, because a finished table
+  // has no more blocks coming to explain a fall.
+  it: 22000,
   pt: 1380,
+  // Russian has only just been started and is floored at zero for the same
+  // reason Italian is: what matters while a table is being written is that
+  // its number never falls. It is the seed a first lesson is built from —
+  // see the header of russianTranslations.ts for what it is not.
+  ru: 450,
 };
 
 // The percentage is still reported, because it is the honest measure of how

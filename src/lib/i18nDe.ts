@@ -1201,6 +1201,9 @@ export const DE: Record<string, string> = {
   "{language} translation...": "{language}-Übersetzung …",
   "Press 1, 2 or 3 to hear an option again, then Enter to choose it.": "Drücke 1, 2 oder 3, um eine Option noch einmal zu hören, dann Enter zum Auswählen.",
   "Portuguese": "Portugiesisch",
+  "Russian": "Russisch",
+  "Cyrillic": "Kyrillisch",
+  "Latin": "Lateinisch",
   "Read, listen, type and translate real Portuguese.": "Lies, höre, tippe und übersetze echtes Portugiesisch.",
   "Packs": "Pakete",
   "Any pack you pause on the Learn screen is left out of Listen too — nothing from it is played, and unpausing brings it straight back.": "Ein Paket, das du im Lernbereich pausierst, bleibt auch beim Hören draußen — nichts daraus wird abgespielt, und das Fortsetzen bringt es sofort zurück.",
@@ -2464,6 +2467,8 @@ export const DE: Record<string, string> = {
   "Learning German": "Deutsch lernen",
   "Leon is currently second. A short lesson could close the gap.": "Leon ist gerade Zweiter. Eine kurze Lektion könnte den Abstand schließen.",
   "Leon only": "Nur Leon",
+  "Only {name}": "Nur {name}",
+  "Visible only on your account": "Nur auf deinem Konto sichtbar",
   // "Life in the UK" is the name of a Home Office test, so it keeps its English
   // name on a German interface the same way "Micheon Premium" does.
   "Life in UK": "Life in UK",
@@ -2682,6 +2687,9 @@ export const DE: Record<string, string> = {
   "Germany – Land and Culture": "Deutschland – Land und Kultur",
   "France – Land and Culture": "Frankreich – Land und Kultur",
   "Valeurs, institutions et vie quotidienne — comment le pays fonctionne.": "Werte, Institutionen und Alltag — wie das Land funktioniert.",
+  "Poland – Land and Culture": "Polen – Land und Kultur",
+  "Historia, ustrój i codzienność — jak działa ten kraj.": "Geschichte, Staatsaufbau und Alltag — wie das Land funktioniert.",
+  "Politik, Geschichte und Gesellschaft — wie das Land funktioniert.": "Politik, Geschichte und Gesellschaft — wie das Land funktioniert.",
   // The line under each course name in the switcher. It goes through ui()
   // like the name above it, so without this key a German interface put an
   // English sentence between two German ones. The German course needs no
@@ -3191,6 +3199,14 @@ export const DE: Record<string, string> = {
   "Portuguese voice": "Portugiesische Stimme",
   "Mute Portuguese voice": "Portugiesische Stimme stummschalten",
   "Unmute Portuguese voice": "Portugiesische Stimme einschalten",
+  "Russian voice": "Russische Stimme",
+  "Mute Russian voice": "Russische Stimme stummschalten",
+  "Unmute Russian voice": "Russische Stimme einschalten",
+  "Russian tip: the present tense has no word for is — Он врач is how you say he is a doctor.": "Russisch-Tipp: Im Präsens gibt es kein Wort für ist — Он врач heißt er ist Arzt.",
+  "Russian tip: a noun changes its ending for the job it is doing, so Москва becomes в Москве when you are in it.": "Russisch-Tipp: Ein Substantiv wechselt die Endung je nach seiner Rolle, aus Москва wird в Москве, wenn man darin ist.",
+  "Russian tip: there are no articles at all, so дом covers a house and the house alike.": "Russisch-Tipp: Es gibt überhaupt keine Artikel, дом steht für ein Haus und das Haus gleichermaßen.",
+  "Russian tip: most verbs come as a pair, one for the action going on and one for the action finished.": "Russisch-Tipp: Die meisten Verben treten als Paar auf, eines für die laufende und eines für die abgeschlossene Handlung.",
+  "Russian tip: ё is always the stressed vowel, which is why print often leaves it as a plain е once you know the word.": "Russisch-Tipp: ё trägt immer die Betonung, deshalb steht im Druck oft ein einfaches е, sobald man das Wort kennt.",
   "Portuguese tip: the article belongs with the noun — a casa, o trabalho, a cidade.": "Portugiesisch-Tipp: Der Artikel gehört zum Substantiv — a casa, o trabalho, a cidade.",
   "Portuguese tip: ão is a very common nasal ending — listen for it in words such as não and estação.": "Portugiesisch-Tipp: ão ist eine sehr häufige Nasalendung — achte darauf in Wörtern wie não und estação.",
   "Portuguese tip: ç is pronounced like s before a, o and u — as in começar.": "Portugiesisch-Tipp: ç wird vor a, o und u wie s gesprochen — wie in começar.",

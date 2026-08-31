@@ -22,7 +22,7 @@ const root = path.resolve(__dirname, "..");
 const built = esbuild.buildSync({
   stdin: {
     contents: [
-      'export { COURSES, visibleLanguageRows } from "./src/lib/courseRegistry.ts";',
+      'export { COURSES, sortCoursesByName, visibleLanguageRows } from "./src/lib/courseRegistry.ts";',
       'export { PLANNED_LANGUAGES } from "./src/lib/languageCatalogue.ts";',
     ].join("\n"),
     resolveDir: root,
@@ -36,7 +36,7 @@ const compiled = new Module("course-switcher-check", module);
 compiled.filename = path.join(root, ".course-switcher-check.cjs");
 compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(built.outputFiles[0].text, compiled.filename);
-const { COURSES, visibleLanguageRows, PLANNED_LANGUAGES } = compiled.exports;
+const { COURSES, sortCoursesByName, visibleLanguageRows, PLANNED_LANGUAGES } = compiled.exports;
 
 const languages = COURSES.filter((course) => course.kind === "language");
 assert.ok(languages.length > 80, `only ${languages.length} languages listed; the catalogue has shrunk`);
@@ -76,6 +76,58 @@ assert.ok(/Show \{n\} more languages/.test(view),
   "there is no way to see the rest of the catalogue");
 assert.ok(/const searching = Boolean\(normalizedQuery\)/.test(view),
   "searching no longer overrides the hold-back, so typing a language would not find it");
+
+// ── the lists read in alphabetical order ─────────────────────────
+// Eighty-eight rows in the order somebody happened to type them is a list you
+// cannot look a language up in. Sorted by the name ON the row, not the English
+// name underneath it, or the order reads as shuffled in every interface
+// language but one.
+const GERMAN_NAMES = {
+  German: "Deutsch",
+  French: "Französisch",
+  Italian: "Italienisch",
+  Polish: "Polnisch",
+  Portuguese: "Portugiesisch",
+  Spanish: "Spanisch",
+};
+assert.deepStrictEqual(
+  sortCoursesByName(
+    Object.keys(GERMAN_NAMES).map((name) => ({ name })),
+    (name) => GERMAN_NAMES[name] || name,
+    "de-DE"
+  ).map((row) => GERMAN_NAMES[row.name]),
+  ["Deutsch", "Französisch", "Italienisch", "Polnisch", "Portugiesisch", "Spanisch"],
+  "the picker sorts the English names underneath the rows, so a German reader sees the list shuffled"
+);
+
+// A plain string sort drops every accented name below Z, which is where a lot
+// of this catalogue lands in German, French and Polish.
+assert.deepStrictEqual(
+  sortCoursesByName(
+    [{ name: "Bengalisch" }, { name: "Ägyptisch" }, { name: "Amharisch" }],
+    (name) => name,
+    "de-DE"
+  ).map((row) => row.name),
+  ["Ägyptisch", "Amharisch", "Bengalisch"],
+  "accented names sort as raw code points, so they all fall to the bottom of the picker"
+);
+
+// And the picker has to be the thing using it, in all three of its sections,
+// so a sorted language list does not sit above an unsorted country list.
+assert.ok(view.includes("const inNameOrder = "),
+  "the picker no longer sorts its lists by name");
+for (const section of ["shownLanguages", "programming", "citizenship"]) {
+  assert.ok(view.includes("const " + section + " = inNameOrder"),
+    section + " is drawn in catalogue order, so that section cannot be read alphabetically");
+}
+// By the name the row shows, which means asking i18n rather than reading
+// course.name straight off the object.
+assert.ok(view.includes("sortCoursesByName(list, ui, uiLocale())"),
+  "the picker sorts by the English name, so the order reads as shuffled in German");
+// English used to be pinned above the list. In a sorted list that is the one
+// row out of order, so it is drawn from inside the list instead.
+assert.ok(!view.includes("!(groupFavourites && englishStarred) && <EnglishCard"),
+  "English is pinned above the language list again, so the section no longer starts in alphabetical order");
 
 // ── and the gloss that started this ─────────────────────────────────────────
 // "gripping" is a literary word: a learner meeting it as the English side of a

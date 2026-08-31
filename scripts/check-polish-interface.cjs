@@ -91,8 +91,15 @@ const looksLikeSentence = (text) => {
   const words = trimmed.split(/\s+/).length;
   return (words > 2 && /[.!?]$/.test(trimmed)) || words > 6;
 };
+// One key is not English at all: the Poland country course carries its own
+// Polish tagline, which the other tables translate and this one leaves
+// alone. Identical is the correct answer there — see the same set in
+// check-french-interface.cjs.
+const SOURCE_IS_POLISH = new Set([
+  "Historia, ustrój i codzienność — jak działa ten kraj.",
+]);
 const untranslated = Object.entries(PL)
-  .filter(([key, value]) => key === value && looksLikeSentence(key));
+  .filter(([key, value]) => key === value && !SOURCE_IS_POLISH.has(key) && looksLikeSentence(key));
 if (untranslated.length) {
   failures.push(
     `${untranslated.length} Polish entries are identical to their English, which is a paste that was never translated: ` +

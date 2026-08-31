@@ -593,7 +593,7 @@ export default function GuidedLearningSession() {
           if (swapDirection === "learn-en") {
             return { de: String(step.item?.en ?? ""), en: String(step.item?.de ?? "") };
           }
-          if (swapDirection === "learn-fr" || swapDirection === "learn-pl" || swapDirection === "learn-es" || swapDirection === "learn-pt") {
+          if (swapDirection === "learn-fr" || swapDirection === "learn-pl" || swapDirection === "learn-es" || swapDirection === "learn-pt" || swapDirection === "learn-ru") {
             return { de: String(step.item?.originalDe ?? ""), en: String(step.item?.en ?? "") };
           }
           return { de: String(step.item?.de ?? ""), en: String(step.item?.en ?? "") };

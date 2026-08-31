@@ -38,6 +38,7 @@ export function learningFlagId(activeCourseId: string): string {
     if (direction === "learn-pl") return "polish";
     if (direction === "learn-es") return "spanish";
     if (direction === "learn-pt") return "portuguese";
+    if (direction === "learn-ru") return "russian";
     if (direction !== "learn-en") return "german";
     return resolveEnglishVariant(getEnglishVariant()) === "american" ? "english-us" : "english-uk";
   }

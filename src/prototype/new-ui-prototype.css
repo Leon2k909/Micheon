@@ -11827,8 +11827,39 @@ html[data-theme="dark"][data-accent="custom"] .np-social-hero {
     linear-gradient(135deg, var(--accent-pressed, var(--np-green-dark)) 0%, var(--accent-pressed, var(--np-green-dark)) 54%, #24282f 100%);
 }
 
+/* White copy, like every other heading in the app, over a ground dark enough
+   to carry it.
+
+   The banner fills itself with the accent here, and white on a bright accent
+   is 1.7:1 to 3.5:1 depending on the colour — readable on none of them. Ink
+   picked against the fill solves the contrast and turns the copy dark, which
+   is the one place in a dark app where that happens.
+
+   So the ground moves instead of the ink, the same trick the course hero uses
+   over its painting: a wash under the copy only, anchored left and gone by
+   three quarters across, so the accent keeps its full strength on the side
+   the badge and the arc sit on. 40% is the least that carries white on every
+   preset — the worst of them, teal in dark, lands at 4.09:1, and a pink like
+   this one at 4.1 to 5.5. Measured in check-feature-ink rather than guessed.
+
+   The copy sits above it: .np-social-hero-copy is already z-index 1. */
+html[data-theme="dark"][data-accent="custom"] .np-social-hero::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background: linear-gradient(90deg,
+    rgba(11, 14, 19, 0.4) 0%,
+    rgba(11, 14, 19, 0.4) 46%,
+    rgba(11, 14, 19, 0.16) 62%,
+    rgba(11, 14, 19, 0) 76%);
+  content: "";
+  pointer-events: none;
+}
+
+html[data-theme="dark"][data-accent="custom"] .np-social-hero-copy > span,
+html[data-theme="dark"][data-accent="custom"] .np-social-hero-copy h1,
 html[data-theme="dark"][data-accent="custom"] .np-social-hero-copy p {
-  color: var(--accent-ink, var(--np-green));
+  color: #ffffff;
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-social-private-badge {
@@ -12167,9 +12198,11 @@ html[data-theme="dark"][data-accent="custom"] .np-social-side-card--target {
     var(--np-surface);
 }
 
+/* The hero kicker used to be in this group and is not any more: these two sit
+   on a neutral card, where accent-coloured ink is right, and it sits on the
+   accent itself, where it is the one thing that cannot be read. */
 html[data-theme="dark"][data-accent="custom"] .np-social-side-card > small,
-html[data-theme="dark"][data-accent="custom"] .np-social-panel-heading > div > span,
-html[data-theme="dark"][data-accent="custom"] .np-social-hero-copy > span {
+html[data-theme="dark"][data-accent="custom"] .np-social-panel-heading > div > span {
   color: var(--accent-ink);
 }
 

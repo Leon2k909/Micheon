@@ -75,7 +75,11 @@ const PROPER_NAMES = [
   "München", "Köln", "Düsseldorf", "Nürnberg", "Zürich", "Österreich",
   // Street names are proper names too, and Italian gives an address in the
   // form the postman needs: "in Gartenstraße 8", not a translated street.
-  "Gartenstraße",
+  // Three of these exist in the whole 25,419-row source, and Alexanderplatz
+  // needs no allowance because it has no umlaut to trip over, so this list is
+  // finished rather than growing: every other -platz and -weg in the course is
+  // an ordinary noun that gets translated like any other.
+  "Gartenstraße", "Goethestraße",
 ];
 const outsideQuotes = (italian) => {
   let rest = italian.replace(/«[^»]*»/g, " ");
