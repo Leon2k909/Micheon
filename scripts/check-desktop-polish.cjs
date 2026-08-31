@@ -23,11 +23,9 @@ const guidedCanvas = (/\.guided-session\.fs-app\.prototype-guided-session\s*\{([
 const previewHead = (/prototype-guided-session \.fs-preview-head\s*\{([^}]*)\}/s.exec(appStyles) || ["", ""])[1];
 const previewScene = (/prototype-guided-session \.fs-preview-head::before\s*\{([^}]*)\}/s.exec(appStyles) || ["", ""])[1];
 const previewBlend = (/prototype-guided-session \.fs-preview-head::after\s*\{([^}]*)\}/s.exec(appStyles) || ["", ""])[1];
-const meaningPrompt = (/prototype-guided-session \.fs-meaning-prompt\s*\{([^}]*)\}/s.exec(appStyles) || ["", ""])[1];
 const checkButton = (/prototype-guided-session \.fs-check\s*\{([^}]*)\}/s.exec(appStyles) || ["", ""])[1];
 const checkButtonHover = (/prototype-guided-session \.fs-check:hover\s*\{([^}]*)\}/s.exec(appStyles) || ["", ""])[1];
 const checkButtonDisabled = (/prototype-guided-session \.fs-check:disabled\s*\{([^}]*)\}/s.exec(appStyles) || ["", ""])[1];
-const matchedPhraseCard = (/prototype-guided-session \.fs-match-option\.is-matched\s*\{([^}]*)\}/s.exec(appStyles) || ["", ""])[1];
 
 let failures = 0;
 
@@ -147,12 +145,9 @@ check("notifications close with a neutral icon action", prototype.includes('aria
 check("the lesson preview has its own focused surface", guidedSession.includes('inPreview && "fs-card--preview"'));
 check("the lesson preview reuses the lightweight homepage course scene", appStyles.includes('url("./prototype/assets/micheon-hero-v3.webp")'));
 check("the lesson preview blends its course scene without a centre seam", !previewHead.includes("url(") && previewScene.includes('url("./prototype/assets/micheon-hero-v3.webp") right center / auto 120% no-repeat') && previewScene.includes("rgba(0, 0, 0, 0.04) 48%") && previewBlend.includes("rgba(36, 168, 61, 0.96) 48%") && previewBlend.includes("transparent 82%"));
-check("the meaning question uses a clean solid learning surface", meaningPrompt.includes("background: #fffefb;") && !meaningPrompt.includes("gradient"));
-check("the meaning question label uses the Micheon green accent", /prototype-guided-session \.fs-meaning-new\s*\{[^}]*color:\s*#2c8f39;/s.test(appStyles));
 check("guided Check buttons use readable ink on a green tactile base with no inherited gold", checkButton.includes("color: #123c1a;") && checkButton.includes("0 4px 0 #248831") && checkButtonHover.includes("0 6px 0 #248831") && !`${checkButton}${checkButtonHover}`.includes("#a77b00"));
 check("dark custom guided Check buttons use the foreground derived for their accent fill", /html\[data-theme="dark"\]\[data-accent="custom"\] \.guided-session\.fs-app\.prototype-guided-session \.fs-check\s*\{[^}]*color:\s*var\(--accent-text\);/s.test(appStyles));
 check("disabled guided Check buttons keep their label readable in every accent", checkButtonDisabled.includes("opacity: 1;") && checkButtonDisabled.includes("cursor: not-allowed;") && /html:not\(\[data-theme="dark"\]\)\[data-accent="custom"\][\s\S]*?\.fs-check:disabled\s*\{[^}]*color:\s*var\(--accent-ink\);/s.test(appStyles) && /html\[data-theme="dark"\]\[data-accent="custom"\][\s\S]*?\.fs-check:disabled\s*\{[^}]*color:\s*var\(--accent-ink\);/s.test(appStyles));
-check("completed phrase pairs highlight both full cards with a clear mint success state", (guidedSession.match(/&& "is-matched"/g) || []).length >= 2 && matchedPhraseCard.includes("border-color: #62bd68;") && matchedPhraseCard.includes("background: #ddf4d7;") && matchedPhraseCard.includes("color: #205f2c;") && matchedPhraseCard.includes("opacity: 1;"));
 check("the lesson preview exposes useful phrase and language context", guidedSession.includes('className="fs-preview-summary"') && guidedSession.includes('{cards.length} {ui("Phrases")}'));
 check("the lesson preview uses tactile numbered route steps", /prototype-guided-session \.fs-preview-route button\s*\{[^}]*height:\s*38px;[^}]*color:\s*#77786f;/s.test(appStyles));
 check("the lesson preview card has a stable content and helper hierarchy", guidedSession.includes('className="fs-flashcard-content"') && guidedSession.includes('className="fs-flashcard-footer"'));
