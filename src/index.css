@@ -12241,16 +12241,22 @@ html[data-theme="dark"] {
      moved Play, Back and Next down the page, so pressing Next repeatedly
      means clicking where the button was a moment ago.
 
-     440px covers the 99th percentile of that sample with room over it, and
-     the card takes it whether or not this item needs it. Most cards carry
-     some empty space above the grading row now; that is the cost of nothing
-     below the card ever moving, and it is worth paying.
+     The number is measured, and it moved when the card stopped being a
+     bordered box inside the panel: without its own padding the lines are
+     wider, so they wrap less. Re-measured over the same 176 cards, the
+     content now runs to 250px at the median, 305 at the 90th and 329 at the
+     widest - so 340px, which covers all of them with room over it and takes
+     about a hundred pixels of emptiness back out of the card.
+
+     The card takes that height whether or not this item needs it. Most cards
+     still carry some empty space above the grading row; that is the cost of
+     nothing below the card ever moving, and it is worth paying.
 
      The rarer item still overruns - a word with a register pill, a two-line
      use note AND a list of synonyms reaches 518px - and scrolls inside the
      card. The grading row is sticky, so it stays on screen while that
      happens: it is the only thing here that has to be reachable. */
-  height: 440px;
+  height: 340px;
   overflow-y: auto;
   /* One gap for the whole card, set here rather than on each line.
 
@@ -12304,7 +12310,9 @@ html[data-theme="dark"] {
      fold on exactly the items that are hardest to judge. */
   position: sticky;
   bottom: 0;
-  background: var(--surface-2);
+  /* The card sits on the panel now and has no fill of its own, so the
+     row that covers scrolled content has to match the panel. */
+  background: var(--surface);
   /* Sticky creates a stacking context whether or not you ask for one, so the
      Know it menu's own z-index is sealed inside this element and cannot lift
      it over anything outside. Without a z-index here the element lands among
@@ -12350,15 +12358,96 @@ html[data-theme="dark"] {
 .listen-sentence .fs-word {
   margin-inline: -0.08em;
 }
+/* ── the listening card's voice, drawn from the voice ──────────────────────
+
+   Two rows of bars flanking the card, reading the real frequency bands of the
+   clip being spoken - the same TTS_AUDIO_LEVEL_EVENT the guided session
+   listens to. Not a loop that runs regardless: when nothing is playing the
+   bars fall to their floor and stay there, so the card is honest about
+   whether it is making a sound.
+
+   Absolutely placed rather than laid out beside the content, because the
+   content is centred and has to stay centred: a flex sibling would push the
+   word off the middle of the card on the widths where the bars fit and not
+   on the ones where they do not. */
+.listen-wave {
+  position: absolute;
+  /* Level with the word and its meaning, not with the middle of the card.
+     The card is a fixed height and its content is anchored at the top, so
+     half way down is the empty part - the bars sat under the pair rather
+     than beside it. A band measured from the top keeps them level whatever
+     the item below carries. */
+  top: 28px;
+  display: none;
+  height: 150px;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+}
+
+/* Room for them only where there is room: below this the card is all content
+   and a decoration either overlaps the words or squeezes them. */
+@media (min-width: 1100px) {
+  .listen-wave { display: flex; }
+}
+
+.listen-wave--left { left: 0; }
+.listen-wave--right { right: 0; }
+
+/* Fading outwards, so the bars end rather than stop. The left row fades to
+   the left and the right row to the right, which is what makes them read as
+   one field the card sits in. */
+.listen-wave--left {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 55%);
+  mask-image: linear-gradient(to right, transparent, #000 55%);
+}
+
+.listen-wave--right {
+  -webkit-mask-image: linear-gradient(to left, transparent, #000 55%);
+  mask-image: linear-gradient(to left, transparent, #000 55%);
+}
+
+.listen-wave i {
+  width: 3px;
+  height: 44px;
+  border-radius: 999px;
+  background: var(--accent);
+  opacity: 0.32;
+  transform: scaleY(clamp(0.06, var(--tts-wave-level, 0), 1));
+  transform-origin: center;
+  transition: transform 70ms linear, opacity 160ms ease;
+  will-change: transform;
+}
+
+/* Brighter only while the reading is real. Without this the bars look the
+   same whether they are showing sound or showing their resting floor. */
+.listen-wave[data-audio-reactive="true"] i { opacity: 0.85; }
+
+/* A note about the mode, in something, rather than a caption floating under
+   the last card. */
+.listen-footnote {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  padding: 12px 16px;
+  color: var(--text-3);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.6;
+  text-align: center;
+}
 
 @media (max-width: 640px) {
   /* Narrower lines wrap more, so the reserve is deeper rather than the card
      being allowed to breathe up and down on a phone. Measured the same way at
-     430px wide, the same 176 cards run to 494px. This said 340px, which
-     min-height overrode: the card was 360px there and the tallest items were
-     scrolling nearly half their content out of sight. */
+     430px wide, the content runs to 286px at the median and 416px at the
+     widest, so the reserve here is 430px. */
   .listen-card {
-    height: 500px;
+    height: 430px;
   }
 }
 

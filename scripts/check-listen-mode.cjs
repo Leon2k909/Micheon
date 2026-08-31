@@ -1862,9 +1862,13 @@ void (async () => {
   // — 360, 370, 388, 411 and 425 — and every one of those steps walked Play,
   // Back and Next down the page. Someone pressing Next repeatedly clicks
   // where the button was. One height now, taken whether the item needs it.
+  // The rule, not the number: the number is measured and moves whenever the
+  // card's own padding does, and pinning it meant a re-measure looked like a
+  // regression. What must not come back is the floor.
   check(
     "the listen card is one height, not a floor it can grow past",
-    cardBlock.includes("height: 440px;") && !cardBlock.includes("min-height:")
+    cardBlock.includes("  height: ")
+    && !cardBlock.includes("min-height:")
   );
   // ...and the one control that must stay reachable does, on the rarer item
   // that still overruns and scrolls inside the card.
@@ -1876,7 +1880,9 @@ void (async () => {
     "the grading row stays on screen while a long card scrolls",
     reviewRule.includes("position: sticky;")
     && reviewRule.includes("bottom: 0;")
-    && reviewRule.includes("background: var(--surface-2);")
+    // Whatever it covers, it has to be the same colour as what is behind it -
+    // the card sits on the panel now and has no fill of its own.
+    && reviewRule.includes("background: var(--surface);")
   );
   // Every word is its own box so it can be hovered, and a box has padding.
   // Padding is width: at this size it put half a space again between every

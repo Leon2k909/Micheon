@@ -7,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ClipboardCheck,
+  Info,
   GripVertical,
   Headphones,
   ListMusic,
@@ -101,6 +102,7 @@ import {
 import { cefrRungLabel, cefrStepLabel, CEFR_STEPS, type CefrStep } from "@/lib/cefr";
 import { USEFULNESS_FILTERS, type ConversationUsefulness } from "@/lib/conversationPriority";
 import { ListenTest } from "@/components/listen/ListenTest";
+import { TtsWaveform } from "@/components/TtsWaveform";
 import { LISTEN_TEST_MAX_QUESTIONS } from "@/lib/listenTest";
 import { TappableSentence } from "@/components/shared/TappableSentence";
 import { preloadTts, stopTts, ttsSequence, TTS_SPEAKING_EVENT, type SeqItem } from "@/lib/voice";
@@ -1570,7 +1572,12 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
 
   return (
     <div className="listen-view mx-auto w-full max-w-7xl space-y-4">
-      <section className="card p-5 sm:p-6">
+      <section className="listen-shell">
+        {/* One frame around the two things that are the same thing: what is
+            playing, and what it says. The card used to be a second bordered
+            box inside this one, which drew a line between the heading and the
+            card it heads. A rule does that job without a second frame. */}
+        <div className="listen-panel card p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--accent-dim)] text-[var(--accent)]">
@@ -1608,14 +1615,21 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
           </div>
         </div>
 
-        <div className="listen-card mt-6 rounded-[24px] border border-[var(--border)] bg-[var(--surface-2)] p-6 text-center shadow-[0_5px_0_var(--border)] sm:p-10">
+        <div className="listen-card relative mt-5 border-t border-[var(--border)] pt-6 text-center sm:pt-8">
+          {/* The voice, drawn from the voice. These are the real frequency
+              bands of the clip being spoken — the same reading the guided
+              session uses — rather than a loop that runs whether or not
+              anything is playing. Flanking the card because that is where the
+              room is; they are decoration and are hidden from the reader. */}
+          <TtsWaveform active={playing} bars={26} className="listen-wave listen-wave--left" />
+          <TtsWaveform active={playing} bars={26} className="listen-wave listen-wave--right" />
           {/* The level sits in the line that already says what this card is,
               because the default order is now a walk up through the levels and
               there was no way to see where in that walk you were. A CEFR label
               is the same word in every language, so it is printed rather than
               translated; a pack with no level simply omits it instead of
               printing a gap. */}
-          <p className="text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
+          <p className="text-[11px] font-black uppercase tracking-wide text-[var(--accent)]">
             {ui(item.kind === "word" ? "Word" : "Sentence")}
             {item.levelLabel ? <> · {item.levelLabel}</> : item.rung ? <> · {cefrRungLabel(item.rung)}</> : null}
             {" · "}{queueIndex + 1} / {queue.length}
@@ -1630,7 +1644,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
           <p className="listen-sentence text-2xl font-black leading-snug tracking-tight text-[var(--text-1)] sm:text-3xl" lang={targetSlot.htmlLang}>
             <TappableSentence text={item.de} lang={targetLang} meaningText={item.en} onWordAudio={pause} />
           </p>
-          <p className="text-base font-bold leading-relaxed text-[var(--text-2)]" lang={meaningSlot.htmlLang}>
+          <p className="text-base font-bold leading-relaxed text-[var(--accent)]" lang={meaningSlot.htmlLang}>
             {item.en}
           </p>
           {/* How the same sentence is WRITTEN, when the card teaches how it is
@@ -1847,6 +1861,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               </div>
             )}
           </div>
+        </div>
         </div>
 
         <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
@@ -2474,7 +2489,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
           </label>
         </div>
 
-        <p className="mt-4 text-center text-[11px] font-semibold leading-relaxed text-[var(--text-3)]">
+        <p className="listen-footnote mt-4">
+          <Info aria-hidden="true" className="h-4 w-4 shrink-0 text-[var(--text-3)]" />
           {ui("Repeated listening builds familiarity, but it does not mark an item mastered. Lessons still check whether you can recall and spell it.")}
         </p>
       </section>
