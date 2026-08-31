@@ -98,6 +98,8 @@ import {
   type ListenReturnScope,
   type ListenReviewChange,
   type ListenReviewLevel,
+  LISTEN_TARGET_RATE,
+  LISTEN_MEANING_RATE,
 } from "@/lib/listenMode";
 import { cefrRungLabel, cefrStepLabel, CEFR_STEPS, type CefrStep } from "@/lib/cefr";
 import { USEFULNESS_FILTERS, type ConversationUsefulness } from "@/lib/conversationPriority";
@@ -759,12 +761,27 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
    * Both languages, because both are spoken. Failures are ignored by
    * preloadTts itself: this is a head start, and a card that has to fetch its
    * own audio is the behaviour that already existed.
+   *
+   * AT THE RATE PLAYBACK WILL ASK FOR, which is the whole trick. The rate is
+   * part of the cache key, so warming 0.88 while the plan plays 0.92 and 0.95
+   * fills the cache with entries nobody reads — the fetch still happens, at
+   * the start of the card, which is exactly what this was written to stop.
+   * The constants come from the plan itself now rather than being typed again
+   * here, because typing them again here is how they came apart.
+   *
+   * And the card in front of you, not only the one after it. Warming solely
+   * the next card leaves the first one of a sitting to fetch its own audio,
+   * which is the one moment a learner is definitely watching.
    */
   useEffect(() => {
-    if (!playing || !nextItem) return;
-    if (nextItem.de) preloadTts(nextItem.de, 0.88, targetLang);
-    if (nextItem.en) preloadTts(nextItem.en, 0.88, meaningLang);
-  }, [meaningLang, nextItem, playing, targetLang]);
+    const warm = (item: typeof nextItem) => {
+      if (!item) return;
+      if (item.de) preloadTts(item.de, LISTEN_TARGET_RATE, targetLang);
+      if (item.en) preloadTts(item.en, LISTEN_MEANING_RATE, meaningLang);
+    };
+    if (playing) warm(nextItem);
+    else warm(item);
+  }, [item, meaningLang, nextItem, playing, targetLang]);
   const masterMuted = isMasterAudioSilent(audioSettings);
   const englishMuted = isTtsLanguageMuted(AUDIO_LANGUAGE[slotLanguage.en]);
   const germanMuted = isTtsLanguageMuted(AUDIO_LANGUAGE[slotLanguage.de]);

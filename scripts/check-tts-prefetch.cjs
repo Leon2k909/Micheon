@@ -83,7 +83,54 @@ assert.ok(/getAudioUrl\([\s\S]*?\)\s*\.catch\(\(\) => \{\}\)/.test(preloadBody.s
 assert.ok(!/await preloadTts/.test(matcher),
   "the board waits for its audio before drawing, which trades one delay for a worse one");
 
+/**
+ * ── and Listen, which had the same job and got it wrong ────────────────────
+ *
+ * This check guarded the Matcher only. Listen grew a prefetch of its own
+ * later, warming both sides at 0.88 while its speech plan played the target
+ * at 0.92 and the meaning at 0.95. The rate is part of the cache key, so
+ * every clip it warmed was an entry playback never asked for: the fetch it
+ * exists to remove still happened, at the start of every card.
+ *
+ * It went unnoticed because short words hide it. effectiveRate clamps a one-
+ * or two-syllable word to 1 whatever rate it is handed, so "ear" and "go"
+ * matched by accident and only longer words and sentences — measured at 400
+ * to 850 ms upstream — paid.
+ *
+ * The rates are one exported pair now, read by the plan and by the prefetch,
+ * so the two cannot disagree. What is asserted here is that they are still
+ * read rather than retyped, because retyping them is the whole story.
+ */
+const listen = fs.readFileSync(path.join(root, "src/components/listen/ListenView.tsx"), "utf8");
+const plan = fs.readFileSync(path.join(root, "src/lib/listenMode.ts"), "utf8");
+
+assert.ok(/export const LISTEN_TARGET_RATE\s*=\s*[\d.]+/.test(plan)
+  && /export const LISTEN_MEANING_RATE\s*=\s*[\d.]+/.test(plan),
+  "the Listen speech rates are no longer exported constants, so the plan and the prefetch can drift again");
+
+assert.ok(/speak\(de, targetLang, en, meaningLang, "target", LISTEN_TARGET_RATE\)/.test(plan),
+  "the speech plan no longer plays the target side at LISTEN_TARGET_RATE");
+assert.ok(/speak\(en, meaningLang, de, targetLang, "meaning", LISTEN_MEANING_RATE\)/.test(plan),
+  "the speech plan no longer plays the meaning side at LISTEN_MEANING_RATE");
+
+assert.ok(/preloadTts\(item\.de,\s*LISTEN_TARGET_RATE,\s*targetLang\)/.test(listen),
+  "Listen warms the target side at a literal rate again — it must use the constant the plan plays");
+assert.ok(/preloadTts\(item\.en,\s*LISTEN_MEANING_RATE,\s*meaningLang\)/.test(listen),
+  "Listen warms the meaning side at a literal rate again — it must use the constant the plan plays");
+
+// No bare decimal may reappear beside a preloadTts call in Listen: that is
+// exactly the shape the bug had.
+const listenWarmCalls = [...listen.matchAll(/preloadTts\([^)]*\)/g)].map((m) => m[0]);
+const literalRate = listenWarmCalls.filter((call) => /,\s*[\d.]+\s*,/.test(call));
+assert.strictEqual(literalRate.length, 0,
+  `Listen warms with a hard-coded rate: ${literalRate.join(", ")}`);
+
+// The card in front of the learner is warmed too, not only the one after it —
+// otherwise the first card of every sitting fetches its own audio.
+assert.ok(/if \(playing\) warm\(nextItem\);\s*else warm\(item\);/.test(listen),
+  "Listen warms only the next card, so the first card of a sitting still waits on the upstream fetch");
+
 console.log(
-  "check-tts-prefetch: the Matcher warms every card on the board at the same rate and language "
-  + "it will play them, and a tap never waits on it"
+  "check-tts-prefetch: the Matcher and Listen both warm audio at the same rate and language "
+  + "they will play it, Listen's rates come from one exported pair, and neither waits on the warm"
 );

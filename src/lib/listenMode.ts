@@ -638,6 +638,23 @@ export type ListenSpeechClip = {
 };
 
 /**
+ * The pace each side of a card is spoken at.
+ *
+ * Exported, and used by the plan below AND by the player's prefetch, because
+ * the rate is part of the cache key: warming a clip at a rate playback will
+ * not ask for fills the cache with an entry nobody reads and leaves the card
+ * to fetch its own audio anyway. Written as a literal in both places, they
+ * drifted — the prefetch asked for 0.88 while the plan played 0.92 and 0.95,
+ * so every word of three syllables or more, and every sentence, paid the full
+ * upstream fetch that the prefetch exists to avoid. Short words hid it: their
+ * rate is clamped to 1 at both ends, so they matched by accident.
+ *
+ * One number, one place, and the drift cannot happen again.
+ */
+export const LISTEN_TARGET_RATE = 0.92;
+export const LISTEN_MEANING_RATE = 0.95;
+
+/**
  * Everything a card says, in order, gap included.
  *
  * Lives here rather than inside the player so the rule that matters can be
@@ -704,14 +721,14 @@ export function buildListenSpeechPlan({
       : [{ text, rate, lang: ownLang, side }]
   );
 
-  const targetOnce = speak(de, targetLang, en, meaningLang, "target", 0.92);
+  const targetOnce = speak(de, targetLang, en, meaningLang, "target", LISTEN_TARGET_RATE);
   const target: ListenSpeechClip[] = Array.from(
     { length: Math.max(0, targetRepeats) },
     () => targetOnce
   ).flat();
   // The side stays what it was — it is still that half of the card, and the
   // caption, the gap and the repeat count all belong to the line as a whole.
-  const meaningOnce: ListenSpeechClip[] = speak(en, meaningLang, de, targetLang, "meaning", 0.95);
+  const meaningOnce: ListenSpeechClip[] = speak(en, meaningLang, de, targetLang, "meaning", LISTEN_MEANING_RATE);
   const meaning: ListenSpeechClip[] = Array.from(
     { length: Math.max(0, meaningRepeats) },
     () => meaningOnce

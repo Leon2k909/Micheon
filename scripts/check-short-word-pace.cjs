@@ -149,11 +149,33 @@ check("preloading warms the entry playback will actually use", () => {
 });
 
 const listen = fs.readFileSync(path.join(root, "src/components/listen/ListenView.tsx"), "utf8").replace(/\r\n?/gu, "\n");
-check("Listen fetches the next card while this one plays", () => {
-  assert.ok(listen.includes("preloadTts(nextItem.de"), "the next card's target audio is not fetched ahead");
-  assert.ok(listen.includes("preloadTts(nextItem.en"), "the next card's meaning audio is not fetched ahead");
-  assert.ok(/if \(!playing \|\| !nextItem\) return;/.test(listen),
-    "a paused player still fetches ahead, which spends somebody's connection on audio nobody asked for");
+check("Listen fetches ahead, and only ever one card", () => {
+  // Both sides of one card, through a single helper rather than four calls,
+  // so the rate cannot be right on one line and wrong on the next. That is
+  // how it broke: the warm asked for 0.88 while the plan played 0.92 and
+  // 0.95, and every clip it fetched was an entry playback never read.
+  assert.ok(/preloadTts\(item\.de,\s*LISTEN_TARGET_RATE,\s*targetLang\)/.test(listen),
+    "the target side is no longer warmed at the rate the speech plan plays it");
+  assert.ok(/preloadTts\(item\.en,\s*LISTEN_MEANING_RATE,\s*meaningLang\)/.test(listen),
+    "the meaning side is no longer warmed at the rate the speech plan plays it");
+
+  /**
+   * While playing, the NEXT card. While paused, the one on screen.
+   *
+   * The rule this replaces was "never fetch while paused", and its reason
+   * still stands: reading ahead through a queue nobody is listening to spends
+   * a connection on audio nobody asked for. Warming the card already in front
+   * of the learner is not that — it is one card, displayed, one tap from
+   * playing, and it is the card that used to make the first play of every
+   * sitting wait on the upstream fetch.
+   *
+   * What must not come back is fetching the NEXT card while paused, which is
+   * the speculative half.
+   */
+  assert.ok(/if \(playing\) warm\(nextItem\);\s*\n\s*else warm\(item\);/.test(listen),
+    "Listen no longer warms the next card while playing and the current one while paused");
+  assert.ok(!/if \(!playing\) .*warm\(nextItem\)/.test(listen),
+    "a paused player reads ahead through the queue again, which spends somebody's connection on audio nobody asked for");
 });
 
 if (failed) {
