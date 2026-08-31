@@ -93,6 +93,20 @@ export const COURSES: Course[] = [
     available: true,
     builtIn: true,
   },
+  // Russian is the seventh, and the first written in another alphabet. Cards
+  // are held in Cyrillic and can be READ in Cyrillic or in one of five Latin
+  // transcriptions, whichever the learner picks — see russianScript.ts. Its
+  // vocabulary is still being written, so the course is short and grows with
+  // each block; the tagline promises what it does rather than how much.
+  {
+    id: "russian",
+    kind: "language",
+    name: "Russian",
+    tagline: "Learn Russian in Cyrillic, or in letters you already read.",
+    icon: "🇷🇺",
+    available: true,
+    builtIn: true,
+  },
   // Everything else people might come looking for. Listed, searchable and
   // honest about not being ready — a picker with three rows makes someone
   // wonder whether their language was considered and rejected.

@@ -1730,6 +1730,7 @@ export const PT: Record<string, string> = {
   "Cyrillic": "Cirílico",
   "Latin": "Latino",
   "Read, listen, type and translate real Portuguese.": "Lê, ouve, escreve e traduz português a sério.",
+  "Learn Russian in Cyrillic, or in letters you already read.": "Aprende russo em cirílico ou com letras que já lês.",
   "Coming soon.": "Em breve.",
   "Put finished lessons away to clear the list. Nothing is deleted, and this button brings them straight back.": "Arruma as lições terminadas para limpares a lista. Não se apaga nada, e este botão traz-nas logo de volta.",
   "Not seen recently": "Sem ver há algum tempo",

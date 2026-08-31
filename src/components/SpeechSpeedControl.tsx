@@ -24,6 +24,7 @@ const SCOPES: Array<{ value: TtsSpeechScope; label: string }> = [
   { value: "polish", label: "Polish" },
   { value: "spanish", label: "Spanish" },
   { value: "portuguese", label: "Portuguese" },
+  { value: "russian", label: "Russian" },
 ];
 
 function rateForScope(settings: AudioSettings, scope: TtsSpeechScope): number | null {
@@ -33,6 +34,7 @@ function rateForScope(settings: AudioSettings, scope: TtsSpeechScope): number | 
   if (scope === "polish") return settings.polishSpeechRate;
   if (scope === "spanish") return settings.spanishSpeechRate;
   if (scope === "portuguese") return settings.portugueseSpeechRate;
+  if (scope === "russian") return settings.russianSpeechRate;
   return getMasterTtsSpeechRate(settings);
 }
 

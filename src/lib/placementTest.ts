@@ -391,12 +391,68 @@ const PT: PlacementQuestion[] = [
   q("pt-c1-8", "C1", "Which is correct?", "Foi ele quem ___ a ideia.", ["propôs", "proponha", "propunha de", "proporia de"], 0, "The event is completed in the past, so propôs is the natural form here."),
 ];
 
+/**
+ * Russian, A1 to C1 like every other bank.
+ *
+ * It was going to stop at A2, where the vocabulary stops — and the gate was
+ * right to refuse that. The test walks UP the levels, so a level with no
+ * questions is an empty round rather than a short course: somebody who
+ * answers the A2 set correctly would be asked nothing at all.
+ *
+ * Written in Cyrillic throughout, because the placement test is where a
+ * learner finds out whether they can read it. Somebody who has chosen the
+ * Latin setting still sees Cyrillic here, and that is the point.
+ *
+ * The upper levels lean on the things Russian actually tests at that level —
+ * the cases a verb governs, motion verbs, and the idioms, which cannot be
+ * worked out from their parts.
+ */
+const RU: PlacementQuestion[] = [
+  // A1
+  q("ru-a1-1", "A1", "Which is correct?", "Как тебя ___?", ["зовут", "зовёшь", "зову", "звать"], 0, "Как тебя зовут? is how you ask someone's name."),
+  q("ru-a1-2", "A1", "What does this mean?", "Здравствуйте", ["goodbye", "hello", "thank you", "please"], 1, "Здравствуйте is the formal greeting."),
+  q("ru-a1-3", "A1", "Which is correct?", "Я ___ в Москве.", ["живу", "живёшь", "живёт", "жить"], 0, "First person singular of жить is живу."),
+  q("ru-a1-4", "A1", "What does this mean?", "дом", ["the street", "the house", "the city", "the station"], 1, "дом is a house or home."),
+  q("ru-a1-5", "A1", "Which is correct?", "У меня ___ сестра.", ["есть", "быть", "имею", "иметь"], 0, "Russian says possession with у меня есть."),
+  q("ru-a1-6", "A1", "What does this mean?", "спасибо", ["please", "sorry", "thank you", "hello"], 2, "спасибо is thank you."),
+  q("ru-a1-7", "A1", "Which is correct?", "Это ___ книга.", ["моя", "мой", "моё", "мои"], 0, "книга is feminine, so the possessive is моя."),
+  q("ru-a1-8", "A1", "What does this mean?", "хорошо", ["badly", "well", "quickly", "slowly"], 1, "хорошо is well or good."),
+  // A2
+  q("ru-a2-1", "A2", "Which is correct?", "Я живу ___ Москве.", ["в", "на", "к", "из"], 0, "Cities take в with the prepositional case."),
+  q("ru-a2-2", "A2", "What does this mean?", "Мне нужно идти.", ["I want to go", "I have to go", "I can go", "I like going"], 1, "мне нужно expresses necessity, not desire."),
+  q("ru-a2-3", "A2", "Which is correct?", "Вчера я ___ книгу.", ["читаю", "читал", "буду читать", "читать"], 1, "вчера needs the past tense."),
+  q("ru-a2-4", "A2", "What does this mean?", "Сколько это стоит?", ["Where is it?", "How much is it?", "What is it?", "When is it?"], 1, "сколько стоит asks the price."),
+  q("ru-a2-5", "A2", "Which is correct?", "Он идёт ___ работу.", ["на", "в", "к", "у"], 0, "работа takes на, not в — one of the pairs that has to be learned."),
+  q("ru-a2-6", "A2", "What does this mean?", "Ничего страшного.", ["It is terrible", "It is nothing to worry about", "Nothing happened", "It is frightening"], 1, "It reassures rather than describes, despite страшный meaning frightening."),
+  q("ru-a2-7", "A2", "Which is correct?", "У меня нет ___.", ["время", "времени", "временем", "времена"], 1, "нет takes the genitive: времени."),
+  q("ru-a2-8", "A2", "What does this mean?", "Я не совсем понимаю.", ["I understand completely", "I do not quite understand", "I do not want to understand", "I understood"], 1, "не совсем softens it to not quite."),
+  // B1
+  q("ru-b1-1", "B1", "Which is correct?", "Если бы у меня было время, я ___ тебе.", ["помог бы", "помогу", "помогал", "помочь"], 0, "An unreal condition takes бы with the past form."),
+  q("ru-b1-2", "B1", "What does this mean?", "Мне всё равно.", ["I agree", "I do not mind", "I am equal to it", "It is all the same size"], 1, "It says the speaker has no preference."),
+  q("ru-b1-3", "B1", "Which is correct?", "Я занимаюсь ___.", ["спортом", "спорт", "спорта", "спорте"], 0, "заниматься governs the instrumental."),
+  q("ru-b1-4", "B1", "What does this mean?", "Он вышел из себя.", ["He left the house", "He lost his temper", "He went out alone", "He came to his senses"], 1, "Literally he went out of himself, and it means he lost his temper."),
+  q("ru-b1-5", "B1", "Which is correct?", "Она ___ в Петербург на прошлой неделе и уже вернулась.", ["ездила", "ехала", "едет", "поедет"], 0, "A completed there-and-back trip takes ездила, not ехала."),
+  // B2
+  q("ru-b2-1", "B2", "Which is correct?", "Несмотря ___ дождь, мы пошли гулять.", ["на", "в", "за", "о"], 0, "несмотря is always followed by на."),
+  q("ru-b2-2", "B2", "What does this mean?", "Это мне не по карману.", ["I cannot afford it", "I do not like it", "It does not fit me", "I left it in my pocket"], 0, "не по карману is about price, not about pockets."),
+  q("ru-b2-3", "B2", "Which is correct?", "Книга, ___ я читаю, очень интересная.", ["которую", "которая", "которой", "которых"], 0, "The relative pronoun takes the case its own clause needs, here accusative."),
+  q("ru-b2-4", "B2", "What does this mean?", "Он бьёт баклуши.", ["He works hard", "He is idling", "He is fighting", "He is cooking"], 1, "An idiom for doing nothing; баклуши are not used outside it."),
+  q("ru-b2-5", "B2", "Which is correct?", "Я привык ___ рано.", ["вставать", "встать", "встаю", "вставал"], 0, "привыкнуть takes an imperfective infinitive for a habit."),
+  // C1
+  q("ru-c1-1", "C1", "What does this mean?", "Он работает спустя рукава.", ["He works carelessly", "He works with his sleeves rolled up", "He works overtime", "He works from home"], 0, "Sleeves hanging down, so the work is done without care — the opposite of the English picture."),
+  q("ru-c1-2", "C1", "Which is correct?", "___ на трудности, проект завершили вовремя.", ["Невзирая", "Невзирать", "Невзиравший", "Невзирав"], 0, "The adverbial participle невзирая is the fixed form here."),
+  q("ru-c1-3", "C1", "What does this mean?", "Это палка о двух концах.", ["It is a double-edged sword", "It is a long stick", "It is the end of the road", "It has two solutions"], 0, "A stick with two ends: whatever you do cuts both ways."),
+  q("ru-c1-4", "C1", "Which is correct?", "Будучи студентом, он ___ в библиотеке.", ["подрабатывал", "подрабатывать", "подработает", "подработав"], 0, "будучи sets a past frame, so the finite verb is past imperfective."),
+  q("ru-c1-5", "C1", "What does this mean?", "У него денег куры не клюют.", ["He has no money at all", "He has money to burn", "He keeps chickens", "He spends money on food"], 1, "So much money that even the hens will not peck at it."),
+];
+
 export function placementQuestions(direction: PlacementDirection): PlacementQuestion[] {
   if (direction === "learn-en") return EN;
   if (direction === "learn-fr") return FR;
   if (direction === "learn-pl") return PL;
   if (direction === "learn-es") return ES;
   if (direction === "learn-pt") return PT;
+  if (direction === "learn-ru") return RU;
   return DE;
 }
 
