@@ -20686,4 +20686,106 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Zwei Minuten, ich bin sofort zurück.": "Dois minutos, volto já.",
   "Ich muss nur kurz aufs Klo.": "Só vou à casa de banho num instante.",
   "Bin unterwegs, bis gleich!": "Já vou a caminho, até já!",
+
+  // ── Turn left at the lights (part130) ───────────────────────────────────
+  //
+  // Der Kreisverkehr is a rotunda and die Einbahnstraße is uma rua de sentido
+  // único. Wir sind falsch is enganámo-nos no caminho: Portuguese says the
+  // people made the mistake, not that they are wrong.
+  "An der Kreuzung links abbiegen.": "No cruzamento virar à esquerda.",
+  "Bieg an der nächsten Ecke rechts ab.": "Vira à direita na próxima esquina.",
+  "Immer geradeaus, dann siehst du es.": "Sempre em frente e depois vês.",
+  "An der zweiten Ampel rechts.": "No segundo semáforo à direita.",
+  "Es ist direkt gegenüber der Post.": "É mesmo em frente aos correios.",
+  "Da ist eine Umleitung.": "Ali há um desvio.",
+  "Fahr im Kreisverkehr die zweite Ausfahrt.": "Na rotunda sai na segunda saída.",
+  "Das ist eine Einbahnstraße.": "Essa rua é de sentido único.",
+  "Ich glaube, wir sind falsch.": "Acho que nos enganámos no caminho.",
+  "Kannst du mal aufs Navi schauen?": "Vês lá no GPS?",
+  "Zu Fuß ist es schneller.": "A pé é mais rápido.",
+  "Es liegt zwischen der Bank und der Apotheke.": "Fica entre o banco e a farmácia.",
+  "Gehen Sie am Park vorbei.": "Passe ao lado do parque.",
+  "Nach der Brücke sofort links.": "A seguir à ponte logo à esquerda.",
+  "Ich beschreibe es dir kurz.": "Eu explico-te num instante.",
+  "Da vorne ist es schon.": "É já ali à frente.",
+  "Ich habe es gefunden, danke!": "Encontrei, obrigada!",
+
+  // ── What a thing is made of, and how much of it (part131) ───────────────
+  //
+  // Echtes Leder is cabedal verdadeiro. Cabedal is the everyday Portuguese
+  // word for the leather a shoe or a bag is made of, and couro belongs to the
+  // tannery rather than the shop.
+  //
+  // Die Hälfte reicht mir is a mim metade chega-me, with the same chegar the
+  // shop packs already run on.
+  "Ist das echtes Leder?": "Isso é cabedal verdadeiro?",
+  "Die Verpackung ist leider aus Plastik.": "Infelizmente a embalagem é de plástico.",
+  "Der Tisch ist aus massivem Holz.": "A mesa é de madeira maciça.",
+  "Vorsicht, das ist aus Glas.": "Cuidado, isso é de vidro.",
+  "Ich hätte gern einen Liter Milch.": "Queria um litro de leite.",
+  "Zwei Kilo Kartoffeln, bitte.": "Dois quilos de batatas, se faz favor.",
+  "Das sind bestimmt zwei Meter.": "Isso de certeza que tem dois metros.",
+  "Wir brauchen ein Dutzend Eier.": "Precisamos de uma dúzia de ovos.",
+  "Die Hälfte reicht mir.": "A mim metade chega-me.",
+  "Nimm bitte die doppelte Menge.": "Leva o dobro, se faz favor.",
+  "Wie viel wiegt das ungefähr?": "Isso pesa mais ou menos quanto?",
+  "Das passt in ein Glas.": "Isso cabe num frasco.",
+  "Die Pflanze braucht mehr Wasser.": "A planta precisa de mais água.",
+  "Da ist ein Insekt im Glas.": "Está um inseto dentro do copo.",
+  "Aus Papier wäre besser.": "De papel era melhor.",
+  "Das ist ziemlich schwer.": "Isso é bastante pesado.",
+  "Ein bisschen mehr, bitte.": "Um bocadinho mais, se faz favor.",
+  "Reicht das, oder soll ich mehr holen?": "Assim chega ou vou buscar mais?",
+
+  // ── Singing, playing and rehearsing (part132) ───────────────────────────
+  //
+  // Der Ohrwurm has no Portuguese noun: tenho uma música presa na cabeça, the
+  // song stuck rather than the worm. Sing ruhig mit is canta também, à
+  // vontade — the ruhig turns into the permission it actually is.
+  "Das Lied kenne ich!": "Essa música eu conheço!",
+  "Ich singe im Chor.": "Canto num coro.",
+  "Sie spielt seit Jahren Klavier.": "Ela toca piano há anos.",
+  "Ich muss noch üben.": "Ainda tenho de praticar.",
+  "Sing ruhig mit!": "Canta também, à vontade!",
+  "Ich habe einen Ohrwurm.": "Tenho uma música presa na cabeça.",
+  "Kennst du den Text?": "Sabes a letra?",
+  "Der Auftritt war richtig gut.": "A atuação foi mesmo boa.",
+  "Wir proben jeden Donnerstag.": "Ensaiamos todas as quintas.",
+  "Etwas lauter, bitte!": "Um bocadinho mais alto, se faz favor!",
+  "Das ist mein Lieblingslied.": "Essa é a minha música preferida.",
+  "Ich kann leider kein Instrument spielen.": "Infelizmente não sei tocar nenhum instrumento.",
+  "Die Stimme finde ich unglaublich.": "Acho aquela voz incrível.",
+  "Hast du das schon mal live gehört?": "Já ouviste isso ao vivo?",
+  "Ich spiele nur für mich.": "Só toco para mim.",
+  "Der Refrain geht mir nicht aus dem Kopf.": "O refrão não me sai da cabeça.",
+  "Willst du mal hören?": "Queres ouvir?",
+  "Das übe ich gerade.": "É isso que ando a praticar.",
+
+  // ── School, marks and the thing you have not covered yet (part133) ──────
+  //
+  // Mathe ist nicht mein Fach is matemática não é a minha praia, and das
+  // haben wir noch nicht gehabt is isso ainda não demos — Portuguese pupils
+  // give the subject rather than have it.
+  //
+  // Eine Zwei stays a German mark. In Germany one is the best grade and two is
+  // a good one, and renumbering it onto the Portuguese scale would invert the
+  // card: the sentence around it says so instead.
+  "Hast du deine Hausaufgaben gemacht?": "Já fizeste os trabalhos de casa?",
+  "Ich habe morgen eine Klassenarbeit.": "Amanhã tenho um teste.",
+  "Welche Note hast du bekommen?": "Que nota é que tiveste?",
+  "Eine Zwei ist doch gut!": "Então um dois é boa nota!",
+  "Das Zeugnis kommt nächste Woche.": "As notas saem para a semana.",
+  "Mathe ist echt nicht mein Fach.": "Matemática não é mesmo a minha praia.",
+  "In welchem Fach bist du am besten?": "Em que disciplina és melhor?",
+  "Er hat einfach abgeschrieben.": "Ele copiou, simplesmente.",
+  "Wir schreiben morgen einen Test.": "Amanhã fazemos uma ficha.",
+  "Ich muss noch für die Prüfung lernen.": "Ainda tenho de estudar para o exame.",
+  "Die Lehrerin hat es nochmal erklärt.": "A professora explicou outra vez.",
+  "In der Pause treffen wir uns draußen.": "No intervalo encontramo-nos lá fora.",
+  "Ich verstehe die Aufgabe nicht.": "Não percebo o exercício.",
+  "Schaffst du das allein oder soll ich helfen?": "Consegues sozinha ou queres ajuda?",
+  "Das haben wir noch nicht gehabt.": "Isso ainda não demos.",
+  "Ich bin fertig, darf ich raus?": "Já acabei, posso sair?",
+  "Streng dich ein bisschen an.": "Esforça-te um bocadinho.",
+  "Da kannst du stolz auf dich sein.": "Disso podes orgulhar-te.",
 };
