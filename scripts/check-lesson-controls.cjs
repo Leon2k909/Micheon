@@ -211,6 +211,37 @@ check(
   css.includes("0 5px 0 var(--accent-pressed, #a77b00)")
 );
 
+// ── a wrong typed answer is written out, not skipped past ───────────────
+// Skip used to sit beside Try again, directly under a panel that had just
+// printed the sentence. So the cheapest way through a sentence you could not
+// write was to read it and press the other button, and the one thing the
+// stage exists to make you do was the one thing you could decline. The
+// closed-book recall stages never offered that; these are the production
+// stages brought into line with them.
+for (const [handler, stage] of [
+  ["retry", "typing the target"],
+  ["retryEn", "translating it back"],
+  ["retrySay", "writing it from memory"],
+  ["retryGap", "filling the gap"],
+  ["retryFr", "typing it in French"],
+  ["retryMemory", "recalling both"],
+]) {
+  const opens = `<Button onClick={${handler}} variant="outline"`;
+  const at = guided.indexOf(opens);
+  const row = at < 0 ? "" : guided.slice(at, at + 600);
+  check(
+    `${stage}: a wrong answer is repaired rather than skipped past`,
+    at >= 0
+      // A lone full-width button, not one half of a pair — and no Skip after it.
+      && row.includes("w-full")
+      && !row.includes("flex-1")
+      && !row.includes('ui("Skip")'),
+    at < 0
+      ? "the retry button is gone, so this stage no longer offers the repair at all"
+      : "Skip is back beside Try again, under a panel that has just printed the answer"
+  );
+}
+
 // ── the flag is the switch ──────────────────────────────────────────────────
 // The flag on the typing prompt already says which variant you are being
 // marked against, so it is the obvious thing to press to change it — rather
