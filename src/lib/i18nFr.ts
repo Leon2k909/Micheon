@@ -3128,4 +3128,7 @@ export const FR: Record<string, string> = {
   "Hinweis zur Verwendung": "Remarque d'usage",
   "Typischer Gesprächskontext": "Contexte de conversation habituel",
   "Achte auf eine natürliche Aussprache.": "Soigne une prononciation naturelle.",
+  "Feedback and wishes": "Retours et souhaits",
+  "Say what is missing, what got in the way, or what you would like next.": "Dis ce qui manque, ce qui t'a gêné ou ce que tu aimerais ensuite.",
+  "What did you notice, and what would you like?": "Qu'as-tu remarqué, et qu'aimerais-tu ?",
 };

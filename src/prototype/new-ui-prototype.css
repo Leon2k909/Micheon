@@ -5768,6 +5768,101 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   background: #def4d2;
 }
 
+
+/* Somewhere to write, on the page that already lists everything else.
+   It opens in place rather than as a dialog: there is nothing to confirm and
+   nothing to lose track of behind it, and a box that appears where the card
+   was is easier to leave than one that covers the page. */
+.np-feedback-panel {
+  display: grid;
+  margin-top: 19px;
+  gap: 11px;
+  padding: 17px 18px 18px;
+  border: 1px solid var(--np-line);
+  border-radius: 21px;
+  background: var(--np-surface-soft);
+}
+
+.np-feedback-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.np-feedback-head strong {
+  color: var(--np-text);
+  font-size: 15px;
+  font-weight: 950;
+  letter-spacing: -0.01em;
+}
+
+.np-feedback-close {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid var(--np-line);
+  color: var(--np-muted);
+}
+
+.np-feedback-close:hover {
+  border-color: var(--np-line);
+  color: var(--np-text);
+}
+
+.np-feedback-close svg {
+  width: 15px;
+  height: 15px;
+}
+
+.np-feedback-input {
+  width: 100%;
+  min-height: 118px;
+  padding: 12px 13px;
+  border: 1px solid var(--np-line);
+  border-radius: 15px;
+  color: var(--np-text);
+  background: var(--np-surface);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+  resize: vertical;
+}
+
+.np-feedback-input:focus,
+.np-feedback-input:focus-visible {
+  border-color: var(--accent, var(--np-green));
+  outline: none;
+}
+
+.np-feedback-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.np-feedback-copy {
+  min-height: 38px;
+  padding: 0 18px;
+  border-radius: 999px;
+  color: var(--accent-text, #fff);
+  background: var(--accent, var(--np-green));
+  font-size: 13px;
+  font-weight: 900;
+  transition: opacity 120ms ease;
+}
+
+.np-feedback-copy:disabled {
+  opacity: 0.45;
+}
+
+.np-feedback-copy:not(:disabled):hover {
+  opacity: 0.9;
+}
+
 .np-feature-directory {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

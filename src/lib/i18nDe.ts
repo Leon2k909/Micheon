@@ -3377,4 +3377,7 @@ export const DE: Record<string, string> = {
   // ── moved here out of German/English ternaries in the components ──
   "{progress} / {target} {unit}": "{progress} / {target} {unit}",
   "{count} unlocked": "{count} freigeschaltet",
+  "Feedback and wishes": "Rückmeldung und Wünsche",
+  "Say what is missing, what got in the way, or what you would like next.": "Sag, was fehlt, was im Weg war oder was du dir als Nächstes wünschst.",
+  "What did you notice, and what would you like?": "Was ist dir aufgefallen, und was wünschst du dir?",
 };

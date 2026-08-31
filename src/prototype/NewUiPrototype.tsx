@@ -3936,6 +3936,18 @@ function MoreView({
   // event, because either end can change it.
   const [hiddenNav, setHiddenNav] = useState<string[]>(() => loadHiddenNav());
   const [stashActive, setStashActive] = useState(false);
+  /**
+   * Somewhere to say what is missing.
+   *
+   * There is no account and no server here — nothing in the app can post a
+   * message anywhere — so the honest thing it can do is take what was written
+   * and hand it to the clipboard, for the writer to send wherever they like.
+   * Where it should go by itself is a decision that has not been made yet;
+   * when it is, it attaches to this one place.
+   */
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedback, setFeedback] = useState("");
+  const [feedbackCopied, setFeedbackCopied] = useState(false);
   useEffect(() => {
     const sync = () => setHiddenNav(loadHiddenNav());
     window.addEventListener(HIDDEN_NAV_EVENT, sync);
@@ -3979,6 +3991,9 @@ function MoreView({
     // the pets half that has a shape of its own — the same paw the Haustier
     // category wears, so the card and where it lands agree.
     { title: ui("Pets and flashcards"), description: ui("Choose pets, adjust coaching, and set how flashcards flip."), icon: PawPrint, tone: "mint", action: () => onNavigate("profile") },
+    // Last, and deliberately: it is the one card that does not take you into
+    // the app, so it does not belong among the ones that do.
+    { title: ui("Feedback and wishes"), description: ui("Say what is missing, what got in the way, or what you would like next."), icon: MessageSquareText, tone: "violet", action: () => { setFeedbackOpen(true); setFeedbackCopied(false); } },
   ];
 
   return (
@@ -4058,6 +4073,42 @@ function MoreView({
           );
         })}
       </div>
+
+      {feedbackOpen && (
+        <div className="np-feedback-panel">
+          <div className="np-feedback-head">
+            <strong>{ui("Feedback and wishes")}</strong>
+            <button
+              aria-label={ui("Close")}
+              className="np-feedback-close"
+              onClick={() => setFeedbackOpen(false)}
+              type="button"
+            >
+              <X aria-hidden="true" />
+            </button>
+          </div>
+          <textarea
+            className="np-feedback-input"
+            onChange={(event) => { setFeedback(event.target.value); setFeedbackCopied(false); }}
+            placeholder={ui("What did you notice, and what would you like?")}
+            rows={5}
+            value={feedback}
+          />
+          <div className="np-feedback-actions">
+            <button
+              className="np-feedback-copy"
+              disabled={!feedback.trim()}
+              onClick={() => {
+                void navigator.clipboard?.writeText(feedback.trim());
+                setFeedbackCopied(true);
+              }}
+              type="button"
+            >
+              {feedbackCopied ? ui("Copied") : ui("Copy")}
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

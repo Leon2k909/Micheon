@@ -3128,4 +3128,7 @@ export const PL: Record<string, string> = {
   "Hinweis zur Verwendung": "Uwaga o użyciu",
   "Typischer Gesprächskontext": "Typowy kontekst rozmowy",
   "Achte auf eine natürliche Aussprache.": "Zadbaj o naturalną wymowę.",
+  "Feedback and wishes": "Opinie i życzenia",
+  "Say what is missing, what got in the way, or what you would like next.": "Napisz, czego brakuje, co przeszkadzało albo czego chcesz w następnej kolejności.",
+  "What did you notice, and what would you like?": "Co zauważyłaś lub zauważyłeś i czego byś chciała lub chciał?",
 };
