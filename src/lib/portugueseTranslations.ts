@@ -20455,4 +20455,135 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Wir sind telefonisch gut erreichbar.": "Pelo telefone é fácil falar connosco.",
   "Die Nachfrage ist gerade sehr groß.": "A procura neste momento é muito grande.",
   "Das spricht sich schnell herum.": "Isso corre depressa de boca em boca.",
+
+  // ── Series, episodes and the thing you must not be told (part122) ───────
+  //
+  // Im Fernsehen laufen is dar na televisão — a Portuguese programme gives
+  // itself rather than running. In einem Rutsch durchschauen is ver tudo de
+  // uma assentada, an old expression that fits a night of streaming exactly.
+  //
+  // Düster, of a film, is pesado. Portuguese measures a heavy story by its
+  // weight, not by its darkness.
+  "Ich schaue gerade YouTube.": "Estou a ver YouTube.",
+  "Ich habe die neue Folge schon gesehen.": "Já vi o episódio novo.",
+  "Die zweite Staffel ist besser als die erste.": "A segunda temporada é melhor do que a primeira.",
+  "Verrate mir nichts!": "Não me contes nada!",
+  "Kein Spoiler, bitte!": "Nada de spoilers, por favor!",
+  "Ich habe das in einem Rutsch durchgeschaut.": "Vi aquilo tudo de uma assentada.",
+  "Den Kanal habe ich abonniert.": "Subscrevi o canal.",
+  "Ich höre gerade viele Podcasts.": "Agora ando a ouvir muitos podcasts.",
+  "Das läuft heute Abend im Fernsehen.": "Isso dá hoje à noite na televisão.",
+  "Schau dir das mal an.": "Vê lá isso.",
+  "Das kann ich dir echt empfehlen.": "Isso recomendo-te mesmo.",
+  "Läuft das auf Netflix?": "Isso está na Netflix?",
+  "Ich schaue lieber mit Untertiteln.": "Prefiro ver com legendas.",
+  "Der Ton ist irgendwie weg.": "O som desapareceu não sei porquê.",
+  "Kannst du das lauter machen?": "Podes pôr mais alto?",
+  "Das Video lädt ewig.": "O vídeo está uma eternidade a carregar.",
+  "Hast du das auch gesehen?": "Também viste aquilo?",
+  "Ich mache das Handy jetzt mal weg.": "Vou pousar o telemóvel.",
+  "Wir gucken die Folge heute Abend zusammen.": "Logo à noite vemos o episódio juntos.",
+  "Kein Spoiler bitte, ich bin noch bei Staffel zwei.": "Nada de spoilers, que ainda vou na segunda temporada.",
+  "Die Serie wurde nach einer Staffel abgesetzt.": "A série foi cancelada ao fim de uma temporada.",
+  "Der Film ist im Original besser als in der Übersetzung.": "O filme é melhor no original do que traduzido.",
+  "Ich habe die Doku in einer Nacht durchgeschaut.": "Vi o documentário todo numa noite.",
+  "Der Ton passt nicht zum Bild, das nervt beim Schauen.": "O som não bate certo com a imagem, e assim é irritante ver.",
+  "Empfiehl mir etwas, das nicht zu düster ist.": "Recomenda-me uma coisa que não seja demasiado pesada.",
+  "Den Film kenne ich schon auswendig, so oft lief er bei uns.": "Já sei o filme de cor, de tantas vezes que deu lá em casa.",
+
+  // ── The rent, the rules and the neighbours (part123) ────────────────────
+  //
+  // Warm oder kalt is a German rent question with no Portuguese equivalent, so
+  // the card asks what it actually means: com ou sem despesas. Stoßlüften has
+  // no word either, and becomes the instruction itself — open it wide for a
+  // few minutes, do not leave it tilted.
+  //
+  // Der Hausmeister is o porteiro, die Hausordnung is o regulamento do prédio,
+  // and eine Macke on a wall is uma mazela.
+  "Die Miete ist am Ersten fällig.": "A renda vence-se no dia um.",
+  "Wie hoch ist die Kaution?": "De quanto é a caução?",
+  "Ist das warm oder kalt?": "Isso é com ou sem despesas?",
+  "Steht das in der Hausordnung?": "Isso está no regulamento do prédio?",
+  "Ab zweiundzwanzig Uhr ist Ruhezeit.": "A partir das dez da noite há hora de silêncio.",
+  "Sonntags wird nicht gebohrt.": "Ao domingo não se pega no berbequim.",
+  "Du musst richtig lüften.": "Tens de arejar a casa como deve ser.",
+  "Stoßlüften, nicht kippen.": "Abrir de par em par uns minutos, não deixar a janela encostada.",
+  "Ich habe mit dem Hausmeister gesprochen.": "Falei com o porteiro.",
+  "Die Nachbarn haben sich beschwert.": "Os vizinhos queixaram-se.",
+  "Wir sind gerade erst eingezogen.": "Acabámos de nos mudar para cá.",
+  "Wann ist die Wohnungsübergabe?": "Quando é a entrega das chaves?",
+  "Der Vermieter meldet sich noch.": "O senhorio ainda vai dizer alguma coisa.",
+  "Die Heizung funktioniert nicht richtig.": "O aquecimento não está a funcionar como deve ser.",
+  "Kannst du bitte das Treppenhaus frei halten?": "Importas-te de manter a escada desimpedida?",
+  "Wir haben eine Nebenkostenabrechnung bekommen.": "Recebemos o acerto das despesas.",
+  "Ich hätte da eine Bitte.": "Eu tinha um pedido a fazer.",
+  "Sag mir Bescheid, wenn es zu laut ist.": "Diz-me se estiver barulho a mais.",
+  "Laut Hausordnung ist ab zweiundzwanzig Uhr Ruhe.": "Segundo o regulamento do prédio, a partir das dez da noite é silêncio.",
+  "Die Nebenkosten sind schon wieder gestiegen.": "As despesas subiram outra vez.",
+  "Unser Nachbar hat sich über die Musik beschwert.": "O nosso vizinho queixou-se da música.",
+  "Wer den Flur blockiert, bekommt Post vom Hausmeister.": "Quem entulhar o corredor recebe carta do porteiro.",
+  "Die Waschküche darf nur bis zwanzig Uhr benutzt werden.": "A lavandaria só pode ser usada até às oito da noite.",
+  "Beim Einzug haben wir jede Macke im Protokoll notiert.": "Quando entrámos, apontámos no auto de entrega todas as mazelas.",
+  "Die Kaution bekommen wir erst zurück, wenn alles geprüft ist.": "A caução só nos é devolvida depois de estar tudo verificado.",
+  "Kleinreparaturen bis achtzig Euro zahlt laut Vertrag der Mieter.": "Segundo o contrato, as pequenas reparações até oitenta euros são pagas pelo inquilino.",
+
+  // ── A baby, hour by hour (part124) ──────────────────────────────────────
+  //
+  // Das Fläschchen is o biberão and der Schnuller is a chupeta — two of the
+  // few nursery words where Portugal and Brazil part company completely.
+  // Wickeln is mudar a fralda, since Portuguese changes the nappy rather than
+  // the child.
+  "Die Windel ist voll.": "A fralda está cheia.",
+  "Ich wickle sie schnell.": "Vou já mudar-lhe a fralda.",
+  "Wo ist der Schnuller?": "Onde é que está a chupeta?",
+  "Sie ist gerade eingeschlafen.": "Ela acabou de adormecer.",
+  "Er hat die ganze Nacht durchgeschlafen.": "Ele dormiu a noite toda seguida.",
+  "Sie bringt ihn gerade ins Bett.": "Ela está a deitá-lo.",
+  "Er hat wieder geschrien.": "Ele voltou a berrar.",
+  "Ich muss ihn kurz trösten.": "Tenho de o acalmar um bocadinho.",
+  "Sie geht seit September in die Kita.": "Desde setembro que anda no infantário.",
+  "Wir holen ihn um vier ab.": "Vamos buscá-lo às quatro.",
+  "Der Kinderwagen passt nicht in den Aufzug.": "O carrinho não cabe no elevador.",
+  "Hast du das Fläschchen dabei?": "Trouxeste o biberão?",
+  "Sie isst noch nicht selbst.": "Ela ainda não come sozinha.",
+  "Er läuft schon!": "Ele já anda!",
+  "Nicht anfassen!": "Não mexas!",
+  "Das ist heiß, Vorsicht!": "Isso está quente, cuidado!",
+  "Sie ist gerade in einer schwierigen Phase.": "Ela está numa fase complicada.",
+  "Wir sind ziemlich müde, ehrlich gesagt.": "Para ser franca, estamos bastante cansados.",
+
+  // ── A flat tyre, a garage and a fine (part125) ──────────────────────────
+  //
+  // Bremsen is travar in Portugal, never frear, and der Reifen is o pneu.
+  // Einen Platten haben is ter um furo — the hole, not the flatness, is what
+  // Portuguese names.
+  //
+  // Der TÜV keeps its German name, as the offices do: nicht durch den TÜV
+  // gekommen is não passou no TÜV.
+  "Ich habe einen Platten.": "Tenho um furo.",
+  "Der Reifen hat zu wenig Luft.": "O pneu está com pouco ar.",
+  "Wir hatten eine Panne.": "Tivemos uma avaria.",
+  "Das Auto bremst komisch.": "O carro trava de maneira estranha.",
+  "Ich bringe den Wagen in die Werkstatt.": "Vou levar o carro à oficina.",
+  "Der Wagen muss abgeschleppt werden.": "O carro tem de ser rebocado.",
+  "Wann ist der TÜV fällig?": "Quando é que toca fazer o TÜV?",
+  "Ich muss noch tanken.": "Ainda tenho de meter combustível.",
+  "Der Motor macht ein komisches Geräusch.": "O motor faz um barulho estranho.",
+  "Die Batterie ist leer.": "A bateria está descarregada.",
+  "Kannst du mal Starthilfe geben?": "Podes ajudar-me a arrancar com as pinças?",
+  "Der Ölstand ist zu niedrig.": "O nível do óleo está baixo.",
+  "Ich habe die Kette wieder drauf.": "Já pus a corrente outra vez.",
+  "Vorne bremst es nicht richtig.": "À frente os travões não pegam bem.",
+  "Ich fahre lieber langsam, das ist mir sicherer.": "Prefiro ir devagar, assim sinto-me mais segura.",
+  "Hier ist Parken verboten.": "Aqui é proibido estacionar.",
+  "Ich habe einen Strafzettel bekommen.": "Apanhei uma multa.",
+  "Das lohnt sich nicht mehr zu reparieren.": "Já não vale a pena mandar arranjar.",
+  "Beim Anfahren macht der Motor ein komisches Geräusch.": "No arranque o motor faz um barulho estranho.",
+  "Die Werkstatt hat mir einen Kostenvoranschlag geschickt.": "A oficina mandou-me um orçamento.",
+  "Der Wagen ist nicht mehr durch den TÜV gekommen.": "O carro já não passou no TÜV.",
+  "Mein Hinterreifen verliert langsam Luft.": "O meu pneu de trás vai perdendo ar.",
+  "Ich habe die Kette geölt, jetzt fährt es sich viel leichter.": "Olei a corrente e agora anda muito mais suave.",
+  "Obwohl die Ampel grün war, musste ich bremsen.": "Apesar de o semáforo estar verde, tive de travar.",
+  "Das Ersatzteil muss erst bestellt werden.": "A peça tem primeiro de ser encomendada.",
+  "Nach der Inspektion fuhr das Auto wie neu.": "Depois da revisão o carro andava como novo.",
 };
