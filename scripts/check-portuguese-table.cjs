@@ -91,7 +91,8 @@ const PROPER_NAMES = [
   "München", "Köln", "Düsseldorf", "Nürnberg", "Zürich", "Österreich",
   // The offices and the schemes, which keep the name written on the door or
   // on the form. Somebody applying for BAföG says BAföG, in any language.
-  "Bürgeramt", "Ausländerbehörde", "Straße", "Goethestraße", "TÜV", "BAföG",
+  "Bürgeramt", "Bürgerbüro", "Ausländerbehörde", "Straße", "Goethestraße",
+  "TÜV", "BAföG",
 ];
 const KEPT_GREETINGS = ["Grüß dich", "Grüß Gott", "Grüezi", "Tschüss", "Tschüs"];
 /**
