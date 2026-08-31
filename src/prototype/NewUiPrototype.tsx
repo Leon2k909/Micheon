@@ -133,6 +133,7 @@ import {
   showNavItem,
 } from "@/lib/navPreferences";
 import { isNavDrag, readNavDrag, startNavDrag, type NavDragOrigin } from "@/lib/navDrag";
+import { useMotivationQuote } from "@/lib/motivationQuotes";
 import {
   CURRENCY_AUTO,
   CURRENCY_CODES,
@@ -2173,7 +2174,7 @@ function HomeBanner() {
       />
       <div aria-hidden="true" className="np-home-banner-wash" />
       <div className="np-home-banner-copy">
-        <p>{ui("Small steps every day add up to big results.")}</p>
+        <p>{useMotivationQuote()}</p>
       </div>
     </section>
   );
