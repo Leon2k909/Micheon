@@ -93,6 +93,10 @@ const PROPER_NAMES = [
   // on the form. Somebody applying for BAföG says BAföG, in any language.
   "Bürgeramt", "Bürgerbüro", "Ausländerbehörde", "Straße", "Goethestraße",
   "TÜV", "BAföG",
+  // The federal states, because half the rules in this course depend on which
+  // one you are standing in — the property tax, the dog insurance, the school
+  // holidays — and there is no Portuguese unit that maps onto one.
+  "Bundesland", "Bundesländer",
   // And the things on the counter that only have a German name. The card
   // about Leberkäse is a joke about the word itself — it contains neither
   // liver nor cheese — so translating the word away takes the card with it.
