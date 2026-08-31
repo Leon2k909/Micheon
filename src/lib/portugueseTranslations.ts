@@ -20586,4 +20586,104 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Obwohl die Ampel grün war, musste ich bremsen.": "Apesar de o semáforo estar verde, tive de travar.",
   "Das Ersatzteil muss erst bestellt werden.": "A peça tem primeiro de ser encomendada.",
   "Nach der Inspektion fuhr das Auto wie neu.": "Depois da revisão o carro andava como novo.",
+
+  // ── How you happen to feel today (part126) ──────────────────────────────
+  //
+  // Mir fällt ein Stein vom Herzen is saiu-me um peso de cima — Portuguese
+  // lifts a weight where German drops a stone, and the relief is identical.
+  // Etwas sacken lassen is deixar assentar, which is what settles in a glass
+  // and in a person alike.
+  //
+  // Peinlich has no adjective here: das war mir peinlich is passei vergonha,
+  // because in Portuguese the shame is something you go through.
+  "Ich war richtig gerührt.": "Fiquei mesmo comovida.",
+  "Langsam nervt das echt.": "Isto está a começar a chatear a sério.",
+  "Ich bin ziemlich genervt gerade.": "Neste momento estou bastante chateada.",
+  "Ich bin schon ganz aufgeregt.": "Já estou toda entusiasmada.",
+  "Das ist mir alles zu viel.": "Isto tudo é de mais para mim.",
+  "Ich bin gerade etwas überfordert.": "Neste momento estou um bocado sobrecarregada.",
+  "Sie bleibt immer ganz gelassen.": "Ela mantém-se sempre muito calma.",
+  "Das war mir echt peinlich.": "Passei mesmo vergonha.",
+  "Ich bin ein bisschen neidisch, ehrlich.": "Estou com um bocadinho de inveja, sinceramente.",
+  "Ich bin froh, dass du da bist.": "Ainda bem que estás aqui.",
+  "Da bin ich echt stolz drauf.": "Disso tenho mesmo orgulho.",
+  "Mir fällt gerade ein Stein vom Herzen.": "Saiu-me um peso de cima.",
+  "Ich weiß gerade nicht weiter.": "Neste momento não sei o que hei de fazer.",
+  "Das hat mich ziemlich mitgenommen.": "Aquilo abalou-me bastante.",
+  "Ich freue mich total für dich.": "Estou muitíssimo contente por ti.",
+  "Mir ist gerade nicht danach.": "Neste momento não me apetece.",
+  "Das tut mir wirklich leid für dich.": "Lamento mesmo por ti.",
+  "Ich muss das erst mal sacken lassen.": "Primeiro tenho de deixar isso assentar.",
+
+  // ── Belief, and the room left for other people to differ (part127) ──────
+  //
+  // In der Kirche heiraten is casar pela igreja, and die Gemeinde, of a
+  // congregation, is a paróquia. Der Gottesdienst is a missa: Portugal has one
+  // default word for the Sunday service and the course uses it.
+  "Ich bete jeden Abend.": "Rezo todas as noites.",
+  "Ich bete für dich.": "Rezo por ti.",
+  "Wir gehen sonntags in den Gottesdienst.": "Ao domingo vamos à missa.",
+  "Der Gottesdienst fängt um zehn an.": "A missa começa às dez.",
+  "Mein Glaube ist mir wichtig.": "A minha fé é importante para mim.",
+  "Das steht in der Bibel.": "Isso está na Bíblia.",
+  "Gott segne dich.": "Deus te abençoe.",
+  "Wir beten vor dem Essen.": "Rezamos antes de comer.",
+  "Sie ist in der Gemeinde sehr aktiv.": "Ela é muito ativa na paróquia.",
+  "Der Pfarrer hat schön gesprochen.": "O padre falou muito bem.",
+  "Wir lassen ihn im Frühling taufen.": "Vamos batizá-lo na primavera.",
+  "Ich bin evangelisch aufgewachsen.": "Cresci numa família protestante.",
+  "Ich bin da nicht so gläubig, aber ich respektiere es.": "Não sou muito crente nessas coisas, mas respeito.",
+  "Da hat jeder seine eigene Meinung.": "Nisso cada um tem a sua opinião.",
+  "Wir haben in der Kirche geheiratet.": "Casámos pela igreja.",
+  "Danke, das bedeutet mir viel.": "Obrigada, isso significa muito para mim.",
+  "Ich denke oft an dich.": "Penso muitas vezes em ti.",
+  "Alles Gute und Gottes Segen.": "Tudo de bom e que Deus te abençoe.",
+
+  // ── Training, and the day after it (part128) ────────────────────────────
+  //
+  // Muskelkater has no noun in Portuguese, so the ache stays a plural: estou
+  // cheia de dores musculares. Die Kondition is o fôlego, the same breath that
+  // runs out in außer Puste, and anstrengend is puxado.
+  "Ich gehe morgens joggen.": "De manhã vou correr.",
+  "Wir waren heute schwimmen.": "Hoje fomos nadar.",
+  "Ich trainiere dreimal die Woche.": "Treino três vezes por semana.",
+  "Ich habe heftigen Muskelkater.": "Estou cheia de dores musculares.",
+  "Wärm dich erst mal auf.": "Primeiro aquece.",
+  "Nach dem Sport dehne ich immer.": "Depois do treino faço sempre alongamentos.",
+  "Wir spielen in derselben Mannschaft.": "Jogamos na mesma equipa.",
+  "Meine Kondition ist gerade nicht so gut.": "Neste momento não estou com grande fôlego.",
+  "Ich habe mir den Knöchel verstaucht.": "Torci o tornozelo.",
+  "Das tut beim Laufen weh.": "Isso dói a correr.",
+  "Ich mache heute lieber Pause.": "Hoje prefiro descansar.",
+  "Kommst du mit ins Fitnessstudio?": "Vens comigo ao ginásio?",
+  "Wir treffen uns um sieben am Sportplatz.": "Encontramo-nos às sete no campo.",
+  "Ich bin völlig außer Puste.": "Estou completamente sem fôlego.",
+  "Gut gemacht!": "Muito bem!",
+  "Ich bin nicht besonders sportlich.": "Não sou lá muito de desporto.",
+  "Wir sind eine Runde spazieren gegangen.": "Fomos dar uma volta a pé.",
+  "Das war ganz schön anstrengend.": "Aquilo foi bastante puxado.",
+
+  // ── Twenty minutes before leaving the house (part129) ───────────────────
+  //
+  // Mit dem Hund Gassi gehen is levar o cão à rua, and der Automat at the wall
+  // is o multibanco, as everywhere else in this table. Kurz aufs Klo müssen is
+  // ir à casa de banho num instante — the instante does the work the kurz does.
+  "Ich muss mich noch rasieren.": "Ainda me tenho de barbear.",
+  "Ich föhne mir kurz die Haare.": "Vou secar o cabelo num instante.",
+  "Ich putze mir noch die Zähne.": "Ainda vou lavar os dentes.",
+  "Wo ist mein Handtuch?": "Onde é que está a minha toalha?",
+  "Ich bin in fünf Minuten fertig.": "Em cinco minutos estou pronta.",
+  "Ich muss noch schnell Geld abheben.": "Ainda tenho de ir levantar dinheiro num instante.",
+  "Der Automat nimmt meine Karte nicht.": "O multibanco não aceita o meu cartão.",
+  "Steht das schon auf der Liste?": "Isso já está na lista?",
+  "Welche Zutaten brauchen wir noch?": "Que ingredientes é que ainda nos faltam?",
+  "Ich habe seit Tagen Husten.": "Ando com tosse há dias.",
+  "Ich gehe mit dem Hund Gassi.": "Vou levar o cão à rua.",
+  "Da fehlt eine Schraube.": "Ali falta um parafuso.",
+  "Kannst du mir mal kurz helfen?": "Dás-me aqui uma ajuda?",
+  "Ich mache das gleich, versprochen.": "Faço isso já, prometo.",
+  "Das habe ich total vergessen.": "Esqueci-me completamente disso.",
+  "Zwei Minuten, ich bin sofort zurück.": "Dois minutos, volto já.",
+  "Ich muss nur kurz aufs Klo.": "Só vou à casa de banho num instante.",
+  "Bin unterwegs, bis gleich!": "Já vou a caminho, até já!",
 };
