@@ -345,7 +345,7 @@ for (const id of plannedIds) {
   if (!(CHAINED_SENTENCE_PHASES.length < SENTENCE_PHASES.length)) {
     failures.push("the chained route is no shorter than meeting a sentence cold");
   }
-  for (const spent of ["MeaningPick", "MeaningSelect", "ListenPick", "MissingWord"]) {
+  for (const spent of ["MeaningSelect", "ListenPick", "MissingWord"]) {
     if (CHAINED_SENTENCE_PHASES.includes(spent)) {
       failures.push(`the chained route repeats ${spent}, which its base already taught`);
     }

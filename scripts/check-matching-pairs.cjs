@@ -134,31 +134,20 @@ check(
 );
 
 const guidedSource = fs.readFileSync(path.join(root, "src/GuidedSession.tsx"), "utf8");
+// The session's own matching round has gone — the flashcards hand straight to
+// the lesson. What survives here is the dedupe those cards share with the
+// standalone Matcher: two entries whose visible text is the same on either
+// side are one card shown twice, which was an unsolvable board there and is a
+// wasted flashcard here.
 check(
-  "preview cards use the same visible-answer collision keys as Quick Match",
+  "the session's flashcards drop cards that would read identically",
   guidedSource.includes("const keys = matchingVisibleKeys(target, meaning);")
-    && guidedSource.includes("const safeCards = takeMatchingSafe(")
+    && guidedSource.includes("keys.some((key) => seen.has(key))")
 );
 check(
-  "skipping flashcards still reaches the guided matching round",
-  /onSkip=\{\(\) => \{[\s\S]*?setPreviewActive\(false\);[\s\S]*?setMatchingActive\(previewCards\.length > 1\);/.test(guidedSource)
-);
-// The round used to hold the door shut until every pair was matched, and then
-// push you through it whether you wanted to go or not. It now refills instead
-// of ending, so both halves of that had to go: a Continue that waits for a
-// finished board would be a door that never opens.
-check(
-  "leaving the guided matching round is never gated on finishing the board",
-  /<button\s+type="button"\s+className="fs-preview-next"\s+onClick=\{onComplete\}/.test(guidedSource)
-    && !guidedSource.includes("disabled={!complete}")
-);
-check(
-  "a cleared board deals the next one rather than ending the round",
-  guidedSource.includes("const SESSION_MATCH_BOARD = 6;")
-    && /setBoardStart\(\(start\) => \(start \+ boardItems\.length\) % items\.length\)/.test(guidedSource)
-    // Wrapping, so a short session comes round again for review rather than
-    // running out of board after one pass.
-    && guidedSource.includes("items[(boardStart + offset) % items.length]")
+  "the flashcards hand straight to the lesson",
+  guidedSource.includes('{ui(isLast ? "Start sentence practice" : "Next flashcard")}')
+    && !guidedSource.includes("SessionMatchingPairs")
 );
 
 if (failures) {

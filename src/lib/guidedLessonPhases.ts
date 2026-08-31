@@ -1,10 +1,15 @@
 /**
  * Sentence-practice stages live here so the route can be changed without
  * duplicating stage names in the lesson UI and its regression checks.
+ *
+ * There used to be a stage before MeaningSelect that asked the same question
+ * the other way round: here is the English, pick the German. It went because
+ * the two were one recognition check charged twice, off the same distractor
+ * pool, before a single word had been produced. MeaningSelect is the harder
+ * of the pair to guess at, so it is the one that stayed.
  */
 export const SENTENCE_PHASES = [
   "Read",
-  "MeaningPick",
   "MeaningSelect",
   "ListenPick",
   "MissingWord",
@@ -24,7 +29,6 @@ export type SentencePhase = typeof SENTENCE_PHASES[number] | "French" | "Memory"
 
 export const BILINGUAL_SENTENCE_PHASES: readonly SentencePhase[] = [
   "Read",
-  "MeaningPick",
   "MeaningSelect",
   "ListenPick",
   "MissingWord",
@@ -40,13 +44,12 @@ export const MASTERED_SENTENCE_PHASES: readonly SentencePhase[] = [
 ];
 
 /**
- * A new word gets recognition in both directions, a listening check, written
- * production in both languages, then one closed-book retrieval. Sentence-only
- * mechanics such as word ordering and gap fill still stay out of this route.
+ * A new word gets one recognition check, a listening check, written production
+ * in both languages, then one closed-book retrieval. Sentence-only mechanics
+ * such as word ordering and gap fill still stay out of this route.
  */
 export const WORD_PHASES: readonly SentencePhase[] = [
   "Read",
-  "MeaningPick",
   "MeaningSelect",
   "ListenPick",
   "Type",

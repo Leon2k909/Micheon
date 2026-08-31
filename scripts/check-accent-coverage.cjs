@@ -22,7 +22,15 @@ const HEX = /#([0-9a-fA-F]{6})\b/g;
 const PAINTS = new Set(["background", "background-color", "background-image",
   "box-shadow", "border-color", "color", "border"]);
 
-const norm = (s) => s.split(/\s+/).filter(Boolean).join(" ");
+// Whitespace inside a selector group is formatting, not identity. A rule
+// written over several lines reads as `:is( .fs-board` once its newlines
+// collapse, and its accent twin written on one line reads as `:is(.fs-board` —
+// the same selector, and the pair went uncompared over a single space. So the
+// padding just inside brackets and around their commas is dropped as well.
+const norm = (s) => s.split(/\s+/).filter(Boolean).join(" ")
+  .replace(/\(\s+/g, "(")
+  .replace(/\s+\)/g, ")")
+  .replace(/\s*,\s*/g, ",");
 
 /**
  * One identity for a selector, whether or not it carries the accent flag or a

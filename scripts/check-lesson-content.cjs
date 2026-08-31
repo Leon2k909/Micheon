@@ -254,7 +254,7 @@ assert(buildWordSitting(ranked, sentenceGraded).every((s) => !s.review),
 // ── the word route is short on purpose ────────────────────────────────────
 assert.deepEqual(
   [...WORD_PHASES],
-  ["Read", "MeaningPick", "MeaningSelect", "ListenPick", "Type", "Translate", "RecallBoth"]
+  ["Read", "MeaningSelect", "ListenPick", "Type", "Translate", "RecallBoth"]
 );
 assert.deepEqual([...MASTERED_WORD_PHASES], ["RecallTarget", "RecallMeaning"]);
 assert.deepEqual(
