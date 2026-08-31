@@ -109,15 +109,15 @@ const BANDS = [
   { upTo: 12000 },
   { upTo: 16000 },
 ];
-// Italian is being written now, block by block, and its floor is raised to
-// match after each one. Zero is not "no standard" — the rule this check
-// enforces is that a count never falls, and that rule bites from the first
-// block onwards. It is here rather than only in check-translation-coverage
-// because a language with a table and no floor here fails the build outright,
-// which is how Italian announced itself on its first day.
-// Russian sits at zero beside Italian, and for the same reason: while a table
-// is being written the rule that matters is that its number never falls.
-const TRANSLATED_QUEUE_FLOORS = { fr: 17300, pl: 18700, es: 24000, it: 0, pt: 4370, ru: 0 };
+// Italian is finished, and its floor now sits beside Spanish rather than under
+// it: the two cover the queue identically, so one number holds them both and a
+// drop in either reads as the loss it is. The floor lives here rather than only
+// in check-translation-coverage because a language with a table and no floor
+// here fails the build outright, which is how Italian announced itself on its
+// first day.
+// Russian is still at zero, because while a table is being written the rule
+// that matters is only that its number never falls.
+const TRANSLATED_QUEUE_FLOORS = { fr: 17300, pl: 18700, es: 24000, it: 24000, pt: 4370, ru: 0 };
 
 /**
  * How much of the word tracker the French course is allowed to be missing.
@@ -251,9 +251,10 @@ assert.ok(withSpanish.length >= SPANISH_WORD_FLOOR,
   + `German word cards have Spanish, and the floor is ${SPANISH_WORD_FLOOR.toLocaleString("en-GB")} \u2014 `
   + `${(SPANISH_WORD_FLOOR - withSpanish.length).toLocaleString("en-GB")} have gone missing.`);
 
-// Italian is being written. Its floor rises with each block; today it is the
-// number it has, which is the only thing a floor can mean on day one.
-const ITALIAN_WORD_FLOOR = 0;
+// The Italian table is finished, so the floor is no longer a moving number:
+// every word card the German course teaches has Italian, the same as French and
+// Polish, and anything short of all of them is a card that lost its answer.
+const ITALIAN_WORD_FLOOR = 9000;
 const withItalian = germanWords.filter((word) => translate(String(word.de), "it", null));
 assert.ok(withItalian.length >= ITALIAN_WORD_FLOOR,
   `${withItalian.length.toLocaleString("en-GB")} German word cards have Italian, `

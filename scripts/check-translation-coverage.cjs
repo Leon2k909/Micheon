@@ -120,11 +120,11 @@ const FLOORS = {
   // entry. What the learner actually meets is floored by
   // check-spanish-course, which holds it to Polish card by card.
   es: 17000,
-  // Italian is being written now, and the floor follows it up block by
-  // block. Zero is not "no standard": while a language is in progress the
-  // rule that matters is that its number never falls, and this check reads
-  // the floor from here rather than from the table itself.
-  it: 0,
+  // Italian is finished, and covers the catalogue entry for entry the way
+  // Spanish does — the two read the same number to the card. Its floor is set
+  // close to that number rather than well under it, because a finished table
+  // has no more blocks coming to explain a fall.
+  it: 22000,
   pt: 1380,
   // Russian has only just been started and is floored at zero for the same
   // reason Italian is: what matters while a table is being written is that
