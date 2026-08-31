@@ -122,14 +122,11 @@ const view = fs.readFileSync(path.join(root, "src/components/duo/DuoPathView.tsx
 check("the fast track card is on the home row", /onClick=\{onFastTrack\}/.test(view));
 
 /**
- * Second, right after Continue learning.
+ * Second, right after Continue learning — counted from what is actually on
+ * the row, not from a list written here.
  *
  * Position is the request, not decoration: it is the card meant to be seen
- * beside the one it offers an alternative to. Compared by the order the
- * labels appear in the source, because that is the order they render in.
- */
-/**
- * Counted from what is on the row, not from a list written here.
+ * beside the one it offers an alternative to.
  *
  * The first draft of this named five cards outright — including the quick
  * path, which was removed the same day for being a second teacher of one
