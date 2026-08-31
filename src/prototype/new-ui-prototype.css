@@ -5956,6 +5956,32 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
 .np-feature-directory-icon--blue { color: #227da7; background: #def3ff; }
 .np-feature-directory-icon--violet { color: var(--np-violet); background: var(--np-violet-soft); }
 
+/* Three more, and the reason they are drawn differently from the four above.
+ *
+ * This board has six cards and had four tones, so two pairs wore the same
+ * colour. Worse, mint is built out of the green tokens, which follow the
+ * learner's accent — on a pink accent both mint cards turned the same pink as
+ * everything else, and the board read as one colour with four exceptions.
+ *
+ * These read the fixed per-category palette the settings board already uses,
+ * so a card's colour says which card it is and stays put whatever the accent
+ * does. Mixed rather than hand-picked, so the pale and deep ends cannot drift
+ * away from the hue they belong to. */
+.np-feature-directory-icon--teal {
+  color: color-mix(in srgb, var(--tone-data) 76%, #08201e);
+  background: color-mix(in srgb, var(--tone-data) 16%, #ffffff);
+}
+
+.np-feature-directory-icon--orange {
+  color: color-mix(in srgb, var(--tone-pet) 74%, #23150a);
+  background: color-mix(in srgb, var(--tone-pet) 18%, #ffffff);
+}
+
+.np-feature-directory-icon--green {
+  color: color-mix(in srgb, var(--tone-voice) 78%, #06180f);
+  background: color-mix(in srgb, var(--tone-voice) 16%, #ffffff);
+}
+
 .new-ui-prototype .np-mobile-course-button,
 .new-ui-prototype .np-mobile-course-button > svg:first-child,
 .new-ui-prototype .np-mobile-course-button strong {
@@ -8234,6 +8260,21 @@ html[data-theme="dark"] .np-feature-directory-icon--blue,
 html[data-theme="dark"] .np-curriculum-icon--blue {
   color: #9bdcf7;
   background: #203a49;
+}
+
+html[data-theme="dark"] .np-feature-directory-icon--teal {
+  color: color-mix(in srgb, var(--tone-data) 58%, #ffffff);
+  background: color-mix(in srgb, var(--tone-data) 26%, #0b0e13);
+}
+
+html[data-theme="dark"] .np-feature-directory-icon--orange {
+  color: color-mix(in srgb, var(--tone-pet) 56%, #ffffff);
+  background: color-mix(in srgb, var(--tone-pet) 26%, #0b0e13);
+}
+
+html[data-theme="dark"] .np-feature-directory-icon--green {
+  color: color-mix(in srgb, var(--tone-voice) 58%, #ffffff);
+  background: color-mix(in srgb, var(--tone-voice) 26%, #0b0e13);
 }
 
 html[data-theme="dark"] .np-shop-item-art--gold {

@@ -3966,7 +3966,7 @@ function MoreView({
       title: ui("Friends and leaderboard"),
       description: ui("See friend activity, weekly XP, streaks, and the private friends league preview."),
       icon: UsersRound,
-      tone: "mint",
+      tone: "teal",
       action: () => onNavigate("social"),
     }] : []),
     // Only under 1280px, where the sidebar is gone and the mobile bar is a
@@ -3986,11 +3986,11 @@ function MoreView({
     }] : []),
     { title: ui("Progress"), description: ui("See your streak, achievements, recent lessons, and goals."), icon: BarChart3, tone: "blue", action: () => onNavigate("progress") },
     ...(shopUnlocked ? [{ title: ui("Reward shop"), description: ui("Earn coins through learning and collect profile pins."), icon: ShoppingBag, tone: "yellow", action: () => onNavigate("shop") }] : []),
-    { title: ui("Profile and settings"), description: ui("Manage your account, sound, learning mode, and goals."), icon: Settings2, tone: "violet", action: () => onNavigate("profile") },
+    { title: ui("Profile and settings"), description: ui("Manage your account, sound, learning mode, and goals."), icon: Settings2, tone: "green", action: () => onNavigate("profile") },
     // A paw, not a person. One mark has to stand for both halves, and it is
     // the pets half that has a shape of its own — the same paw the Haustier
     // category wears, so the card and where it lands agree.
-    { title: ui("Pets and flashcards"), description: ui("Choose pets, adjust coaching, and set how flashcards flip."), icon: PawPrint, tone: "mint", action: () => onNavigate("profile") },
+    { title: ui("Pets and flashcards"), description: ui("Choose pets, adjust coaching, and set how flashcards flip."), icon: PawPrint, tone: "orange", action: () => onNavigate("profile") },
     // Last, and deliberately: it is the one card that does not take you into
     // the app, so it does not belong among the ones that do.
     { title: ui("Feedback and wishes"), description: ui("Say what is missing, what got in the way, or what you would like next."), icon: MessageSquareText, tone: "violet", action: () => { setFeedbackOpen(true); setFeedbackCopied(false); } },
