@@ -43,7 +43,7 @@ import {
   buildListenSpeechPlan,
   formatListenPetCaption,
   getListenBackgroundPlayback,
-  getListenContentSource,
+  getListenContentKinds,
   getListenCurrentItemId,
   getListenMeaningRepeats,
   getListenTargetRepeats,
@@ -68,7 +68,7 @@ import {
   listenQueueIndexForPlayhead,
   recordListenGrade,
   setListenBackgroundPlayback,
-  setListenContentSource,
+  setListenContentKinds,
   setListenCurrentItemId,
   setListenMeaningRepeats,
   setListenTargetRepeats,
@@ -89,7 +89,9 @@ import {
   snoozeListenItem,
   listenQueueHasGroups,
   undoListenReviewChange,
-  type ListenContentSource,
+  listenContentSourceKey,
+  LISTEN_CONTENT_KINDS,
+  type ListenContentKind,
   type ListenItem,
   type ListenLanguageOrder,
   type ListenQueueOrder,
@@ -493,9 +495,24 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   onOpen: () => void;
   profile: UserProfile | null;
 }) {
-  const [contentSource, setContentSource] = useState<ListenContentSource>(
-    () => getListenContentSource(learningDirection)
+  const [contentKinds, setContentKinds] = useState<ListenContentKind[]>(
+    () => getListenContentKinds(learningDirection)
   );
+  /**
+   * The set as one string, for dependency arrays and stored cursors.
+   *
+   * A fresh array every render would rebuild the queue on every render, and
+   * the cursor is filed under a name rather than under an array.
+   */
+  const contentKey = listenContentSourceKey(contentKinds);
+  /**
+   * Whether the loop is a mix of single words and running language.
+   *
+   * The two-count control has exactly those two knobs, so it belongs on
+   * screen when both are being played and not otherwise — sentences and
+   * paragraphs together are one stream to this setting, not two.
+   */
+  const interleaves = contentKinds.includes("words") && contentKinds.includes("sentences");
   const [queueOrder, setQueueOrder] = useState<ListenQueueOrder>(
     () => getListenQueueOrder(learningDirection)
   );
@@ -597,7 +614,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   const baseQueue = useMemo<ListenItem[]>(
     () => (everOpened
       ? buildListenQueue(apiParts, loadGradeStore(profile), {
-        contentSource,
+        contentSource: contentKinds,
         direction: learningDirection,
         order: queueOrder,
         within: queueWithin,
@@ -607,25 +624,25 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
         usefulness: usefulnessFilter,
       })
       : []),
-    [everOpened, apiParts, contentSource, gradesRevision, learningDirection, levelFilter, meaningLanguage, profile, queueOrder, queueWithin, returnGap, returnScope, translationsRevision, usefulnessFilter]
+    [everOpened, apiParts, contentKey, gradesRevision, learningDirection, levelFilter, meaningLanguage, profile, queueOrder, queueWithin, returnGap, returnScope, translationsRevision, usefulnessFilter]
   );
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => new Set());
   const queue = useMemo(
     () => {
       const visible = baseQueue.filter((candidate) => !hiddenIds.has(candidate.id));
-      return contentSource === "mixed"
+      return interleaves
         ? arrangeListenMixedQueue(visible, mixedCounts, listenMixGroupFor(queueOrder))
         : visible;
     },
     // queueOrder is read through listenMixGroupFor: switching to or from
     // easiest-first changes whether the deal is grouped, and without the
     // dependency the queue would keep the previous order's arrangement.
-    [baseQueue, contentSource, hiddenIds, mixedCounts, queueOrder]
+    [baseQueue, interleaves, hiddenIds, mixedCounts, queueOrder]
   );
   const [loopItems, setLoopItems] = useState(() => getListenLoopItems(learningDirection));
   const [loopPasses, setLoopPasses] = useState(() => getListenLoopPasses(learningDirection));
   const [playhead, setPlayhead] = useState(() => {
-    const storedId = getListenCurrentItemId(learningDirection, profile, contentSource, queueOrder, queueWithin);
+    const storedId = getListenCurrentItemId(learningDirection, profile, contentKinds, queueOrder, queueWithin);
     const storedIndex = baseQueue.findIndex((candidate) => candidate.id === storedId);
     return listenPlayheadForQueueIndex(
       storedIndex >= 0 ? storedIndex : 0,
@@ -699,7 +716,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     visibleKeys: visiblePetKeys,
   } = useCodexPets();
 
-  const effectiveLoopItems = Math.min(Math.max(1, queue.length), contentSource === "mixed" ? mixedCounts.words + mixedCounts.sentences : loopItems);
+  const effectiveLoopItems = Math.min(Math.max(1, queue.length), interleaves ? mixedCounts.words + mixedCounts.sentences : loopItems);
   const queueIndex = listenQueueIndexForPlayhead(
     playhead,
     queue.length,
@@ -802,28 +819,28 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     setLoopPasses(getListenLoopPasses(learningDirection));
     setBackgroundPlayback(getListenBackgroundPlayback(profile));
     setPetBilingualCaptions(getListenPetBilingualCaptions(profile));
-    setContentSource(getListenContentSource(learningDirection));
+    setContentKinds(getListenContentKinds(learningDirection));
     setQueueOrder(getListenQueueOrder(learningDirection));
   }, [learningDirection, profile?.id]);
 
   useEffect(() => {
     setHiddenIds(new Set());
     timedHiddenIdsRef.current.clear();
-    const storedId = getListenCurrentItemId(learningDirection, profile, contentSource, queueOrder, queueWithin);
+    const storedId = getListenCurrentItemId(learningDirection, profile, contentKinds, queueOrder, queueWithin);
     const restoredCounts = getListenMixedCounts(learningDirection);
-    const restoredQueue = contentSource === "mixed"
+    const restoredQueue = interleaves
       ? arrangeListenMixedQueue(baseQueue, restoredCounts, listenMixGroupFor(queueOrder))
       : baseQueue;
     const storedIndex = restoredQueue.findIndex((candidate) => candidate.id === storedId);
     setPlayhead(listenPlayheadForQueueIndex(
       storedIndex >= 0 ? storedIndex : 0,
       restoredQueue.length,
-      contentSource === "mixed"
+      interleaves
         ? restoredCounts.words + restoredCounts.sentences
         : getListenLoopItems(learningDirection),
       getListenLoopPasses(learningDirection)
     ));
-  }, [apiParts, baseQueue, contentSource, learningDirection, profile?.id, queueOrder, queueWithin]);
+  }, [apiParts, baseQueue, contentKey, interleaves, learningDirection, profile?.id, queueOrder, queueWithin]);
 
   useEffect(() => {
     const releaseDueItems = () => {
@@ -851,8 +868,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
 
   useEffect(() => {
     if (!item) return;
-    setListenCurrentItemId(item.id, learningDirection, profile, contentSource, queueOrder, queueWithin);
-  }, [contentSource, item?.id, learningDirection, profile?.id, queueOrder, queueWithin]);
+    setListenCurrentItemId(item.id, learningDirection, profile, contentKinds, queueOrder, queueWithin);
+  }, [contentKey, item?.id, learningDirection, profile?.id, queueOrder, queueWithin]);
 
   useEffect(() => {
     const sync = () => setAudioSettings(getAudioSettings());
@@ -1401,8 +1418,24 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
     setLanguageOrder(setListenLanguageOrder(order, learningDirection));
   };
 
-  const chooseContentSource = (source: ListenContentSource) => {
-    setContentSource(setListenContentSource(source, learningDirection));
+  /**
+   * Tick a kind on or off, refusing to leave nothing playing.
+   *
+   * Turning off the last one would empty the queue, which is not a setting
+   * anybody means — so the press does nothing rather than silently choosing
+   * something else on the learner's behalf.
+   */
+  const toggleContentKind = (kind: ListenContentKind) => {
+    const on = contentKinds.includes(kind);
+    if (on && contentKinds.length === 1) return;
+    const next = on
+      ? contentKinds.filter((entry) => entry !== kind)
+      : LISTEN_CONTENT_KINDS.filter((entry) => entry === kind || contentKinds.includes(entry));
+    setContentKinds(setListenContentKinds(next, learningDirection));
+  };
+
+  const chooseAllContentKinds = () => {
+    setContentKinds(setListenContentKinds(LISTEN_CONTENT_KINDS, learningDirection));
   };
 
   const chooseReturnGap = (gap: ListenReturnGap) => {
@@ -1645,7 +1678,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               </>
             )}
             <span aria-hidden="true" className="text-[var(--text-3)]">·</span>
-            <span>{contentSource === "mixed"
+            <span>{interleaves
               ? uiFmt("{words} words + {sentences} sentences, {passes} passes", { words: mixedCounts.words, sentences: mixedCounts.sentences, passes: loopPasses })
               : uiFmt("{items}-item loop, {passes} passes", { items: effectiveLoopItems, passes: loopPasses })}</span>
           </div>
@@ -2019,14 +2052,25 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
             <fieldset className="mt-4">
               <legend className="text-xs font-black text-[var(--text-2)]">{ui("Content source")}</legend>
               <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">
-                {ui("Choose whether Listen pulls from the sentence tracker, the word tracker, the passages, or all of them.")}
+                {ui("Tick any of the three. Listen draws from every one you leave on.")}
               </p>
-              {/* Four across on a wide pane, two-by-two once it narrows —
-                  four columns at phone width leave labels breaking mid-word. */}
+              {/*
+                Ticks rather than one choice.
+
+                Three kinds and only one pick meant the three useful answers
+                were the three single ones, and every pair was unreachable —
+                adding paragraphs to a two-way picker took words-and-sentences
+                away, which is not what adding a thing should do. All is kept
+                beside them as the one press that turns everything on, since
+                that is the setting people actually reach for.
+
+                Four across on a wide pane, two-by-two once it narrows: four
+                columns at phone width break the labels mid-word.
+              */}
               <div
                 aria-label={ui("Content source")}
                 className="mt-2 grid grid-cols-2 gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-1.5 sm:grid-cols-4"
-                role="radiogroup"
+                role="group"
               >
                 {([[
                   "sentences", "Sentences",
@@ -2034,29 +2078,46 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                   "words", "Words",
                 ], [
                   "passages", "Paragraphs",
-                ], [
-                  "mixed", "All",
                 ]] as const).map(([value, label]) => {
-                  const selected = contentSource === value;
+                  const selected = contentKinds.includes(value);
+                  // The last one left cannot be turned off, and says so rather
+                  // than looking pressable and doing nothing.
+                  const locked = selected && contentKinds.length === 1;
                   return (
                     <button
                       aria-checked={selected}
+                      aria-disabled={locked}
                       className={cn(
                         "min-h-10 rounded-xl border px-2 py-2 text-xs font-black transition-[background-color,border-color,color,transform,box-shadow] duration-150",
                         selected
                           ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-text)] shadow-[0_3px_0_var(--accent-dark)]"
-                          : "border-transparent bg-transparent text-[var(--text-2)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                          : "border-transparent bg-transparent text-[var(--text-2)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]",
+                        locked && "cursor-default"
                       )}
                       data-testid={`listen-source-${value}`}
                       key={value}
-                      onClick={() => chooseContentSource(value)}
-                      role="radio"
+                      onClick={() => toggleContentKind(value)}
+                      role="checkbox"
+                      title={locked ? ui("Listen needs at least one of these on.") : undefined}
                       type="button"
                     >
                       {ui(label)}
                     </button>
                   );
                 })}
+                <button
+                  className={cn(
+                    "min-h-10 rounded-xl border px-2 py-2 text-xs font-black transition-[background-color,border-color,color,transform,box-shadow] duration-150",
+                    contentKinds.length === LISTEN_CONTENT_KINDS.length
+                      ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-text)] shadow-[0_3px_0_var(--accent-dark)]"
+                      : "border-transparent bg-transparent text-[var(--text-2)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]"
+                  )}
+                  data-testid="listen-source-mixed"
+                  onClick={chooseAllContentKinds}
+                  type="button"
+                >
+                  {ui("All")}
+                </button>
               </div>
             </fieldset>
             <fieldset className="mt-4 border-t border-[var(--border)] pt-4">
@@ -2259,7 +2320,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                 </span>
               </div>
               <div className="mt-3 space-y-2">
-                {contentSource === "mixed" ? <>
+                {interleaves ? <>
                   <NumberSetting label={ui("Words in each loop")} max={Math.max(1, 12 - mixedCounts.sentences)} min={1} note={ui("How many words are in the set before it repeats")} onCommit={(value) => commitMixedCounts({ ...mixedCounts, words: value }).words} suffix={ui("words")} testId="listen-loop-words" value={mixedCounts.words} />
                   <NumberSetting label={ui("Sentences in each loop")} max={Math.max(1, 12 - mixedCounts.words)} min={1} note={ui("How many sentences and phrases are in the set before it repeats")} onCommit={(value) => commitMixedCounts({ ...mixedCounts, sentences: value }).sentences} suffix={ui("sentences")} testId="listen-loop-sentences" value={mixedCounts.sentences} />
                 </> : <NumberSetting label={ui("Items in each loop")} max={12} min={1} note={ui("How many items are in the set before it repeats")} onCommit={commitLoopItems} suffix={ui("items")} testId="listen-loop-items" value={loopItems} />}
@@ -2275,7 +2336,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                 />
               </div>
               <p className="mt-3 text-[11px] font-semibold leading-snug text-[var(--text-2)]" data-testid="listen-loop-example">
-                {contentSource === "mixed"
+                {interleaves
                   ? uiFmt(
                     "Right now: {words} words + {sentences} sentences = a set of {total}, played {passes}×. You hear all {total}, then the same {total} again, then the next set.",
                     {

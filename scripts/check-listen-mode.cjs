@@ -44,7 +44,7 @@ global.localStorage = global.window.localStorage;
 const result = esbuild.buildSync({
   stdin: {
     contents: [
-      'export { buildListenQueue, arrangeListenMixedQueue, listenMixGroupFor, getListenMixedCounts, setListenMixedCounts, DEFAULT_LISTEN_MIXED_COUNTS, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenPetBilingualCaptions, setListenPetBilingualCaptions, getListenContentSource, setListenContentSource, getListenQueueOrder, setListenQueueOrder, getListenQueueWithin, setListenQueueWithin, listenQueueHasGroups, LISTEN_QUEUE_WITHINS, DEFAULT_LISTEN_QUEUE_WITHIN, getListenReturnGap, setListenReturnGap, getListenReturnScope, setListenReturnScope, listenReturnCovers, LISTEN_RETURN_GAPS, LISTEN_RETURN_SCOPES, DEFAULT_LISTEN_RETURN_GAP, DEFAULT_LISTEN_RETURN_SCOPE, LISTEN_RETURN_GAP_MS, LISTEN_RETURN_GAP_CARDS, listenReturnGapIsCounted, getListenCurrentItemId, setListenCurrentItemId, getListenTargetRepeats, setListenTargetRepeats, getListenMeaningRepeats, setListenMeaningRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, getListenLanguageGapMs, setListenLanguageGapMs, buildListenSpeechPlan, DEFAULT_LANGUAGE_GAP_MS, DEFAULT_TARGET_REPEATS, DEFAULT_MEANING_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE, DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
+      'export { buildListenQueue, arrangeListenMixedQueue, listenMixGroupFor, getListenMixedCounts, setListenMixedCounts, DEFAULT_LISTEN_MIXED_COUNTS, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenPetBilingualCaptions, setListenPetBilingualCaptions, getListenContentKinds, setListenContentKinds, listenContentKinds, listenContentSourceKey, LISTEN_CONTENT_KINDS, getListenQueueOrder, setListenQueueOrder, getListenQueueWithin, setListenQueueWithin, listenQueueHasGroups, LISTEN_QUEUE_WITHINS, DEFAULT_LISTEN_QUEUE_WITHIN, getListenReturnGap, setListenReturnGap, getListenReturnScope, setListenReturnScope, listenReturnCovers, LISTEN_RETURN_GAPS, LISTEN_RETURN_SCOPES, DEFAULT_LISTEN_RETURN_GAP, DEFAULT_LISTEN_RETURN_SCOPE, LISTEN_RETURN_GAP_MS, LISTEN_RETURN_GAP_CARDS, listenReturnGapIsCounted, getListenCurrentItemId, setListenCurrentItemId, getListenTargetRepeats, setListenTargetRepeats, getListenMeaningRepeats, setListenMeaningRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, getListenLanguageGapMs, setListenLanguageGapMs, buildListenSpeechPlan, DEFAULT_LANGUAGE_GAP_MS, DEFAULT_TARGET_REPEATS, DEFAULT_MEANING_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE, DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
       'export { loadGradeStore, saveGradeStore, statusForId, COMPLETED_KEY } from "./src/lib/activity.ts";',
       'export { setInterfaceLanguage } from "./src/lib/interfaceLanguage.ts";',
       'export { setLearningDirection } from "./src/lib/direction.ts";',
@@ -89,7 +89,8 @@ const {
   buildListenQueue, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem,
   getListenBackgroundPlayback, setListenBackgroundPlayback,
   getListenPetBilingualCaptions, setListenPetBilingualCaptions,
-  getListenContentSource, setListenContentSource,
+  getListenContentKinds, setListenContentKinds, listenContentKinds,
+  listenContentSourceKey, LISTEN_CONTENT_KINDS,
   getListenQueueOrder, setListenQueueOrder,
   getListenCurrentItemId, setListenCurrentItemId,
   getListenTargetRepeats, setListenTargetRepeats,
@@ -1351,18 +1352,53 @@ check("corrupt Both counts fall back safely",
   JSON.stringify(getListenMixedCounts("learn-de")) === JSON.stringify({ words: 1, sentences: 2 }));
 check("Both count writers keep at least one of each and cap the combined loop at twelve",
   JSON.stringify(setListenMixedCounts({ words: 20, sentences: 20 }, "learn-de")) === JSON.stringify({ words: 11, sentences: 1 }));
-check("Listen defaults to both trackers, easiest level first",
-  getListenContentSource("learn-de") === "mixed"
+check("Listen defaults to every source, easiest level first",
+  getListenContentKinds("learn-de").join("+") === "sentences+words+passages"
   && getListenQueueOrder("learn-de") === "level");
-setListenContentSource("words", "learn-de");
+setListenContentKinds(["words"], "learn-de");
 setListenQueueOrder("least-heard", "learn-de");
-setListenContentSource("sentences", "learn-en");
+setListenContentKinds(["sentences"], "learn-en");
 setListenQueueOrder("learning", "learn-en");
-check("each course remembers its own Listen source and queue order",
-  getListenContentSource("learn-de") === "words"
+check("each course remembers its own Listen sources and queue order",
+  getListenContentKinds("learn-de").join("+") === "words"
   && getListenQueueOrder("learn-de") === "least-heard"
-  && getListenContentSource("learn-en") === "sentences"
+  && getListenContentKinds("learn-en").join("+") === "sentences"
   && getListenQueueOrder("learn-en") === "learning");
+
+// \u2500\u2500 the source is a set, and any of its combinations is sayable \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// Three kinds and a single choice would have made every PAIR unreachable, so
+// adding paragraphs would have taken words-and-sentences away.
+setListenContentKinds(["words", "sentences"], "learn-de");
+check("two kinds together is a setting the picker can hold",
+  getListenContentKinds("learn-de").join("+") === "sentences+words");
+check("...and the queue built from it carries both and nothing else",
+  ["sentence", "word"].every((kind) =>
+    buildListenQueue(parts, {}, { contentSource: ["words", "sentences"], order: "common" })
+      .some((item) => item.kind === kind))
+  && buildListenQueue(parts, {}, { contentSource: ["words", "sentences"], order: "common" })
+    .every((item) => item.kind !== "passage"));
+check("sentences and paragraphs together is sayable too",
+  ["sentence", "passage"].every((kind) =>
+    buildListenQueue(parts, {}, { contentSource: ["sentences", "passages"], order: "common" })
+      .some((item) => item.kind === kind))
+  && buildListenQueue(parts, {}, { contentSource: ["sentences", "passages"], order: "common" })
+    .every((item) => item.kind !== "word"));
+
+// A setting stored before there was a third kind still has to resolve, and
+// a set that means what a single choice used to mean keeps that cursor.
+check("the old spellings still read",
+  listenContentKinds("mixed").join("+") === "sentences+words+passages"
+  && listenContentKinds("words").join("+") === "words"
+  && listenContentKinds("sentences+passages").join("+") === "sentences+passages");
+check("an empty or unreadable set is every kind rather than an empty queue",
+  listenContentKinds([]).length === LISTEN_CONTENT_KINDS.length
+  && listenContentKinds(null).length === LISTEN_CONTENT_KINDS.length
+  && listenContentKinds(["nonsense"]).length === LISTEN_CONTENT_KINDS.length);
+check("a set that means what one choice used to mean keeps that cursor name",
+  listenContentSourceKey(["sentences", "words", "passages"]) === "mixed"
+  && listenContentSourceKey(["words"]) === "words"
+  && listenContentSourceKey(["words", "sentences"]) === "sentences+words");
+setListenContentKinds(["words"], "learn-de");
 const repeatedSet = Array.from(
   { length: 12 },
   (_, playhead) => listenQueueIndexForPlayhead(playhead, 20, 3, 2)
@@ -1467,7 +1503,7 @@ check("corrupt Listen settings fall back to documented defaults",
   getListenTargetRepeats("learn-de") === 2
   && getListenMeaningRepeats("learn-de") === 1
   && getListenLanguageOrder("learn-de") === "meaning-first"
-  && getListenContentSource("learn-de") === "mixed"
+  && getListenContentKinds("learn-de").length === LISTEN_CONTENT_KINDS.length
   && getListenQueueOrder("learn-de") === "level"
   && getListenLoopItems("learn-de") === 3
   && getListenLoopPasses("learn-de") === 2
@@ -1475,7 +1511,7 @@ check("corrupt Listen settings fall back to documented defaults",
 check("Listen setting writers clamp typed values to safe limits",
   setListenTargetRepeats(99, "learn-de") === 10
   && setListenMeaningRepeats(-4, "learn-de") === 1
-  && setListenContentSource("invalid", "learn-de") === "mixed"
+  && setListenContentKinds(["invalid"], "learn-de").length === LISTEN_CONTENT_KINDS.length
   && setListenQueueOrder("invalid", "learn-de") === "level"
   && setListenQueueOrder("level", "learn-de") === "level"
   && setListenQueueOrder("newest", "learn-de") === "newest"
@@ -1702,8 +1738,21 @@ check("the queue rebuilds when a filter changes",
 check("Listen exposes real source and queue-order controls",
   view.includes('data-testid={`listen-source-${value}`}')
   && view.includes('data-testid={`listen-queue-${value}`}')
-  && view.includes("setListenContentSource(")
+  && view.includes("setListenContentKinds(")
   && view.includes("setListenQueueOrder("));
+check("the source control ticks rather than picks, so pairs are reachable",
+  view.includes('role="checkbox"')
+  && view.includes("const toggleContentKind = (kind: ListenContentKind) => {")
+  // All stays beside them as the one press that turns everything on.
+  && view.includes('data-testid="listen-source-mixed"')
+  && view.includes("const chooseAllContentKinds = ()"));
+check("...and it will not let the last one be turned off",
+  view.includes("if (on && contentKinds.length === 1) return;"),
+  "turning off the last kind leaves an empty queue, which is not a setting anybody means");
+check("the two-count loop control appears when words and sentences are both playing",
+  view.includes('const interleaves = contentKinds.includes("words") && contentKinds.includes("sentences");')
+  && !view.includes('contentSource === "mixed"'),
+  "the control has a words knob and a sentences knob, so it belongs on screen when both are on");
 check("the next-card delay is visible and drives auto-advance",
   view.includes('testId="listen-next-card-delay"')
   && view.includes("}, nextCardDelayMs);"));
@@ -1761,7 +1810,7 @@ check("a rapid grade or navigation cannot queue a second card advance",
 check("Listen restores and persists the exact card for this course, content mode, and queue order",
   view.includes("getListenCurrentItemId(")
   && view.includes("setListenCurrentItemId(item.id")
-  && view.includes("contentSource, queueOrder"));
+  && view.includes("contentKinds, queueOrder"));
 check("background playback is default-on, toggleable, and exposes a compact persistent player",
   view.includes("getListenBackgroundPlayback(")
   && view.includes("setListenBackgroundPlayback(")
@@ -1839,8 +1888,10 @@ for (const key of [
   "Keep playing around Micheon",
   "Continue when you open Home, Practice, Settings, or another app section.",
   "Content source",
-  "Choose whether Listen pulls from the sentence tracker, the word tracker, the passages, or all of them.",
+  "Tick any of the three. Listen draws from every one you leave on.",
+  "Listen needs at least one of these on.",
   "Paragraph",
+  "All",
   "Queue order",
   "Easiest first works through the course by level — all of A1, then A2, then B1 — with the most useful card leading each level. Most common first teaches the phrases and words people are most likely to use, whatever level they are. Newest first plays the packs added most recently, so new content is heard instead of waiting behind thousands of commoner items.",
   "Easiest first (A1 → C1)",

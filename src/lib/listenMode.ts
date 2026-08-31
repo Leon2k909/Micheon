@@ -138,7 +138,18 @@ export function setListenMixedCounts(counts: Partial<ListenMixedCounts>, directi
 export const DEFAULT_LISTEN_LOOP_PASSES = 2;
 export const DEFAULT_NEXT_CARD_DELAY_MS = 1_100;
 export const DEFAULT_LANGUAGE_GAP_MS = 0;
-export type ListenContentSource = "sentences" | "words" | "passages" | "mixed";
+/** One of the three bodies of material Listen can draw from. */
+export type ListenContentKind = "sentences" | "words" | "passages";
+export const LISTEN_CONTENT_KINDS: readonly ListenContentKind[] = ["sentences", "words", "passages"];
+/**
+ * What a stored setting can say.
+ *
+ * The setting is a SET of kinds, and was a single choice for as long as there
+ * were only two of them. Both spellings still read: "mixed" is the old word
+ * for all of them, a bare kind is a set of one, and anything newer is written
+ * as the kinds joined by "+".
+ */
+export type ListenContentSource = ListenContentKind | "mixed";
 export type ListenQueueOrder = "common" | "learning" | "least-heard" | "newest" | "level";
 export type ListenLevelFilter = "all" | CefrStep;
 export type ListenUsefulnessFilter = "all" | ConversationUsefulness;
@@ -398,26 +409,64 @@ export function setListenLanguageOrder(
   return next;
 }
 
-export function getListenContentSource(
-  direction: LearningDirection = getLearningDirection()
-): ListenContentSource {
-  try {
-    const value = window.localStorage.getItem(courseSettingKey(CONTENT_SOURCE_KEY, direction));
-    if (value === "sentences" || value === "words"
-      || value === "passages" || value === "mixed") return value;
-  } catch { /* storage blocked: use the documented default */ }
-  return DEFAULT_LISTEN_CONTENT_SOURCE;
+/**
+ * Whatever a caller offers, as the set of kinds it means.
+ *
+ * Takes the old single-choice spellings as well as a list, so a setting
+ * stored before there was a third kind still resolves, and so the checks and
+ * callers that ask for one kind by name keep working unchanged.
+ *
+ * Always returns at least one kind. An empty set is a queue with nothing in
+ * it, which is not a preference anybody expressed — it is the setting
+ * failing to load.
+ */
+export function listenContentKinds(
+  value: ListenContentSource | readonly ListenContentKind[] | null | undefined
+): ListenContentKind[] {
+  const raw = Array.isArray(value)
+    ? value
+    : typeof value === "string"
+      ? (value === "mixed" ? LISTEN_CONTENT_KINDS : value.split("+"))
+      : [];
+  const chosen = LISTEN_CONTENT_KINDS.filter((kind) => raw.includes(kind));
+  return chosen.length ? chosen : [...LISTEN_CONTENT_KINDS];
 }
 
-export function setListenContentSource(
-  source: ListenContentSource,
+/**
+ * The cursor's name for a set.
+ *
+ * Where a set means what a single choice used to mean it keeps that word, so
+ * a learner who had Listen on "mixed" or on "words" comes back to the place
+ * they left rather than to the top of a queue with a new key. Only genuinely
+ * new combinations get a new one.
+ */
+export function listenContentSourceKey(kinds: readonly ListenContentKind[]): string {
+  const chosen = listenContentKinds(kinds);
+  if (chosen.length === LISTEN_CONTENT_KINDS.length) return "mixed";
+  if (chosen.length === 1) return chosen[0];
+  return chosen.join("+");
+}
+
+export function getListenContentKinds(
   direction: LearningDirection = getLearningDirection()
-): ListenContentSource {
-  const next = source === "sentences" || source === "words" || source === "passages"
-    ? source
-    : "mixed";
+): ListenContentKind[] {
   try {
-    window.localStorage.setItem(courseSettingKey(CONTENT_SOURCE_KEY, direction), next);
+    const value = window.localStorage.getItem(courseSettingKey(CONTENT_SOURCE_KEY, direction));
+    if (value) return listenContentKinds(value as ListenContentSource);
+  } catch { /* storage blocked: use the documented default */ }
+  return listenContentKinds(DEFAULT_LISTEN_CONTENT_SOURCE);
+}
+
+export function setListenContentKinds(
+  kinds: readonly ListenContentKind[],
+  direction: LearningDirection = getLearningDirection()
+): ListenContentKind[] {
+  const next = listenContentKinds(kinds);
+  try {
+    window.localStorage.setItem(
+      courseSettingKey(CONTENT_SOURCE_KEY, direction),
+      listenContentSourceKey(next)
+    );
   } catch { /* keep Listen usable */ }
   return next;
 }
@@ -926,7 +975,7 @@ export function setListenPetBilingualCaptions(
 
 function currentItemStorageKey(
   direction: LearningDirection,
-  source: ListenContentSource,
+  source: ListenContentSource | readonly ListenContentKind[],
   order: ListenQueueOrder,
   within: ListenQueueWithin
 ): string {
@@ -940,13 +989,13 @@ function currentItemStorageKey(
   // The default is left out of the key so that every cursor stored before
   // there was a second question still resolves.
   const suffix = within === DEFAULT_LISTEN_QUEUE_WITHIN ? "" : `:${within}`;
-  return `${CURRENT_ITEM_KEY}:${direction}:${source}:${order}${suffix}`;
+  return `${CURRENT_ITEM_KEY}:${direction}:${listenContentSourceKey(listenContentKinds(source))}:${order}${suffix}`;
 }
 
 export function getListenCurrentItemId(
   direction: LearningDirection = getLearningDirection(),
   profile: UserProfile | null = getAuthUser(),
-  source: ListenContentSource = getListenContentSource(direction),
+  source: ListenContentSource | readonly ListenContentKind[] = getListenContentKinds(direction),
   order: ListenQueueOrder = getListenQueueOrder(direction),
   within: ListenQueueWithin = getListenQueueWithin(direction)
 ): string {
@@ -958,7 +1007,7 @@ export function setListenCurrentItemId(
   itemId: string,
   direction: LearningDirection = getLearningDirection(),
   profile: UserProfile | null = getAuthUser(),
-  source: ListenContentSource = getListenContentSource(direction),
+  source: ListenContentSource | readonly ListenContentKind[] = getListenContentKinds(direction),
   order: ListenQueueOrder = getListenQueueOrder(direction),
   within: ListenQueueWithin = getListenQueueWithin(direction)
 ): string {
@@ -1115,7 +1164,8 @@ export function formatListenPetCaption(
 }
 
 export type ListenQueueOptions = {
-  contentSource?: ListenContentSource;
+  /** Which bodies of material to draw from. A single kind still reads. */
+  contentSource?: ListenContentSource | readonly ListenContentKind[];
   direction?: LearningDirection;
   order?: ListenQueueOrder;
   within?: ListenQueueWithin;
@@ -1142,7 +1192,7 @@ export function buildListenQueue(
 ): ListenItem[] {
   const parts = withoutMutedPacks(apiParts);
   const direction = options.direction ?? getLearningDirection();
-  const content = options.contentSource ?? getListenContentSource(direction);
+  const content = listenContentKinds(options.contentSource ?? getListenContentKinds(direction));
   const order = options.order ?? getListenQueueOrder(direction);
   const within = options.within ?? getListenQueueWithin(direction);
   const returnGap = options.returnGap ?? getListenReturnGap(direction);
@@ -1240,7 +1290,7 @@ export function buildListenQueue(
   // primaryAnswer on both sides: answer keys list alternatives behind " / "
   // for the matcher's benefit, but a listening card shows (and the voice
   // speaks) one clean form, not the whole key.
-  const rankedSentences = content === "words" || content === "passages"
+  const rankedSentences = !content.includes("sentences")
     ? []
     : buildCatalog(parts)
     .filter((item) => keep(item.partKey))
@@ -1279,7 +1329,7 @@ export function buildListenQueue(
   // The contextual lesson remains available; only the arbitrary global card
   // is withheld. This is intentionally accuracy-first: silence teaches less
   // than a confidently spoken mistranslation, but it does not teach it wrong.
-  const rankedWords = content === "sentences" || content === "passages"
+  const rankedWords = !content.includes("words")
     ? []
     : rankWordCatalog(
       buildWordCatalog(parts).filter((word) => word.listenSafe !== false && keep(word.partKey, word.level)),
@@ -1338,7 +1388,7 @@ export function buildListenQueue(
    * written in. There is no frequency score for a paragraph and inventing one
    * would be a number with nothing behind it.
    */
-  const passages: ListenItem[] = content === "sentences" || content === "words"
+  const passages: ListenItem[] = !content.includes("passages")
     ? []
     : PASSAGES
       .map((passage, index) => {
