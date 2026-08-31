@@ -2117,7 +2117,13 @@ const BANNER_SCENERY: Partial<Record<GuidedBackground, { src: string; frame: str
   // their real edges, then to 5.5 to 1, which sits between the widths this box
   // takes. There is no band left to place.
   bubbles: { src: scenerySpeechBubbles, frame: "center" },
-  atlas: { src: sceneryFlightPath, frame: "center" },
+  // Right, not centre. In a narrow window the banner stops being a strip and
+  // starts trimming the SIDES — at 900px only 43% of the width survives, 29%
+  // off each end. This picture keeps its aeroplane and its globe in the right
+  // half and empty sky in the left, so a centred trim took the aeroplane away
+  // entirely and left a piece of ocean. Anchored right, the trim comes off the
+  // sky and both survive.
+  atlas: { src: sceneryFlightPath, frame: "right center" },
   garden: { src: sceneryFlowerGarden, frame: "center" },
   dawn: { src: scenerySoftDawn, frame: "center" },
 };

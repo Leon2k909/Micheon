@@ -91,6 +91,27 @@ for (const [scene, binding] of [
 }
 
 /**
+ * The globe scene is anchored where its subject is.
+ *
+ * "achte drauf das es im kleinen fenster auch gut aussieht." In a narrow
+ * window the banner stops being a long strip and starts trimming the picture's
+ * SIDES rather than its height. Measured at four widths: at 1920 nothing is
+ * cut, at 1400 it is 11% off each end, at 1100 21%, and at 900 only 43% of the
+ * width survives — 29% gone from each side.
+ *
+ * This picture keeps its aeroplane and its globe in the right half and empty
+ * sky in the left, so a centred trim took the aeroplane away entirely and left
+ * a piece of ocean. Anchored right the trim comes off the sky, and both are
+ * still there at 900px. The other three are landscapes that read from any part
+ * of themselves, and stay centred.
+ */
+assert.ok(
+  /atlas: \{ src: sceneryFlightPath, frame: "right center" \}/.test(shell),
+  "the globe scene is centred again. A narrow window trims both ends of the picture, and this one "
+    + "holds its aeroplane in the right half — centred, a 900px window loses it entirely"
+);
+
+/**
  * The banner is shaped for what is in it.
  *
  * "die banner müssen alle angepasst werden. die größe ist nicht gut." At the
