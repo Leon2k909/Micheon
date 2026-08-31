@@ -1624,14 +1624,14 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
           </div>
         </div>
 
-        <div className="listen-card relative mt-5 border-t border-[var(--border)] pt-6 text-center sm:pt-8">
+        <div className="listen-card relative mx-1 mt-5 border-t border-[var(--border)] pt-6 text-center sm:mx-3 sm:pt-8">
           {/* The voice, drawn from the voice. These are the real frequency
               bands of the clip being spoken — the same reading the guided
               session uses — rather than a loop that runs whether or not
               anything is playing. Flanking the card because that is where the
               room is; they are decoration and are hidden from the reader. */}
-          <TtsWaveform active={playing} bars={26} className="listen-wave listen-wave--left" />
-          <TtsWaveform active={playing} bars={26} className="listen-wave listen-wave--right" />
+          <TtsWaveform active={playing} bars={44} className="listen-wave listen-wave--left" />
+          <TtsWaveform active={playing} bars={44} className="listen-wave listen-wave--right" />
           {/* The level sits in the line that already says what this card is,
               because the default order is now a walk up through the levels and
               there was no way to see where in that walk you were. A CEFR label
