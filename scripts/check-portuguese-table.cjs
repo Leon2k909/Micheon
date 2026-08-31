@@ -89,6 +89,10 @@ check(`no card has an empty Portuguese side${blank.length ? ` — ${blank[0].ger
 const PROPER_NAMES = [
   "Müller", "Schröder", "Grün", "Björn", "Jürgen", "Günther", "Käthe",
   "München", "Köln", "Düsseldorf", "Nürnberg", "Zürich", "Österreich",
+  // Where a German place has a Portuguese name this table uses it — Colónia,
+  // Munique, Zurique, Hamburgo. Where it has none, the German name stands,
+  // which is also what is written on the platform sign.
+  "Göttingen",
   // The offices and the schemes, which keep the name written on the door or
   // on the form. Somebody applying for BAföG says BAföG, in any language.
   "Bürgeramt", "Bürgerbüro", "Ausländerbehörde", "Straße", "Goethestraße",
