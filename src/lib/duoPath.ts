@@ -17,7 +17,23 @@ import { getAuthUser, type UserProfile } from "@/lib/profileStorage";
  * lights up the path too, and vice versa.
  */
 
-export type DuoNodeState = "done" | "current" | "available" | "locked";
+/**
+ * Nothing is locked. There is no fourth state.
+ *
+ * The path used to grey out everything more than two packs ahead — a soft
+ * lock, meant to signal order without refusing to teach. It refused to teach.
+ * And because the guided session has always taught from any pack, progress
+ * arrived in packs the path still called locked: "Talking about learning
+ * German" sat behind a padlock at 46 of 54 done. A lock over something you
+ * have half learned is not a signal about order, it is just wrong.
+ *
+ * The order is still there and still means something — the path is drawn in
+ * curriculum order and the current node is marked. It is a recommendation
+ * now, which is all it ever had standing to be: a thematic catalogue where
+ * somebody who wants the restaurant unit before the doctor unit is not
+ * cheating.
+ */
+export type DuoNodeState = "done" | "current" | "available";
 
 export type DuoNode = {
   /** The pack key — part17, everydayWords12, and so on. */
@@ -55,13 +71,15 @@ export type DuoPath = {
 export const DUO_UNIT_SIZE = 5;
 
 /**
- * How far ahead of your current position you may jump.
+ * Kept at its old value, and no longer used to lock anything.
  *
- * Duolingo locks everything past the next node. That is right for a course
- * built as one strict line and wrong here: this catalogue is thematic, and
- * somebody who wants to do the restaurant unit before the doctor unit is not
- * cheating. So the lock is soft — a few nodes of runway, then greyed. It
- * signals order without refusing to teach.
+ * It used to be the runway: two packs past the current one stayed open and
+ * everything beyond was greyed out. Nothing is locked now, so this decides
+ * nothing — it is exported because other code imports it, and removing an
+ * export is a separate change from removing a rule.
+ *
+ * @deprecated The path does not lock. Nothing should read this to decide
+ * whether a pack can be opened.
  */
 export const DUO_LOOKAHEAD = 2;
 
@@ -128,20 +146,17 @@ export function buildDuoPath(
         done: row.done,
         total: row.total,
         percent,
-        state: row.done >= row.total ? "done" : "locked",
+        // Unfinished is available — every unfinished pack, at any distance.
+        state: row.done >= row.total ? "done" : "available",
       };
     });
 
     // The current node is the first unfinished one — the same rule
-    // activePackProgress uses, so the hero and the path never disagree.
+    // activePackProgress uses, so the hero and the path never disagree. It
+    // marks where the course would take you next and nothing more; the packs
+    // after it were already available on the line above.
     const currentIndex = nodes.findIndex((node) => node.state !== "done");
-    if (currentIndex >= 0) {
-      nodes[currentIndex].state = "current";
-      for (let index = currentIndex + 1; index < nodes.length; index += 1) {
-        if (nodes[index].state === "done") continue;
-        nodes[index].state = index <= currentIndex + DUO_LOOKAHEAD ? "available" : "locked";
-      }
-    }
+    if (currentIndex >= 0) nodes[currentIndex].state = "current";
 
     const units: DuoUnit[] = [];
     const maxUnits = options.maxUnits ?? Infinity;

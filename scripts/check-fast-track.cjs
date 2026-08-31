@@ -181,6 +181,39 @@ check("a paused pack stays out of the fast track too",
     || /withoutMutedPacks\(apiParts\)[\s\S]{0,200}nextFastTrackPart/.test(session),
   "pausing a pack is an instruction; a second button that ignored it would serve what somebody asked not to see");
 
+
+/**
+ * ── and nothing on the path is locked ──────────────────────────────────────
+ *
+ * The path used to grey out every pack more than two ahead of the current
+ * one. It read as a rule about order and was not one: the guided session has
+ * always taught from any pack, so progress arrived in packs the path still
+ * called locked — "Talking about learning German" sat behind a padlock at 46
+ * of 54 done, and "Checking in on each other" at 11 of 54.
+ *
+ * A course you can be part-way through but not open is not signalling an
+ * order, it is just wrong. The order is still drawn — curriculum order, with
+ * the current node marked — and it is a recommendation now.
+ *
+ * Asserted against the state machine rather than the pixels: a padlock is
+ * only ever drawn for a state that can be produced, so the honest place to
+ * forbid it is where the states are made.
+ */
+const pathSource = fs.readFileSync(path.join(root, "src/lib/duoPath.ts"), "utf8");
+
+check("the path has no locked state to produce",
+  !/"locked"/.test(pathSource),
+  'duoPath can still return "locked", so some pack on the path cannot be opened');
+
+check("nothing decides availability from how far ahead a pack is",
+  !/DUO_LOOKAHEAD\s*\?|index <= currentIndex \+ DUO_LOOKAHEAD/.test(pathSource),
+  "availability is being computed from a lookahead window again");
+
+check("the path view neither disables a node nor draws a padlock",
+  !/disabled=\{locked\}/.test(view) && !/<Lock\b/.test(view),
+  "a node on the path is unclickable, so the learner cannot choose what to learn");
+
+
 if (failed) {
   console.error("\nWhat the fast track leaves out is the whole feature.");
   process.exit(1);

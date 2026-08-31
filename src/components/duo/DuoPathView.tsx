@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Check, ChevronRight, Lock, MessagesSquare, Play, Rocket, Shuffle, Star } from "lucide-react";
+import { Check, ChevronRight, MessagesSquare, Play, Rocket, Shuffle, Star } from "lucide-react";
 import { ui, uiFmt } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { buildDuoPath } from "@/lib/duoPath";
@@ -26,7 +26,6 @@ import { duoUnitAnchorId } from "@/lib/scrollToAnchor";
  * two drift apart. So the map now points at the session, and what the quick
  * lesson was actually for — variety, and not being marched through the same
  * stages every time — belongs to the session it points at.
- *
  *
  * The fast track answers a different question again: not where am I in the
  * course, but what do I need to hold a conversation. The curriculum has the
@@ -141,7 +140,7 @@ export function DuoPathView({
         </button>
 
         {/*
-          The second way in: the tracker, in pairs, endlessly. It sits beside
+          The third way in: the tracker, in pairs, endlessly. It sits beside
           the guided session rather than under Games because it walks the same
           queue the course does — it is practice, not a diversion.
 
@@ -251,18 +250,22 @@ export function DuoPathView({
               <ol className="mt-5 space-y-1">
                 {unit.nodes.map((node, nodeIndex) => {
                   const offset = [0, 34, 52, 34, 0][nodeIndex % 5];
-                  const locked = node.state === "locked";
                   return (
                     <li
                       key={node.key}
                       className="flex items-center gap-3"
                       style={{ paddingLeft: `${offset}px` }}
                     >
+                      {/*
+                        Every node opens. The path recommends an order; it
+                        does not enforce one, and it never did so honestly —
+                        the guided session has always taught from any pack, so
+                        packs arrived here part-finished and still greyed out.
+                      */}
                       <motion.button
                         type="button"
-                        disabled={locked}
                         onClick={() => onOpenLesson(node.key)}
-                        whileTap={locked ? undefined : { scale: 0.94 }}
+                        whileTap={{ scale: 0.94 }}
                         aria-label={`${node.title} — ${node.done}/${node.total}`}
                         className={cn(
                           "relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-4 transition-all",
@@ -270,22 +273,16 @@ export function DuoPathView({
                             ? "border-[var(--success-text)] bg-[var(--success-bg)] text-[var(--success-text)]"
                             : node.state === "current"
                               ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-text)] shadow-[0_0_0_6px_rgba(var(--accent-rgb),0.18)]"
-                              : node.state === "available"
-                                ? "border-[var(--border-2)] bg-[var(--surface-2)] text-[var(--text-2)] hover:border-[var(--accent)]"
-                                : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-3)] cursor-not-allowed"
+                              : "border-[var(--border-2)] bg-[var(--surface-2)] text-[var(--text-2)] hover:border-[var(--accent)]"
                         )}
                       >
                         {node.state === "done" ? <Check className="h-6 w-6" />
                           : node.state === "current" ? <Star className="h-6 w-6 fill-current" />
-                          : locked ? <Lock className="h-5 w-5" />
                           : <span className="text-sm font-black">{node.index + 1}</span>}
                       </motion.button>
 
                       <div className="min-w-0 flex-1 py-2">
-                        <p className={cn(
-                          "truncate text-sm font-black",
-                          locked ? "text-[var(--text-3)]" : "text-[var(--text-1)]"
-                        )}>
+                        <p className="truncate text-sm font-black text-[var(--text-1)]">
                           {node.title}
                         </p>
                         <div className="mt-1 flex items-center gap-2">
