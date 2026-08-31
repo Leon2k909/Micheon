@@ -146,6 +146,16 @@ const MASCULINE_SHORT = [
   "свободен", "занят", "готов", "уверен", "рад", "должен", "согласен",
   "болен", "голоден", "прав", "доволен", "женат", "здоров", "виноват",
 ];
+/**
+ * And the feminine, because the rule is that the course does not DECIDE, not
+ * that it prefers the masculine. Written after a card came back as
+ * "Ты сегодня вечером свободна или занята?", which is just as much a decision
+ * as свободен would have been, and which the masculine-only list walked past.
+ */
+const FEMININE_SHORT = [
+  "свободна", "занята", "готова", "уверена", "рада", "должна", "согласна",
+  "больна", "голодна", "права", "довольна", "замужем", "здорова", "виновата",
+];
 /** Masculine past tense. Listed, not matched on -л, because стол is a table. */
 const MASCULINE_PAST = [
   "понял", "хотел", "сделал", "сказал", "видел", "думал", "забыл", "знал",
@@ -153,6 +163,18 @@ const MASCULINE_PAST = [
   "читал", "работал", "жил", "ел", "пил", "спал", "играл", "купил", "спросил",
   "ответил", "решил", "начал", "закончил", "успел", "устал", "проспал",
 ];
+const FEMININE_PAST = MASCULINE_PAST
+  .map((word) => word.replace(/ёл$/, "ла").replace(/л$/, "ла").replace(/г$/, "гла"))
+  .filter((word) => word.endsWith("ла"));
+
+/**
+ * WHAT THIS STILL DOES NOT CATCH: a long-form adjective in direct address —
+ * "Ты такой тихий" decides a gender as surely as свободен does. Matching
+ * -ый/-ая would reach every adjective in the table, including the ones
+ * describing a thing rather than a person, and a gate that cries wolf gets
+ * turned off. Those are caught by reading, and this note is here so the next
+ * person knows it is a gap rather than a judgement.
+ */
 
 /**
  * Somebody else is being talked about, so the gender is theirs, not the
@@ -194,19 +216,27 @@ check("the course never decides the learner's gender", () => {
      * of an ordinary noun. So the past tense counts only where я or ты is
      * actually in the sentence.
      */
-    const shortAdjective = words.find((word) => MASCULINE_SHORT.includes(word));
-    if (shortAdjective) {
+    const namesReader = words.includes("я") || words.includes("ты");
+    /**
+     * A short adjective FIRST is the reader — "Рад тебя видеть", predicate
+     * first and the subject dropped, which is exactly where Russian leaves the
+     * pronoun out. Anywhere else it is agreeing with the noun in front of it:
+     * "Первая часть готова" is готова agreeing with часть, and asking a
+     * translator to avoid that would be asking them to avoid feminine nouns.
+     */
+    const shortAdjective = words.find((word) => MASCULINE_SHORT.includes(word) || FEMININE_SHORT.includes(word));
+    if (shortAdjective && (namesReader || words[0] === shortAdjective)) {
       offenders.push(`"${de}" -> "${ru}" (${shortAdjective})`);
       continue;
     }
-    if (!words.includes("я") && !words.includes("ты")) continue;
-    const past = words.find((word) => MASCULINE_PAST.includes(word));
+    if (!namesReader) continue;
+    const past = words.find((word) => MASCULINE_PAST.includes(word) || FEMININE_PAST.includes(word));
     if (past) offenders.push(`"${de}" -> "${ru}" (${past})`);
   }
   assert.strictEqual(
     offenders.length,
     0,
-    "these address the learner as male; rewrite them rather than pick a gender — "
+    "these decide the learner's gender; rewrite them rather than pick one — "
     + offenders.slice(0, 6).join("; ")
   );
 });
