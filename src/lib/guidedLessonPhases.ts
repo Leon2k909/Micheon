@@ -15,17 +15,37 @@ export const SENTENCE_PHASES = [
   "MissingWord",
   "Type",
   "Translate",
-  "TypeAgain",
-  "TranslateAgain",
   "Gap",
   "Order",
   "WriteFromMemory",
-  "RecallTarget",
-  "RecallMeaning",
   "RecallBoth",
 ] as const;
 
-export type SentencePhase = typeof SENTENCE_PHASES[number] | "French" | "Memory";
+/**
+ * The route asked for the same sentence to be written out nine times.
+ *
+ * Type, Translate, then Type again and Translate again — the second pair
+ * being the first pair verbatim — then the gap, then it from memory, then
+ * three closed-book stages in a row, of which the third asks for both
+ * languages the first two had just asked for one at a time.
+ *
+ * Repetition is the point of the route; four of those were not repetition
+ * but the same question re-asked with nothing changed between the asks, on a
+ * sentence the learner had already produced correctly. So the two Again
+ * stages have gone, and the two single-direction recalls give way to the one
+ * that covers both. Five writing stages remain, each asking for something
+ * the one before it did not.
+ *
+ * RecallTarget and RecallMeaning stay in the type: they are still the whole
+ * route for material the learner already holds, where one direction at a
+ * time is the right size of ask.
+ */
+export type SentencePhase =
+  typeof SENTENCE_PHASES[number]
+  | "French"
+  | "Memory"
+  | "RecallTarget"
+  | "RecallMeaning";
 
 export const BILINGUAL_SENTENCE_PHASES: readonly SentencePhase[] = [
   "Read",

@@ -144,7 +144,8 @@ for (const note of ["spellingNote", "capitalizationError", "phrasingNote"]) {
 assert.ok(guard[1].includes("outcome.ok"), "an answer that is not right checks itself");
 
 // It has to cover the stages that ask for typing, or it is a fix for one screen.
-for (const phase of ["ListenPick", "Type", "TypeAgain", "Translate", "TranslateAgain"]) {
+const TYPING_STAGES = ["ListenPick", "Type", "Translate"];
+for (const phase of TYPING_STAGES) {
   assert.ok(new RegExp(`phase === "${phase}"`).test(session.slice(session.indexOf("const autoCheckRef"))),
     `${phase} asks the learner to type and still waits for Enter, so the behaviour changes from `
     + "one stage to the next");
@@ -237,7 +238,7 @@ for (const [typed, accepted, want, why] of [
 
 console.log(
   `check-typing-flow: the clitic is accepted written either way, ${catalog.length} catalogue items `
-  + `hold no new collisions, and a clean answer checks itself after ${pause}ms across five typing `
-  + "stages — a lenient one still waits, so its note is read"
+  + `hold no new collisions, and a clean answer checks itself after ${pause}ms across `
+  + `${TYPING_STAGES.length} typing stages — a lenient one still waits, so its note is read`
 );
 process.exit(0);
