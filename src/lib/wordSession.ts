@@ -19,6 +19,7 @@
  */
 import { cefrRung } from "@/lib/cefr";
 import { frequencyRank, speechPrefers } from "@/lib/wordFrequency";
+import { spokenFrequencyRank, type NounEvidence } from "@/lib/spokenFrequency";
 import { getLearningMode, type LearningMode } from "@/lib/learningMode";
 import { packMeta, packNoteForWord } from "@/lib/curriculum";
 import { corpusIgnores, corpusReach, corpusUses, wordCommonality, type CorpusIndex } from "@/lib/corpusFrequency";
@@ -511,6 +512,16 @@ const SPOKEN_WEIGHT = 1;
  */
 const SPOKEN_EVIDENCE = 2;
 
+/**
+ * How far the subtitle list reaches, and therefore where everything else starts.
+ *
+ * The list holds the fifty thousand commonest words of spoken German, which is
+ * far past the end of anything this course teaches. A word it has never heard
+ * is rarer than every word it has, so the signals that answer for those words
+ * are placed beyond its last position rather than mixed in with it.
+ */
+const SPOKEN_LIST_SPAN = 50_000;
+
 export function rankWordCatalog(
   catalog: WordItem[],
   corpusIndex: CorpusIndex | null = null,
@@ -572,6 +583,23 @@ export function rankWordCatalog(
     return new Map(attested.map((entry, index) => [entry.id, index + 1]));
   })();
 
+  /**
+   * What this course's own text can say about a pooled lowercase count.
+   *
+   * The subtitle list cannot tell die Macht from "er macht". Our sentences can,
+   * because a capital away from a full stop is a noun and nothing else is, so
+   * the two tallies are kept apart and can referee the collision. Only asked
+   * about nouns, because only a noun has a lowercase twin to be confused with.
+   */
+  const nounEvidenceFor = (word: WordItem, name: string): NounEvidence | null => {
+    if (word.pos !== "noun" || !corpusIndex) return null;
+    const key = String(name).toLocaleLowerCase("de-DE").replace(/^(der|die|das)\s+/, "").trim();
+    return {
+      noun: corpusIndex.nounCount.get(key) ?? 0,
+      other: corpusIndex.otherCount.get(key) ?? 0,
+    };
+  };
+
   const speakingRank = (word: WordItem, rank: number): number => {
     // No index is NO EVIDENCE, not evidence of absence. corpusUses returns 0
     // without one, so every word looks unspoken, every word moves the same
@@ -581,7 +609,38 @@ export function rankWordCatalog(
     // Function words are exempt: the corpus index drops them, so their zero
     // means nothing at all.
     if (corpusIgnores(name)) return rank;
-    const spoken = spokenRanks.get(word.id) ?? spokenRanks.size + UNSPOKEN_SETBACK;
+    /**
+     * Where our own conversational text has nothing to say, ask how often
+     * people say the word on film.
+     *
+     * This is the long tail, and until now it had no ordering at all: 6,500 of
+     * the 9,000 words taught are outside the written bank's 2,500, so once the
+     * course's own sentences fell silent there was no evidence left and the
+     * words fell back on their pack order. That is how a herb the course
+     * mentions once came to lead the garlic, the cucumber and the carrot.
+     *
+     * It answers HERE and not sooner on purpose. Our sentences are hand-written
+     * for teaching and film dialogue is not: subtitles rank umbringen 861st and
+     * das Arschloch 969th, which is true of thrillers and not of the first five
+     * hundred words anybody should be taught. Where the course has spoken for
+     * itself it keeps the floor; where it has not, this is far better than the
+     * nothing it replaces.
+     *
+     * Placed past the attested words rather than mixed in with them, so the
+     * two signals never have to be compared on a scale neither shares.
+     */
+    const attested = spokenRanks.get(word.id);
+    if (attested === undefined) {
+      const said = spokenFrequencyRank(name, nounEvidenceFor(word, name));
+      if (Number.isFinite(said)) return spokenRanks.size + said;
+    }
+    /**
+     * Everything below here is answering for a word neither our own text nor
+     * the subtitle list has ever seen, so it belongs behind both.
+     */
+    const past = (position: number): number =>
+      spokenRanks.size + SPOKEN_LIST_SPAN + position;
+    const spoken = attested ?? past(spokenRanks.size + UNSPOKEN_SETBACK);
     /**
      * A word the bank has never heard of is not a rare word.
      *
