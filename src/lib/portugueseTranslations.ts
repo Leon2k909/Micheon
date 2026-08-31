@@ -6758,4 +6758,637 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Bestanden! Sogar das Einparken hat geklappt.": "Passei! Até o estacionamento correu bem.",
   "Herzlichen Glückwunsch! Wann fährst du das erste Mal allein?": "Muitos parabéns! Quando é que conduzes sozinho pela primeira vez?",
   "Morgen früh. Ich bin jetzt schon nervös.": "Amanhã de manhã. Já estou nervoso agora.",
+
+  // ── Exams and revision: flashcards, mnemonics and the blackout (part230) ──
+  //
+  // Portuguese school slang carries this pack almost by itself. Cramming is
+  // marrar, the crib sheet is a cábula, failing is chumbar, and going blank in
+  // an exam is deu-me um branco — none of them need explaining to anyone who
+  // has sat in a Portuguese classroom. Where a fixed German phrase exists the
+  // Portuguese one is used instead of its parts: Nach der Prüfung ist vor der
+  // Prüfung is a rhythm, not a statement, so it becomes acabado um exame,
+  // começa o outro.
+  //
+  // Lernstoff is a matéria, the ordinary word for what a course covers, and
+  // auswendig lernen is decorar, one verb where German needs two words.
+  "die mündliche Prüfung": "a prova oral",
+  "spicken": "copiar",
+  "die Nachprüfung": "o exame de recurso",
+  "die Lerngruppe": "o grupo de estudo",
+  "die Karteikarte": "o cartão de estudo",
+  "pauken": "marrar",
+  "der Spickzettel": "a cábula",
+  "die Klausur": "o teste escrito",
+  "das Referat": "a apresentação",
+  "auswendig lernen": "decorar",
+  "der Lernplan": "o plano de estudo",
+  "der Prüfling": "o examinando",
+  "durchziehen": "levar até ao fim",
+  "der Lernstoff": "a matéria",
+  "In zwei Wochen schreibe ich die Klausur.": "Daqui a duas semanas tenho o teste.",
+  "Der Lernstoff ist ein halbes Buch.": "A matéria é meio livro.",
+  "Ohne Lernplan verzettele ich mich.": "Sem um plano de estudo, disperso-me.",
+  "Jeden Tag ein Kapitel, dann geht es sich aus.": "Um capítulo por dia e dá tempo.",
+  "Ich lerne am besten morgens, da ist der Kopf frisch.": "Estudo melhor de manhã, tenho a cabeça fresca.",
+  "Den Plan ziehe ich diesmal wirklich durch.": "Desta vez levo o plano até ao fim, a sério.",
+  "Karteikarten funktionieren bei mir am besten.": "Comigo, o que resulta melhor são os cartões.",
+  "Vorne die Frage, hinten die Antwort — simpel und gut.": "À frente a pergunta, atrás a resposta — simples e eficaz.",
+  "Vokabeln pauke ich in der Bahn.": "Marro vocabulário no comboio.",
+  "Wir haben eine Lerngruppe gegründet, zu dritt.": "Formámos um grupo de estudo, os três.",
+  "In der Lerngruppe erklärt jeder mal — Erklären ist das beste Lernen.": "No grupo, cada um explica a sua parte — explicar é a melhor maneira de aprender.",
+  "Für die Jahreszahlen habe ich eine Eselsbrücke.": "Para as datas tenho uma mnemónica.",
+  "Eselsbrücken sind albern und genau deshalb unvergesslich.": "As mnemónicas são parvas e é exatamente por isso que não se esquecem.",
+  "Auswendig lernen reicht nicht, verstehen muss man es.": "Decorar não chega, é preciso perceber.",
+  "Kurz vor der Prüfung lerne ich nichts Neues mehr.": "Mesmo antes do exame já não estudo nada de novo.",
+  "Am Abend vorher: früh schlafen statt durchmachen.": "Na véspera: dormir cedo em vez de passar a noite em claro.",
+  "Ein Spickzettel schreiben hilft — auch wenn du ihn nie benutzt.": "Escrever uma cábula ajuda — mesmo que nunca a uses.",
+  "Spicken lohnt sich nicht, das Risiko ist zu groß.": "Copiar não compensa, o risco é demasiado grande.",
+  "Wer spickt und erwischt wird, fällt sofort durch.": "Quem copia e é apanhado chumba logo.",
+  "Beim Referat morgen bin ich als Erster dran.": "Na apresentação de amanhã sou o primeiro a ir.",
+  "In der mündlichen Prüfung darfst du laut denken.": "Na prova oral podes pensar em voz alta.",
+  "Bei der mündlichen Prüfung sitzt man zu dritt am Tisch.": "Na prova oral ficam três à volta da mesa.",
+  "Mein Kopf war plötzlich komplett leer — Blackout.": "De repente a cabeça ficou vazia — um branco total.",
+  "Einmal tief Luft holen, dann kam alles zurück.": "Respirei fundo e voltou tudo.",
+  "Prüfungsangst haben fast alle, man sieht es nur nicht.": "Quase toda a gente fica nervosa nos exames, só que não se nota.",
+  "Nach der Prüfung ist vor der Prüfung — leider.": "Acabado um exame, começa o outro — infelizmente.",
+  "Die Nachprüfung ist im September, bis dahin sitzt der Stoff.": "O exame de recurso é em setembro; até lá a matéria já está sabida.",
+  "Bestanden ist bestanden — die Note vergisst man.": "Passar é passar — a nota esquece-se.",
+  "Klausur in zwei Wochen. Lerngruppe?": "Teste daqui a duas semanas. Grupo de estudo?",
+  "Bin dabei. Dienstag und Donnerstag?": "Alinho. Terça e quinta?",
+  "Passt. Jeder bereitet ein Thema vor.": "Feito. Cada um prepara um tema.",
+  "Und wer erklärt, lernt am meisten — abgemacht.": "E quem explica é quem mais aprende — combinado.",
+  "Und, wie lief die Mündliche?": "Então, como correu a oral?",
+  "Erst Blackout, dann lief es plötzlich.": "Primeiro deu-me um branco, depois começou a fluir.",
+  "Was hat geholfen?": "O que é que ajudou?",
+  "Der Prüfer hat gelächelt und die Frage anders gestellt.": "O examinador sorriu e fez a pergunta de outra maneira.",
+
+  // ── Airing and heating: the German science of indoor climate (part231) ──
+  //
+  // The hardest word here is auf Kipp, because the window it describes is a
+  // German fitting. Portugal knows it as the oscilo-batente, and the tilted
+  // position is a báscula, so em báscula is what a Portuguese person standing
+  // in front of one would say. The rest follows: a radiator is purged rather
+  // than bled, mould is bolor and a wall ganha bolor, and the rooms of a flat
+  // are divisões.
+  //
+  // Hier zieht es wie Hechtsuppe is a joke about a draught, not a sentence
+  // about soup, so it is rebuilt on the Portuguese pattern that does the same
+  // job — de rachar, the intensifier Portuguese already keeps for weather. A
+  // hand's width becomes um palmo, the measure Portuguese shows with its hand.
+  "der Schimmel": "o bolor",
+  "die Zugluft": "a corrente de ar",
+  "der Durchzug": "a ventilação cruzada",
+  "auf Kipp": "em báscula",
+  "die Luftfeuchtigkeit": "a humidade do ar",
+  "die Heizperiode": "o período de aquecimento",
+  "das Hygrometer": "o higrómetro",
+  "auskühlen": "arrefecer por completo",
+  "das Kondenswasser": "a condensação",
+  "entlüften": "purgar",
+  "der Heizkörper": "o radiador",
+  "das Raumklima": "o ambiente interior",
+  "die Stoßlüftung": "o arejamento rápido",
+  "schimmeln": "ganhar bolor",
+  "gluckern": "gorgolejar",
+  "Morgens wird zuerst einmal quergelüftet.": "De manhã, a primeira coisa é abrir as janelas dos dois lados da casa.",
+  "Fünf Minuten Durchzug bringen mehr als den ganzen Tag auf Kipp.": "Cinco minutos de ventilação cruzada valem mais do que o dia inteiro em báscula.",
+  "Das Fenster auf Kipp lüftet kaum und kühlt nur die Wand aus.": "A janela em báscula quase não areja e só arrefece a parede.",
+  "Beim Stoßlüften Fenster ganz auf und Heizung aus.": "No arejamento rápido, janelas escancaradas e aquecimento desligado.",
+  "Dreimal am Tag lüften — so steht es im Mietvertrag.": "Arejar três vezes por dia — está no contrato de arrendamento.",
+  "Nach dem Duschen sofort lüften, sonst schlägt sich alles nieder.": "Depois do banho, arejar logo, senão fica tudo embaciado.",
+  "Am Fenster sammelt sich morgens Kondenswasser.": "De manhã junta-se condensação no vidro da janela.",
+  "Kondenswasser am Glas heißt: Zeit zu lüften.": "Condensação no vidro quer dizer: está na hora de arejar.",
+  "Hier zieht es wie Hechtsuppe.": "Aqui dentro entra uma corrente de ar de rachar.",
+  "Zugluft mag hier niemand — der Rücken erst recht nicht.": "Ninguém aqui gosta de correntes de ar — as costas muito menos.",
+  "Die Heizperiode geht offiziell von Oktober bis April.": "O período de aquecimento vai oficialmente de outubro a abril.",
+  "Der Heizkörper gluckert die ganze Nacht.": "O radiador gorgoleja a noite toda.",
+  "Wenn die Heizung gluckert, muss sie entlüftet werden.": "Se o aquecimento gorgoleja, é preciso purgá-lo.",
+  "Zum Entlüften brauchst du den kleinen Vierkantschlüssel.": "Para purgar precisas da chavezinha quadrada.",
+  "Unten am Heizkörper wird es einfach nicht warm.": "A parte de baixo do radiador não aquece de maneira nenhuma.",
+  "Dreh das Thermostat auf drei, das reicht völlig.": "Põe o termóstato no três, chega perfeitamente.",
+  "Stufe fünf heizt nicht schneller, nur teurer.": "O cinco não aquece mais depressa, só mais caro.",
+  "Lass die Räume nie ganz auskühlen, das kostet am Ende mehr.": "Nunca deixes as divisões arrefecer por completo, ao fim e ao cabo sai mais caro.",
+  "Die Schlafzimmertür bleibt zu, sonst zieht die Feuchtigkeit durch.": "A porta do quarto fica fechada, senão a humidade passa para lá.",
+  "Hinterm Schrank an der Außenwand schimmelt es zuerst.": "Atrás do armário, na parede exterior, é onde ganha bolor primeiro.",
+  "Stell die Möbel eine Handbreit von der Außenwand weg.": "Afasta os móveis um palmo da parede exterior.",
+  "In der Ecke oben ist ein grauer Fleck — das sieht nach Schimmel aus.": "Há uma mancha cinzenta no canto de cima — aquilo parece bolor.",
+  "Schimmel meldest du sofort dem Vermieter.": "O bolor comunica-se logo ao senhorio.",
+  "Gegen Schimmel hilft nur: heizen und lüften, beides.": "Contra o bolor só há uma coisa: aquecer e arejar, as duas.",
+  "Das Hygrometer zeigt sechzig Prozent — zu feucht.": "O higrómetro marca sessenta por cento — húmido de mais.",
+  "Ideal sind vierzig bis sechzig Prozent Luftfeuchtigkeit.": "O ideal são quarenta a sessenta por cento de humidade.",
+  "Im Winter ist die Luft vom Heizen oft zu trocken.": "No inverno, o aquecimento deixa muitas vezes o ar seco de mais.",
+  "Über das Raumklima reden Deutsche wie andere übers Wetter.": "Os alemães falam do ambiente interior como os outros falam do tempo.",
+  "Warum ist es hier so kalt? Das Fenster ist ja ganz auf!": "Porque é que está tanto frio aqui? A janela está escancarada!",
+  "Stoßlüften. Fünf Minuten, dann ist es vorbei.": "Arejamento rápido. Cinco minutos e já está.",
+  "Und das bringt was?": "E isso serve de alguma coisa?",
+  "Frische Luft rein, Feuchtigkeit raus — glaub mir, das ist Wissenschaft.": "Ar fresco para dentro, humidade para fora — acredita, isto é ciência.",
+  "Die Heizung gluckert schon wieder.": "O aquecimento está outra vez a gorgolejar.",
+  "Dann ist Luft drin. Wo ist der Entlüftungsschlüssel?": "Então tem ar. Onde está a chave de purga?",
+  "In der Schublade mit dem ganzen Kleinkram.": "Na gaveta das tralhas.",
+  "Halt den Becher drunter, es kommt immer etwas Wasser.": "Põe a caneca por baixo, sai sempre um bocado de água.",
+
+  // ── Classified ads: is that still available? (part232) ──────────────────
+  //
+  // VB stays VB. It is four letters printed in German ads, and a Portuguese
+  // speaker reading one needs to recognise it, not to have it replaced — so
+  // the card teaches the abbreviation and the sentence around it says what it
+  // means. The trade itself is ordinary Portuguese classified language:
+  // preço pretendido, entrega em mão, portes por conta do comprador.
+  //
+  // Ist das noch da? is the running joke of the pack, the message every seller
+  // gets first. Portuguese has its own: ainda está disponível? Same words
+  // typed by the same thousands of people, so it is used verbatim both times.
+  "die Kleinanzeige": "o anúncio classificado",
+  "die Abholung": "o levantamento",
+  "der Versand": "o envio",
+  "VB": "negociável",
+  "zu verschenken": "dou de graça",
+  "der Selbstabholer": "quem vem buscar",
+  "das Inserat": "o anúncio",
+  "einstellen": "publicar",
+  "der Zustand": "o estado",
+  "wie neu": "como novo",
+  "der Interessent": "o interessado",
+  "anschreiben": "mandar mensagem",
+  "der Festpreis": "o preço fixo",
+  "die Preisvorstellung": "o preço pretendido",
+  "die Übergabe": "a entrega em mão",
+  "Ich stelle das Sofa heute bei Kleinanzeigen ein.": "Hoje ponho o sofá à venda nos classificados.",
+  "Mach gute Fotos, das ist die halbe Anzeige.": "Tira boas fotografias, é meio anúncio feito.",
+  "Schreib den Zustand ehrlich dazu.": "Descreve o estado com honestidade.",
+  "Der Zustand ist gebraucht, aber gepflegt.": "Está usado, mas bem tratado.",
+  "Fast wie neu, nur zweimal getragen.": "Quase como novo, só usado duas vezes.",
+  "Fünfzig Euro VB — das heißt: Verhandlungsbasis.": "Cinquenta euros VB — quer dizer: negociável.",
+  "Festpreis bedeutet: Handeln zwecklos.": "Preço fixo quer dizer: não vale a pena regatear.",
+  "Zu verschenken gegen Selbstabholung.": "Dou de graça a quem vier buscar.",
+  "Die Rubrik Zu verschenken ist eine Goldgrube.": "A secção das ofertas é uma mina de ouro.",
+  "Nach drei Wochen habe ich den Preis gesenkt.": "Ao fim de três semanas baixei o preço.",
+  "Ist das noch da?": "Ainda está disponível?",
+  "Auf jede Anzeige kommt zuerst: Ist das noch da?": "A primeira mensagem em qualquer anúncio é sempre: ainda está disponível?",
+  "Wäre Versand möglich? — Nur Abholung, sorry.": "Seria possível enviar? — Só levantamento em mão, desculpe.",
+  "Versand geht, Käufer zahlt das Porto.": "Envio é possível, os portes ficam por conta do comprador.",
+  "Kannst du es bis Samstag reservieren?": "Podes reservar até sábado?",
+  "Viele fragen an, wenige kommen wirklich.": "Perguntam muitos, aparecem poucos.",
+  "Der Interessent hat kurz vorher abgesagt — klassisch.": "O interessado desmarcou mesmo à última hora — o costume.",
+  "Anschauen kostet nichts.": "Ver não custa nada.",
+  "Was ist Ihre Preisvorstellung?": "Qual é o preço pretendido?",
+  "Ich biete dreißig, mehr habe ich nicht.": "Ofereço trinta, mais do que isso não tenho.",
+  "Bei VB kannst du ruhig etwas weniger bieten.": "Se diz VB, podes oferecer um pouco menos à vontade.",
+  "Treffen wir uns bei vierzig?": "Ficamos nos quarenta?",
+  "Der Erste, der abholt, bekommt es.": "É de quem vier buscar primeiro.",
+  "Schreib mir deine Handynummer für die Übergabe.": "Manda-me o teu número de telemóvel para a entrega.",
+  "Die Übergabe machen wir an der Haustür.": "A entrega fazemos à porta de casa.",
+  "Nur Bares bei der Abholung, bitte.": "Só dinheiro no levantamento, se faz favor.",
+  "Er hat es sich angeschaut und sofort mitgenommen.": "Viu aquilo e levou logo.",
+  "Weg ist weg — und der Keller ist endlich leer.": "O que saiu, saiu — e a cave está finalmente vazia.",
+  "Hallo, ist das Sofa noch da?": "Olá, o sofá ainda está disponível?",
+  "Ja, ist noch zu haben.": "Sim, ainda está.",
+  "Würden Sie auch vierzig nehmen? Ich könnte heute noch kommen.": "Aceitaria quarenta? Ainda podia passar por aí hoje.",
+  "Bei Abholung heute: ja.": "Se vier buscar hoje: sim.",
+  "Sie kommen wegen des Regals? Es steht schon im Flur.": "Vem por causa da estante? Já está no corredor.",
+  "Perfekt. Passt es ins Auto?": "Perfeito. Cabe no carro?",
+  "Zur Not nehmen wir die Bretter einzeln raus.": "Se for preciso, tiramos as prateleiras uma a uma.",
+  "Hier sind dreißig — bar, wie besprochen.": "Aqui estão trinta — em dinheiro, como combinado.",
+
+  // ── At the butcher's: cold cuts, half and half, a slice for the child (part233) ──
+  //
+  // A German Pfund is half a kilo and nothing else, so it is meio quilo. Nobody
+  // in Portugal weighs meat in pounds, and a card that taught them to would be
+  // teaching a unit that does not exist at the counter.
+  //
+  // Leberkäse keeps its name, because the card IS the name: it has neither
+  // liver nor cheese, and the joke needs the German word to be in the sentence.
+  // Buletten and Fleischpflanzerl stay for the same reason — that card is about
+  // which German region calls a rissole what.
+  //
+  // Durchwachsen lands exactly on entremeado, the word a Portuguese butcher
+  // already uses for marbled meat, and und das ist gut so becomes e ainda bem,
+  // which is where Portuguese puts that shrug.
+  "der Metzger": "o talhante",
+  "die Fleischtheke": "o balcão da carne",
+  "der Aufschnitt": "as carnes frias",
+  "das Hackfleisch": "a carne picada",
+  "die Scheibe": "a fatia",
+  "die Leberwurst": "o patê de fígado",
+  "das Pfund": "o meio quilo",
+  "der Schinken": "o fiambre",
+  "die Frikadelle": "a almôndega",
+  "hauchdünn": "finíssimo",
+  "durchwachsen": "entremeado",
+  "das Grillgut": "a carne para grelhar",
+  "der Braten": "o assado",
+  "Beim Metzger ist samstags immer Schlange.": "Ao sábado há sempre fila no talho.",
+  "Wer ist dran? — Ich, die Nummer siebzehn.": "Quem se segue? — Eu, a senha dezassete.",
+  "Was darf es sein? — Zweihundert Gramm Aufschnitt, gemischt.": "Que vai ser? — Duzentos gramas de carnes frias, sortidas.",
+  "Den Schinken bitte hauchdünn geschnitten.": "O fiambre bem fininho, se faz favor.",
+  "Etwas dicker geschnitten, zum Braten.": "Um pouco mais grosso, para fritar.",
+  "Ein Pfund Hackfleisch, halb und halb.": "Meio quilo de carne picada, metade e metade.",
+  "Halb und halb heißt: Schwein und Rind.": "Metade e metade quer dizer: porco e vaca.",
+  "Darf es etwas mehr sein? — Ja, passt schon.": "Pode ir um pouco mais? — Pode, está bem assim.",
+  "Es ist etwas mehr geworden — darf ich es drauflassen?": "Ficou um pouco mais — deixo ficar?",
+  "Für die Kleine gibt es eine Scheibe Wurst auf die Hand.": "Para a pequenina há sempre uma fatia de fiambre para comer ali mesmo.",
+  "Was ist heute im Angebot? — Das Kotelett.": "O que é que está em promoção hoje? — A costeleta.",
+  "Pack mir bitte vier Bratwürste dazu.": "Ponha-me também quatro salsichas frescas, se faz favor.",
+  "Die Leberwurst ist hausgemacht.": "O patê de fígado é caseiro.",
+  "Grobe oder feine Leberwurst? — Die grobe, bitte.": "Patê de fígado grosso ou fino? — O grosso, se faz favor.",
+  "Der Leberkäse hat weder Leber noch Käse.": "O Leberkäse não leva fígado nem queijo.",
+  "Eine Scheibe Leberkäse im Brötchen, zum Mitnehmen.": "Uma fatia de Leberkäse no pão, para levar.",
+  "Die Frikadellen heißen hier Buletten, dort Fleischpflanzerl.": "As almôndegas aqui chamam-se Buletten, ali Fleischpflanzerl.",
+  "Ist das Fleisch aus der Region?": "A carne é da região?",
+  "Unser Rind kommt vom Hof nebenan.": "A nossa vaca vem da quinta aqui ao lado.",
+  "Schön durchwachsen, dann bleibt es saftig.": "Bem entremeada, assim fica suculenta.",
+  "Durchwachsen heißt beim Fleisch: mit Fett — und das ist gut so.": "Entremeada, na carne, quer dizer: com gordura — e ainda bem.",
+  "Fürs Wochenende brauchen wir Grillgut für sechs Leute.": "Para o fim de semana precisamos de carne para grelhar para seis pessoas.",
+  "Der Braten reicht locker für die ganze Familie.": "O assado chega e sobra para a família toda.",
+  "Den Braten binde ich Ihnen fertig zum Schmoren.": "Ato-lhe o assado já pronto para estufar.",
+  "Beim Metzger bekommst du Beratung gratis dazu.": "No talho os conselhos vêm de borla.",
+  "Wie brate ich das am besten? — Kurz und heiß, dann ruhen lassen.": "Qual é a melhor maneira de fritar isto? — Lume forte, pouco tempo, e depois deixar repousar.",
+  "Der Aufschnitt hält im Kühlschrank drei, vier Tage.": "As carnes frias aguentam três, quatro dias no frigorífico.",
+  "Eingepackt in Papier, nicht in Plastik — schmeckt länger frisch.": "Embrulhado em papel, não em plástico — sabe a fresco durante mais tempo.",
+  "Was darf es sein?": "Que vai ser?",
+  "Zweihundert Gramm Aufschnitt und vier Frikadellen.": "Duzentos gramas de carnes frias e quatro almôndegas.",
+  "Es ist ein bisschen mehr — darf ich es drauflassen?": "Ficou um bocadinho mais — deixo ficar?",
+  "Klar. Und eine Scheibe für die Kleine hier.": "Claro. E uma fatia para a pequenina aqui.",
+  "Wir grillen morgen für acht Leute.": "Amanhã fazemos grelhados para oito pessoas.",
+  "Dann empfehle ich gemischtes Grillgut und ein paar Bratwürste extra.": "Então recomendo carne sortida para grelhar e mais umas salsichas frescas.",
+  "Das Fleisch ist von hier?": "A carne é daqui?",
+  "Vom Hof nebenan — wie immer.": "Da quinta aqui ao lado — como sempre.",
+
+  // ── At the zoo: feeding time, the petting farm and the wise sloth (part234) ──
+  //
+  // Streichelzoo is a quinta pedagógica, which is the thing itself in Portugal
+  // — the corner of the park with goats and a fat pig, where school groups go.
+  // Streicheln is fazer festas, what Portuguese does to an animal with its
+  // hands, and hochheben is pôr ao colo, so the rule on the sign comes out as
+  // festas sim, ao colo não.
+  //
+  // Das Faultier hat das Leben verstanden only works because a preguiça is
+  // both the animal and the vice. Portuguese keeps the joke for free, and the
+  // é que carries the weight German got from putting das Leben first.
+  "das Gehege": "o recinto",
+  "der Streichelzoo": "a quinta pedagógica",
+  "das Faultier": "a preguiça",
+  "der Pinguin": "o pinguim",
+  "die Fütterung": "a hora da alimentação",
+  "das Erdmännchen": "a suricata",
+  "der Tierpfleger": "o tratador",
+  "die Jahreskarte": "o passe anual",
+  "das Aquarium": "o aquário",
+  "die Robbe": "a foca",
+  "streicheln": "fazer festas",
+  "der Tierpark": "o parque zoológico",
+  "die Ziege": "a cabra",
+  "das Futter": "a ração",
+  "das Jungtier": "a cria",
+  "Mit der Jahreskarte lohnt sich der Zoo ab dem dritten Besuch.": "Com o passe anual, o zoo começa a compensar à terceira visita.",
+  "Wir haben eine Jahreskarte — wir gehen fast jeden Sonntag.": "Temos passe anual — vamos quase todos os domingos.",
+  "Der Tierpark ist größer, als er aussieht.": "O parque zoológico é maior do que parece.",
+  "Nimm bequeme Schuhe mit, wir laufen Kilometer.": "Leva sapatos confortáveis, vamos andar quilómetros.",
+  "Um elf ist Fütterung bei den Pinguinen.": "Às onze é a alimentação dos pinguins.",
+  "Die Fütterung ist das Highlight — da sind alle Tiere wach.": "A alimentação é o melhor de tudo — é quando os animais estão todos acordados.",
+  "Der Tierpfleger erklärt nebenbei, was die Tiere fressen.": "O tratador vai explicando o que é que os animais comem.",
+  "Die Pinguine watscheln wie kleine Kellner.": "Os pinguins gingam como pequenos empregados de mesa.",
+  "Das Faultier hängt seit Stunden am selben Ast.": "A preguiça está há horas pendurada no mesmo ramo.",
+  "Das Faultier hat das Leben verstanden.": "A preguiça é que percebeu a vida.",
+  "Die Erdmännchen stehen Wache, immer abwechselnd.": "As suricatas ficam de sentinela, sempre à vez.",
+  "Vor dem Erdmännchen-Gehege könnte ich ewig stehen.": "Ficava uma eternidade à frente do recinto das suricatas.",
+  "Bei den Robben ist gerade Training mit dem Pfleger.": "As focas estão agora a treinar com o tratador.",
+  "Im Aquarium ist es dunkel und wunderbar ruhig.": "No aquário está escuro e maravilhosamente sossegado.",
+  "Nicht ans Glas klopfen, das stresst die Fische.": "Não bater no vidro — isso põe os peixes nervosos.",
+  "Es gibt Nachwuchs bei den Elefanten.": "Há uma cria nova nos elefantes.",
+  "Das Jungtier bleibt noch bei der Mutter.": "A cria ainda fica com a mãe.",
+  "Vor dem Gehege steht eine Tafel mit allen Namen.": "À frente do recinto há um painel com todos os nomes.",
+  "Die Tiere bitte nicht füttern — auch nicht mit Brot.": "É favor não dar de comer aos animais — nem sequer pão.",
+  "Das Futter für den Streichelzoo gibt es am Automaten.": "A ração para a quinta pedagógica sai da máquina.",
+  "Eine Handvoll Futter kostet fünfzig Cent.": "Uma mão-cheia de ração custa cinquenta cêntimos.",
+  "Im Streichelzoo sind Ziegen, Schafe und ein dickes Schwein.": "Na quinta pedagógica há cabras, ovelhas e um porco bem gordo.",
+  "Die Ziege frisst mir aus der Hand!": "A cabra está a comer-me da mão!",
+  "Streicheln ja, hochheben nein.": "Festas sim, ao colo não.",
+  "Nach dem Streichelzoo: Hände waschen, ohne Diskussion.": "Depois da quinta pedagógica: lavar as mãos, sem discussão.",
+  "Mein Lieblingstier bleibt das Faultier — aus Prinzip.": "O meu animal preferido continua a ser a preguiça — por princípio.",
+  "Zum Schluss noch einmal zu den Pinguinen, wie immer.": "No fim, mais uma vez aos pinguins, como sempre.",
+  "Auf dem Heimweg schlafen die Kinder sofort ein.": "No caminho de volta os miúdos adormecem logo.",
+  "Erst Pinguine oder erst Erdmännchen?": "Primeiro os pinguins ou primeiro as suricatas?",
+  "Um elf ist Pinguin-Fütterung — also erst dorthin.": "Às onze é a alimentação dos pinguins — portanto primeiro para lá.",
+  "Und danach ins Aquarium, da ist es ruhig.": "E depois ao aquário, que ali é sossegado.",
+  "Und zum Schluss Streichelzoo, sonst gibt es Tränen.": "E a quinta pedagógica no fim, senão há choro.",
+  "Weil du das ganze Futter auf einmal hergibst.": "É porque lhe dás a ração toda de uma vez.",
+  "Sie schaut mich so an!": "Ela olha para mim daquela maneira!",
+  "Gleich Hände waschen, dann gibt es Eis.": "Já a seguir lavar as mãos, e depois há gelado.",
+
+  // ── Carnival: the fifth season, the floats and Ash Wednesday (part235) ──
+  //
+  // Portugal has its own Carnaval, so most of this lands on words that were
+  // already waiting: o folião, o carro alegórico, o disfarce, a Quarta-Feira
+  // de Cinzas, a Quaresma. Even the doughnut has a Portuguese name that gives
+  // the joke away — a bola de Berlim.
+  //
+  // What stays German is what is only said in one place. Alaaf and Helau are
+  // shouted, not translated, and the card is precisely about not mixing them
+  // up; Fasching and Weiberfastnacht name German days with no Portuguese
+  // twin; and Krapfen, Berliner, Pfannkuchen stay side by side, because that
+  // card is about which German region says which. Rosenmontag is different —
+  // it is Carnival Monday and nothing more, so it becomes the Portuguese day.
+  "das Kostüm": "o disfarce",
+  "sich verkleiden": "disfarçar-se",
+  "die Kamelle": "os rebuçados do cortejo",
+  "der Krapfen": "a bola de Berlim",
+  "der Rosenmontag": "a segunda-feira de Carnaval",
+  "das Konfetti": "os confetis",
+  "der Narr": "o folião",
+  "Helau!": "Helau!",
+  "Alaaf!": "Alaaf!",
+  "die fünfte Jahreszeit": "a quinta estação do ano",
+  "der Fasching": "o Carnaval",
+  "schminken": "pintar a cara",
+  "der Aschermittwoch": "a Quarta-Feira de Cinzas",
+  "der Berliner": "a bola de Berlim",
+  "der Festwagen": "o carro alegórico",
+  "Karneval heißt hier die fünfte Jahreszeit.": "Aqui o Carnaval chama-se a quinta estação do ano.",
+  "Am elften Elften um elf Uhr elf geht es los.": "Começa a onze do onze, às onze e onze.",
+  "In Köln ruft man Alaaf, in Düsseldorf Helau.": "Em Colónia grita-se Alaaf, em Düsseldorf Helau.",
+  "Ruf bloß nicht das falsche — die nehmen das ernst.": "Não vás gritar o que não é — eles levam isso a sério.",
+  "Im Rheinland steht die Stadt an Rosenmontag still.": "Na Renânia, a cidade pára na segunda-feira de Carnaval.",
+  "Rosenmontag ist hier inoffiziell frei.": "Aqui a segunda-feira de Carnaval é feriado não oficial.",
+  "In Bayern heißt das Ganze Fasching.": "Na Baviera, a isto tudo chama-se Fasching.",
+  "Und, als was verkleidest du dich dieses Jahr?": "Então, de que é que te vais disfarçar este ano?",
+  "Ich gehe als Pirat, wie jedes zweite Jahr.": "Vou de pirata, como de dois em dois anos.",
+  "Hauptsache verkleidet — was, ist fast egal.": "O que interessa é ir disfarçado — de quê é quase indiferente.",
+  "Das Kostüm ist selbst genäht, aus alten Vorhängen.": "O disfarce é feito em casa, com cortinas velhas.",
+  "Schmink mir bitte eine Katzennase.": "Pinta-me um nariz de gato, se faz favor.",
+  "Nach dem Schminken nicht mehr ins Gesicht fassen.": "Depois da pintura, não se mexe mais na cara.",
+  "Die Kinder verkleiden sich schon eine Woche vorher.": "Os miúdos andam disfarçados uma semana antes.",
+  "Beim Umzug werfen sie Kamelle von den Wagen.": "No cortejo atiram rebuçados dos carros.",
+  "Kamelle! — ruft man, und dann regnet es Bonbons.": "Kamelle! — grita-se, e depois chovem rebuçados.",
+  "Die besten Plätze am Zugweg sind ab acht besetzt.": "Os melhores lugares no percurso do cortejo estão ocupados a partir das oito.",
+  "Vom Festwagen winken die Narren in Kostümen.": "Do carro alegórico, os foliões acenam nos seus disfarces.",
+  "Konfetti findest du noch Wochen später in der Jacke.": "Ainda semanas depois encontras confetis no casaco.",
+  "Nach dem Umzug sieht die Straße aus wie ein Schlachtfeld aus Papier.": "Depois do cortejo, a rua fica um campo de batalha de papel.",
+  "Die Musik bleibt tagelang im Ohr.": "A música fica-te no ouvido durante dias.",
+  "An Weiberfastnacht werden Krawatten abgeschnitten.": "Na Weiberfastnacht cortam-se as gravatas.",
+  "Bring an dem Tag besser keine teure Krawatte mit.": "Nesse dia é melhor não levares gravata cara.",
+  "Krapfen, Berliner oder Pfannkuchen — je nachdem, wo du bist.": "Krapfen, Berliner ou Pfannkuchen — conforme o sítio onde estás.",
+  "Der Krapfen mit Senf ist der klassische Streich.": "A bola de Berlim com mostarda é a partida do costume.",
+  "Am Aschermittwoch ist alles vorbei.": "Na Quarta-Feira de Cinzas acabou tudo.",
+  "Nach Aschermittwoch beginnt die Fastenzeit.": "Depois da Quarta-Feira de Cinzas começa a Quaresma.",
+  "Entweder man liebt Karneval, oder man flieht vor ihm.": "Ou se adora o Carnaval, ou se foge dele.",
+  "Als was gehst du dieses Jahr?": "De que é que vais este ano?",
+  "Als Faultier. Das Kostüm ist ein Schlafanzug.": "De preguiça. O disfarce é um pijama.",
+  "Genial. Ich schminke mir wieder die Katzennase.": "Genial. Eu volto a pintar o nariz de gato.",
+  "Dann sehen wir uns am Zugweg — elf Uhr elf!": "Então vemo-nos no percurso do cortejo — às onze e onze!",
+  "Kamelle! Hierher!": "Kamelle! Para aqui!",
+  "Du bist schlimmer als die Kinder.": "Estás pior do que os miúdos.",
+  "Ich habe schon eine halbe Tüte voll!": "Já tenho meio saco cheio!",
+  "Teil mit mir, dann sage ich nichts.": "Divide comigo e eu não digo nada.",
+
+  // ── Superstition: touch wood, the chimney sweep and the toast (part236) ──
+  //
+  // Portuguese is as superstitious as German and mostly in the same places, so
+  // most of this transfers whole: bater na madeira, sete anos de azar, o gato
+  // preto. Where the gesture differs the Portuguese one wins — die Daumen
+  // drücken is a thumb inside a fist, and Portuguese crosses two fingers
+  // instead, so it is fazer figas. Toi, toi, toi is a charm, not a sentence,
+  // and the Portuguese charm against the same thing is cruzes canhoto.
+  //
+  // Polterabend keeps its name: it is a specific German evening with no
+  // Portuguese twin, and the card is explaining what happens at it. Hals- und
+  // Beinbruch keeps its name too, and the Portuguese half says what it
+  // literally wishes on you, because that is the whole point of the card.
+  "der Aberglaube": "a superstição",
+  "der Glücksbringer": "o amuleto",
+  "auf Holz klopfen": "bater na madeira",
+  "der Schornsteinfeger": "o limpa-chaminés",
+  "die schwarze Katze": "o gato preto",
+  "Freitag, der Dreizehnte": "a sexta-feira treze",
+  "der Glückspilz": "o felizardo",
+  "das Kleeblatt": "a folha de trevo",
+  "die Scherbe": "o caco",
+  "das Hufeisen": "a ferradura",
+  "der Pechvogel": "o azarado",
+  "die Sternschnuppe": "a estrela cadente",
+  "das Marzipanschwein": "o porquinho de maçapão",
+  "verschreien": "estragar a sorte",
+  "abergläubisch": "supersticioso",
+  "Bist du abergläubisch? — Nein. Aber ich klopfe auf Holz.": "És supersticioso? — Não. Mas bato na madeira.",
+  "Klopf auf Holz, wenn du das sagst.": "Bate na madeira quando dizes isso.",
+  "Bisher lief alles gut — toi, toi, toi.": "Até agora correu tudo bem — cruzes canhoto.",
+  "Ein vierblättriges Kleeblatt findet man nie, wenn man sucht.": "Um trevo de quatro folhas nunca se encontra quando se anda à procura.",
+  "Zum Neujahr schenkt man Marzipanschweine und Kleeblätter.": "No Ano Novo oferecem-se porquinhos de maçapão e trevos.",
+  "Der Schornsteinfeger bringt Glück — fass den Knopf an!": "O limpa-chaminés dá sorte — toca-lhe no botão!",
+  "Ein Schornsteinfeger auf der Straße macht allen den Tag.": "Um limpa-chaminés na rua faz o dia a toda a gente.",
+  "Ein Hufeisen über der Tür — mit der Öffnung nach oben.": "Uma ferradura por cima da porta — com a abertura para cima.",
+  "Sonst fällt das Glück raus, heißt es.": "Senão a sorte cai de lá, dizem.",
+  "Bei einer Sternschnuppe wünsch dir was — aber sag es nicht laut.": "Quando vires uma estrela cadente, pede um desejo — mas não o digas em voz alta.",
+  "Verrätst du den Wunsch, geht er nicht in Erfüllung.": "Se contas o desejo, ele não se realiza.",
+  "Sie ist ein echter Glückspilz — schon wieder gewonnen.": "Ela é mesmo uma felizarda — ganhou outra vez.",
+  "Ich bin heute ein Pechvogel: Bus weg, Schlüssel drin, Regen.": "Hoje sou um azarado: perdi o autocarro, deixei as chaves lá dentro, e chuva.",
+  "Scherben bringen Glück — sagt man nach dem Klirren.": "Cacos dão sorte — diz-se sempre depois do estrondo.",
+  "Beim Polterabend werden absichtlich Teller zerschlagen.": "Na Polterabend partem-se pratos de propósito.",
+  "Freitag, der Dreizehnte — heute bleibe ich einfach vorsichtig.": "Sexta-feira treze — hoje ando só com cuidado.",
+  "Eine schwarze Katze von links — jetzt wird es ernst.": "Um gato preto pela esquerda — agora é que é.",
+  "Die Katze weiß nichts von unserem Aberglauben.": "O gato não sabe nada das nossas superstições.",
+  "Nicht verschreien! Es läuft gerade so gut.": "Não digas isso alto! Está a correr tão bem.",
+  "Kaum hast du es gelobt, geht es kaputt — verschrien.": "Mal o elogias, avaria-se — lá estragaste a sorte.",
+  "Ich drücke dir die Daumen, doppelt.": "Faço figas por ti, com as duas mãos.",
+  "Zum Geburtstag gratuliert man nie im Voraus.": "Nunca se dão os parabéns antes do dia.",
+  "Vorgezogene Glückwünsche bringen Unglück, sagt meine Oma.": "Parabéns adiantados dão azar, diz a minha avó.",
+  "Im Theater sagt man Hals- und Beinbruch.": "No teatro deseja-se Hals- und Beinbruch — partir o pescoço e a perna.",
+  "Anstoßen immer mit Blickkontakt — sonst sieben Jahre Pech.": "Brindar sempre a olhar nos olhos — senão são sete anos de azar.",
+  "Beim Anstoßen niemals über Kreuz.": "Ao brindar, nunca com os braços cruzados.",
+  "Alles Aberglaube — aber warum das Risiko eingehen?": "É tudo superstição — mas para quê arriscar?",
+  "Jeder hat einen kleinen Glücksbringer irgendwo.": "Toda a gente tem um amuleto qualquer algures.",
+  "Ein Schornsteinfeger! Schnell, fass den Knopf an!": "Um limpa-chaminés! Depressa, toca-lhe no botão!",
+  "Du glaubst doch nicht an so was.": "Não me digas que acreditas nisso.",
+  "Nein. Aber schaden kann es nicht.": "Não. Mas mal não faz.",
+  "Das ist die deutscheste Antwort überhaupt.": "Essa é a resposta mais alemã que há.",
+  "Prost! — Halt, Blickkontakt!": "Saúde! — Espera, olha-me nos olhos!",
+  "Stimmt. Sonst sieben Jahre Pech.": "É verdade. Senão são sete anos de azar.",
+  "Und nicht über Kreuz anstoßen.": "E nada de brindar com os braços cruzados.",
+  "So viele Regeln für ein einziges Prost.": "Tantas regras para um simples brinde.",
+
+  // ── Letters and email: the salutation, the sign-off, the missing attachment (part237) ──
+  //
+  // The German formulas stay in German, all of them. Sehr geehrte Damen und
+  // Herren, Liebe Frau Weber, Mit freundlichen Grüßen — the pack is teaching
+  // which one to type and how much warmth each carries, and a line that
+  // replaced them with Exmos. Senhores would be teaching a different letter.
+  // The Portuguese is everything around them: what the formula does, where it
+  // goes, and that no comma follows it.
+  //
+  // The rest is ordinary Portuguese office language and it has a word for all
+  // of it: remetente, destinatário, ao cuidado de, em anexo, carta registada
+  // com aviso de receção. Venho por este meio is what hiermit sounds like in
+  // a Portuguese letter — the same stiffness, arrived at differently.
+  "das Einschreiben": "a carta registada",
+  "der Betreff": "o assunto",
+  "anbei": "em anexo",
+  "Sehr geehrte ...": "Exma. Senhora ...",
+  "Mit besten Grüßen": "Com os melhores cumprimentos",
+  "der Absender": "o remetente",
+  "der Empfänger": "o destinatário",
+  "die Anrede": "a fórmula de tratamento",
+  "die Grußformel": "a fórmula de despedida",
+  "förmlich": "formal",
+  "die Signatur": "a assinatura de e-mail",
+  "in Kopie": "em cópia",
+  "zu Händen": "ao cuidado de",
+  "die Rückmeldung": "a resposta",
+  "der Briefkopf": "o cabeçalho",
+  "Der Absender steht oben links, der Empfänger rechts darunter.": "O remetente vai em cima à esquerda, o destinatário por baixo à direita.",
+  "Der Betreff sagt in fünf Worten, worum es geht.": "O assunto diz em cinco palavras do que se trata.",
+  "Ohne Betreff wird eine Mail gern übersehen.": "Sem assunto, um e-mail passa facilmente despercebido.",
+  "Zu Händen Frau Weber — kurz: z. Hd.": "Ao cuidado da Senhora Weber — em alemão, z. Hd.",
+  "Die Anrede entscheidet den Ton des ganzen Briefes.": "A fórmula de tratamento decide o tom de toda a carta.",
+  "Sehr geehrte Damen und Herren — wenn du niemanden kennst.": "Sehr geehrte Damen und Herren — quando não conheces ninguém.",
+  "Sehr geehrte Frau Doktor Weber — Titel gehören in die Anrede.": "Sehr geehrte Frau Doktor Weber — os títulos vão na fórmula de tratamento.",
+  "Liebe Frau Weber passt, sobald man sich kennt.": "Liebe Frau Weber serve assim que já se conhecem.",
+  "Nach der Anrede geht es klein weiter — das vergessen viele.": "Depois da fórmula de tratamento continua-se com letra minúscula — muitos esquecem-se.",
+  "Mit freundlichen Grüßen bleibt der sichere Standard.": "Mit freundlichen Grüßen continua a ser a opção segura.",
+  "Mit besten Grüßen klingt einen Tick wärmer.": "Mit besten Grüßen soa um bocadinho mais caloroso.",
+  "Viele Grüße reicht unter Kollegen völlig.": "Entre colegas, Viele Grüße chega perfeitamente.",
+  "Die Grußformel ohne Komma davor — anders als im Englischen.": "A fórmula de despedida não leva vírgula antes — ao contrário do inglês.",
+  "Hiermit bestätige ich den Termin am Montag.": "Venho por este meio confirmar a marcação de segunda-feira.",
+  "Anbei sende ich Ihnen die Unterlagen.": "Envio em anexo os documentos.",
+  "Im Anhang finden Sie den Vertrag als PDF.": "Em anexo encontra o contrato em PDF.",
+  "Der Anhang fehlt — die berühmteste Mail-Panne der Welt.": "Falta o anexo — a gaffe de e-mail mais famosa do mundo.",
+  "Anbei die Datei — diesmal wirklich.": "Segue o ficheiro em anexo — desta vez a sério.",
+  "Ich setze meine Kollegin in Kopie.": "Ponho a minha colega em cópia.",
+  "Bitte antworten Sie nicht an alle.": "Não responda a todos, se faz favor.",
+  "Um kurze Rückmeldung bis Freitag wird gebeten.": "Agradece-se uma resposta breve até sexta-feira.",
+  "Ich melde mich bis Ende der Woche zurück.": "Dou notícias até ao fim da semana.",
+  "Die Signatur enthält Name, Firma und Telefonnummer.": "A assinatura leva o nome, a empresa e o número de telefone.",
+  "Förmlich beginnen, freundlich enden — so gewinnt man Briefe.": "Começar formal, acabar simpático — é assim que se ganham cartas.",
+  "Wichtige Briefe schickst du per Einschreiben.": "As cartas importantes mandam-se registadas.",
+  "Beim Einschreiben unterschreibt der Empfänger den Empfang.": "Na carta registada, o destinatário assina a receção.",
+  "Die Kündigung ging per Einschreiben mit Rückschein raus.": "A rescisão seguiu por carta registada com aviso de receção.",
+  "Ein handgeschriebener Brief fällt heute mehr auf als je.": "Hoje em dia uma carta escrita à mão dá mais nas vistas do que nunca.",
+  "Wie fange ich an? Ich kenne den Ansprechpartner nicht.": "Como é que começo? Não sei quem é a pessoa de contacto.",
+  "Dann: Sehr geehrte Damen und Herren.": "Então: Sehr geehrte Damen und Herren.",
+  "Und nach der Anrede groß oder klein?": "E depois da fórmula de tratamento, maiúscula ou minúscula?",
+  "Klein weiter — das ist die klassische Falle.": "Minúscula — essa é a armadilha do costume.",
+  "Anbei sende ich Ihnen ... und gesendet.": "Envio em anexo... e enviado.",
+  "Und? War der Anhang diesmal dran?": "Então? Desta vez o anexo lá ia?",
+  "... Moment.": "... Espera.",
+  "Die zweite Mail kennt jeder: Anbei die Datei, diesmal wirklich.": "O segundo e-mail toda a gente conhece: segue o ficheiro em anexo, desta vez a sério.",
+
+  // ── Paying: separately or together, keep the change (part238) ──────────
+  //
+  // Stimmt so is a formula, not a sentence, and Portuguese has its own for the
+  // same moment: está bom assim, said while handing over the note. Schönen
+  // Abend noch is another — continuação de boa noite is what the waiter and
+  // the customer actually say to each other on the way out, and no literal
+  // rendering gets that.
+  //
+  // Geldbeutel and Portemonnaie both come out as a carteira, because in
+  // Portuguese they are one object. The card that contrasts them keeps both
+  // German words, since that card is about where in Germany you are.
+  "Stimmt so.": "Está bom assim.",
+  "aufrunden": "arredondar por cima",
+  "getrennt oder zusammen": "separado ou junto",
+  "die Bedienung": "o empregado de mesa",
+  "kassieren": "cobrar",
+  "Der Rest ist für Sie.": "O resto é para si.",
+  "sich verrechnen": "enganar-se nas contas",
+  "Zahlen, bitte!": "A conta, se faz favor!",
+  "das Portemonnaie": "a carteira",
+  "der Geldbeutel": "a carteira",
+  "knapp bei Kasse": "teso",
+  "spendieren": "oferecer",
+  "das Wechselgeld": "o troco",
+  "Wir würden gern zahlen. — Ich komme sofort.": "Queríamos pagar. — Vou já ter convosco.",
+  "Bei uns kassiert die Bedienung am Tisch.": "Aqui é o empregado que cobra à mesa.",
+  "In Deutschland zahlt man meistens direkt am Tisch.": "Na Alemanha paga-se quase sempre ali mesmo à mesa.",
+  "Macht zusammen achtundzwanzig sechzig.": "Ao todo são vinte e oito e sessenta.",
+  "Ich glaube, Sie haben sich verrechnet.": "Acho que se enganou nas contas.",
+  "Stimmt die Rechnung? Wir hatten nur zwei Schorlen.": "A conta está certa? Nós só bebemos dois sumos com água.",
+  "Getrennt oder zusammen? — Zusammen, bitte.": "Separado ou junto? — Junto, se faz favor.",
+  "Getrennt, bitte — jeder zahlt seins.": "Separado, se faz favor — cada um paga o seu.",
+  "Getrennt zahlen ist hier völlig normal, auch beim Date.": "Aqui pagar cada um o seu é perfeitamente normal, mesmo num encontro.",
+  "Ich habe die Pizza und das große Bier.": "Eu fiquei com a pizza e a caneca de cerveja.",
+  "Dann teilen wir die Rechnung durch vier.": "Então dividimos a conta por quatro.",
+  "Dreißig — stimmt so.": "Trinta — está bom assim.",
+  "Stimmt so heißt: Der Rest ist Trinkgeld.": "Stimmt so quer dizer: o resto fica de gorjeta.",
+  "Machen Sie dreißig draus.": "Deixe ficar em trinta.",
+  "Wir runden einfach auf.": "Arredondamos por cima e pronto.",
+  "Fünf bis zehn Prozent Trinkgeld sind üblich.": "O costume é dar cinco a dez por cento de gorjeta.",
+  "Das Trinkgeld gibt man hier direkt, nicht auf den Tisch.": "Aqui a gorjeta dá-se na mão, não se deixa em cima da mesa.",
+  "Bei Kartenzahlung sag das Trinkgeld vorher an.": "Se pagas com cartão, diz o valor da gorjeta antes.",
+  "Einmal die Karte, und das Trinkgeld geben wir bar.": "A conta no cartão, e a gorjeta damos em dinheiro.",
+  "Heute lade ich euch ein.": "Hoje pago eu.",
+  "Beim nächsten Mal bist du dran mit Einladen.": "Para a próxima é a tua vez de pagar.",
+  "Er hat die ganze Runde spendiert.": "Ele ofereceu a rodada toda.",
+  "Ich bin diese Woche knapp bei Kasse.": "Esta semana estou teso.",
+  "Mein Portemonnaie liegt zu Hause — wie peinlich.": "A minha carteira ficou em casa — que vergonha.",
+  "Im Süden sagt man Geldbeutel, im Norden Portemonnaie.": "No sul diz-se Geldbeutel, no norte Portemonnaie.",
+  "Beim Rausgehen: Schönen Abend noch! — Danke, gleichfalls.": "À saída: continuação de boa noite! — Obrigado, igualmente.",
+  "Zusammen oder getrennt?": "Junto ou separado?",
+  "Getrennt, bitte. Ich hatte die Pasta und ein Wasser.": "Separado, se faz favor. Eu fiquei com a massa e uma água.",
+  "Macht vierzehn zwanzig.": "São catorze e vinte.",
+  "Sechzehn — stimmt so.": "Dezasseis — está bom assim.",
+  "Wir würden gern zahlen, zusammen bitte.": "Queríamos pagar, junto se faz favor.",
+  "Achtundzwanzig sechzig, bitte.": "Vinte e oito e sessenta, se faz favor.",
+  "Vielen Dank! Schönen Abend noch.": "Muito obrigado! Continuação de boa noite.",
+
+  // ── The funfair: the big wheel, the bumper cars, the raffle stall (part239) ──
+  //
+  // Portugal holds the same fair under its own names, so the pack lands on
+  // words that already exist: o arraial, os carrinhos de choque, a montanha-
+  // russa, o algodão doce, o feirante. A Blaskapelle is a banda filarmónica,
+  // the village brass band, which is the same institution playing the same
+  // music in the same tent.
+  //
+  // Kirmes, Kerwe and Dult stay German in the line that lists them, because
+  // that card is about the fact that one country needs three words for one
+  // fair — which is exactly what a Portuguese reader would not guess.
+  "die Kirmes": "a feira popular",
+  "das Riesenrad": "a roda gigante",
+  "der Autoscooter": "os carrinhos de choque",
+  "die Zuckerwatte": "o algodão doce",
+  "die Losbude": "a tômbola",
+  "die Schießbude": "a barraca de tiro",
+  "das Festzelt": "a tenda da festa",
+  "das Karussell": "o carrossel",
+  "das Volksfest": "o arraial",
+  "die Achterbahn": "a montanha-russa",
+  "das Los": "a rifa",
+  "gebrannte Mandeln": "as amêndoas caramelizadas",
+  "der Schausteller": "o feirante",
+  "das Fahrgeschäft": "a diversão",
+  "die Maß": "a caneca de litro",
+  "Die Kirmes ist in der Stadt!": "Chegou a feira à cidade!",
+  "Einmal im Jahr kommt das Volksfest auf den Festplatz.": "Uma vez por ano o arraial monta-se no recinto da feira.",
+  "Je nach Region heißt es Kirmes, Kerwe oder Dult.": "Conforme a região, chama-se Kirmes, Kerwe ou Dult.",
+  "Für die Kirmes hebe ich extra Kleingeld auf.": "Guardo trocos de propósito para a feira.",
+  "Vom Riesenrad sieht man die ganze Stadt.": "Da roda gigante vê-se a cidade toda.",
+  "Eine Fahrt im Riesenrad dauert drei Runden.": "Uma ida à roda gigante dá três voltas.",
+  "Der Autoscooter ist seit dreißig Jahren mein Favorit.": "Há trinta anos que os carrinhos de choque são o meu preferido.",
+  "Beim Autoscooter gilt: rammen gehört dazu.": "Nos carrinhos de choque a regra é: bater faz parte.",
+  "Die Achterbahn ist nichts für einen vollen Magen.": "A montanha-russa não é para estômago cheio.",
+  "Erst essen oder erst Achterbahn? Entscheide weise.": "Primeiro comer ou primeiro a montanha-russa? Escolhe bem.",
+  "Das Karussell mit den Pferden ist für die Kleinen.": "O carrossel dos cavalinhos é para os mais pequenos.",
+  "Noch eine Runde Karussell, dann gehen wir.": "Mais uma volta no carrossel e vamos embora.",
+  "Die Fahrgeschäfte werden jedes Jahr wilder.": "As diversões são cada vez mais radicais.",
+  "Die Schausteller reisen von Fest zu Fest.": "Os feirantes andam de festa em festa.",
+  "An der Schießbude gewinnt man Rosen aus Plastik.": "Na barraca de tiro ganham-se rosas de plástico.",
+  "Er hat ihr eine Papierrose geschossen — Romantik auf der Kirmes.": "Ele ganhou-lhe uma rosa de papel ao tiro — romance de feira.",
+  "An der Losbude gewinnt am Ende immer die Bude.": "Na tômbola, quem ganha no fim é sempre a tômbola.",
+  "Jedes Los gewinnt — steht da. Meistens ein Schlüsselanhänger.": "Todas as rifas têm prémio — está lá escrito. Quase sempre um porta-chaves.",
+  "Einmal Zuckerwatte, bitte — die große.": "Um algodão doce, se faz favor — do grande.",
+  "Zuckerwatte klebt nach zwei Minuten überall.": "Ao fim de dois minutos o algodão doce está agarrado a tudo.",
+  "Der Geruch von gebrannten Mandeln gehört einfach dazu.": "O cheiro a amêndoas caramelizadas faz mesmo parte.",
+  "Eine Tüte gebrannte Mandeln für den Heimweg.": "Um saco de amêndoas caramelizadas para o caminho de casa.",
+  "Im Festzelt spielt eine Blaskapelle.": "Na tenda da festa toca uma banda filarmónica.",
+  "Im Festzelt wird auf den Bänken getanzt.": "Na tenda da festa dança-se em cima dos bancos.",
+  "Eine Maß Bier hebt man mit beiden Händen.": "Uma caneca de litro levanta-se com as duas mãos.",
+  "Nach zwei Maß singen alle mit.": "Ao fim de duas canecas canta toda a gente.",
+  "Ohne Reservierung kommt man abends nicht ins Zelt.": "Sem reserva, à noite não se entra na tenda.",
+  "Mit Zuckerwatte im Haar und Rose in der Hand — perfekter Abend.": "Com algodão doce no cabelo e uma rosa na mão — noite perfeita.",
+  "Erst Riesenrad oder erst Autoscooter?": "Primeiro a roda gigante ou primeiro os carrinhos de choque?",
+  "Riesenrad, solange es noch hell ist.": "A roda gigante, enquanto ainda é de dia.",
+  "Und danach ramme ich dich im Autoscooter.": "E depois dou-te um encontrão nos carrinhos de choque.",
+  "Das wollen wir doch mal sehen.": "Isso é o que vamos ver.",
+  "Zwei Lose, bitte! — Und, was ist es?": "Duas rifas, se faz favor! — Então, o que é que saiu?",
+  "Ein Schlüsselanhänger. Schon wieder.": "Um porta-chaves. Outra vez.",
+  "Jedes Los gewinnt, haben sie gesagt.": "Todas as rifas têm prémio, foi o que eles disseram.",
+  "Komm, ich schieße dir drüben eine Rose.": "Anda, vou ali ganhar-te uma rosa ao tiro.",
 };

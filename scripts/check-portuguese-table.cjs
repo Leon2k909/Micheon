@@ -93,8 +93,19 @@ const PROPER_NAMES = [
   // on the form. Somebody applying for BAföG says BAföG, in any language.
   "Bürgeramt", "Bürgerbüro", "Ausländerbehörde", "Straße", "Goethestraße",
   "TÜV", "BAföG",
+  // And the things on the counter that only have a German name. The card
+  // about Leberkäse is a joke about the word itself — it contains neither
+  // liver nor cheese — so translating the word away takes the card with it.
+  "Leberkäse",
 ];
 const KEPT_GREETINGS = ["Grüß dich", "Grüß Gott", "Grüezi", "Tschüss", "Tschüs"];
+/**
+ * And the formulas a German letter ends with, for the same reason: the pack
+ * teaches which one to sign off with and how much warmth each carries, so the
+ * formula has to appear as it will be typed. Mit freundlichen Grüßen is the
+ * card — a Portuguese rendering of it would be a different card.
+ */
+const KEPT_FORMULAS = ["Mit freundlichen Grüßen", "Mit besten Grüßen", "Viele Grüße"];
 /**
  * Street names are not worth listing one at a time. Anything ending in
  * -straße is an address, and an address is read out as it is written —
@@ -103,7 +114,7 @@ const KEPT_GREETINGS = ["Grüß dich", "Grüß Gott", "Grüezi", "Tschüss", "Ts
 const STREET = /\b[A-ZÄÖÜ][\wäöüß-]*straße\b/g;
 const stillGerman = pairs.filter((row) => {
   let rest = row.portuguese.replace(STREET, " ");
-  for (const name of [...PROPER_NAMES, ...KEPT_GREETINGS]) rest = rest.split(name).join(" ");
+  for (const name of [...PROPER_NAMES, ...KEPT_GREETINGS, ...KEPT_FORMULAS]) rest = rest.split(name).join(" ");
   return /[äöüßÄÖÜ]/.test(rest);
 });
 check(`no Portuguese line still carries an umlaut${stillGerman.length ? ` — "${stillGerman[0].portuguese}"` : ""}`,
