@@ -14642,4 +14642,250 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Ich hab's mir anders überlegt.": "Mudei de ideias.",
   "Du hattest doch recht.": "Afinal tinhas razão.",
   "Ich hab mich geirrt.": "Enganei-me.",
+
+  // ── Small talk that turns into a real conversation (part70) ─────────────
+  //
+  // The hinges are what matter here, and Portuguese has its own for each one:
+  // apropos is por falar em, ganz was anderes is mudando de assunto, bevor
+  // ich's vergesse is antes que me esqueça, and wo waren wir stehen geblieben
+  // is onde é que nós íamos.
+  //
+  // Was ist daraus geworden asks where a story ended up, and Portuguese asks
+  // the same question with a different verb: em que é que isso ficou.
+  "Du hast letztens erzählt, dass du umziehen willst — was ist daraus geworden?": "No outro dia disseste que querias mudar de casa — em que é que isso ficou?",
+  "Sag mal, wie ist das eigentlich ausgegangen mit deinem Vermieter?": "Diz-me lá, afinal como é que aquilo acabou com o teu senhorio?",
+  "Und, hat das mit dem Job geklappt?": "Então, aquilo do emprego resultou?",
+  "Und wie hat sich das angefühlt?": "E que tal foi essa sensação?",
+  "Und wie ging's dann weiter?": "E depois, o que é que aconteceu?",
+  "Ach echt? Das hätte ich jetzt nicht gedacht.": "Ai sim? Isso é que eu não esperava.",
+  "Erzähl mal, wie war's denn so?": "Conta lá, então como é que foi?",
+  "Und du hast dann echt nichts gesagt?": "E tu não disseste mesmo nada?",
+  "Das kenn ich, das hatte ich letztes Jahr auch.": "Sei bem o que isso é, passei pelo mesmo o ano passado.",
+  "Bei mir ist gerade auch einiges los, ehrlich gesagt.": "Para ser franca, também tenho muita coisa em cima neste momento.",
+  "Ich weiß nicht, ob dich das interessiert, aber ich hab angefangen zu klettern.": "Não sei se isto te interessa, mas comecei a fazer escalada.",
+  "Ich mach das ja auch seit ein paar Jahren, aber eher so nebenbei.": "Olha que eu também faço isso há uns anos, mas mais por alto.",
+  "Das wollte ich dich schon ewig mal fragen.": "Há séculos que te queria perguntar isso.",
+  "Apropos Urlaub — hast du deinen schon gebucht?": "Por falar em férias — já marcaste as tuas?",
+  "Ganz was anderes: Wie geht's deiner Schwester?": "Mudando completamente de assunto: como está a tua irmã?",
+  "Wo wir gerade davon reden — warst du nochmal beim Arzt?": "Já agora que estamos a falar disso — voltaste ao médico?",
+  "Bevor ich's vergesse — wolltest du nicht nach Hamburg ziehen?": "Antes que me esqueça — não ias mudar-te para Hamburgo?",
+  "Aber genug von mir — jetzt zu dir.": "Mas já falei de mais de mim — agora tu.",
+  "Ich will dich nicht aufhalten — du wolltest ja noch los.": "Não te quero prender — tu ainda tinhas de ir andando.",
+  "Ich muss dann auch mal langsam los.": "Também já me vou pondo a andar.",
+  "War echt schön, dich mal wieder zu sehen.": "Foi mesmo bom voltar a ver-te.",
+  "Lass uns bald mal richtig quatschen, ja?": "Um dia destes temos de conversar como deve ser, está bem?",
+  "Ich melde mich die Tage, dann machen wir was aus.": "Digo-te alguma coisa nestes dias e combinamos.",
+  "Ich geh mal kurz rum und sag noch ein paar Leuten Hallo.": "Vou ali dar uma volta e cumprimentar mais umas pessoas.",
+  "Okay, da hast du mich erwischt.": "Pronto, nessa apanhaste-me.",
+  "Steht das morgen noch?": "Amanhã fica de pé?",
+  "Lass uns das einfach nachholen.": "Fica para outra vez.",
+  "Such du dir einen Tag aus, ich bin flexibel.": "Escolhe tu o dia, para mim é indiferente.",
+  "Ich glaub, hier ist ein Funkloch.": "Acho que aqui não há rede.",
+  "Können Sie das bitte zurückgehen lassen?": "Importa-se de mandar isto de volta para a cozinha?",
+  "Machen wir's einfach durch drei.": "Dividimos simplesmente por três.",
+  "Ich hab das genau einmal benutzt, dann ging's nicht mehr.": "Usei aquilo exatamente uma vez e deixou de funcionar.",
+  "Angeblich war keiner zu Hause — ich war aber den ganzen Tag da.": "Dizem que não estava ninguém em casa — mas eu estive lá o dia todo.",
+  "Ich hab Heuschnupfen, und der ist gerade richtig schlimm.": "Tenho febre dos fenos e agora está mesmo má.",
+  "Am Samstag wird's bei uns wahrscheinlich etwas lauter — wir feiern Geburtstag.": "No sábado é provável que a nossa casa fique um bocado barulhenta — vamos festejar um aniversário.",
+  "Ich will keinen Stress machen, aber gestern ist es echt spät geworden.": "Não quero criar problemas, mas ontem aquilo foi até muito tarde.",
+  "Du hast's gelesen und nicht geantwortet, ich seh das doch.": "Leste e não respondeste, eu bem vejo.",
+  "Ich wollte nur kurz was nachgucken, und plötzlich war eine Stunde weg.": "Só queria ver uma coisa num instante e de repente tinha passado uma hora.",
+  "Wo waren wir stehen geblieben?": "Onde é que nós íamos?",
+  "Du wolltest mir doch noch erzählen, wie das mit der Prüfung war.": "Ainda me ias contar como é que correu o exame.",
+
+  // ── Small talk that turns into a real conversation, continued (part70) ──
+  //
+  // Den Faden verloren keeps a thread in Portuguese too, but a different one:
+  // perdi o fio à meada, the thread of the skein. Du hast viel um die Ohren is
+  // andas com muito em cima — the load sits on you rather than around you.
+  //
+  // Ich will dich nicht ausquetschen is não te quero sacar nada à força.
+  // Portuguese does not squeeze somebody; it extracts, and saying so keeps the
+  // apology in the sentence.
+  "Da fällt mir ein — was macht eigentlich dein Bruder?": "Isso faz-me lembrar — e o teu irmão, o que é feito dele?",
+  "Sag bloß! Und das erfahr ich jetzt erst?": "Não me digas! E só agora é que eu sei?",
+  "Warte, jetzt bin ich neugierig — erzähl weiter.": "Espera, agora fiquei curiosa — continua.",
+  "Und wie geht's dir jetzt damit?": "E agora, como é que estás com isso?",
+  "Sorry, ich hab dich unterbrochen. Du warst gerade bei ...?": "Desculpa, cortei-te. Ias a dizer...?",
+  "Moment, das musst du mir genauer erzählen.": "Espera lá, isso tens de me contar com pormenores.",
+  "Wie kommt's, dass du da überhaupt gelandet bist?": "Como é que tu foste lá parar?",
+  "Und, was sagt deine Familie dazu?": "E a tua família, o que é que diz?",
+  "Das klingt, als hätte dich das ganz schön mitgenommen.": "Pelos vistos aquilo abalou-te bastante.",
+  "Ich merk gerade, ich rede die ganze Zeit nur von mir.": "Estou a dar por mim a falar só de mim este tempo todo.",
+  "Davon versteh ich echt nichts, aber es klingt spannend.": "Disso não percebo mesmo nada, mas parece interessante.",
+  "Ich hab das früher auch mal gemacht, ist aber ewig her.": "Também já fiz isso, mas foi há que tempos.",
+  "Kennst du das auch, oder bin ich der Einzige?": "Também te acontece, ou sou só eu?",
+  "Ach, jetzt hab ich den Faden verloren.": "Bolas, agora perdi o fio à meada.",
+  "Aber zurück zum Thema: Was machst du jetzt?": "Mas voltando ao assunto: e agora, o que é que vais fazer?",
+  "Lass uns später darüber weiterreden, wenn wir mehr Zeit haben.": "Falamos mais sobre isso depois, quando tivermos mais tempo.",
+  "Ich will unbedingt wissen, wie's ausgeht!": "Quero mesmo saber como é que aquilo acaba!",
+  "Ich seh schon, du hast viel um die Ohren.": "Já vejo que andas com muito em cima.",
+  "Ich hol mir noch was zu trinken — willst du auch was?": "Vou buscar mais uma bebida — queres alguma coisa?",
+  "Klar, geh ruhig — wir sehen uns ja Samstag sowieso.": "Claro, força — de qualquer maneira vemo-nos no sábado.",
+  "Ich wollte eigentlich nur kurz Hallo sagen.": "Na verdade só queria passar para dizer olá.",
+  "Die Leitung ist echt mies, ich ruf dich gleich nochmal an.": "A linha está péssima, já te volto a ligar.",
+  "Wir warten noch auf die Getränke.": "Ainda estamos à espera das bebidas.",
+  "Das fällt doch noch unter die Gewährleistung, oder?": "Isso ainda está dentro da garantia, não está?",
+  "Entschuldigung, wir stehen hier Schlange.": "Desculpe, nós estamos aqui na fila.",
+  "Geh doch mal zum Arzt, das zieht sich jetzt schon seit zwei Wochen.": "Vai lá ao médico, isso já se arrasta há duas semanas.",
+  "Ich will dich nicht ausquetschen, sag einfach so viel, wie du magst.": "Não te quero sacar nada à força, conta só o que te apetecer.",
+  "Erzähl mir alles, ganz von vorne!": "Conta-me tudo, desde o princípio!",
+  "Können Sie Ihr Fahrrad vielleicht ein Stück zur Seite stellen? Ich komm mit dem Kinderwagen nicht durch.": "Importa-se de chegar a bicicleta um bocadinho para o lado? Não consigo passar com o carrinho.",
+  "Unser Internet ist tot — können wir kurz euer WLAN mitbenutzen?": "A nossa internet foi abaixo — podemos usar a vossa rede um bocadinho?",
+  "Können wir das unter uns klären? Ich will die Hausverwaltung da echt nicht mit reinziehen.": "Podemos resolver isto entre nós? Não quero mesmo meter a administração do condomínio ao barulho.",
+  "Geh mal ans Fenster, du bist total abgehackt.": "Chega-te à janela, estás a cortar toda.",
+
+  // ── Telling a story clearly: what happened next (part152) ───────────────
+  //
+  // Ausgerechnet is the pack's hardest word and Portuguese does it with logo:
+  // logo nesse dia, logo o cão. The word means soon everywhere else, and here
+  // it means of all days and of all creatures, which is the same shrug the
+  // German makes.
+  //
+  // Es stellte sich heraus is veio a saber-se, and um es kurz zu machen is
+  // para encurtar razões — shortening the reasons rather than the story.
+  //
+  // Der Ausgang is the outcome here, o desfecho, and the exit in the dialogue
+  // is a saída. German uses one word for both; Portuguese has never needed to.
+  "die Wendung": "a reviravolta",
+  "der Ausgang": "o desfecho",
+  "ausgerechnet": "justamente",
+  "rückblickend": "em retrospetiva",
+  "sich herausstellen": "vir a saber-se",
+  "bemerken": "reparar",
+  "Das Ganze fing damit an, dass ich meinen Zug verpasst habe.": "Aquilo tudo começou por eu ter perdido o comboio.",
+  "Eigentlich wollte ich nur kurz etwas abholen.": "Na verdade só queria ir buscar uma coisa num instante.",
+  "Zuerst dachte ich, es wäre kein großes Problem.": "Ao princípio pensei que não fosse grande problema.",
+  "Auf dem Weg dorthin habe ich eine alte Freundin getroffen.": "A caminho, encontrei uma velha amiga.",
+  "Gerade als ich losgehen wollte, klingelte mein Handy.": "Mesmo quando ia a sair, tocou-me o telemóvel.",
+  "Plötzlich stand ein fremder Hund vor mir.": "De repente estava um cão desconhecido à minha frente.",
+  "Zu diesem Zeitpunkt wusste ich noch nichts davon.": "Nessa altura eu ainda não sabia de nada.",
+  "Inzwischen hatten die anderen schon angefangen.": "Entretanto os outros já tinham começado.",
+  "Damals wusste ich noch nicht, dass die Tür schon abgeschlossen war.": "Na altura eu ainda não sabia que a porta já estava fechada à chave.",
+  "Es stellte sich heraus, dass wir am falschen Eingang gewartet hatten.": "Veio a saber-se que tínhamos estado à espera na entrada errada.",
+  "Da wurde mir klar, warum niemand gekommen war.": "Foi aí que percebi porque é que não tinha aparecido ninguém.",
+  "Als ob das nicht schon genug gewesen wäre, fing es auch noch an zu regnen.": "Como se aquilo não bastasse, ainda começou a chover.",
+  "Ausgerechnet an diesem Tag war mein Handyakku leer.": "Logo nesse dia é que o telemóvel estava sem bateria.",
+  "Dann kam auch noch ein Missverständnis dazu.": "E ainda por cima houve um mal-entendido.",
+  "Eins führte zum anderen, und plötzlich waren wir drei Stunden zu spät.": "Uma coisa levou à outra e de repente estávamos três horas atrasados.",
+  "Je länger wir warteten, desto ungeduldiger wurden wir.": "Quanto mais esperávamos, mais impacientes ficávamos.",
+  "Am Ende ist alles besser ausgegangen als erwartet.": "No fim tudo correu melhor do que se esperava.",
+  "Zum Glück hatte jemand einen Ersatzschlüssel dabei.": "Ainda bem que alguém trazia uma chave suplente.",
+  "Leider kam kurz vor Schluss noch etwas dazwischen.": "Infelizmente, mesmo perto do fim, ainda surgiu um contratempo.",
+  "Seitdem prüfe ich immer zweimal, welchen Eingang wir meinen.": "Desde então confirmo sempre duas vezes de que entrada estamos a falar.",
+  "Das war der Moment, in dem sich alles geändert hat.": "Foi nesse momento que tudo mudou.",
+  "Ich weiß nicht mehr genau, wie wir auf diese Idee gekommen sind.": "Já não sei bem como é que nos lembrámos disso.",
+  "Wenn ich mich richtig erinnere, war das an einem Dienstag.": "Se bem me lembro, foi a uma terça-feira.",
+  "Um es kurz zu machen: Wir mussten wieder von vorne anfangen.": "Para encurtar razões: tivemos de começar tudo de novo.",
+  "Das klingt erfunden, ist aber wirklich passiert.": "Parece inventado, mas aconteceu mesmo.",
+  "Du hättest dabei sein müssen.": "Tinhas de ter estado lá.",
+  "Im Nachhinein hätten wir früher reagieren sollen.": "Vendo bem, devíamos ter reagido mais cedo.",
+  "Rückblickend war die ganze Sache eigentlich ziemlich lustig.": "Em retrospetiva, aquilo até teve bastante piada.",
+  "Warum seid ihr gestern so spät gekommen?": "Porque é que vocês chegaram tão tarde ontem?",
+  "Das Ganze fing damit an, dass unser Zug ausgefallen ist.": "Aquilo tudo começou por o nosso comboio ter sido suprimido.",
+  "Und dann?": "E depois?",
+  "Es stellte sich heraus, dass der Ersatzbus am anderen Ausgang hielt.": "Veio a saber-se que o autocarro de substituição parava na outra saída.",
+  "Habt ihr den verlorenen Schlüssel noch gefunden?": "Chegaram a encontrar a chave perdida?",
+  "Ja. Ausgerechnet der Hund hatte ihn unter das Sofa geschoben.": "Encontrámos. Foi logo o cão que a tinha empurrado para debaixo do sofá.",
+  "Wie habt ihr ihn gefunden?": "E como é que deram com ela?",
+  "Zum Glück hat er später wieder damit gespielt.": "Ainda bem que mais tarde voltou a brincar com ela.",
+
+  // ── Saying what you think, the way it gets hedged (part71) ──────────────
+  //
+  // A whole pack of hedges, and hedges are the first thing a literal reading
+  // ruins. Das würd ich so nicht unterschreiben signs nothing in Portuguese:
+  // assim tão longe eu não ia. Da scheiden sich die Geister is aí as opiniões
+  // dividem-se. Da tu ich mich schwer mit is isso custa-me a engolir.
+  //
+  // Verstehen kann ich's, gut finden nicht uses the Portuguese trick of
+  // repeating the verb to concede a point before taking it back: compreender,
+  // compreendo. Nothing else carries the same shrug.
+  "Ich finde schon, dass das wichtig ist.": "Eu acho que isso é importante, sim.",
+  "Also, ich weiß ja nicht.": "Ora, sei lá...",
+  "Kann schon sein, aber überzeugt bin ich nicht.": "Pode até ser, mas convencida não estou.",
+  "Da bin ich mir ehrlich gesagt nicht so sicher.": "Para ser franca, não tenho assim tanta certeza.",
+  "Kommt drauf an, wen du fragst.": "Isso depende de a quem perguntares.",
+  "Find ich jetzt nicht.": "Não me parece.",
+  "Ja schon, aber so einfach ist das nicht.": "Lá isso é, mas não é assim tão simples.",
+  "Da ist schon was dran.": "Nisso há alguma coisa de verdade.",
+  "Naja, teils teils.": "Bem, sim e não.",
+  "Ich sag ja nicht, dass du unrecht hast.": "Não estou a dizer que não tens razão.",
+  "Das kann man so sehen.": "Pode ver-se assim.",
+  "Das würd ich so nicht unterschreiben.": "Assim tão longe eu não ia.",
+  "Da will ich mich jetzt nicht festlegen.": "Não me quero comprometer com isso.",
+  "Das lass ich jetzt mal so stehen.": "Deixo isso ficar assim.",
+  "Wenn du mich fragst, ist das völlig übertrieben.": "Se me perguntas a mim, aquilo é um exagero completo.",
+  "Ich bin da echt hin- und hergerissen.": "Estou mesmo dividida quanto a isso.",
+  "Ich seh's genau andersrum.": "Eu vejo isso exatamente ao contrário.",
+  "Stimmt auch wieder.": "Lá isso também é verdade.",
+  "Kann sein, dass ich mich irre, aber so war das nicht abgemacht.": "Posso estar enganada, mas não foi isso que ficou combinado.",
+  "Da hab ich echt keine Meinung zu.": "Sobre isso não tenho mesmo opinião.",
+  "Ich such schon ewig — wo finde ich sowas?": "Ando há séculos à procura — onde é que se arranja uma coisa dessas?",
+  "Doch, ich find schon.": "Acho, sim.",
+  "Das ist Ansichtssache.": "Isso é conforme se vê.",
+  "Da muss ich dir widersprechen.": "Nisso tenho de te contrariar.",
+  "So hab ich das noch gar nicht gesehen.": "Assim é que eu ainda não tinha visto a coisa.",
+  "Okay, da geb ich dir recht.": "Pronto, nisso dou-te razão.",
+  "Der Punkt geht an dich.": "Esse ponto é teu.",
+  "Ich sag mal so: Ich hätt's anders gemacht.": "Digamos assim: eu teria feito de outra maneira.",
+  "Nix für ungut, aber da liegst du falsch.": "Não leves a mal, mas aí estás enganado.",
+  "Ich will dir ja nicht reinreden, aber überleg's dir nochmal.": "Não me quero meter, mas pensa outra vez nisso.",
+  "Verstehen kann ich's, gut finden nicht.": "Compreender, compreendo; achar bem é outra coisa.",
+  "Ich lass mich gern überzeugen.": "Deixo-me convencer com gosto.",
+  "Das ist mir zu pauschal.": "Isso é generalizar de mais.",
+  "Da hab ich so meine Zweifel.": "Aí tenho lá as minhas dúvidas.",
+  "Das kann ich echt nicht beurteilen.": "Isso eu não tenho como avaliar.",
+  "Da müsste ich nochmal drüber nachdenken.": "Sobre isso tinha de pensar melhor.",
+  "Das muss nicht unbedingt so sein.": "Não tem forçosamente de ser assim.",
+  "Da tu ich mich echt schwer mit.": "Isso custa-me mesmo a engolir.",
+  "Da scheiden sich die Geister.": "Aí as opiniões dividem-se.",
+  "Ich glaub, wir meinen dasselbe.": "Acho que estamos a dizer o mesmo.",
+  "Also ich für meinen Teil bin dagegen.": "Cá por mim, sou contra.",
+
+  // ── Linking ideas: cause, contrast and consequence (part145) ────────────
+  //
+  // This pack sits a register above the rest of the course and Portuguese has
+  // the words for it: por conseguinte, em consequência disso, na sequência
+  // disso, em contrapartida, razão pela qual. Dropping to por isso everywhere
+  // would flatten exactly what the pack teaches.
+  //
+  // Indem has no conjunction on the Portuguese side at all. It is ao and an
+  // infinitive — ao reservar os bilhetes — which is why the seed word is a
+  // two-word phrase rather than one.
+  "folglich": "por conseguinte",
+  "infolgedessen": "em consequência disso",
+  "hingegen": "por seu lado",
+  "währenddessen": "entretanto",
+  "anschließend": "a seguir",
+  "daraufhin": "na sequência disso",
+  "indem": "ao fazer",
+  "sofern": "desde que",
+  "Es hat stark geregnet. Deshalb sind wir zu Hause geblieben.": "Choveu muito. Por isso ficámos em casa.",
+  "Der Zug fiel aus; deswegen kamen wir zu spät.": "O comboio foi suprimido; foi por isso que chegámos tarde.",
+  "Die Kosten sind gestiegen. Folglich müssen wir an anderer Stelle sparen.": "Os custos subiram. Por conseguinte, temos de poupar noutro lado.",
+  "Die Frist wurde verpasst; infolgedessen verzögerte sich das ganze Projekt.": "O prazo foi ultrapassado; em consequência disso, todo o projeto se atrasou.",
+  "Ich war müde. Trotzdem bin ich noch mitgekommen.": "Estava cansada. Mesmo assim ainda fui convosco.",
+  "Obwohl ich müde war, bin ich noch mitgekommen.": "Apesar de estar cansada, ainda fui convosco.",
+  "Der Plan ist teuer, allerdings spart er uns später Zeit.": "O plano é caro, é certo, mas poupa-nos tempo mais tarde.",
+  "Meine Schwester plant alles im Voraus; ich hingegen entscheide spontan.": "A minha irmã planeia tudo com antecedência; eu, por meu lado, decido no momento.",
+  "Ich koche. Währenddessen kannst du den Tisch decken.": "Eu cozinho. Entretanto podes pôr a mesa.",
+  "Wir essen zuerst und gehen anschließend spazieren.": "Comemos primeiro e a seguir vamos dar uma volta.",
+  "Er sagte kurzfristig ab. Daraufhin haben wir umgeplant.": "Ele desmarcou em cima da hora. Na sequência disso, refizemos os planos.",
+  "Dadurch, dass wir früher anfangen, vermeiden wir den Berufsverkehr.": "Ao começarmos mais cedo, evitamos a hora de ponta.",
+  "Wir sparen Zeit, indem wir die Tickets vorher buchen.": "Poupamos tempo ao reservar os bilhetes com antecedência.",
+  "Sofern nichts dazwischenkommt, bin ich um sechs da.": "Desde que não surja nada, estou lá às seis.",
+  "Ich komme mit, vorausgesetzt, dass wir nicht zu spät zurückfahren.": "Eu vou, desde que não voltemos tarde de mais.",
+  "Sobald die Entscheidung gefallen ist, gebe ich dir Bescheid.": "Assim que a decisão estiver tomada, eu aviso-te.",
+  "Nachdem wir alles besprochen hatten, trafen wir eine Entscheidung.": "Depois de termos discutido tudo, tomámos uma decisão.",
+  "Bevor du zusagst, solltest du noch einmal darüber nachdenken.": "Antes de aceitares, devias pensar melhor nisso.",
+  "Die erste Lösung ist günstiger, die zweite dagegen zuverlässiger.": "A primeira solução é mais barata; a segunda, em contrapartida, é mais fiável.",
+  "Die Daten waren unvollständig; dementsprechend vorsichtig haben wir das Ergebnis formuliert.": "Os dados estavam incompletos; formulámos o resultado com a prudência correspondente.",
+  "Warum ist der Bericht noch nicht fertig?": "Porque é que o relatório ainda não está pronto?",
+  "Uns fehlten wichtige Zahlen, weshalb wir warten mussten.": "Faltavam-nos números importantes, razão pela qual tivemos de esperar.",
+  "Sind die Daten inzwischen vollständig?": "Os dados já estão completos?",
+  "Ja, daher können wir den Bericht morgen abschließen.": "Já, por isso podemos fechar o relatório amanhã.",
+  "Zuerst wollte ich mit dem Zug fahren.": "Ao princípio queria ir de comboio.",
+  "Was hat dich umgestimmt?": "E o que é que te fez mudar de ideias?",
+  "Die Verbindung fällt aus; deshalb nehme ich jetzt den Bus.": "A ligação foi suprimida; por isso vou agora de autocarro.",
+  "Meld dich, sobald du angekommen bist.": "Diz alguma coisa assim que chegares.",
 };
