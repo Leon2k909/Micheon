@@ -38,6 +38,7 @@ const built = esbuild.buildSync({
       'export { SPANISH_BY_GERMAN } from "./src/lib/spanishTranslations.ts";',
   'export { ITALIAN_BY_GERMAN } from "./src/lib/italianTranslations.ts";',
       'export { PORTUGUESE_BY_GERMAN } from "./src/lib/portugueseTranslations.ts";',
+      'export { RUSSIAN_BY_GERMAN } from "./src/lib/russianTranslations.ts";',
     ].join("\n"),
     resolveDir: root,
     sourcefile: "translations-entry.ts",
@@ -65,6 +66,7 @@ M.primeTranslations("pl", M.POLISH_BY_GERMAN);
 M.primeTranslations("es", M.SPANISH_BY_GERMAN);
 M.primeTranslations("it", M.ITALIAN_BY_GERMAN);
 M.primeTranslations("pt", M.PORTUGUESE_BY_GERMAN);
+M.primeTranslations("ru", M.RUSSIAN_BY_GERMAN);
 
 // ── read every taught entry out of the packs ────────────────────────────────
 const FIELD = (name) => new RegExp("\\b" + name + ':\\s*"((?:[^"\\\\]|\\\\.)*)"');
@@ -124,6 +126,11 @@ const FLOORS = {
   // the floor from here rather than from the table itself.
   it: 0,
   pt: 1380,
+  // Russian has only just been started and is floored at zero for the same
+  // reason Italian is: what matters while a table is being written is that
+  // its number never falls. It is the seed a first lesson is built from —
+  // see the header of russianTranslations.ts for what it is not.
+  ru: 0,
 };
 
 // The percentage is still reported, because it is the honest measure of how

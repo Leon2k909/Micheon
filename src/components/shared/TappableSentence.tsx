@@ -8,6 +8,7 @@ import { germanWordGloss } from "@/lib/germanWordGloss";
 import { englishWordGloss } from "@/lib/englishWordGloss";
 import { addCustomEntries, getCustomPacks } from "@/lib/customContent";
 import { pronounNote } from "@/lib/pronounNotes";
+import { formatRussianText, getRussianScript } from "@/lib/russianScript";
 
 /**
  * A sentence you can take apart a word at a time.
@@ -43,6 +44,21 @@ export function TappableSentence({ text, lang, meaningText, glosses, onWordAudio
   onWordAudio?: () => void;
 }) {
   const words = String(text ?? "").trim().split(/\s+/).filter(Boolean);
+  /**
+   * How a word is WRITTEN here, which is not always how it is stored.
+   *
+   * Russian cards are held in Cyrillic and may be shown in one of five Latin
+   * transcriptions — see russianScript.ts. The transformation belongs on the
+   * way to the screen and nowhere else: `words` stays Cyrillic, so tapping a
+   * word still speaks Russian, the saved-word lookup still finds the card it
+   * was saved from, and the popover still asks the word bank about a word it
+   * has heard of. Only what the eye reads changes.
+   */
+  const shown = (word: string) => (
+    lang.toLowerCase().startsWith("ru")
+      ? formatRussianText(word, getRussianScript())
+      : word
+  );
   // Hover glosses translate toward the learner's helper language: German
   // text shows English meanings, and English text (learn-English mode) shows
   // German ones — the popover must not be a German-course-only feature.
@@ -235,12 +251,12 @@ export function TappableSentence({ text, lang, meaningText, glosses, onWordAudio
                   openPopover(i);
                 }}
                 aria-label={hoverGloss
-                  ? `${w}: ${hoverGloss}. ${ui("Tap a word to hear it")}`
-                  : `${ui("Hear it")}: ${w}`}
+                  ? `${shown(w)}: ${hoverGloss}. ${ui("Tap a word to hear it")}`
+                  : `${ui("Hear it")}: ${shown(w)}`}
                 data-gloss={hoverGloss ?? undefined}
                 title={hoverGloss ? undefined : ui("Tap a word to hear it")}
               >
-                {w}
+                {shown(w)}
               </span>
               {popoverOpen && (
                 <span
@@ -249,9 +265,9 @@ export function TappableSentence({ text, lang, meaningText, glosses, onWordAudio
                   onPointerLeave={scheduleClose}
                   role="group"
                   style={popoverPlace.shift ? { marginLeft: `${popoverPlace.shift}px` } : undefined}
-                  aria-label={`${bareWord(w)}`}
+                  aria-label={`${bareWord(shown(w))}`}
                 >
-                  <span className="fs-word-popover-word">{bareWord(w)}</span>
+                  <span className="fs-word-popover-word">{bareWord(shown(w))}</span>
                   {hoverGloss && <span className="fs-word-popover-gloss">{hoverGloss}</span>}
                   {(() => {
                     const note = showEnglishGloss ? pronounNote(bareWord(w)) : null;

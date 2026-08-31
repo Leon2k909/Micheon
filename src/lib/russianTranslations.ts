@@ -1,0 +1,175 @@
+/**
+ * Russian, written to the table-per-language layer in lib/translations.ts —
+ * keyed by the German, like every table before it.
+ *
+ * THIS TABLE IS A SEED, NOT A COURSE. It holds the opening function words,
+ * the core verbs and nouns, the colours and the numbers to a hundred: the
+ * stretch a first lesson is built from, and no more. The catalogue is roughly
+ * 24,800 entries, so what is written here is a fraction of one per cent.
+ *
+ * Why it exists at all: the script layer above it — russianScript.ts, which
+ * shows every card in Cyrillic or in one of five Latin transcriptions — could
+ * not be exercised end to end against nothing. With these entries a Russian
+ * card renders, speaks, transcribes and grades, and the whole path can be
+ * checked before the vocabulary that fills it is written.
+ *
+ * WHAT MUST NOT HAPPEN NEXT. A course reads only what this table covers; an
+ * entry it does not carry is DROPPED rather than shown in German. So a
+ * Russian course opened today serves 140 cards and looks finished from the
+ * inside. It is not a course until this file is, and check-translation-coverage
+ * floors it at zero for exactly the reason Italian is floored at zero: while a
+ * language is being written, the rule that matters is that its number never
+ * falls.
+ *
+ * THE STANDARD, inherited from frenchTranslations.ts and polishTranslations.ts:
+ * what a Russian speaker would actually say, at the register the German uses.
+ * Two German cards must never collapse onto one Russian line — sprechen is
+ * говорить and sagen is сказать, wenn is если and falls is в случае если —
+ * because a collision marks a wrong card right and never says so.
+ *
+ * Only Cyrillic is written here. The Latin forms are computed in
+ * russianScript.ts and never stored; two spellings of the same word would
+ * drift apart, which is the whole argument that file is built on.
+ */
+export const RUSSIAN_BY_GERMAN: Record<string, string> = {
+  "und": "и",
+  "oder": "или",
+  "aber": "но",
+  "weil": "потому что",
+  "dass": "что",
+  "wenn": "если",
+  "obwohl": "хотя",
+  "damit": "чтобы",
+  "deshalb": "поэтому",
+  "deswegen": "по этой причине",
+  "außerdem": "кроме того",
+  "jedoch": "однако",
+  "also": "итак",
+  "falls": "в случае если",
+  "sobald": "как только",
+  "solange": "пока",
+  "bevor": "прежде чем",
+  "bis": "до",
+  "ohne": "без",
+  "statt": "вместо",
+  "wegen": "из-за",
+  "sonst": "иначе",
+  "zum Beispiel": "например",
+  "und so weiter": "и так далее",
+  "ich": "я",
+  "du": "ты",
+  "er": "он",
+  "sie": "она",
+  "es": "оно",
+  "wir": "мы",
+  "danke": "спасибо",
+  "bitte": "пожалуйста",
+  "sein": "быть",
+  "haben": "иметь",
+  "machen": "делать",
+  "gehen": "идти",
+  "kommen": "приходить",
+  "sehen": "видеть",
+  "sprechen": "говорить",
+  "essen": "есть",
+  "trinken": "пить",
+  "wohnen": "жить",
+  "arbeiten": "работать",
+  "lesen": "читать",
+  "schreiben": "писать",
+  "kaufen": "покупать",
+  "verstehen": "понимать",
+  "wissen": "знать",
+  "geben": "давать",
+  "nehmen": "брать",
+  "fahren": "ехать",
+  "schlafen": "спать",
+  "lernen": "учить",
+  "helfen": "помогать",
+  "warten": "ждать",
+  "fragen": "спрашивать",
+  "antworten": "отвечать",
+  "spielen": "играть",
+  "hören": "слышать",
+  "denken": "думать",
+  "sagen": "сказать",
+  "finden": "находить",
+  "bleiben": "оставаться",
+  "Frau": "женщина",
+  "Ehefrau": "жена",
+  "Mann": "мужчина",
+  "Kind": "ребёнок",
+  "Haus": "дом",
+  "Wasser": "вода",
+  "Brot": "хлеб",
+  "Buch": "книга",
+  "Stadt": "город",
+  "Land": "страна",
+  "Tag": "день",
+  "Nacht": "ночь",
+  "Jahr": "год",
+  "Zeit": "время",
+  "Name": "имя",
+  "Freund": "друг",
+  "Arbeit": "работа",
+  "Geld": "деньги",
+  "Auto": "машина",
+  "Straße": "улица",
+  "Schule": "школа",
+  "Preis": "цена",
+  "Suppe": "суп",
+  "Käse": "сыр",
+  "Arzt": "врач",
+  "Milch": "молоко",
+  "Tisch": "стол",
+  "Tür": "дверь",
+  "Fenster": "окно",
+  "Hund": "собака",
+  "Katze": "кошка",
+  "Mutter": "мать",
+  "Vater": "отец",
+  "Bruder": "брат",
+  "Schwester": "сестра",
+  "Sohn": "сын",
+  "Tochter": "дочь",
+  "Morgen": "утро",
+  "Abend": "вечер",
+  "Woche": "неделя",
+  "Monat": "месяц",
+  "gut": "хорошо",
+  "schlecht": "плохо",
+  "groß": "большой",
+  "klein": "маленький",
+  "neu": "новый",
+  "alt": "старый",
+  "gelb": "жёлтый",
+  "rot": "красный",
+  "blau": "синий",
+  "grün": "зелёный",
+  "weiß": "белый",
+  "schwarz": "чёрный",
+  "schön": "красивый",
+  "schnell": "быстро",
+  "langsam": "медленно",
+  "heute": "сегодня",
+  "morgen": "завтра",
+  "gestern": "вчера",
+  "jetzt": "сейчас",
+  "immer": "всегда",
+  "nie": "никогда",
+  "oft": "часто",
+  "hier": "здесь",
+  "dort": "там",
+  "eins": "один",
+  "zwei": "два",
+  "drei": "три",
+  "vier": "четыре",
+  "fünf": "пять",
+  "sechs": "шесть",
+  "sieben": "семь",
+  "acht": "восемь",
+  "neun": "девять",
+  "zehn": "десять",
+  "zwanzig": "двадцать",
+  "hundert": "сто",
+};

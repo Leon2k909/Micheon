@@ -115,7 +115,9 @@ const BANDS = [
 // block onwards. It is here rather than only in check-translation-coverage
 // because a language with a table and no floor here fails the build outright,
 // which is how Italian announced itself on its first day.
-const TRANSLATED_QUEUE_FLOORS = { fr: 17300, pl: 18700, es: 24000, it: 0, pt: 4370 };
+// Russian sits at zero beside Italian, and for the same reason: while a table
+// is being written the rule that matters is that its number never falls.
+const TRANSLATED_QUEUE_FLOORS = { fr: 17300, pl: 18700, es: 24000, it: 0, pt: 4370, ru: 0 };
 
 /**
  * How much of the word tracker the French course is allowed to be missing.

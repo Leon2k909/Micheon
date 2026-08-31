@@ -323,6 +323,14 @@ const PORTUGUESE_PET_TIPS = [
   "Portuguese tip: estar is used for states and locations, while ser is used for identity and more lasting characteristics.",
 ];
 
+const RUSSIAN_PET_TIPS = [
+  "Russian tip: the present tense has no word for is — Он врач is how you say he is a doctor.",
+  "Russian tip: a noun changes its ending for the job it is doing, so Москва becomes в Москве when you are in it.",
+  "Russian tip: there are no articles at all, so дом covers a house and the house alike.",
+  "Russian tip: most verbs come as a pair, one for the action going on and one for the action finished.",
+  "Russian tip: ё is always the stressed vowel, which is why print often leaves it as a plain е once you know the word.",
+];
+
 /** The tips for whichever language is being learned. */
 const LANGUAGE_TIPS: Record<CourseLanguage, string[]> = {
   de: GERMAN_PET_TIPS,
@@ -330,6 +338,7 @@ const LANGUAGE_TIPS: Record<CourseLanguage, string[]> = {
   fr: FRENCH_PET_TIPS,
   pl: POLISH_PET_TIPS,
   es: SPANISH_PET_TIPS,
+  ru: RUSSIAN_PET_TIPS,
   pt: PORTUGUESE_PET_TIPS,
 };
 
