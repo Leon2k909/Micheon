@@ -216,4 +216,5 @@ export const COUNTRY_SEARCH_EXAMPLES: Record<CountryId, string[]> = {
   uk: ["1066", "Churchill", "Magna Carta", "Stonehenge", "NHS", "devolution", "Scotland", "suffrage"],
   de: ["1949", "Grundgesetz", "Mauerfall", "Bundesrat", "Weimar", "Föderalismus", "Bismarck", "Euro"],
   fr: ["1789", "laïcité", "Marianne", "Bastille", "Sénat", "outre-mer", "Schœlcher", "Maastricht"],
+  pl: ["966", "Solidarność", "3 maja", "rozbiory", "Sejm", "wojewódctwo", "Piłsudski", "1989"],
 };

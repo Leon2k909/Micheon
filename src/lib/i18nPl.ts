@@ -2543,6 +2543,7 @@ export const PL: Record<string, string> = {
   "History, government and traditions — how life in the UK works.": "Historia, rząd i tradycje — jak działa życie w Wielkiej Brytanii.",
   "Germany": "Niemcy",
   "France": "Francja",
+  "Poland": "Polska",
   "Learn first": "Najpierw naucz się",
   "Overview": "Przegląd",
   "By topic": "Według tematu",
