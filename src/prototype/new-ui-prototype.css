@@ -1972,17 +1972,22 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   background:
     linear-gradient(
       100deg,
-      rgba(24, 16, 32, 0.4) 0%,
-      rgba(24, 16, 32, 0.24) 30%,
-      rgba(24, 16, 32, 0.08) 48%,
+      rgba(24, 16, 32, 0.52) 0%,
+      rgba(24, 16, 32, 0.34) 30%,
+      rgba(24, 16, 32, 0.14) 48%,
       transparent 62%
     ),
+    /* A tint, not a lid. At 66% the accent covered the left half of the
+       banner outright: with a pink accent it read as a purple panel with the
+       picture starting halfway across, which is not a banner with a picture
+       in it. The dark gradient above carries the readability; this only
+       colours it. */
     linear-gradient(
       100deg,
-      color-mix(in srgb, var(--accent) 66%, transparent) 0%,
-      color-mix(in srgb, var(--accent) 48%, transparent) 26%,
-      color-mix(in srgb, var(--accent) 28%, transparent) 44%,
-      color-mix(in srgb, var(--accent) 11%, transparent) 58%,
+      color-mix(in srgb, var(--accent) 24%, transparent) 0%,
+      color-mix(in srgb, var(--accent) 17%, transparent) 26%,
+      color-mix(in srgb, var(--accent) 10%, transparent) 44%,
+      color-mix(in srgb, var(--accent) 4%, transparent) 58%,
       transparent 74%
     );
 }
@@ -2004,7 +2009,14 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   font-size: clamp(19px, 2.1vw, 27px);
   font-weight: 850;
   line-height: 1.24;
-  text-shadow: 0 2px 12px rgba(16, 12, 24, 0.5);
+  /* The words carry their own ground. Veiling the left half of the banner
+     until white was safe over any picture is what made it a coloured panel
+     with a photograph starting halfway across; a shadow does the same work
+     for the glyphs alone and leaves the picture alone. */
+  text-shadow:
+    0 1px 2px rgba(10, 8, 16, 0.9),
+    0 2px 10px rgba(10, 8, 16, 0.75),
+    0 0 26px rgba(10, 8, 16, 0.55);
 }
 
 
