@@ -104,6 +104,37 @@ if (/opacity-7[05]">\{ui\("(Next target|Words tracked)"\)/.test(panel)) {
   failures.push("a gradient card's label is faded again — that fade is what made it unreadable");
 }
 
+
+// ── and the banner that IS the accent uses that ink too ─────────────────────
+//
+// Two inks, opposite jobs, one letter apart in the name. --accent-ink is
+// accent-COLOURED text, tuned to be read on a neutral page. --feature-ink is
+// text sitting ON the accent. The social banner fills itself with the accent
+// under a custom colour, and its copy was reaching for --accent-ink: the
+// subtitle came out the same colour as the fill behind it, which is why it
+// could not be read at all on a pink accent.
+const proto = fs.readFileSync(path.join(root, "src/prototype/new-ui-prototype.css"), "utf8");
+const heroFill = /html\[data-theme="dark"\]\[data-accent="custom"\] \.np-social-hero \{([^}]*)\}/.exec(proto);
+if (!heroFill) {
+  failures.push("the social banner no longer paints itself for a custom accent, so this check cannot see what its copy sits on");
+} else if (/var\(--accent-pressed/.test(heroFill[1])) {
+  for (const part of ["> span", "h1", "p"]) {
+    const selector = `html[data-theme="dark"][data-accent="custom"] .np-social-hero-copy ${part} {`;
+    const open = proto.indexOf(selector);
+    if (open === -1) {
+      failures.push(`the social banner's ${part} has no ink of its own on a custom accent, so it keeps the green scheme's`);
+      continue;
+    }
+    const block = proto.slice(open, proto.indexOf("}", open));
+    if (!block.includes("--feature-ink")) {
+      failures.push(
+        `the social banner's ${part} is painted with something other than --feature-ink while the banner `
+        + "itself is filled with the accent — that is accent on accent, which is what made it unreadable"
+      );
+    }
+  }
+}
+
 if (failures.length) {
   console.error("FAIL check-feature-ink");
   failures.forEach((line) => console.error("  " + line));

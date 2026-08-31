@@ -2464,6 +2464,8 @@ export const DE: Record<string, string> = {
   "Learning German": "Deutsch lernen",
   "Leon is currently second. A short lesson could close the gap.": "Leon ist gerade Zweiter. Eine kurze Lektion könnte den Abstand schließen.",
   "Leon only": "Nur Leon",
+  "Only {name}": "Nur {name}",
+  "Visible only on your account": "Nur auf deinem Konto sichtbar",
   // "Life in the UK" is the name of a Home Office test, so it keeps its English
   // name on a German interface the same way "Micheon Premium" does.
   "Life in UK": "Life in UK",

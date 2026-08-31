@@ -1651,6 +1651,8 @@ export const PT: Record<string, string> = {
   "Owned": "Na tua posse",
   "{action} is a preview in this release. Nothing was sent or changed.": "{action} é uma pré-visualização nesta versão. Não se enviou nem mudou nada.",
   "Leon only": "Só o Leon",
+  "Only {name}": "Só {name}",
+  "Visible only on your account": "Visível apenas na tua conta",
   "Keep up with friends, compare weekly XP, and turn practice into a friendly routine.": "Acompanha os amigos, compara os XP da semana e transforma a prática numa rotina partilhada.",
   "Private preview": "Pré-visualização privada",
   "Social sections": "Secções sociais",

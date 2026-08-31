@@ -3681,6 +3681,16 @@ function SocialAvatar({ initials, photo, tone }: { initials: string; photo?: str
 }
 
 function SocialView({ avatar, stats, userName }: { avatar?: string; stats: PrototypeStats; userName: string }) {
+  /**
+   * Whose account this is, rather than whose it was.
+   *
+   * Both labels here named one fixed account, from when one account was all
+   * the gate let in. It lets in two now — see SOCIAL_PREVIEW_EMAILS — so the
+   * other one was being told, on its own screen, that the screen belonged to
+   * somebody else. The badge says "your account" rather than a possessive,
+   * which no name has to be bent into.
+   */
+  const previewName = userName.trim().split(/\s+/)[0] || userName.trim();
   const [activeSection, setActiveSection] = useState<"friends" | "leaderboard">("friends");
   const [previewNotice, setPreviewNotice] = useState<string | null>(null);
   /**
@@ -3742,13 +3752,13 @@ function SocialView({ avatar, stats, userName }: { avatar?: string; stats: Proto
       <div className="np-social-hero">
         <span aria-hidden="true" className="np-social-hero-icon"><UsersRound /></span>
         <div className="np-social-hero-copy">
-          <span>{ui("Leon only")}</span>
+          <span>{uiFmt("Only {name}", { name: previewName })}</span>
           <h1>{ui("Learn better together")}</h1>
           <p>{ui("Keep up with friends, compare weekly XP, and turn practice into a friendly routine.")}</p>
         </div>
         <div className="np-social-private-badge">
           <LockKeyhole aria-hidden="true" />
-          <span><strong>{ui("Private preview")}</strong><small>Visible only on Leon&apos;s account</small></span>
+          <span><strong>{ui("Private preview")}</strong><small>{ui("Visible only on your account")}</small></span>
         </div>
       </div>
 

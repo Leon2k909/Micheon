@@ -2339,6 +2339,8 @@ export const FR: Record<string, string> = {
   "Learning German": "Apprendre l'allemand",
   "Leon is currently second. A short lesson could close the gap.": "Leon est actuellement deuxième. Une courte leçon pourrait combler l'écart.",
   "Leon only": "Leon seulement",
+  "Only {name}": "{name} uniquement",
+  "Visible only on your account": "Visible uniquement sur ton compte",
   "Life in UK": "Life in UK",
   "British history, government, law and traditions.": "Histoire, gouvernement, droit et traditions britanniques.",
   "Level progress": "Progression du niveau",

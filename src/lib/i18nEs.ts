@@ -185,6 +185,8 @@ export const ES: Record<string, string> = {
   "Learning style, flashcards, and words learned elsewhere.": "Estilo de aprendizaje, tarjetas y palabras aprendidas fuera.",
   "Leon is currently second. A short lesson could close the gap.": "Leon va segundo ahora mismo. Una lección corta podría cerrar la distancia.",
   "Leon only": "Solo Leon",
+  "Only {name}": "Solo {name}",
+  "Visible only on your account": "Visible solo en tu cuenta",
   "Lesson content": "Contenido de la lección",
   "Lesson {n}": "Lección {n}",
   "Lessons done": "Lecciones hechas",
