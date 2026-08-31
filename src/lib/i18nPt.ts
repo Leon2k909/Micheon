@@ -2623,4 +2623,5 @@ export const PT: Record<string, string> = {
   "Three other cards go by first. Short enough that you are still holding the word when it comes back, which is the exercise short-term memory actually is.": "Passam antes outros três cartões. Pouco, o suficiente para ainda teres a palavra na cabeça quando ela volta — e é isso mesmo que o exercício da memória de curto prazo é.",
   "Ten other cards go by first. Far enough that you have to fetch the word back rather than still be carrying it, and near enough to do it several times in one sitting.": "Passam antes outros dez cartões. Longe o suficiente para teres de ir buscar a palavra em vez de a continuares a carregar, e perto o suficiente para o fazeres várias vezes na mesma sessão.",
   "Thirty other cards go by first. About a session's worth on a narrow filter, so a word returns once you have genuinely moved on from it.": "Passam antes outros trinta cartões. Com um filtro estreito, cerca de uma sessão inteira, por isso uma palavra volta quando já passaste mesmo à frente dela.",
+  "Poland": "Polónia",
 };
