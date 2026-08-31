@@ -1671,7 +1671,13 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               translated; a pack with no level simply omits it instead of
               printing a gap. */}
           <p className="text-[11px] font-black uppercase tracking-wide text-[var(--accent)]">
-            {ui(item.kind === "word" ? "Word" : "Sentence")}
+            {/* Three separate ui() calls rather than one around a nested
+                ternary: the coverage sweep reads the argument of each call,
+                and a third branch inside one of them is a string it never
+                sees — so it would ship untranslated and nothing would say so. */}
+            {item.kind === "word" ? ui("Word")
+              : item.kind === "passage" ? ui("Paragraph")
+              : ui("Sentence")}
             {item.levelLabel ? <> · {item.levelLabel}</> : item.rung ? <> · {cefrRungLabel(item.rung)}</> : null}
             {" · "}{queueIndex + 1} / {queue.length}
             {loopPasses > 1 && <> · {uiFmt("Learning pass {pass} of {passes}", { pass: loopPass, passes: loopPasses })}</>}
@@ -2013,11 +2019,13 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
             <fieldset className="mt-4">
               <legend className="text-xs font-black text-[var(--text-2)]">{ui("Content source")}</legend>
               <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">
-                {ui("Choose whether Listen pulls from the sentence tracker, word tracker, or both.")}
+                {ui("Choose whether Listen pulls from the sentence tracker, the word tracker, the passages, or all of them.")}
               </p>
+              {/* Four across on a wide pane, two-by-two once it narrows —
+                  four columns at phone width leave labels breaking mid-word. */}
               <div
                 aria-label={ui("Content source")}
-                className="mt-2 grid grid-cols-3 gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-1.5"
+                className="mt-2 grid grid-cols-2 gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-1.5 sm:grid-cols-4"
                 role="radiogroup"
               >
                 {([[
@@ -2025,7 +2033,9 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                 ], [
                   "words", "Words",
                 ], [
-                  "mixed", "Both",
+                  "passages", "Paragraphs",
+                ], [
+                  "mixed", "All",
                 ]] as const).map(([value, label]) => {
                   const selected = contentSource === value;
                   return (

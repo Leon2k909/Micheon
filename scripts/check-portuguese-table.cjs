@@ -92,7 +92,7 @@ const PROPER_NAMES = [
   // Where a German place has a Portuguese name this table uses it — Colónia,
   // Munique, Zurique, Hamburgo. Where it has none, the German name stands,
   // which is also what is written on the platform sign.
-  "Göttingen",
+  "Göttingen", "Tübingen",
   // The offices and the schemes, which keep the name written on the door or
   // on the form. Somebody applying for BAföG says BAföG, in any language.
   "Bürgeramt", "Bürgerbüro", "Ausländerbehörde", "Straße", "Goethestraße",
@@ -305,6 +305,19 @@ const NOT_FOR_PORTUGUESE = new Set([
   // dialogue is carried whole or not at all, so they went back in — see the
   // note beside them in the table.
   "Der, die oder das?",
+  // part29 — the two meanings of one German word. Schwanz is an animal's tail
+  // and, of a man, something vulgar, and these cards exist to say so. No
+  // Portuguese word carries both, so there is nothing for the lesson to be
+  // about. The idioms built on it are NOT here and are translated: den
+  // Schwanz einziehen is meter o rabo entre as pernas, and da war kein
+  // Schwanz is não estava lá vivalma. Portugal has its own pictures for those.
+  "der Schwanz",
+  "Bei Tieren ist das Wort völlig neutral.",
+  "Und was heißt: Jetzt zieht er den Schwanz ein?",
+  "Das heißt, dass er plötzlich zurückweicht.",
+  "Und wenn es um einen Mann geht?",
+  "Dann kann Schwanz ein vulgäres Wort für Penis sein.",
+  "Bei einem Mann ist das Wort Schwanz eine vulgäre Bezeichnung für den Penis.",
   // part174 — Gift and eventuell, traps for English speakers
   "Eventuell? Also ja oder nein?",
   "Wahrscheinlich ja! Eventuell heißt vielleicht, oder?",

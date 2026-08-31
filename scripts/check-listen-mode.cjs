@@ -271,6 +271,46 @@ check("every card in the queue knows how hard it is",
 
 check("Listen starts at the easiest level by default", DEFAULT_LISTEN_QUEUE_ORDER === "level");
 
+// ── the passages are something Listen can play ───────────────────────
+// Listen walked the sentence tracker and the word tracker, which left the
+// passages — the only authored German long enough to show how the language
+// joins up — as the one body of content it could not reach.
+const passageCards = buildListenQueue(parts, {}, { contentSource: "passages", order: "common" });
+check("asking for paragraphs plays paragraphs, and only those",
+  passageCards.length > 0 && passageCards.every((item) => item.kind === "passage"));
+check("a paragraph card is the whole passage, not a line of it",
+  // The joins between lines are the thing a paragraph has that a sentence
+  // does not, so a card that holds one line is the sentence queue again.
+  passageCards.some((item) => item.de.includes("\n") && item.en.includes("\n")));
+check("a paragraph's two sides stay line for line",
+  passageCards.every((item) =>
+    item.de.split("\n").length === item.en.split("\n").length));
+check("a paragraph's id cannot collide with a tracked card",
+  passageCards.every((item) => item.id.startsWith("passage:")));
+check("every paragraph card carries a level to show",
+  passageCards.every((item) => Boolean(item.levelLabel) && Boolean(item.rung)));
+
+check("the sentence and word sources leave the paragraphs out",
+  buildListenQueue(parts, {}, { contentSource: "sentences", order: "common" })
+    .every((item) => item.kind !== "passage")
+  && buildListenQueue(parts, {}, { contentSource: "words", order: "common" })
+    .every((item) => item.kind !== "passage"));
+
+check("All plays all three",
+  ["sentence", "word", "passage"].every((kind) =>
+    buildListenQueue(parts, {}, { contentSource: "mixed", order: "common" })
+      .some((item) => item.kind === kind)));
+
+// A passage carries its own level and no conversation band, so one filter
+// reads it directly and the other has nothing to read.
+check("narrowing by level narrows the paragraphs too",
+  buildListenQueue(parts, {}, { contentSource: "passages", order: "common", levels: ["A1"] })
+    .every((item) => item.levelLabel && item.levelLabel.includes("A1")));
+check("asking for a usefulness band drops them rather than inventing one",
+  buildListenQueue(parts, {}, {
+    contentSource: "passages", order: "common", usefulness: ["everyday"],
+  }).length === 0);
+
 /**
  * The badge on a card and the tracker's level filter must give one answer.
  *
@@ -1799,7 +1839,8 @@ for (const key of [
   "Keep playing around Micheon",
   "Continue when you open Home, Practice, Settings, or another app section.",
   "Content source",
-  "Choose whether Listen pulls from the sentence tracker, word tracker, or both.",
+  "Choose whether Listen pulls from the sentence tracker, the word tracker, the passages, or all of them.",
+  "Paragraph",
   "Queue order",
   "Easiest first works through the course by level — all of A1, then A2, then B1 — with the most useful card leading each level. Most common first teaches the phrases and words people are most likely to use, whatever level they are. Newest first plays the packs added most recently, so new content is heard instead of waiting behind thousands of commoner items.",
   "Easiest first (A1 → C1)",

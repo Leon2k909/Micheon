@@ -1,4 +1,5 @@
 import { borrowedWordSegments } from "@/lib/borrowedWords";
+import { PASSAGES } from "@/lib/passages";
 import {
   gradeEntryForId,
   loadGradeStore,
@@ -137,7 +138,7 @@ export function setListenMixedCounts(counts: Partial<ListenMixedCounts>, directi
 export const DEFAULT_LISTEN_LOOP_PASSES = 2;
 export const DEFAULT_NEXT_CARD_DELAY_MS = 1_100;
 export const DEFAULT_LANGUAGE_GAP_MS = 0;
-export type ListenContentSource = "sentences" | "words" | "mixed";
+export type ListenContentSource = "sentences" | "words" | "passages" | "mixed";
 export type ListenQueueOrder = "common" | "learning" | "least-heard" | "newest" | "level";
 export type ListenLevelFilter = "all" | CefrStep;
 export type ListenUsefulnessFilter = "all" | ConversationUsefulness;
@@ -402,7 +403,8 @@ export function getListenContentSource(
 ): ListenContentSource {
   try {
     const value = window.localStorage.getItem(courseSettingKey(CONTENT_SOURCE_KEY, direction));
-    if (value === "sentences" || value === "words" || value === "mixed") return value;
+    if (value === "sentences" || value === "words"
+      || value === "passages" || value === "mixed") return value;
   } catch { /* storage blocked: use the documented default */ }
   return DEFAULT_LISTEN_CONTENT_SOURCE;
 }
@@ -411,7 +413,9 @@ export function setListenContentSource(
   source: ListenContentSource,
   direction: LearningDirection = getLearningDirection()
 ): ListenContentSource {
-  const next = source === "sentences" || source === "words" ? source : "mixed";
+  const next = source === "sentences" || source === "words" || source === "passages"
+    ? source
+    : "mixed";
   try {
     window.localStorage.setItem(courseSettingKey(CONTENT_SOURCE_KEY, direction), next);
   } catch { /* keep Listen usable */ }
@@ -491,10 +495,18 @@ export function setListenReturnScope(
   return next;
 }
 
-/** Whether the wait covers this kind of card at all. */
-export function listenReturnCovers(scope: ListenReturnScope, kind: "word" | "sentence"): boolean {
+/** Whether the wait covers this kind of card at all.
+ *
+ * A paragraph counts as a sentence here. The scope asks whether the wait is
+ * for single words or for running language, and a paragraph is emphatically
+ * the second — so "sentences" covers it rather than leaving it the one kind
+ * of card no setting reaches. */
+export function listenReturnCovers(
+  scope: ListenReturnScope,
+  kind: "word" | "sentence" | "passage"
+): boolean {
   if (scope === "both") return true;
-  return scope === "words" ? kind === "word" : kind === "sentence";
+  return scope === "words" ? kind === "word" : kind !== "word";
 }
 
 /** True when the order groups its cards, so asking what leads a group means
@@ -1019,7 +1031,7 @@ export type ListenItem = {
    * sorts at 1 from inside an A2 pack, and that number is the honest badge.
    */
   levelLabel?: string;
-  kind: "sentence" | "word";
+  kind: "sentence" | "word" | "passage";
   popularity: number;
 };
 
@@ -1051,7 +1063,11 @@ export function arrangeListenMixedQueue(
   const wanted = normalizeListenMixedCounts(counts);
   const deal = (rows: ListenItem[], out: ListenItem[]) => {
     const words = rows.filter((item) => item.kind === "word");
-    const sentences = rows.filter((item) => item.kind === "sentence");
+    // Paragraphs deal on the sentence side. The counts below are a
+    // cadence between single words and running language, and a paragraph
+    // belongs to the second; giving it a third slot of its own would put
+    // one in every round off a pool of ten.
+    const sentences = rows.filter((item) => item.kind !== "word");
     let wi = 0; let si = 0;
     while (wi < words.length || si < sentences.length) {
       for (let i = 0; i < wanted.words && wi < words.length; i += 1) out.push(words[wi++]);
@@ -1205,10 +1221,28 @@ export function buildListenQueue(
     return true;
   };
 
+  /**
+   * The same narrowing, for a card that belongs to no pack.
+   *
+   * A passage carries its own level, so the level filter reads that directly.
+   * It has no conversation-usefulness band at all — that score is a property
+   * of a pack, and a passage is not one — so asking for a band drops the
+   * passages rather than guessing a band for them. Answering "how useful is
+   * this in conversation" with a number nothing computed would put paragraphs
+   * in a filter the learner set precisely to keep them out of.
+   */
+  const keepPassage = (ownLevel: string) => {
+    if (usefulnessFilter.size > 0) return false;
+    if (levelFilter.size > 0 && !levelFilter.has(cefrStep(ownLevel))) return false;
+    return true;
+  };
+
   // primaryAnswer on both sides: answer keys list alternatives behind " / "
   // for the matcher's benefit, but a listening card shows (and the voice
   // speaks) one clean form, not the whole key.
-  const rankedSentences = content === "words" ? [] : buildCatalog(parts)
+  const rankedSentences = content === "words" || content === "passages"
+    ? []
+    : buildCatalog(parts)
     .filter((item) => keep(item.partKey))
     .map((item, index) => ({
       item,
@@ -1245,7 +1279,7 @@ export function buildListenQueue(
   // The contextual lesson remains available; only the arbitrary global card
   // is withheld. This is intentionally accuracy-first: silence teaches less
   // than a confidently spoken mistranslation, but it does not teach it wrong.
-  const rankedWords = content === "sentences"
+  const rankedWords = content === "sentences" || content === "passages"
     ? []
     : rankWordCatalog(
       buildWordCatalog(parts).filter((word) => word.listenSafe !== false && keep(word.partKey, word.level)),
@@ -1289,14 +1323,54 @@ export function buildListenQueue(
   // tracker is much larger, this naturally keeps the product's phrase-first
   // cadence while still letting the most common word outrank a much less
   // common sentence. Sentence wins an exact tie.
+  /**
+   * The passages, one card per paragraph.
+   *
+   * A card is the whole passage rather than a line of it, because a line of a
+   * passage is a sentence and Listen already has thousands of those. What a
+   * paragraph has that they do not is the joins — how one line answers the
+   * one before it — and splitting it up is exactly what throws those away.
+   *
+   * Its meaning is the English lines in the same order, so the two sides stay
+   * line-for-line however long the card gets.
+   *
+   * Ranked by how hard the passage says it is, then by the order they are
+   * written in. There is no frequency score for a paragraph and inventing one
+   * would be a number with nothing behind it.
+   */
+  const passages: ListenItem[] = content === "sentences" || content === "words"
+    ? []
+    : PASSAGES
+      .map((passage, index) => {
+        const de = passage.lines.map((line) => line.de.trim()).filter(Boolean).join("\n");
+        const en = passage.lines.map((line) => line.en.trim()).filter(Boolean).join("\n");
+        return { passage, index, de, en };
+      })
+      .filter(({ de, en, passage }) => de && en && keepPassage(passage.level))
+      .sort((a, b) => cefrRung(a.passage.level) - cefrRung(b.passage.level) || a.index - b.index)
+      .map(({ passage, de, en }, index, ranked) => ({
+        // Namespaced, so a passage's grade can never land on a card that
+        // happens to share its id in the sentence tracker.
+        id: `passage:${passage.id}`,
+        aliases: [],
+        de,
+        en,
+        use: passage.source,
+        rung: cefrRung(passage.level),
+        levelLabel: passage.level,
+        kind: "passage" as const,
+        popularity: index / Math.max(1, ranked.length - 1),
+      }));
+
   let combined: ListenItem[];
-  if (sentences.length && words.length) {
-    combined = [...sentences, ...words].sort((a, b) =>
+  const lists = [sentences, words, passages].filter((list) => list.length);
+  if (lists.length > 1) {
+    combined = lists.flat().sort((a, b) =>
       a.popularity - b.popularity
-      || (a.kind === b.kind ? 0 : a.kind === "sentence" ? -1 : 1)
+      || (a.kind === b.kind ? 0 : a.kind === "sentence" ? -1 : b.kind === "sentence" ? 1 : 0)
     );
   } else {
-    combined = sentences.length ? sentences : words;
+    combined = lists[0] ?? [];
   }
 
   // Which language is in each of Listen's two slots, filled here rather than

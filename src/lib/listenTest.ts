@@ -67,7 +67,20 @@ export function buildListenTest(
   pool: ListenItem[] = [],
   maxQuestions: number = LISTEN_TEST_MAX_QUESTIONS
 ): ListenTestQuestion[] {
-  const usable = heard.filter((item) => item.de.trim() && item.en.trim());
+  /*
+   * Paragraphs are heard but not tested.
+   *
+   * A question here is four options and one right answer, which works because
+   * the options are short enough to hold in the head at once. Four paragraphs
+   * is not that question: it is a reading-comprehension exercise where the
+   * work is re-reading the choices rather than remembering the card, and the
+   * distractors would be four passages that look alike at a glance whatever
+   * they say. Listen plays them; Passages is where they are answered.
+   */
+  // Narrowed rather than merely filtered, so a question's kind is the two
+  // this paper can actually ask about.
+  const usable = heard.filter((item): item is ListenItem & { kind: "sentence" | "word" } =>
+    item.kind !== "passage" && Boolean(item.de.trim()) && Boolean(item.en.trim()));
   if (usable.length < LISTEN_TEST_MIN_HEARD) return [];
 
   const seed = seedFor(usable);
@@ -96,7 +109,7 @@ export function buildListenTest(
     const others = seededShuffle(usable, seed + index * 31);
     for (const candidate of others) consider(candidate);
     if (distractors.length < LISTEN_TEST_OPTIONS - 1) {
-      for (const candidate of seededShuffle(pool, seed + index * 17)) consider(candidate);
+      for (const candidate of seededShuffle(pool.filter((entry) => entry.kind !== "passage"), seed + index * 17)) consider(candidate);
     }
     // A question with nothing to choose between is not a question.
     if (!distractors.length) return;
