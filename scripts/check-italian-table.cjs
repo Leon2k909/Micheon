@@ -73,6 +73,9 @@ check(`no card has an empty Italian side${blank.length ? ` — ${blank[0].german
 const PROPER_NAMES = [
   "Müller", "Schröder", "Grün", "Björn", "Jürgen", "Günther", "Käthe",
   "München", "Köln", "Düsseldorf", "Nürnberg", "Zürich", "Österreich",
+  // Street names are proper names too, and Italian gives an address in the
+  // form the postman needs: "in Gartenstraße 8", not a translated street.
+  "Gartenstraße",
 ];
 const outsideQuotes = (italian) => {
   let rest = italian.replace(/«[^»]*»/g, " ");

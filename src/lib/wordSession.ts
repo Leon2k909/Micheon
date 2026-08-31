@@ -490,6 +490,27 @@ const UNSPOKEN_SETBACK = 600;
  */
 const SPOKEN_WEIGHT = 1;
 
+/**
+ * How many times the course has to say a word before the count means anything.
+ *
+ * One mention in 10,078 sentences is not evidence that a word is common; it is
+ * evidence that a sentence somewhere mentions it. But the rule read any count
+ * above zero as attestation, so a single passing mention outranked every word
+ * the course never happened to use — and in a pack the frequency bank does not
+ * reach, that single mention is the whole ordering.
+ *
+ * The vegetable shelf is the clearest case. None of its 32 words are in the
+ * bank, so the corpus decides alone: das Basilikum is said once, der Knoblauch
+ * and die Gurke and die Karotte not at all, and basil therefore led garlic,
+ * cucumber and carrot in a queue promising the commonest thing first.
+ *
+ * Two is the smallest bar that asks a word to have been said more than once.
+ * A word below it is not pushed to the back — it falls through to the same
+ * treatment the unsaid words already get, ordered on the written bank where
+ * that knows anything and on wordCommonality where it does not.
+ */
+const SPOKEN_EVIDENCE = 2;
+
 export function rankWordCatalog(
   catalog: WordItem[],
   corpusIndex: CorpusIndex | null = null,
@@ -546,7 +567,7 @@ export function rankWordCatalog(
         const weight = Math.sqrt(uses * Math.max(1, Math.min(reach, uses)));
         return { id: word.id, uses, weight };
       })
-      .filter((entry) => entry.uses > 0)
+      .filter((entry) => entry.uses >= SPOKEN_EVIDENCE)
       .sort((a, b) => b.weight - a.weight);
     return new Map(attested.map((entry, index) => [entry.id, index + 1]));
   })();
