@@ -18742,4 +18742,497 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Grundsätzlich ja, im Einzelfall entscheidet aber der Arzt.": "Por princípio sim, mas em cada caso quem decide é o médico.",
   "Er hat der Änderung nie ausdrücklich zugestimmt, nur stillschweigend.": "Nunca deu expressamente o seu acordo à alteração — apenas tacitamente.",
   "Schlimmstenfalls verlieren wir ein Jahr, im Gegenteil zu allem Gerede aber nicht das Projekt.": "Na pior das hipóteses perdemos um ano, mas, ao contrário de toda a conversa, não perdemos o projeto.",
+
+  // ── A bad day and a friend who listens (part93) ─────────────────────────
+  //
+  // Sich etwas von der Seele reden is desabafar, one verb for the whole thing,
+  // and Dampf ablassen is descarregar. Mir platzt der Kragen is estou quase a
+  // rebentar; auf den Keks gehen is dar cabo dos nervos.
+  //
+  // Auf hohem Niveau jammern is queixar-me de barriga cheia — complaining on a
+  // full stomach, which is exactly the self-aware apology the German makes.
+  "Ich muss mir das mal von der Seele reden.": "Preciso mesmo de desabafar isto.",
+  "Kann ich mich kurz bei dir auskotzen?": "Posso desabafar contigo um bocadinho?",
+  "Ich muss mal kurz Dampf ablassen, sonst platze ich.": "Preciso de descarregar um bocado, senão rebento.",
+  "Der Tag war einfach nur zum Kotzen.": "O dia foi simplesmente de vomitar.",
+  "Mir reicht's langsam.": "Já começo a estar farta.",
+  "Das geht mir langsam so was von auf den Keks.": "Aquilo já me está a dar cabo dos nervos.",
+  "Mir platzt gleich der Kragen.": "Estou quase a rebentar.",
+  "Ich bin mit den Nerven völlig am Ende.": "Estou com os nervos em franja.",
+  "Das ist doch total ungerecht!": "Isso é completamente injusto!",
+  "Warum krieg ich immer den Ärger ab?": "Porque é que sobra sempre para mim?",
+  "Der hat mich vor allen zusammengefaltet.": "Aquele deu-me uma descompostura à frente de toda a gente.",
+  "Und dann meinte der auch noch, ich soll mich nicht so anstellen.": "E ainda por cima disse que eu não fizesse tanto caso.",
+  "Der hat mich voll blöd von der Seite angemacht.": "Aquele veio ter comigo sem razão nenhuma, todo malcriado.",
+  "Was bildet der sich eigentlich ein?": "Mas afinal quem é que ele pensa que é?",
+  "Ich hab den ganzen Tag alles runtergeschluckt.": "Passei o dia todo a engolir tudo.",
+  "Ich will mich ja nicht beschweren, aber langsam wird's echt viel.": "Não me quero queixar, mas já começa a ser muito.",
+  "Ich weiß, ich jammer gerade auf hohem Niveau.": "Eu sei que me estou a queixar de barriga cheia.",
+  "Reg dich ruhig auf, das ist völlig berechtigt.": "Zanga-te à vontade, tens toda a razão para isso.",
+  "Jetzt reg dich doch nicht so auf.": "Vá lá, não te ponhas assim.",
+  "Sorry, ich wollte dich nicht so vollquatschen.": "Desculpa, não te queria despejar isto tudo em cima.",
+  "Danke, dass du dir das angehört hast. Tut echt gut.": "Obrigada por me teres ouvido. Sabe mesmo bem.",
+
+  // ── Nuance, irony and saying it without saying it (part99) ──────────────
+  //
+  // Fifteen ways of disagreeing without saying so, and each one keeps its
+  // sideways angle. Das steht auf einem anderen Blatt is isso são outros
+  // quinhentos. Das nimmt sich nicht viel is vai dar ao mesmo. Da beißt die
+  // Maus keinen Faden ab is não há volta a dar-lhe.
+  //
+  // Sagen wir es mal so is digamos assim, and the understatement that follows
+  // has to stay just as flat: entusiasmada não fiquei.
+  "Das würde ich so nicht unterschreiben.": "Eu não diria bem assim.",
+  "Da würde ich doch stark differenzieren wollen.": "Aí gostaria de fazer algumas distinções.",
+  "Das ist, gelinde gesagt, unglücklich formuliert.": "Isso está, para dizer o mínimo, mal formulado.",
+  "Ich will dir ja nicht zu nahe treten, aber …": "Não te quero ofender, mas …",
+  "So hatte ich das nicht gemeint, aber lassen wir es dabei.": "Não era isso que eu queria dizer, mas fica por aqui.",
+  "Das nimmt sich nicht viel.": "Vai dar ao mesmo.",
+  "Das steht auf einem anderen Blatt.": "Isso são outros quinhentos.",
+  "Da beißt die Maus keinen Faden ab.": "Não há volta a dar-lhe.",
+  "Ich habe da so meine Zweifel.": "Quanto a isso tenho as minhas dúvidas.",
+  "Das kann man so sehen, muss man aber nicht.": "Pode ver-se assim, mas não tem de ser.",
+  "Im Großen und Ganzen kann ich dem folgen.": "No essencial consigo acompanhar esse raciocínio.",
+  "Das hat er nun wirklich nicht verdient.": "Aquilo ele não merecia mesmo.",
+  "Sagen wir es mal so: begeistert war ich nicht.": "Digamos assim: entusiasmada não fiquei.",
+  "Ich möchte das nicht überbewerten.": "Não quero dar a isso mais peso do que tem.",
+  "Das würde ich jetzt nicht überstrapazieren.": "Eu não esticaria essa comparação.",
+
+  // ── At the pharmacy (part94) ────────────────────────────────────────────
+  //
+  // Rezeptfrei is sem receita, plasters are pensos rápidos and antiseptic is
+  // desinfetante. Der Notdienst is o serviço permanente — the sign in the
+  // window of the one Portuguese pharmacy open at three in the morning.
+  "Haben Sie etwas gegen Halsschmerzen?": "Tem alguma coisa para dores de garganta?",
+  "Ist das rezeptfrei?": "Isso é sem receita?",
+  "Ich habe ein Rezept von meinem Arzt.": "Tenho uma receita do meu médico.",
+  "Wie oft soll ich das nehmen?": "De quanto em quanto tempo devo tomar isto?",
+  "Nehme ich das vor oder nach dem Essen?": "Tomo isto antes ou depois das refeições?",
+  "Gibt es das auch günstiger?": "Há disso alguma versão mais barata?",
+  "Vertrage ich das mit meinen anderen Medikamenten?": "Isto dá-se bem com os outros medicamentos que tomo?",
+  "Welche Nebenwirkungen hat das?": "Que efeitos secundários é que isto tem?",
+  "Macht das müde?": "Isso dá sono?",
+  "Für ein Kind von fünf Jahren, geht das?": "Para uma criança de cinco anos, serve?",
+  "Welche Apotheke hat heute Nacht Notdienst?": "Que farmácia é que está de serviço permanente esta noite?",
+  "Können Sie mir das erklären, bitte?": "Importa-se de me explicar isso?",
+  "Haben Sie Pflaster und Desinfektionsmittel?": "Tem pensos rápidos e desinfetante?",
+  "Das ist in der Drogerie, nicht in der Apotheke.": "Isso é na drogaria, não é na farmácia.",
+  "Haben Sie etwas, das ich ohne Rezept bekomme?": "Tem alguma coisa que eu possa levar sem receita?",
+  "Nehmen Sie die Tropfen dreimal täglich nach dem Essen.": "Tome as gotas três vezes por dia depois das refeições.",
+  "Gegen die Schmerzen wurde mir Ibuprofen empfohlen.": "Para as dores recomendaram-me ibuprofeno.",
+  "Gibt es das auch als Saft für Kinder?": "Há disso em xarope para crianças?",
+  "Die Salbe hat bei mir sofort geholfen.": "A pomada resolveu-me logo.",
+  "Vertragen Sie das Mittel, obwohl Sie allergisch sind?": "Tolera este medicamento, mesmo sendo alérgica?",
+  "Fragen Sie nach, bevor Sie zwei Mittel kombinieren.": "Pergunte antes de combinar dois medicamentos.",
+  "Wenn das Fieber bis morgen nicht sinkt, gehen Sie zum Arzt.": "Se a febre não baixar até amanhã, vá ao médico.",
+
+  // ── The dentist and dental pain (part95) ────────────────────────────────
+  //
+  // Eine Füllung is um chumbo — Portuguese fills a tooth with lead, at least
+  // in the word, and that is what the dentist writes on the chart. Die
+  // Betäubung is a anestesia, and der Heil- und Kostenplan is um orçamento,
+  // which is what a Portuguese dentist hands over before starting.
+  //
+  // Es zieht, aber es pocht nicht keeps both sensations apart: é uma dor
+  // repuxada, não é latejante.
+  "Ich habe starke Zahnschmerzen.": "Tenho fortes dores de dentes.",
+  "Können Sie mir heute einen Notfalltermin geben?": "Consegue encaixar-me hoje como urgência?",
+  "Der Zahn tut weh, wenn ich etwas Kaltes trinke.": "O dente dói-me quando bebo alguma coisa fria.",
+  "Es zieht, aber es pocht nicht.": "É uma dor repuxada, não é latejante.",
+  "Der hintere Zahn unten links.": "O dente de trás, em baixo à esquerda.",
+  "Der Zahn ist sehr empfindlich geworden.": "O dente ficou muito sensível.",
+  "Mir ist eine Füllung rausgefallen.": "Caiu-me um chumbo.",
+  "Muss der gezogen werden?": "Tem de ser arrancado?",
+  "Bekomme ich eine Spritze?": "Vou levar uma picada?",
+  "Ich habe ziemliche Angst vorm Zahnarzt.": "Tenho bastante medo do dentista.",
+  "Können Sie kurz aufhören? Ich brauche eine Pause.": "Pode parar um bocadinho? Preciso de uma pausa.",
+  "Was kostet das, und was zahlt die Kasse?": "Quanto custa isso, e o que é que o seguro cobre?",
+  "Können Sie mir einen Heil- und Kostenplan machen?": "Pode fazer-me um orçamento do tratamento?",
+  "Ich möchte eine professionelle Zahnreinigung machen lassen.": "Queria marcar uma destartarização.",
+  "Ich war ein Jahr lang nicht mehr da.": "Há um ano que não venho cá.",
+  "Beim Trinken zieht es im Zahn.": "Quando bebo, o dente repuxa.",
+  "Die Füllung ist beim Kauen herausgefallen.": "O chumbo caiu enquanto eu mastigava.",
+  "Ich habe den Termin verschoben, weil die Angst zu groß war.": "Adiei a consulta porque o medo era grande de mais.",
+  "Muss der Weisheitszahn wirklich gezogen werden?": "O dente do siso tem mesmo de ser arrancado?",
+  "Die Betäubung wirkt schon, meine Lippe ist taub.": "A anestesia já está a fazer efeito, tenho o lábio dormente.",
+  "Spülen Sie heute bitte nur vorsichtig.": "Hoje bocheche apenas com cuidado, se faz favor.",
+  "Seit der Behandlung kann ich wieder ohne Schmerzen kauen.": "Desde o tratamento voltei a mastigar sem dores.",
+  "Wer regelmäßig zur Kontrolle geht, spart am Ende Geld.": "Quem vai às consultas de rotina acaba por poupar dinheiro.",
+
+  // ── Emergencies and accidents (part96) ──────────────────────────────────
+  //
+  // Der Notruf is o 112 in Portugal and the sentence says so plainly; the
+  // motorway and the exit keep their German names, because somebody on the
+  // phone to a German dispatcher has to read out what is on the sign.
+  //
+  // Die Personalien austauschen is trocar os dados, and eine Bescheinigung
+  // für die Versicherung is uma declaração para o seguro.
+  "Rufen Sie einen Krankenwagen!": "Chamem uma ambulância!",
+  "Es hat einen Unfall gegeben.": "Houve um acidente.",
+  "Wir sind auf der B27, kurz vor der Ausfahrt Tübingen.": "Estamos na B27, um pouco antes da saída de Tübingen.",
+  "Eine Person ist verletzt.": "Há uma pessoa ferida.",
+  "Er ist bewusstlos, atmet aber.": "Está inconsciente, mas respira.",
+  "Bleiben Sie ruhig, Hilfe ist unterwegs.": "Mantenha a calma, a ajuda vem a caminho.",
+  "Ich habe einen Erste-Hilfe-Kurs gemacht.": "Fiz um curso de primeiros socorros.",
+  "Kann mir bitte jemand helfen?": "Alguém me pode ajudar, por favor?",
+  "Es brennt! Alle raus!": "Fogo! Toda a gente para fora!",
+  "Ich bin gestürzt und komme nicht mehr hoch.": "Caí e não consigo levantar-me.",
+  "Mir ist auf einmal schwindelig geworden.": "De repente deu-me uma tontura.",
+  "Haben Sie die Polizei schon gerufen?": "Já chamaram a polícia?",
+  "Ich möchte einen Unfall melden.": "Queria participar um acidente.",
+  "Können wir die Personalien austauschen?": "Trocamos os dados?",
+  "Ich brauche eine Bescheinigung für die Versicherung.": "Preciso de uma declaração para o seguro.",
+  "Rufen Sie sofort den Notruf an, das ist keine Kleinigkeit.": "Ligue imediatamente para o número de emergência, isto não é coisa pouca.",
+  "Der Fahrer ist ansprechbar, aber verletzt.": "O condutor responde, mas está ferido.",
+  "Bleiben Sie bei ihm, bis der Krankenwagen kommt.": "Fique com ele até chegar a ambulância.",
+  "Die Wunde muss sofort versorgt werden.": "A ferida tem de ser tratada imediatamente.",
+  "Ich habe mir beim Sport den Knöchel verstaucht.": "Torci o tornozelo a fazer desporto.",
+  "Wo genau tut es weh, wenn ich hier drücke?": "Onde é que dói exatamente quando eu carrego aqui?",
+  "Zum Glück war der Notarzt in wenigen Minuten da.": "Ainda bem que o médico de emergência chegou em poucos minutos.",
+  "Der Unfall wurde von zwei Zeugen gemeldet.": "O acidente foi participado por duas testemunhas.",
+
+  // ── Quitting, notice and time off (part98) ──────────────────────────────
+  //
+  // Kündigen is despedir-se when you do it and ser despedido when it is done
+  // to you, and this pack is all the first kind. Überstunden abbauen is gozar
+  // as horas extra, der Resturlaub is as férias por gozar, and der
+  // Aufhebungsvertrag is um acordo de revogação, the term in the labour code.
+  //
+  // Der Kinderkrankentag is falta por assistência a filho, which this table
+  // already uses: the days a Portuguese parent takes when a child is ill.
+  "Ich möchte kündigen.": "Queria despedir-me.",
+  "Ich reiche meine Kündigung zum 30. September ein.": "Apresento a minha demissão com efeitos a 30 de setembro.",
+  "Kann ich meinen Urlaub für August einreichen?": "Posso submeter o meu pedido de férias para agosto?",
+  "Wie viele Urlaubstage habe ich noch?": "Quantos dias de férias é que ainda tenho?",
+  "Ich melde mich krank.": "Vou meter baixa.",
+  "Ich habe eine Krankschreibung bis Freitag.": "Tenho baixa até sexta.",
+  "Mein Kind ist krank, ich brauche einen Kinderkrankentag.": "O meu filho está doente, preciso de uma falta por assistência a filho.",
+  "Ich würde gern über mein Gehalt sprechen.": "Gostava de falar sobre o meu salário.",
+  "Ich habe in den letzten zwei Jahren deutlich mehr Verantwortung übernommen.": "Nos últimos dois anos assumi bastante mais responsabilidade.",
+  "Können wir über eine Gehaltserhöhung sprechen?": "Podemos falar de um aumento?",
+  "Kann ich zwei Tage pro Woche im Homeoffice arbeiten?": "Posso trabalhar dois dias por semana em teletrabalho?",
+  "Ich habe diesen Monat viele Überstunden gemacht.": "Este mês fiz muitas horas extra.",
+  "Kann ich die Überstunden abbauen?": "Posso gozar as horas extra em folgas?",
+  "Ich brauche ein qualifiziertes Arbeitszeugnis.": "Preciso de um certificado de trabalho completo.",
+  "Man hat mir einen Aufhebungsvertrag angeboten.": "Propuseram-me um acordo de revogação.",
+  "Ich habe meinen Vertrag zum Monatsende gekündigt.": "Denunciei o meu contrato com efeitos ao fim do mês.",
+  "Die Kündigungsfrist beträgt bei mir drei Monate.": "No meu caso o aviso prévio é de três meses.",
+  "Der Resturlaub wird mir ausgezahlt, weil ich ihn nicht mehr nehmen kann.": "As férias por gozar vão ser-me pagas, porque já não as posso tirar.",
+  "Bevor ich unterschreibe, will ich das Arbeitszeugnis sehen.": "Antes de assinar, quero ver o certificado de trabalho.",
+  "In der Übergabe erkläre ich alles, was mein Nachfolger wissen muss.": "Na passagem de pasta explico tudo o que o meu sucessor precisa de saber.",
+  "Nach acht Jahren fällt mir der Abschied schwerer als gedacht.": "Ao fim de oito anos, a despedida custa-me mais do que eu julgava.",
+  "Mein Chef hat versucht, mich mit mehr Geld zu halten.": "O meu chefe tentou segurar-me com mais dinheiro.",
+  "Unbezahlten Urlaub muss man rechtzeitig beantragen.": "A licença sem vencimento tem de ser pedida com antecedência.",
+
+  // ── Milestones: proposals, weddings and family plans (part41) ───────────
+  //
+  // Standesamtlich is pelo civil and kirchlich is pela igreja — the two
+  // weddings a Portuguese couple chooses between, in the words the invitation
+  // uses. Der Trauzeuge is o padrinho, as this table already has it, and die
+  // Elternzeit is a licença parental.
+  //
+  // Das Fellbaby is o bebé de pelo. The joke exists in Portuguese too and did
+  // not need explaining.
+  "heiraten": "casar",
+  "sich verloben": "ficar noivo",
+  "schwanger": "grávida",
+  "die Schwangerschaft": "a gravidez",
+  "das Haustier": "o animal de estimação",
+  "Leute, wir haben eine große Neuigkeit: Wir haben uns verlobt!": "Pessoal, temos uma grande novidade: ficámos noivos!",
+  "Was?! Zeig den Ring! Wie hat er den Antrag gemacht?": "O quê?! Mostra o anel! Como é que ele te pediu?",
+  "Am Strand, bei Sonnenuntergang. Er ist auf ein Knie gegangen und hat gefragt: \"Willst du mich heiraten?\"": "Na praia, ao pôr do sol. Pôs-se de joelho no chão e perguntou: \"Queres casar comigo?\"",
+  "Und du hast natürlich Ja gesagt! Herzlichen Glückwunsch!": "E tu disseste que sim, claro! Muitos parabéns!",
+  "Wir heiraten nächsten Sommer – erst standesamtlich, dann feiern wir groß.": "Casamos no próximo verão – primeiro pelo civil, depois festejamos em grande.",
+  "Ihr seid ein wunderschönes Paar. Ich freue mich so für euch!": "Vocês fazem um par lindíssimo. Estou tão contente por vocês!",
+  "Ich habe nachgedacht... Sollen wir zusammenziehen?": "Andei a pensar... vamos viver juntos?",
+  "Ehrlich? Ich dachte schon, du fragst nie! Ja, unbedingt.": "A sério? Já pensava que nunca perguntavas! Vamos, sem dúvida.",
+  "Und irgendwann... willst du eigentlich Kinder?": "E um dia... afinal queres filhos?",
+  "Ja, irgendwann schon. Aber erst will ich mir mit dir eine Zukunft aufbauen.": "Quero, um dia. Mas primeiro quero construir um futuro contigo.",
+  "Gut. Und bis dahin: Sollen wir uns einen Hund holen?": "Ainda bem. E até lá: arranjamos um cão?",
+  "Ein Fellbaby als Probelauf? Abgemacht!": "Um bebé de pelo como ensaio? Combinado!",
+  "Wir haben auch eine Neuigkeit: Wir bekommen ein Baby!": "Nós também temos uma novidade: vamos ter um bebé!",
+  "Nein, wirklich? Herzlichen Glückwunsch! Wann ist der Termin?": "Não! A sério? Muitos parabéns! Para quando é?",
+  "Im Januar. Ich bin im vierten Monat.": "Em janeiro. Estou de quatro meses.",
+  "Wie schön! Und wie macht ihr das mit der Arbeit?": "Que bom! E como é que vocês fazem com o trabalho?",
+  "Ich nehme ein Jahr Elternzeit, und Jonas nimmt danach noch sechs Monate.": "Eu tiro um ano de licença parental e o Jonas tira mais seis meses a seguir.",
+  "Toll, dass ihr euch das aufteilt. Ihr werdet super Eltern!": "Que bom que dividem isso. Vão ser uns pais fantásticos!",
+  "Willst du mich heiraten?": "Queres casar comigo?",
+  "Er hat mir einen Antrag gemacht!": "Ele pediu-me em casamento!",
+  "Sie hat Ja gesagt!": "Ela disse que sim!",
+  "Wir haben uns verlobt.": "Ficámos noivos.",
+  "Zeig mal den Verlobungsring!": "Mostra lá o anel de noivado!",
+  "Herzlichen Glückwunsch zur Verlobung!": "Muitos parabéns pelo noivado!",
+  "Wie hat er den Antrag gemacht?": "Como é que ele te pediu?",
+  "Wir heiraten nächsten Sommer.": "Casamos no próximo verão.",
+  "Heiratet ihr standesamtlich oder kirchlich?": "Casam pelo civil ou pela igreja?",
+  "Wir haben nur standesamtlich geheiratet.": "Casámos só pelo civil.",
+  "Die Trauung ist um drei, danach wird gefeiert.": "A cerimónia é às três, depois é a festa.",
+  "Willst du mein Trauzeuge sein?": "Queres ser meu padrinho?",
+  "Wohin geht's in die Flitterwochen?": "Para onde vão na lua de mel?",
+  "Ihr seid ein wunderschönes Paar.": "Vocês fazem um par lindíssimo.",
+  "Sollen wir zusammenziehen?": "Vamos viver juntos?",
+  "Ich will mir mit dir eine Zukunft aufbauen.": "Quero construir um futuro contigo.",
+  "Willst du irgendwann Kinder?": "Queres ter filhos um dia?",
+  "Wir bekommen ein Baby!": "Vamos ter um bebé!",
+  "Ich bin schwanger.": "Estou grávida.",
+  "Das Baby ist unterwegs.": "O bebé vem a caminho.",
+  "Wann ist der Termin?": "Para quando é?",
+  "Sie ist im vierten Monat.": "Ela está de quatro meses.",
+  "Er nimmt ein Jahr Elternzeit.": "Ele tira um ano de licença parental.",
+  "Wir werden Eltern!": "Vamos ser pais!",
+  "Wir wünschen uns Kinder.": "Queremos ter filhos.",
+  "Sollen wir uns einen Hund holen?": "Arranjamos um cão?",
+  "Wir haben uns ein Haustier angeschafft.": "Arranjámos um animal de estimação.",
+  "Das ist unser Fellbaby.": "Este é o nosso bebé de pelo.",
+
+  // ── Condolences, loss and being there (part60) ──────────────────────────
+  //
+  // Nothing in this pack is allowed to sound clever. Mein herzliches Beileid
+  // is as minhas sentidas condolências, the phrase said at the door of a
+  // Portuguese funeral and nothing else. In stiller Trauer is com profundo
+  // pesar, which is what the death notice in the newspaper prints.
+  //
+  // Sie ist friedlich eingeschlafen is partiu serenamente. Portuguese does not
+  // put the person to sleep; it lets them leave, and that is the gentler word
+  // there. Der Leichenschmaus is o repasto, said quietly and without a joke.
+  "versterben": "falecer",
+  "der/die Verstorbene": "o falecido / a falecida",
+  "jemandem beistehen": "estar ao lado de alguém",
+  "erben": "herdar",
+  "der Todestag": "o aniversário da morte",
+  "das Kondolenzbuch": "o livro de condolências",
+  "der Trauerfall": "a perda de um familiar",
+  "Hey... meine Mutter hat gerade angerufen. Oma ist heute Morgen gestorben.": "Ouve... a minha mãe acabou de ligar. A avó morreu esta manhã.",
+  "Oh nein. Komm her. Es tut mir so leid.": "Ai não. Anda cá. Lamento imenso.",
+  "Sie ist friedlich eingeschlafen, sagen sie. Ich weiß gar nicht, was ich gerade fühlen soll.": "Partiu serenamente, dizem eles. Nem sei o que é que hei de sentir neste momento.",
+  "Du musst gerade gar nichts fühlen oder stark sein. Ich bin für dich da.": "Não tens de sentir nada nem de ser forte agora. Estou aqui para ti.",
+  "Kommst du mit zur Beerdigung? Ich schaffe das nicht allein.": "Vens comigo ao funeral? Não sou capaz de ir sozinha.",
+  "Natürlich komme ich mit. Wir stehen das zusammen durch.": "Claro que vou contigo. Havemos de aguentar isto juntos.",
+  "Frau Berger, ich habe von Ihrem Trauerfall gehört. Mein herzliches Beileid.": "Senhora Berger, soube da sua perda. As minhas sentidas condolências.",
+  "Danke, Herr Yilmaz. Das ist lieb von Ihnen.": "Obrigada, senhor Yilmaz. É muito amável da sua parte.",
+  "Wenn wir Ihnen im Team etwas abnehmen können, sagen Sie einfach Bescheid.": "Se a equipa lhe puder tirar alguma coisa de cima, é só dizer.",
+  "Das weiß ich wirklich zu schätzen. Ab nächster Woche bin ich wieder da.": "Agradeço-lhe mesmo. A partir da próxima semana estou de volta.",
+  "Lassen Sie sich Zeit. Die Arbeit läuft nicht weg.": "Leve o tempo que precisar. O trabalho não foge.",
+  "Mein herzliches Beileid.": "As minhas sentidas condolências.",
+  "Mein aufrichtiges Beileid zum Verlust Ihrer Mutter.": "As minhas sinceras condolências pela perda da sua mãe.",
+  "Es tut mir so leid für dich.": "Lamento tanto por ti.",
+  "Ich bin in Gedanken bei dir und deiner Familie.": "Estou em pensamento contigo e com a tua família.",
+  "Wenn ich irgendwas tun kann, sag Bescheid.": "Se houver alguma coisa que eu possa fazer, diz.",
+  "jemandem sein Beileid aussprechen": "apresentar condolências a alguém",
+  "In stiller Trauer": "Com profundo pesar",
+  "Wir haben einen Trauerfall in der Familie.": "Tivemos uma morte na família.",
+  "Er ist letzte Woche gestorben.": "Ele morreu na semana passada.",
+  "Sie ist am Montag verstorben.": "Ela faleceu na segunda-feira.",
+  "Er ist von uns gegangen.": "Ele deixou-nos.",
+  "Sie ist friedlich eingeschlafen.": "Partiu serenamente.",
+  "Die Beerdigung ist am Freitag um elf.": "O funeral é na sexta às onze.",
+  "Wird sie beerdigt oder eingeäschert?": "Vai ser sepultada ou cremada?",
+  "Woran ist er gestorben?": "De que é que ele morreu?",
+  "Sie trauert immer noch um ihren Mann.": "Ela ainda está de luto pelo marido.",
+  "Dein Verlust tut mir unendlich leid.": "Lamento profundamente a tua perda.",
+  "Trauer braucht Zeit.": "O luto precisa de tempo.",
+  "Du musst jetzt nicht stark sein.": "Não tens de ser forte agora.",
+  "Ich bin für dich da.": "Estou aqui para ti.",
+  "Lass es mich wissen, wenn du reden willst.": "Diz-me se quiseres falar.",
+  "Sie hat das Haus von ihrer Oma geerbt.": "Herdou a casa da avó.",
+  "An seinem ersten Todestag haben wir Kerzen angezündet.": "No primeiro aniversário da morte dele acendemos velas.",
+  "Zur Beerdigung trägt man Schwarz.": "Para um funeral veste-se preto.",
+  "Bitte tragen Sie sich ins Kondolenzbuch ein.": "Assine o livro de condolências, se faz favor.",
+  "Nach der Trauerfeier gibt es noch einen Leichenschmaus.": "Depois da cerimónia fúnebre há ainda um repasto.",
+  "Wir stehen das zusammen durch.": "Havemos de aguentar isto juntos.",
+
+  // ── Family trouble and what people believe (part47) ─────────────────────
+  //
+  // Das schwarze Schaf is a ovelha ronhosa in Portugal — the scabby sheep
+  // rather than the black one, and it is the fixed phrase. Funkstille is
+  // silêncio absoluto, and sich zerstreiten is zangar-se de vez.
+  //
+  // DIE KIRCHENSTEUER STAYS GERMAN as a fact rather than a word: Portugal has
+  // no church tax, so a Portuguese name would describe something that does not
+  // exist. The sentence explains it instead — o imposto eclesiástico alemão —
+  // and the card about leaving the church keeps its point.
+  "der Familienstreit": "a zanga de família",
+  "sich zerstreiten": "zangar-se de vez",
+  "der Kontaktabbruch": "o corte de relações",
+  "sich einmischen": "meter-se",
+  "die Schwiegereltern": "os sogros",
+  "sich versöhnen": "reconciliar-se",
+  "den Erwartungen gerecht werden": "corresponder às expectativas",
+  "der Glaube": "a fé",
+  "glauben an": "acreditar em",
+  "beten": "rezar",
+  "gläubig": "crente",
+  "die Konfession": "a confissão religiosa",
+  "Du wirkst so bedrückt. Was ist los?": "Tens um ar tão abatido. O que é que se passa?",
+  "Meine Schwester hat wieder angerufen. Wir haben uns total zerstritten.": "A minha irmã voltou a ligar. Zangámo-nos completamente.",
+  "Willst du drüber reden? Ich bin für dich da.": "Queres falar sobre isso? Estou aqui para ti.",
+  "Seit dem Streit ums Erbe hab ich kaum noch Kontakt zu ihr. Das tut weh.": "Desde a discussão por causa da herança quase não falo com ela. Isso dói.",
+  "Das kann ich gut verstehen. Vielleicht könnt ihr euch ja irgendwann wieder versöhnen.": "Compreendo bem. Talvez um dia se venham a reconciliar.",
+  "Vielleicht. Familie sucht man sich eben nicht aus.": "Talvez. A família não se escolhe, é o que é.",
+  "Darf ich dich was Persönliches fragen? Glaubst du eigentlich an Gott?": "Posso fazer-te uma pergunta pessoal? Acreditas em Deus?",
+  "Ja, schon. Ich bin muslimisch erzogen worden, und der Glaube gibt mir Halt.": "Acredito, sim. Fui criado como muçulmano, e a fé dá-me um apoio.",
+  "Das finde ich schön. Ich bin selbst nicht religiös, aber ich respektiere deinen Glauben total.": "Acho isso bonito. Eu própria não sou religiosa, mas respeito inteiramente a tua fé.",
+  "Und es ist für dich kein Problem, dass wir da unterschiedlich sind?": "E para ti não é problema sermos diferentes nisso?",
+  "Nein, überhaupt nicht. Hauptsache, wir können offen darüber reden.": "Não, de maneira nenhuma. O principal é podermos falar disso abertamente.",
+  "Ich hab gestern endlich den Papierkram erledigt — ich bin aus der Kirche ausgetreten.": "Ontem tratei finalmente da papelada — saí oficialmente da Igreja.",
+  "Echt? Wegen der Kirchensteuer?": "A sério? Por causa do imposto eclesiástico alemão?",
+  "Auch, ja. Aber vor allem, weil ich eh nie in die Kirche gehe.": "Também, sim. Mas sobretudo porque nunca vou à igreja, de qualquer maneira.",
+  "Verstehe. Meine Eltern fanden das bei mir damals gar nicht gut.": "Percebo. Quando eu fiz o mesmo, os meus pais não gostaram nada.",
+  "Ja, bei Familienfeiern wechsle ich das Thema lieber.": "Pois, nas festas de família prefiro mudar de assunto.",
+  "Wir haben uns zerstritten.": "Zangámo-nos de vez.",
+  "Ich hab keinen Kontakt mehr zu meinem Vater.": "Já não tenho contacto com o meu pai.",
+  "Ich bin das schwarze Schaf der Familie.": "Sou a ovelha ronhosa da família.",
+  "Ich werde ihren Erwartungen nie gerecht.": "Nunca correspondo às expectativas deles.",
+  "Meine Mutter mischt sich ständig ein.": "A minha mãe está sempre a meter-se.",
+  "Ich versteh mich nicht mit meinen Schwiegereltern.": "Não me dou com os meus sogros.",
+  "Wir haben uns wieder versöhnt.": "Voltámos a reconciliar-nos.",
+  "Familie sucht man sich nicht aus.": "A família não se escolhe.",
+  "Bei Familienfeiern wechsle ich einfach das Thema.": "Nas festas de família mudo simplesmente de assunto.",
+  "Das ist bei uns ein heikles Thema.": "Lá em casa esse assunto é melindroso.",
+  "Wir reden nicht mehr miteinander.": "Já não falamos um com o outro.",
+  "Seitdem herrscht Funkstille.": "Desde então é silêncio absoluto.",
+  "Meine Eltern setzen mich ganz schön unter Druck.": "Os meus pais pressionam-me bastante.",
+  "Das ist echt eine toxische Beziehung.": "Aquilo é mesmo uma relação tóxica.",
+  "Glaubst du an Gott?": "Acreditas em Deus?",
+  "Ich bin Atheist.": "Sou ateu.",
+  "Ich bin nicht religiös.": "Não sou religiosa.",
+  "Ich bin nicht religiös, aber irgendwie spirituell.": "Não sou religiosa, mas de certa maneira espiritual.",
+  "Ich bin katholisch erzogen worden.": "Fui criada como católica.",
+  "Bist du evangelisch oder katholisch?": "És protestante ou católico?",
+  "Ich bin aus der Kirche ausgetreten.": "Saí oficialmente da Igreja.",
+  "Viele treten wegen der Kirchensteuer aus.": "Muitos saem por causa do imposto eclesiástico alemão.",
+  "Ich respektiere deinen Glauben.": "Respeito a tua fé.",
+  "Er ist gläubiger Muslim.": "Ele é muçulmano praticante.",
+  "Wir feiern Weihnachten eher aus Tradition.": "Festejamos o Natal mais por tradição.",
+  "Für mich ist Glaube Privatsache.": "Para mim a fé é assunto privado.",
+  "Ich geh nur an Weihnachten in die Kirche.": "Só vou à igreja no Natal.",
+
+  // ── Jokes, banter and humour (part31) ───────────────────────────────────
+  //
+  // THE PUN HAD TO BECOME A PUN. What does a clown do in the office — Faxen —
+  // works because the German word means both faxes and clowning about. No
+  // Portuguese word does both, and a faithful rendering would leave the next
+  // line calling a corny pun something that is not a pun at all. So the
+  // clown does palhaçadas: just as flat, just as groan-worthy, and the two
+  // lines that follow it still land.
+  //
+  // Der Witz hat einen Bart survived intact, which is rare: essa piada já tem
+  // barbas is the Portuguese phrase, beard and all. Ich hab mich kaputtgelacht
+  // is ri-me a bandeiras despregadas, and du bist mir einer is és uma peça.
+  "der Witz": "a piada",
+  "witzig": "com piada",
+  "der Humor": "o humor",
+  "necken": "picar",
+  "veräppeln": "brincar com alguém",
+  "verarschen": "gozar com alguém",
+  "der Flachwitz": "a piada de tio",
+  "schmunzeln": "sorrir por dentro",
+  "albern": "palerma",
+  "der Scherz": "a brincadeira",
+  "Kennst du den schon? Was macht ein Clown im Büro?": "Já sabes esta? O que é que faz um palhaço no escritório?",
+  "Keine Ahnung. Sag schon.": "Não faço ideia. Diz lá.",
+  "Faxen!": "Palhaçadas!",
+  "Oh nein. Das ist so ein Flachwitz.": "Ai não. Isso é uma piada de tio das grandes.",
+  "Komm schon, der war gut!": "Ora, essa foi boa!",
+  "Ich lache innerlich.": "Estou a rir por dentro.",
+  "Ich habe meinen Schlüssel schon wieder im Kühlschrank gefunden.": "Voltei a encontrar as chaves dentro do frigorífico.",
+  "Du bist echt so ein Schussel.": "Tu és mesmo uma cabeça no ar.",
+  "Sehr witzig. Wenigstens war die Butter nicht im Schlüsselkasten.": "Muita piada. Ao menos a manteiga não estava no porta-chaves.",
+  "Läuft bei dir.": "Estás mesmo em grande.",
+  "Verarschst du mich gerade?": "Estás agora a gozar comigo?",
+  "Nur ein bisschen. Ich hab dich trotzdem lieb, du Dussel.": "Só um bocadinho. Gosto muito de ti na mesma, ó palerma.",
+  "Die Bahn hat schon wieder Verspätung. Zwei Stunden.": "O comboio está outra vez atrasado. Duas horas.",
+  "Na toll. Das ist ja ganz großes Kino.": "Que maravilha. Isto é um grande espetáculo.",
+  "Und der Ersatzbus fährt auch nicht.": "E o autocarro de substituição também não anda.",
+  "Auch schön. Dann laufen wir eben.": "Lindo. Então vamos a pé e pronto.",
+  "Dreißig Kilometer? Willst du mich veräppeln?": "Trinta quilómetros? Estás a brincar comigo?",
+  "War ein Witz. Ich ruf uns ein Taxi.": "Era uma piada. Chamo-nos um táxi.",
+  "Kennst du den schon?": "Já sabes esta?",
+  "Der war gut!": "Essa foi boa!",
+  "Ich lach mich tot.": "Morro a rir.",
+  "Ich hab mich kaputtgelacht.": "Ri-me a bandeiras despregadas.",
+  "Das war ein Witz!": "Era uma piada!",
+  "Das war nur Spaß.": "Era só uma brincadeira.",
+  "Verarschst du mich?": "Estás a gozar comigo?",
+  "Willst du mich veräppeln?": "Estás a brincar comigo?",
+  "Du willst mich wohl auf den Arm nehmen.": "Estás a querer levar-me à certa.",
+  "Na toll.": "Que maravilha.",
+  "Auch schön.": "Lindo.",
+  "Das ist ja ganz großes Kino.": "Isto é um grande espetáculo.",
+  "Sehr witzig.": "Muita piada.",
+  "Haha, sehr lustig.": "Pois, muito engraçado.",
+  "Du Dussel.": "Ó palerma.",
+  "Du bist so ein Quatschkopf.": "És um grande palhaço.",
+  "Du Spaßvogel.": "Ó engraçadinho.",
+  "Du bist mir einer!": "És uma peça!",
+  "Das ist ja der Brüller!": "Essa é de morrer a rir!",
+  "Ich musste schmunzeln.": "Não pude deixar de sorrir.",
+  "Ich krieg mich nicht mehr ein.": "Não me consigo conter.",
+  "Der Witz hat so einen Bart.": "Essa piada já tem barbas.",
+  "Der Witz ist echt flach.": "Essa piada é mesmo seca.",
+  "Mach dich nicht über mich lustig!": "Não gozes comigo!",
+  "Lach ruhig!": "Ri-te à vontade!",
+  "Das ist nicht dein Ernst, oder?": "Não estás a falar a sério, pois não?",
+  "Erzähl keinen Quatsch!": "Não digas disparates!",
+
+  // ── RPG weapons, armour and durability (part147) ────────────────────────
+  //
+  // Menu Portuguese again: o inventário, a durabilidade, o encantamento, a
+  // barra rápida for the hotbar, os atributos for the stats. Die Beute is o
+  // espólio when the party divides it and o loot when they are shouting about
+  // it; the card that divides it fairly takes the first.
+  //
+  // Der Build stays o build, because a Portuguese party says exactly that.
+  "das Schwert": "a espada",
+  "die Axt": "o machado",
+  "der Dolch": "a adaga",
+  "der Bogen": "o arco",
+  "der Pfeil": "a flecha",
+  "die Rüstung": "a armadura",
+  "der Stab": "o cajado",
+  "die Haltbarkeit": "a durabilidade",
+  "die Verzauberung": "o encantamento",
+  "der Amboss": "a bigorna",
+  "das Inventar": "o inventário",
+  "die Beute": "o espólio",
+  "schmieden": "forjar",
+  "zerlegen": "desmantelar",
+  "Welche Waffe passt zu meinem Build?": "Que arma é que assenta no meu build?",
+  "Das Schwert verursacht Feuerschaden.": "A espada causa dano de fogo.",
+  "Mit dem Dolch greift man schneller an.": "Com a adaga ataca-se mais depressa.",
+  "Die Axt trifft härter, ist aber langsamer.": "O machado bate com mais força, mas é mais lento.",
+  "Mir gehen die Pfeile aus.": "Estou a ficar sem flechas.",
+  "Rüste den Schild in der linken Hand aus.": "Equipa o escudo na mão esquerda.",
+  "Das ist eine Zweihandwaffe.": "Aquilo é uma arma de duas mãos.",
+  "Mein Schild ist fast kaputt.": "O meu escudo está quase partido.",
+  "Die Haltbarkeit liegt nur noch bei zehn Prozent.": "A durabilidade está só a dez por cento.",
+  "Ich muss meine Rüstung reparieren.": "Tenho de reparar a minha armadura.",
+  "Der Helm schützt vor Giftschaden.": "O elmo protege contra dano de veneno.",
+  "Diese Rüstung ist zu schwer für meinen Build.": "Esta armadura é pesada de mais para o meu build.",
+  "Mein Inventar ist voll.": "Tenho o inventário cheio.",
+  "Lass uns die Beute fair aufteilen.": "Vamos dividir o espólio de forma justa.",
+  "Der Stab verstärkt meine Heilzauber.": "O cajado reforça os meus feitiços de cura.",
+  "Die Verzauberung fügt dem Angriff Blitzschaden hinzu.": "O encantamento acrescenta dano de relâmpago ao ataque.",
+  "Kann ich zwei Waffen gleichzeitig führen?": "Posso usar duas armas ao mesmo tempo?",
+  "Leg das Schwert in die Schnellleiste.": "Põe a espada na barra rápida.",
+  "Heb die legendäre Axt auf.": "Apanha o machado lendário.",
+  "Kann ich die alte Waffe zerlegen?": "Posso desmantelar a arma velha?",
+  "Zum Schmieden fehlt mir noch Eisen.": "Para forjar ainda me falta ferro.",
+  "Die Waffe skaliert mit Stärke.": "A arma escala com a força.",
+  "Die neue Rüstung hat bessere Werte, wiegt aber deutlich mehr.": "A armadura nova tem melhores atributos, mas pesa bastante mais.",
+  "Für den Boss brauche ich eine Waffe mit größerer Reichweite.": "Para o boss preciso de uma arma com mais alcance.",
+  "Der Ring gibt mir zwanzig Prozent Feuerwiderstand.": "O anel dá-me vinte por cento de resistência ao fogo.",
+  "Der Gegenstand ist an meinen Charakter gebunden.": "O objeto está preso à minha personagem.",
+  "Die lila Items sind seltener als die blauen.": "Os itens roxos são mais raros do que os azuis.",
+  "Das Set gewährt einen Bonus, sobald du drei Teile trägst.": "O conjunto dá um bónus assim que equipares três peças.",
+  "Ich habe aus Versehen die falsche Waffe verkauft.": "Vendi a arma errada sem querer.",
+  "Die Waffe hat einen freien Sockel für einen Edelstein.": "A arma tem um encaixe livre para uma gema.",
+  "Was spielst du: Schwert oder Bogen?": "Jogas com quê: espada ou arco?",
+  "Schwert und Schild; damit halte ich mehr aus.": "Espada e escudo; assim aguento mais.",
+  "Dann nehme ich den Bogen und bleibe hinten.": "Então eu levo o arco e fico atrás.",
+  "Gut, ich ziehe die Gegner auf mich.": "Boa, eu puxo os inimigos para mim.",
+  "Warum machst du so wenig Schaden?": "Porque é que estás a fazer tão pouco dano?",
+  "Meine Waffe ist fast kaputt.": "A minha arma está quase partida.",
+  "Reparier sie am Amboss.": "Repara-a na bigorna.",
+  "Mir fehlt dafür noch Eisen.": "Para isso ainda me falta ferro.",
 };
