@@ -20217,4 +20217,112 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Wollen wir eine Runde spazieren gehen?": "Vamos dar uma volta a pé?",
   "Nimm lieber eine Jacke mit.": "É melhor levares um casaco.",
   "Draußen sind gerade zwei Grad.": "Lá fora estão dois graus.",
+
+  // ── Spending time, and putting it off (part114) ─────────────────────────
+  //
+  // Ich schiebe das vor mir her is ando a empurrar isto com a barriga —
+  // Portuguese pushes it with the belly, which is a better picture and
+  // exactly the same procrastination.
+  "Wir haben das ganze Wochenende zusammen verbracht.": "Passámos o fim de semana todo juntos.",
+  "Wie verbringst du normalerweise deinen Sonntag?": "Como é que costumas passar o domingo?",
+  "Dem widme ich mich am Wochenende.": "A isso dedico-me ao fim de semana.",
+  "Zu welchem Zweck ist das eigentlich?": "Afinal isso é para que fim?",
+  "Künftig machen wir das anders.": "De futuro fazemos isso de outra maneira.",
+  "Ursprünglich wollten wir früher los.": "Originalmente queríamos sair mais cedo.",
+  "Unter den Umständen ist das völlig verständlich.": "Nessas circunstâncias isso é perfeitamente compreensível.",
+  "Das war eine schöne Begegnung.": "Foi um encontro bonito.",
+  "Ich schiebe das schon seit Wochen vor mir her.": "Há semanas que ando a empurrar isto com a barriga.",
+  "Dafür nehme ich mir bewusst Zeit.": "Para isso arranjo tempo de propósito.",
+  "Das dauert höchstens zehn Minuten.": "Isso demora no máximo dez minutos.",
+  "Wir sehen uns dann nächste Woche.": "Então vemo-nos para a semana.",
+  "Ich melde mich, sobald ich mehr weiß.": "Digo alguma coisa assim que souber mais.",
+  "Das hat sich mit der Zeit ergeben.": "Isso foi surgindo com o tempo.",
+  "Damals war das noch ganz anders.": "Na altura isso era completamente diferente.",
+  "Ich komme kaum noch dazu.": "Já quase não arranjo tempo para isso.",
+  "Lass uns das auf nächste Woche verschieben.": "Vamos adiar isso para a semana que vem.",
+  "Zeitlich passt mir das gut.": "Em termos de horário dá-me jeito.",
+
+  // ── The words a brochure uses (part115) ─────────────────────────────────
+  //
+  // Latin-looking words that are the right answer here — atrativo, negativo,
+  // intensivo, exclusivo — with two that are not: effektiv billiger is na
+  // prática mais barato, and generell is de um modo geral.
+  "Das Angebot klingt wirklich attraktiv.": "A oferta soa mesmo atrativa.",
+  "Das ist relativ günstig.": "Isso é relativamente barato.",
+  "Die Reaktion war ziemlich negativ.": "A reação foi bastante negativa.",
+  "Maximal drei Stück pro Person.": "No máximo três por pessoa.",
+  "Das ist nicht optimal, aber es geht.": "Não é o ideal, mas dá.",
+  "Wir haben zwei Wochen intensiv geübt.": "Praticámos intensivamente durante duas semanas.",
+  "Ich bin den ganzen Tag mobil erreichbar.": "Estou contactável no telemóvel o dia todo.",
+  "Generell finde ich die Idee gut.": "De um modo geral acho a ideia boa.",
+  "Das ist effektiv billiger als vorher.": "Na prática isso sai mais barato do que antes.",
+  "Die Software ist relativ einfach zu bedienen.": "O programa é relativamente simples de usar.",
+  "Das Konzept überzeugt mich noch nicht.": "O conceito ainda não me convence.",
+  "Wir müssen das noch analysieren.": "Ainda temos de analisar isso.",
+  "Ich habe alles neu organisiert.": "Reorganizei tudo.",
+  "Die beiden Farben kann man gut kombinieren.": "As duas cores combinam bem.",
+  "Das ist exklusiv für Mitglieder.": "Isso é exclusivo para sócios.",
+  "Wir treffen uns virtuell.": "Encontramo-nos por videochamada.",
+  "Das Potenzial ist auf jeden Fall da.": "Potencial há, sem dúvida.",
+  "Der Effekt war sofort spürbar.": "O efeito sentiu-se de imediato.",
+
+  // ── The office, the form and the deadline (part116) ─────────────────────
+  //
+  // Das Amt is a repartição, der Bescheid is a notificação, der Widerspruch is
+  // a reclamação — the three words a Portuguese counter uses for the same
+  // three things. Von Schalter zu Schalter geschickt is andar de guichet em
+  // guichet, and the exhaustion in it survives.
+  //
+  // Die Anmeldung and das Bundesland keep their German names, as everywhere
+  // else in this table.
+  "Ich muss morgen aufs Amt.": "Amanhã tenho de ir à repartição.",
+  "Das macht die Verwaltung, nicht wir.": "Isso é a administração que faz, não somos nós.",
+  "Bringen Sie bitte alle Dokumente mit.": "Traga todos os documentos, se faz favor.",
+  "Aus Gründen des Datenschutzes darf ich das nicht sagen.": "Por razões de proteção de dados não lhe posso dizer isso.",
+  "In welchem Bundesland wohnen Sie?": "Em que Bundesland é que mora?",
+  "Das ist staatlich gefördert.": "Isso tem apoio do Estado.",
+  "Er arbeitet dort ehrenamtlich.": "Ele trabalha lá em regime de voluntariado.",
+  "Können Sie mir das bitte erläutern?": "Importa-se de me explicitar isso?",
+  "Ich habe den Antrag online gestellt.": "Submeti o pedido pela internet.",
+  "Wie lange dauert die Bearbeitung?": "Quanto tempo demora o tratamento?",
+  "Das gilt bundesweit.": "Isso vale em todo o país.",
+  "Dafür brauchen Sie eine Bescheinigung.": "Para isso precisa de uma declaração.",
+  "Ich bin hier nicht zuständig.": "Não sou eu a responsável por isso.",
+  "An wen kann ich mich da wenden?": "A quem é que me posso dirigir para isso?",
+  "Die Frist läuft Ende des Monats ab.": "O prazo termina no fim do mês.",
+  "Das muss schriftlich erfolgen.": "Isso tem de ser feito por escrito.",
+  "Ich hätte dazu noch eine Frage.": "Ainda tinha uma pergunta sobre isso.",
+  "Vielen Dank für Ihre Unterstützung.": "Muito obrigada pelo seu apoio.",
+  "Bringen Sie bitte beide Formulare ausgefüllt mit.": "Traga os dois formulários já preenchidos, se faz favor.",
+  "Ohne Termin werden Sie hier leider nicht drangenommen.": "Sem marcação, infelizmente aqui não é atendida.",
+  "Der Antrag liegt seit Wochen bei der Behörde.": "Há semanas que o pedido está parado na entidade pública.",
+  "Für die Anmeldung brauchen Sie eine Bestätigung vom Vermieter.": "Para a Anmeldung precisa de uma declaração do senhorio.",
+  "Ich bin von Schalter zu Schalter geschickt worden.": "Andaram a mandar-me de guichet em guichet.",
+  "Falls Unterlagen fehlen, meldet sich das Amt schriftlich.": "Se faltarem documentos, a repartição contacta-a por escrito.",
+  "Der Bescheid kam schneller, als ich erwartet hatte.": "A notificação chegou mais depressa do que eu esperava.",
+  "Widerspruch lohnt sich nur, wenn Sie Fristen und Nachweise beisammenhaben.": "Só vale a pena reclamar se tiver os prazos e os comprovativos todos reunidos.",
+
+  // ── Offering to help, and being thanked for it (part117) ────────────────
+  //
+  // Das kriegen wir hin is havemos de resolver, and ich schaue mal, was sich
+  // machen lässt is vou ver o que se pode arranjar — the two things somebody
+  // says before they have any idea whether they can.
+  "Das kann ich dir leider nicht beantworten.": "Infelizmente isso não te sei responder.",
+  "Darf ich das kurz ergänzen?": "Posso acrescentar uma coisa?",
+  "Das erleichtert die Sache erheblich.": "Isso facilita consideravelmente as coisas.",
+  "Wir wollten nur verhindern, dass es schlimmer wird.": "Só queríamos impedir que piorasse.",
+  "Ich habe das schon länger beobachtet.": "Já reparo nisso há algum tempo.",
+  "Wir begrüßen die Entscheidung.": "Saudamos a decisão.",
+  "Jeder hat da andere Bedürfnisse.": "Nisso cada um tem necessidades diferentes.",
+  "Ich erkläre es dir gern noch mal.": "Explico-te outra vez com todo o gosto.",
+  "Sag Bescheid, wenn du Hilfe brauchst.": "Diz alguma coisa se precisares de ajuda.",
+  "Kein Problem, ich mache das schon.": "Não há problema, eu trato disso.",
+  "Das kriegen wir hin.": "Havemos de resolver.",
+  "Ich schaue mal, was sich machen lässt.": "Vou ver o que se pode arranjar.",
+  "Falls etwas ist, ruf einfach an.": "Se houver alguma coisa, é só ligar.",
+  "Ich wollte nur kurz nachfragen.": "Vinha só perguntar.",
+  "Danke, dass du dich darum gekümmert hast.": "Obrigada por teres tratado disso.",
+  "Das war wirklich nett von dir.": "Foi mesmo simpático da tua parte.",
+  "Ich hätte es sonst nicht geschafft.": "De outra maneira eu não teria conseguido.",
+  "Melde dich, wenn du was brauchst.": "Diz alguma coisa se precisares de alguma coisa.",
 };
