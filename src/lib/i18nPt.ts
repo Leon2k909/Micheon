@@ -2479,6 +2479,7 @@ export const PT: Record<string, string> = {
   "History, government and traditions — how life in the UK works.": "História, governo e tradições — como funciona a vida no Reino Unido.",
   "Germany": "Alemanha",
   "France": "França",
+  "Poland": "Polónia",
   "Flower garden": "Jardim de flores",
   "A walled rose garden at sunset.": "Um jardim de rosas murado ao pôr do sol.",
   "A hello in many languages, over a watercolour world.": "Um olá em muitas línguas, sobre um mundo em aguarela.",
