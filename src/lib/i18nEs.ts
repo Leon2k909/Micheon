@@ -862,6 +862,7 @@ export const ES: Record<string, string> = {
   "Translate into": "Traducir a",
   "Click any word you don't know — you can learn them all at the end.": "Haz clic en cualquier palabra que no sepas: podrás aprenderlas todas al final.",
   "Lesson": "Lección",
+  "{phrases} new phrases left · about {sittings} more lessons": "{phrases} frases nuevas por ver · unas {sittings} lecciones más",
   "Hear prompt": "Oír el enunciado",
   "Review tracker": "Seguimiento de repasos",
   "Choose how soon this should appear in Continue Learning.": "Elige con qué antelación debe aparecer esto en Seguir aprendiendo.",

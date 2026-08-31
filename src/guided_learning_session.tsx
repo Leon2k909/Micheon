@@ -246,6 +246,33 @@ export default function GuidedLearningSession() {
   );
   petQuizItemsRef.current = petQuizItems;
   const petQuizAvailable = petQuizItems.length > 0;
+
+  /**
+   * How much of the course has never been seen.
+   *
+   * The lesson header could say where you were inside the sitting and nowhere
+   * could say where the sitting was inside the course, so there was no answer
+   * to the only question that makes a long course feel finite: how many more
+   * of these. A percentage would not answer it either — the honest unit is
+   * phrases you have not met, because that is what a sitting consumes.
+   *
+   * "Seen" means the tracker holds anything at all for it. A phrase you got
+   * wrong is still a phrase you have met, and it comes back through review
+   * rather than through this count; counting it as unseen would mean the
+   * number went up when a lesson went badly.
+   *
+   * Recomputed when a grade lands, so finishing a sitting moves it.
+   */
+  const unseenPhrases = React.useMemo(
+    () => {
+      const grades = loadGradeStore(user);
+      return catalog.reduce(
+        (total, item) => total + (statusForId(grades, item.id, item.aliases) === "new" ? 1 : 0),
+        0
+      );
+    },
+    [catalog, gradeRevision, user]
+  );
   const petEnabled = Boolean(selectedPet && selectedPetKey !== "off");
 
   useEffect(() => {
@@ -1498,6 +1525,7 @@ export default function GuidedLearningSession() {
         />
       </Suspense>
       <GuidedSession
+      unseenPhrases={unseenPhrases}
       onCancel={(completedUpTo?: number) => {
         // Each non-skipped step is persisted as it is left. Replaying the
         // whole prefix here would accidentally grade any skipped steps.

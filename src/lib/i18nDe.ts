@@ -118,6 +118,7 @@ export const DE: Record<string, string> = {
   "German": "Deutsch",
   "English": "Englisch",
   "Lesson": "Lektion",
+  "{phrases} new phrases left · about {sittings} more lessons": "{phrases} neue Sätze übrig · noch etwa {sittings} Lektionen",
   "Unit": "Einheit",
   "of": "von",
   "Choose any lesson": "Lektion auswählen",

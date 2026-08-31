@@ -122,7 +122,7 @@ function lessonSpeak(text: string, rate: number, lang: string): Promise<void> {
   if (listenIsHoldingAudio()) return Promise.resolve();
   return tts(text, rate, lang);
 }
-import { ui, uiOr, uiFmt } from "@/lib/i18n";
+import { ui, uiOr, uiFmt, uiNumber } from "@/lib/i18n";
 import {
   Volume2, Mic2, ChevronLeft, ChevronRight, ChevronDown, CheckCircle2, X,
   BookOpen, ArrowRight,
@@ -780,8 +780,6 @@ function phaseLabel(p: Phase, withFrench: boolean, targetLabel = "German", meani
   if (p === "MeaningSelect") return "Select";
   if (p === "ListenPick") return "Hear & write";
   if (p === "MissingWord") return "Missing word";
-  if (p === "TypeAgain") return "Type 2";
-  if (p === "TranslateAgain") return "Recall";
   if (p === "Gap") return "Fill in";
   if (p === "Order") return "Reorder";
   if (p === "WriteFromMemory") return "Write it";
@@ -799,9 +797,7 @@ function phaseHeading(p: Phase, withFrench: boolean, targetLabel = "German", mea
     case "ListenPick": return "Write what you hear";
     case "MissingWord": return "Listen for the missing word";
     case "Type": return withFrench ? "Type the German" : "Type the sentence";
-    case "TypeAgain": return "Type it once more";
     case "Translate": return "Translate this sentence";
-    case "TranslateAgain": return "Recall the meaning";
     case "Gap": return "Fill the blank";
     case "Order": return "Reorder the sentence";
     case "WriteFromMemory": return "Build from memory";
@@ -1916,8 +1912,8 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // The answer box stays focused so you can always just type — but selecting
   // text (the sentence, the meaning) is never interrupted. One hook per typing
   // phase; only the active phase's box claims focus.
-  useStickyFocus(inputRef, phase === "Type" || phase === "TypeAgain");
-  useStickyFocus(enInputRef, (phase === "Translate" || phase === "TranslateAgain") && translationMode === "type");
+  useStickyFocus(inputRef, phase === "Type");
+  useStickyFocus(enInputRef, (phase === "Translate") && translationMode === "type");
   useStickyFocus(listeningInputRef, phase === "ListenPick" && listeningMode === "type");
   useStickyFocus(gapInputRef, phase === "Gap");
   useStickyFocus(sayRef, phase === "WriteFromMemory");
@@ -2218,9 +2214,9 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
 
   // Focus input when entering Type or Translate phase
   useEffect(() => {
-    if (phase === "Type" || phase === "TypeAgain")           setTimeout(() => inputRef.current?.focus(), 100);
+    if (phase === "Type")           setTimeout(() => inputRef.current?.focus(), 100);
     if (phase === "ListenPick" && listeningMode === "type")  setTimeout(() => listeningInputRef.current?.focus(), 100);
-    if ((phase === "Translate" || phase === "TranslateAgain") && translationMode === "type") {
+    if (phase === "Translate" && translationMode === "type") {
       setTimeout(() => enInputRef.current?.focus(), 100);
     }
     if (phase === "Gap")       setTimeout(() => gapInputRef.current?.focus(), 100);
@@ -2288,15 +2284,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       setMissingWordChoice(null);
       setMissingWordChecked(false);
     }
-    if (phase === "TypeAgain") { setInput(""); setChecked(false); setAttempts(0); }
     if (phase === "Translate") {
-      setEnInput("");
-      setEnChecked(false);
-      setEnAttempts(0);
-      setTranslationPicked([]);
-      setTranslationMode("type");
-    }
-    if (phase === "TranslateAgain") {
       setEnInput("");
       setEnChecked(false);
       setEnAttempts(0);
@@ -2510,12 +2498,12 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // Auto-advance: once the typed answer is strictly correct (no lenient/typo
   // pass), confirm it automatically — no Check press needed.
   useEffect(() => {
-    if ((phase === "Type" || phase === "TypeAgain") && !checked && input.trim() && result.ok && !result.spellingNote) checkAnswer();
+    if (phase === "Type" && !checked && input.trim() && result.ok && !result.spellingNote) checkAnswer();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [input]);
   useEffect(() => {
     if (
-      (phase === "Translate" || phase === "TranslateAgain")
+      (phase === "Translate")
       && !enChecked
       && translationAnswer.trim()
       && enResult.ok
@@ -2749,12 +2737,12 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       run = checkListeningTyped;
       typed = listeningInput;
       finishable = true;
-    } else if ((phase === "Type" || phase === "TypeAgain") && !checked
+    } else if (phase === "Type" && !checked
       && input.trim() && clean(result)) {
       run = checkAnswer;
       typed = input;
       finishable = true;
-    } else if ((phase === "Translate" || phase === "TranslateAgain") && translationMode === "type"
+    } else if (phase === "Translate" && translationMode === "type"
       && !enChecked && translationAnswer.trim() && clean(enResult)) {
       run = checkEnAnswer;
     }
@@ -3343,7 +3331,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             short={targetIsGermanCourse ? item.short : undefined}
             shortLabel={targetIsGermanCourse ? item.shortLabel : undefined}
             long={targetIsGermanCourse && phase !== "Read" ? item.long : undefined}
-            hideUse={phase === "Translate" || phase === "TranslateAgain"}
+            hideUse={phase === "Translate"}
             synonyms={targetIsGermanCourse ? item.synonyms : undefined}
           />
         )}
@@ -3353,7 +3341,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             aus?" leaves you knowing the grammar and still not knowing when to
             open your mouth. Hidden during Translate for the same reason the
             usage note is: it can give the answer away. */}
-        {item.when && phase !== "MeaningSelect" && phase !== "ListenPick" && phase !== "MissingWord" && phase !== "Translate" && phase !== "TranslateAgain" && !isClosedBookPhase(phase) && (
+        {item.when && phase !== "MeaningSelect" && phase !== "ListenPick" && phase !== "MissingWord" && phase !== "Translate" && !isClosedBookPhase(phase) && (
           <div className="fs-when">
             <span className="fs-when-label">{ui("When you'd say it")}</span>
             <p>{uiOr(item.when, "Typischer Gesprächskontext")}</p>
@@ -3489,7 +3477,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 <span>{ui(targetLabel)}</span>
                 <small>{ui("Tap a word to hear it")}</small>
               </div>
-              {picture && phase !== "Translate" && phase !== "TranslateAgain" && (
+              {picture && phase !== "Translate" && (
                 /* Decorative: the word and its meaning are both already in
                    the accessibility tree, and a screen reader announcing
                    "red apple" would hand over the answer. */
@@ -3526,13 +3514,13 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 Translate still withholds it, and for the reason Read no longer
                 has: there the meaning is the answer.
               */}
-              {phase !== "Translate" && phase !== "TranslateAgain" && (
+              {phase !== "Translate" && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="fs-trow">
                   <span className="fs-chip">{meaningIsGerman ? "DE" : "EN"}</span>
                   <p>{shownEnglish}</p>
                 </motion.div>
               )}
-              {(phase === "Translate" || phase === "TranslateAgain") && (
+              {phase === "Translate" && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="fs-trow">
                   <span className="fs-chip">{meaningIsGerman ? "DE" : "EN"}</span>
                   <p className="text-sm">
@@ -4357,16 +4345,14 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
         )}
 
         {/* TYPE phase */}
-        {(phase === "Type" || phase === "TypeAgain") && (
+        {phase === "Type" && (
           <motion.div key="type" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             className="space-y-4">
             <p className="text-center text-sm font-semibold text-zinc-500">
               {/* Both of these were written as bare strings, so a German
                   interface showed them in English even though the translation
                   for the second one has been sitting in i18n all along. */}
-              {phase === "TypeAgain"
-                ? uiFmt("Type the {language} once more — build the memory.", { language: ui(targetLabel) })
-                : hasFr ? ui("Now type the German sentence.") : ui("Now type the sentence exactly.")}
+              {hasFr ? ui("Now type the German sentence.") : ui("Now type the sentence exactly.")}
             </p>
 
             <motion.div animate={shakeControls}>
@@ -4461,13 +4447,11 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
         )}
 
         {/* TRANSLATE phase */}
-        {(phase === "Translate" || phase === "TranslateAgain") && (
+        {phase === "Translate" && (
           <motion.div key="translate" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             className="space-y-4">
             <p className="text-center text-sm font-semibold text-zinc-500">
-              {ui(phase === "TranslateAgain"
-                ? "Recall the translation. Use the word bank if you need support."
-                : "Type the translation. Use the word bank if you need support.")}
+              {ui("Type the translation. Use the word bank if you need support.")}
             </p>
 
             <div className="fs-translation-toolbar">
@@ -6075,7 +6059,7 @@ function SessionFlashcardPreview({
   );
 }
 
-export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem, onSetItemStrength, onSetItemPermanent, onUndoGradeItem, onPreviewKnown, onPreviewSwap, onSnoozeItem, onAdvance, onRegisterAnswer }: any) {
+export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem, onSetItemStrength, onSetItemPermanent, onUndoGradeItem, onPreviewKnown, onPreviewSwap, onSnoozeItem, onAdvance, onRegisterAnswer, unseenPhrases = 0 }: any) {
   const { speak: petSpeak, selectedKey, selectedPet } = useCodexPets();
   const petEnabled = Boolean(selectedPet && selectedKey !== "off");
   const reduceMotion = useReducedMotion() || effectsReduced();
@@ -6344,6 +6328,10 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   // Count only real exercises, not the final "lesson complete" summary screen,
   // so the header reads "4 of 6", not "4 of 7".
   const exerciseCount = lessonStepIndexes.length || 1;
+  // How many more sittings the unseen material is worth, at the size of this
+  // one. Rounded up, and never shown as nought while phrases remain: the last
+  // partial sitting is still a sitting.
+  const sittingsLeft = unseenPhrases > 0 ? Math.ceil(unseenPhrases / exerciseCount) : 0;
   const currentLessonIndex = lessonStepIndexes.indexOf(index);
   const exercisePos = currentLessonIndex >= 0 ? currentLessonIndex + 1 : exerciseCount;
   // Persist the item we're leaving immediately, so closing the app mid-session
@@ -6606,6 +6594,20 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
               <strong>
                 {inPreview ? previewIndex + 1 : exercisePos} {ui("of")} {inPreview ? previewCards.length : exerciseCount}
               </strong>
+              {/*
+                Where this sitting sits in the whole course.
+                Sittings rather than a percentage, because a sitting is the
+                unit the learner actually spends — and estimated from THIS
+                sitting's length rather than a fixed number, since the route
+                is shorter for words and for material already held. */}
+              {sittingsLeft > 0 && (
+                <small className="fs-progress-remaining">
+                  {uiFmt("{phrases} new phrases left · about {sittings} more lessons", {
+                    phrases: uiNumber(unseenPhrases),
+                    sittings: uiNumber(sittingsLeft),
+                  })}
+                </small>
+              )}
             </div>
             <div className="fs-progress-track"><i style={{ width: `${progress}%` }} /></div>
             <strong className="fs-progress-pct">{progress}%</strong>

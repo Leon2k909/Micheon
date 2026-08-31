@@ -211,6 +211,64 @@ check(
   css.includes("0 5px 0 var(--accent-pressed, #a77b00)")
 );
 
+// ── the route asks for each thing once ───────────────────────────────
+// It used to ask for the same sentence in writing nine times, and four of
+// those were the same question re-asked with nothing changed between the
+// asks: Type then Type again, Translate then Translate again, and two
+// single-direction recalls in front of the one that covers both. Repetition
+// is the point of the route; asking twice in a row is not repetition.
+{
+  const phases = read("src/lib/guidedLessonPhases.ts");
+  const route = (/export const SENTENCE_PHASES = \[([\s\S]*?)\]/.exec(phases) || ["", ""])[1]
+    .match(/"[A-Za-z]+"/g) || [];
+  for (const gone of ['"TypeAgain"', '"TranslateAgain"', '"RecallTarget"', '"RecallMeaning"']) {
+    check(
+      `the sentence route does not ask again with ${gone.replace(/"/g, "")}`,
+      !route.includes(gone),
+      "a stage that repeats one already in the route is back in it"
+    );
+  }
+  check(
+    "and the two Again stages are gone from the lesson entirely, not merely unrouted",
+    !guided.includes("TypeAgain") && !guided.includes("TranslateAgain"),
+    "the stages still exist with no route reaching them, which is a screen nobody can get to"
+  );
+  // The closed-book pair still runs for material the learner already holds,
+  // where one direction at a time is the right size of ask.
+  check(
+    "mastered material still recalls one direction at a time",
+    /MASTERED_WORD_PHASES[\s\S]{0,160}"RecallTarget"[\s\S]{0,60}"RecallMeaning"/.test(phases)
+  );
+}
+
+// ── how much course is left ──────────────────────────────────
+// The header said where you were inside the sitting and nothing said where
+// the sitting was inside the course, so the one question that makes a long
+// course feel finite had no answer on screen.
+check(
+  "the lesson header says how much of the course is still unseen",
+  guided.includes('"{phrases} new phrases left \u00b7 about {sittings} more lessons"')
+    && guided.includes("sittingsLeft > 0 &&")
+);
+check(
+  "the estimate is sittings, measured by this sitting rather than a fixed number",
+  guided.includes("Math.ceil(unseenPhrases / exerciseCount)"),
+  "a hardcoded lesson size is wrong for a word sitting and for mastered material"
+);
+{
+  const host = read("src/guided_learning_session.tsx");
+  check(
+    "and the count is phrases the tracker has never seen, not a percentage",
+    /statusForId\(grades, item\.id, item\.aliases\) === "new"/.test(host)
+      && host.includes("const unseenPhrases = React.useMemo("),
+    "counting anything else makes the number go up when a lesson goes badly"
+  );
+  check(
+    "it is recomputed when a grade lands, so finishing a sitting moves it",
+    /const unseenPhrases = React\.useMemo\([\s\S]{0,700}?\[catalog, gradeRevision, user\]/.test(host)
+  );
+}
+
 // ── a wrong typed answer is written out, not skipped past ───────────────
 // Skip used to sit beside Try again, directly under a panel that had just
 // printed the sentence. So the cheapest way through a sentence you could not
