@@ -105,32 +105,72 @@ if (/opacity-7[05]">\{ui\("(Next target|Words tracked)"\)/.test(panel)) {
 }
 
 
-// ── and the banner that IS the accent uses that ink too ─────────────────────
+
+// ── and the banner that IS the accent carries white over a wash ─────────────
 //
-// Two inks, opposite jobs, one letter apart in the name. --accent-ink is
-// accent-COLOURED text, tuned to be read on a neutral page. --feature-ink is
-// text sitting ON the accent. The social banner fills itself with the accent
-// under a custom colour, and its copy was reaching for --accent-ink: the
-// subtitle came out the same colour as the fill behind it, which is why it
-// could not be read at all on a pink accent.
+// White is what every other heading in this app is, and white on a bright
+// accent is 1.65:1 to 3.5:1 depending on the colour. Ink picked against the
+// fill fixes the contrast and turns the copy dark, which is the one place in
+// a dark app where that happens. So the ground moves instead: a wash under
+// the copy, and white on top of that.
+//
+// The wash is the promise, so it is computed here rather than eyeballed. Its
+// alpha is read out of the stylesheet and applied to the real accent shades,
+// exactly as the browser composites it.
 const proto = fs.readFileSync(path.join(root, "src/prototype/new-ui-prototype.css"), "utf8");
 const heroFill = /html\[data-theme="dark"\]\[data-accent="custom"\] \.np-social-hero \{([^}]*)\}/.exec(proto);
 if (!heroFill) {
   failures.push("the social banner no longer paints itself for a custom accent, so this check cannot see what its copy sits on");
 } else if (/var\(--accent-pressed/.test(heroFill[1])) {
-  for (const part of ["> span", "h1", "p"]) {
-    const selector = `html[data-theme="dark"][data-accent="custom"] .np-social-hero-copy ${part} {`;
-    const open = proto.indexOf(selector);
-    if (open === -1) {
-      failures.push(`the social banner's ${part} has no ink of its own on a custom accent, so it keeps the green scheme's`);
-      continue;
-    }
-    const block = proto.slice(open, proto.indexOf("}", open));
-    if (!block.includes("--feature-ink")) {
-      failures.push(
-        `the social banner's ${part} is painted with something other than --feature-ink while the banner `
-        + "itself is filled with the accent — that is accent on accent, which is what made it unreadable"
-      );
+  const washRule = /html\[data-theme="dark"\]\[data-accent="custom"\] \.np-social-hero::before \{([^}]*)\}/.exec(proto);
+  if (!washRule) {
+    failures.push("the accent-filled banner has no wash under its copy, so white on it is white on the raw accent");
+  } else {
+    // The weakest stop that still sits under the copy. The gradient fades out
+    // to the right, past where the text ends, and those stops are not what
+    // the words are read against.
+    const stops = [...washRule[1].matchAll(/rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)\s*(\d+)%/g)]
+      .map((m) => ({ rgb: [+m[1], +m[2], +m[3]], alpha: +m[4], at: +m[5] }))
+      .filter((stop) => stop.at <= 50);
+    if (!stops.length) {
+      failures.push("the wash under the banner's copy has no stop in the half the copy occupies");
+    } else {
+      const weakest = stops.reduce((a, b) => (a.alpha <= b.alpha ? a : b));
+      const over = (hex) => {
+        const base = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+        return "#" + base
+          .map((v, i) => Math.round(v * (1 - weakest.alpha) + weakest.rgb[i] * weakest.alpha)
+            .toString(16).padStart(2, "0"))
+          .join("");
+      };
+      let worstWash = { name: "", ratio: Infinity };
+      for (const theme of ["light", "dark"]) {
+        for (const preset of ACCENT_PRESETS) {
+          const shades = accentShades(preset.hex, theme);
+          for (const stop of [shades.accentHover, shades.accentPressed]) {
+            const ratio = contrastRatio("#ffffff", over(stop));
+            if (ratio < worstWash.ratio) worstWash = { name: `${preset.name} in ${theme}`, ratio };
+          }
+        }
+      }
+      if (worstWash.ratio < FLOOR) {
+        failures.push(
+          `white on the banner's washed accent reaches only ${worstWash.ratio.toFixed(2)}:1 for ${worstWash.name} `
+          + `(floor ${FLOOR}). The wash is ${weakest.alpha} where the copy sits; deepen it or the copy goes back to `
+          + "being unreadable on a light accent."
+        );
+      }
+      for (const part of ["> span", "h1", "p"]) {
+        const selector = `.np-social-hero-copy ${part}`;
+        const open = proto.indexOf(`html[data-theme="dark"][data-accent="custom"] ${selector}`);
+        if (open === -1) {
+          failures.push(`the banner's ${part} has no colour of its own on a custom accent, so it keeps the green scheme's`);
+        }
+      }
+      const whiteRule = /html\[data-theme="dark"\]\[data-accent="custom"\] \.np-social-hero-copy > span,[\s\S]{0,320}?\{([^}]*)\}/.exec(proto);
+      if (!whiteRule || !/color:\s*#ffffff/.test(whiteRule[1])) {
+        failures.push("the banner's copy is not white, which is the whole reason the wash is there");
+      }
     }
   }
 }
