@@ -160,8 +160,22 @@ check(`no Portuguese line uses a Brazilian form${leaked.length ? ` — ${leaked[
  * Portuguese uses the gerund freely elsewhere — "continuou, dizendo que…" is
  * ordinary — and flagging every -ndo would refuse correct lines.
  */
-const PROGRESSIVE = /\b(estou|estás|está|estamos|estão|estava|estavas|estávamos|estavam|estive|esteve|estarei|estará|estaremos)\s+(?:\w+\s+)?\w+ndo\b/i;
-const brazilianProgressive = pairs.filter((row) => PROGRESSIVE.test(row.portuguese));
+const PROGRESSIVE = /\b(?:estou|estás|está|estamos|estão|estava|estavas|estávamos|estavam|estive|esteve|estarei|estará|estaremos)\s+(?:\w+\s+)?(\w+(?:ando|endo|indo))\b/gi;
+/**
+ * Words that end like a gerund without being one. Portuguese has a handful
+ * and they sit in ordinary sentences: o comando is the television remote, and
+ * quando is quando. Without this, "Onde está o comando?" would be refused as
+ * a Brazilian progressive, which it is not — there is no verb in it at all.
+ */
+const NOT_A_GERUND = new Set([
+  "quando", "comando", "bando", "brando", "tremendo", "estupendo", "horrendo", "reverendo",
+]);
+const brazilianProgressive = pairs.filter((row) => {
+  for (const match of row.portuguese.matchAll(PROGRESSIVE)) {
+    if (!NOT_A_GERUND.has(match[1].toLocaleLowerCase("pt-PT"))) return true;
+  }
+  return false;
+});
 check(
   `the progressive is estar a + infinitive${brazilianProgressive.length ? ` — "${brazilianProgressive[0].portuguese}"` : ""}`,
   brazilianProgressive.length === 0
