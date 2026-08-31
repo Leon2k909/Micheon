@@ -736,9 +736,24 @@ export function wordLadderRung(word: Pick<WordItem, "level" | "lookup" | "de">):
   if (band >= 3 && /^[BC]/.test(level)) return band;
   // The A1-B1 mass is where nearly everything lives; the frequency bank is
   // what separates "sein" from a mid-pack A2 noun.
+  //
+  // Both tiers can only make a word EASIER than its pack, never harder. That
+  // is the whole point of them — they exist to rescue words whose LESSON is
+  // advanced but which are themselves everyday. Written as a bare `return 2`,
+  // the second tier did the opposite to anything already on rung 1: being
+  // common was enough to trip it, so der Hund (rank 1,023), der Kopf (697),
+  // der Fuß (923), der Wald (428) and seven others were pushed to rung 2,
+  // while die Linse, der Thymian, das Faultier and die Artischocke were too
+  // rare to trip anything and kept rung 1. Easiest-first then offered lentil,
+  // thyme and sloth ahead of dog, head and foot — 11 words demoted for being
+  // common, 493 left in front of them for being rare.
+  //
+  // spokenWordRung applies this same two-tier shape to the spoken bank and
+  // has always written it as Math.min(own, 2). This is that, in the place it
+  // was missing.
   const rank = frequencyRank(word.lookup || word.de);
-  if (rank <= 300) return 1;
-  if (rank <= 1200) return 2;
+  if (rank <= 300) return Math.min(band, 1);
+  if (rank <= 1200) return Math.min(band, 2);
   return band;
 }
 
