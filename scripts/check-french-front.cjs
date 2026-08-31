@@ -126,7 +126,7 @@ const BANDS = [
 // entries of its own — the difference is that inflation. Correcting it would
 // move Italian and Portuguese below their floors in the same commit, so it
 // wants doing deliberately rather than as a side effect.
-const TRANSLATED_QUEUE_FLOORS = { fr: 17300, pl: 18700, es: 24000, it: 24000, pt: 4370, ru: 5500 };
+const TRANSLATED_QUEUE_FLOORS = { fr: 17300, pl: 18700, es: 24000, it: 24000, pt: 4370, ru: 5840 };
 
 /**
  * How much of the word tracker the French course is allowed to be missing.
