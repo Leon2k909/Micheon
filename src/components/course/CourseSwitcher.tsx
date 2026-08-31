@@ -33,6 +33,9 @@ const COURSE_SEARCH_ALIASES: Record<string, string> = {
   "life-in-the-uk": "life in the uk citizenship test british history government settlement indefinite leave to remain ilr home office",
   "leben-in-deutschland": "leben in deutschland einbürgerungstest orientierungskurs integrationskurs staatsangehörigkeit grundgesetz politik geschichte gesellschaft bamf",
   "vivre-en-france": "vivre en france examen civique naturalisation nationalite francaise laicite republique marianne institutions frankreich landeskunde staatsburgerschaft",
+  // No test words here: Poland has no civics exam, and offering one in the
+  // search would promise something the course does not contain.
+  "zycie-w-polsce": "zycie w polsce polen poland polska landeskunde geschichte gesellschaft ustroj historia sejm solidarnosc konstytucja polnisch",
   // Endonyms and alternative spellings for everything in the catalogue, so
   // searching "nihongo" or "espanol" finds the right row.
   ...Object.fromEntries(PLANNED_LANGUAGES.map((language) => [language.id, language.search])),

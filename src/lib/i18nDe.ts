@@ -2682,6 +2682,9 @@ export const DE: Record<string, string> = {
   "Germany – Land and Culture": "Deutschland – Land und Kultur",
   "France – Land and Culture": "Frankreich – Land und Kultur",
   "Valeurs, institutions et vie quotidienne — comment le pays fonctionne.": "Werte, Institutionen und Alltag — wie das Land funktioniert.",
+  "Poland – Land and Culture": "Polen – Land und Kultur",
+  "Historia, ustrój i codzienność — jak działa ten kraj.": "Geschichte, Staatsaufbau und Alltag — wie das Land funktioniert.",
+  "Politik, Geschichte und Gesellschaft — wie das Land funktioniert.": "Politik, Geschichte und Gesellschaft — wie das Land funktioniert.",
   // The line under each course name in the switcher. It goes through ui()
   // like the name above it, so without this key a German interface put an
   // English sentence between two German ones. The German course needs no

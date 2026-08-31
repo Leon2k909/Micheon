@@ -3,6 +3,7 @@ import { csharpCourse } from "@/lib/csharpCourse";
 import { lifeInTheUkCourse } from "@/lib/lifeInTheUkCourse";
 import { lebenInDeutschlandCourse } from "@/lib/lebenInDeutschlandCourse";
 import { vivreEnFranceCourse } from "@/lib/vivreEnFranceCourse";
+import { zycieWPolsceCourse } from "@/lib/zycieWPolsceCourse";
 import { PLANNED_LANGUAGES } from "@/lib/languageCatalogue";
 import { localiseCourse } from "@/lib/courseTranslation";
 
@@ -107,6 +108,10 @@ export const COURSES: Course[] = [
   lifeInTheUkCourse,
   lebenInDeutschlandCourse,
   vivreEnFranceCourse,
+  // A country pack is not enough on its own: the chooser lists COURSES,
+  // so Poland shipped complete and unreachable — four packs on the home
+  // card, three rows in the dialog that is the only way in.
+  zycieWPolsceCourse,
 ];
 
 /**
