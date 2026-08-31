@@ -58,7 +58,9 @@ const result = esbuild.buildSync({
       'export { WORD_ID_PREFIX, buildWordCatalog, wordLadderRung } from "./src/lib/wordSession.ts";',
       'export { buildCatalog } from "./src/session.ts";',
       'export { cefrRung, cefrRungLabel, cefrStep, cefrStepLabel, CEFR_STEPS } from "./src/lib/cefr.ts";',
-      'export { wordDifficultyRung, spokenWordRung } from "./src/lib/wordSession.ts";',
+      'export { wordDifficultyRung, spokenWordRung, isCoreFunctionWord, rankWordCatalog } from "./src/lib/wordSession.ts";',
+      'export { frequencyRank } from "./src/lib/wordFrequency.ts";',
+      'export { buildCorpusIndex } from "./src/lib/corpusFrequency.ts";',
       'export { FRENCH_BY_GERMAN } from "./src/lib/frenchTranslations.ts";',
       'export { POLISH_BY_GERMAN } from "./src/lib/polishTranslations.ts";',
       'export { primeTranslations } from "./src/lib/translations.ts";',
@@ -112,6 +114,7 @@ const {
   loadGradeStore, statusForId, COMPLETED_KEY, getScopedKey,
   recordSuccess,
   buildCatalog, cefrRung, cefrRungLabel, cefrStep, cefrStepLabel, CEFR_STEPS, wordDifficultyRung, spokenWordRung, translationLanguagesNeeded,
+  isCoreFunctionWord, frequencyRank, buildCorpusIndex, rankWordCatalog,
   allPartBlueprints, buildApiPartFromResolved, WORD_ID_PREFIX,
 } = compiled.exports;
 // The tables are fetched on demand in the app, so a German-only learner
@@ -746,7 +749,44 @@ check("office German the course never says is not rescued onto the A1 rung",
   officeWords.every((text) => (wordRungOf.get(text) ?? 0) >= 4));
 check("a word with no spoken evidence keeps the rung its pack gave it",
   spokenWordRung({ level: "B1", lookup: "finden", de: "finden" }, 0, null) === 3
-  && spokenWordRung({ level: "C1", lookup: "darstellen", de: "darstellen" }, 0, null) === 6);
+  // Nothing the bank has ranked either: the bank caps a rung, so a word it
+  // knows would not test what this is about.
+  && spokenWordRung({ level: "C1", lookup: "Rundumschlag", de: "der Rundumschlag" }, 9e9, null) === 6);
+
+// ── the first rung is a claim, and it has to be earned ──────────────────
+// A pack's level is its TOPIC's, not its words'. The A1 weather pack teaches
+// hageln and wechselhaft, the A1 kitchen pack die Artischocke and der
+// Granatapfel, and all of them said A1 on the card: 451 of the 1,152 cards on
+// that rung were words the 2,500-word bank has never ranked AND this course's
+// ten thousand conversational sentences never say once.
+//
+// So the rung is only given where one of the two sources says so. Silence
+// from both is not proof a word is hard; it is proof it is not among the
+// first thousand, which is all the rung claims.
+const rungCatalogue = buildWordCatalog(parts).filter((word) => word.listenSafe !== false);
+const rungSpokenOrder = new Map(rankWordCatalog(rungCatalogue, buildCorpusIndex(parts)).map((w, i) => [w.id, i]));
+const rungAudit = rungCatalogue.map((word) => ({
+  de: word.de,
+  rung: spokenWordRung(word, rungSpokenOrder.get(word.id) ?? 9e9, buildCorpusIndex(parts)),
+  freq: frequencyRank(word.lookup || word.de),
+  spoken: rungSpokenOrder.get(word.id) ?? 9e9,
+}));
+const unearned = rungAudit.filter((w) => w.rung === 1 && !(w.freq <= 1200) && w.spoken >= 1200);
+check(
+  "no word reaches the first rung without one of the two sources putting it there"
+    + (unearned.length ? " - " + unearned.slice(0, 4).map((w) => w.de).join(", ") : ""),
+  // The exceptions are the function words, which both sources are silent
+  // about for reasons that have nothing to do with difficulty.
+  unearned.length <= 8 && unearned.every((w) => isCoreFunctionWord(w.de))
+);
+// The two failures by name, so the classes stay closed rather than the count.
+const rungOfWord = new Map(rungAudit.map((w) => [w.de, w.rung]));
+check("an A1 topic's rare words are not taught as A1",
+  ["das Fensterbrett", "die Artischocke", "der Blumenkohl", "die Nagelschere", "der Granatapfel"]
+    .every((text) => (rungOfWord.get(text) ?? 1) > 1));
+check("and an everyday word is not taught as C1",
+  ["flach", "steil", "feucht", "zumindest", "zugleich"]
+    .every((text) => (rungOfWord.get(text) ?? 9) <= 3));
 // ...while an everyday word taught inside a B1 lesson is rescued by it. These
 // are real: finden, das Problem, die T\ür, trinken and die Hilfe are all
 // taught in B1 packs and are all in the three hundred this course says most.

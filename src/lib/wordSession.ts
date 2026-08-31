@@ -422,7 +422,10 @@ const CORE_FUNCTION_WORDS = new Set(
     String(entry.de).toLocaleLowerCase("de-DE").replace(/^(der|die|das)\s+/, "").trim())
 );
 
-function isCoreFunctionWord(word: string | undefined): boolean {
+/** A connector, pronoun or preposition the course teaches through sentences.
+ *  Exported for the gate, which has to know which words both frequency
+ *  sources are silent about for reasons that are not difficulty. */
+export function isCoreFunctionWord(word: string | undefined): boolean {
   if (!word) return false;
   return CORE_FUNCTION_WORDS.has(
     String(word).toLocaleLowerCase("de-DE").replace(/^(der|die|das)\s+/, "").trim()
@@ -787,6 +790,12 @@ export function wordDifficultyRung(word: Pick<WordItem, "level" | "lookup" | "de
  */
 const SPOKEN_CORE = 300;
 const SPOKEN_EVERYDAY = 1200;
+/** ...and the tier past that: said a handful of times, so ordinary, not rare. */
+const SPOKEN_ORDINARY = 2500;
+
+/** The same two tiers read off the written bank, which caps but never promotes. */
+const WRITTEN_CORE = 300;
+const WRITTEN_EVERYDAY = 1200;
 
 /**
  * The rung a word sits on once you know how much this course actually SAYS it.
@@ -808,11 +817,77 @@ export function spokenWordRung(
   rankAmongSpoken: number,
   corpusIndex: CorpusIndex | null
 ): number {
-  const own = wordDifficultyRung(word);
-  if (!corpusIndex || corpusUses(word.lookup || word.de, corpusIndex) === 0) return own;
+  const name = word.lookup || word.de;
+  const rank = frequencyRank(name);
+  const attested = Boolean(corpusIndex) && corpusUses(name, corpusIndex!) > 0;
+  let rung = wordDifficultyRung(word);
+
+  /**
+   * Rarity pushes UP, which nothing did before.
+   *
+   * A pack's level is its TOPIC's, and a beginner's topic is full of words
+   * that are not a beginner's: the A1 weather pack teaches hageln and
+   * wechselhaft, the A1 clothes pack die Daunenjacke and das Knopfloch, the
+   * A1 kitchen pack die Artischocke and der Granatapfel. Measured, 451 of the
+   * 1,152 cards on the A1 rung were words the 2,500-word bank has never
+   * ranked AND this course's ten thousand conversational sentences never say
+   * once. Two independent sources of evidence, both silent, and the card
+   * still said A1.
+   *
+   * Silence from both is not proof a word is hard - it is proof it is not
+   * among the first thousand, which is all the rung claims. So such a word
+   * cannot open the course; it goes one rung up and no further, because the
+   * author did put it in a beginner's topic and that is worth something.
+   *
+   * Function words are exempt: the corpus index drops them by design, so
+   * their silence means nothing at all, and the bank misses half of them -
+   * heute, bitte, danke and obwohl would all be pushed off the rung they
+   * belong on by a rule reading their absence as rarity.
+   */
+  // The first rung is a claim about the first thousand words, so it is only
+  // given where one of the two sources actually says so. Absence was read as
+  // permission at first - a word neither source had ever seen kept whatever
+  // its pack's topic had given it - and being said ONCE in ten thousand
+  // sentences was enough to count as evidence, which left der Blumenkohl and
+  // das Leckerli on the A1 rung on the strength of a single line each.
+  // Function words are the one exemption. The corpus index drops them by
+  // design, and the bank misses half of them, so both sources are silent
+  // about heute, bitte, danke, obwohl and nachdem for reasons that have
+  // nothing to do with how hard they are. Being merely ABSENT from the index
+  // exempted a word too at first, which is a wider hole than it looks: it is
+  // how der BH and der Po kept the first rung.
+  const amongTheCommonest = rank <= WRITTEN_EVERYDAY || rankAmongSpoken < SPOKEN_EVERYDAY;
+  if (!amongTheCommonest && !isCoreFunctionWord(name)) {
+    rung = Math.max(rung, 2);
+  }
+
+  /**
+   * ...and commonness pulls DOWN, from both sources, each as far as it can
+   * honestly reach.
+   *
+   * The written bank is news and web German, so it may not name a word a
+   * beginner's - entsprechend is 111th in it and is nobody's early word. But
+   * a word it ranks that highly is not the hardest thing in the course
+   * either, and die Entwicklung sat at B2-C1 on a bank rank of 73. So the
+   * bank caps rather than promotes, and caps gently: one rung down from the
+   * top, not into the beginner's range. Capping bank-top-300 words at B1 was
+   * tried and takes entsprechend, die Massnahme and darstellen with it, which
+   * is the very thing the spoken ranking exists to prevent.
+   */
+  if (rank <= WRITTEN_CORE) rung = Math.min(rung, 4);
+  else if (rank <= WRITTEN_EVERYDAY) rung = Math.min(rung, 5);
+
+  /**
+   * What the course itself SAYS is the strongest evidence there is, and the
+   * only one allowed to reach the first rung. The third tier is new: flach,
+   * steil, feucht, zugleich and zumindest are all said two or three times in
+   * the conversational text and were all sitting on B2-C1.
+   */
+  if (!attested) return rung;
   if (rankAmongSpoken < SPOKEN_CORE) return 1;
-  if (rankAmongSpoken < SPOKEN_EVERYDAY) return Math.min(own, 2);
-  return own;
+  if (rankAmongSpoken < SPOKEN_EVERYDAY) return Math.min(rung, 2);
+  if (rankAmongSpoken < SPOKEN_ORDINARY) return Math.min(rung, 3);
+  return rung;
 }
 
 /**

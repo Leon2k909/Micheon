@@ -669,16 +669,48 @@ export function buildListenSpeechPlan({
   targetLang?: string;
   languageGapMs: number;
 }): ListenSpeechClip[] {
+  /**
+   * A German word quoted in the other line is read in German — whichever line
+   * that is.
+   *
+   * The rule is about the two LANGUAGES, and it was written against the two
+   * SLOTS: the meaning was split and the target never was. That is right in
+   * the German course, where the meaning is the English one, and wrong in the
+   * English course, where it is the German. There the splitter was handed the
+   * German line as its English one, so "der Leberkäse" beside "Leberkäse
+   * (Bavarian meatloaf)" had its German read out in English — and the English
+   * line, which is where the German word actually needed help, was left
+   * whole.
+   *
+   * So the German side is found rather than assumed, and the line that is not
+   * German is the one split. Neither side German — the French course explained
+   * in English — and there is nothing here to do.
+   */
+  const germanSide = targetLang.startsWith("de") ? "target"
+    : meaningLang.startsWith("de") ? "meaning"
+      : null;
+  const speak = (
+    text: string,
+    ownLang: string,
+    otherText: string,
+    otherLang: string,
+    side: "target" | "meaning",
+    rate: number
+  ): ListenSpeechClip[] => (
+    germanSide && germanSide !== side
+      ? borrowedWordSegments(text, otherText, ownLang, otherLang)
+        .map((segment) => ({ text: segment.text, rate, lang: segment.lang, side }))
+      : [{ text, rate, lang: ownLang, side }]
+  );
+
+  const targetOnce = speak(de, targetLang, en, meaningLang, "target", 0.92);
   const target: ListenSpeechClip[] = Array.from(
     { length: Math.max(0, targetRepeats) },
-    () => ({ text: de, rate: 0.92, lang: targetLang, side: "target" as const })
-  );
-  // A word of the language being learned, quoted inside the translation, is
-  // read by that language's voice. The side stays "meaning" — it is still the
-  // translation half of the card, and the caption, the gap and the repeat
-  // count all belong to the line as a whole.
-  const meaningOnce: ListenSpeechClip[] = borrowedWordSegments(en, de, meaningLang, targetLang)
-    .map((segment) => ({ text: segment.text, rate: 0.95, lang: segment.lang, side: "meaning" as const }));
+    () => targetOnce
+  ).flat();
+  // The side stays what it was — it is still that half of the card, and the
+  // caption, the gap and the repeat count all belong to the line as a whole.
+  const meaningOnce: ListenSpeechClip[] = speak(en, meaningLang, de, targetLang, "meaning", 0.95);
   const meaning: ListenSpeechClip[] = Array.from(
     { length: Math.max(0, meaningRepeats) },
     () => meaningOnce
