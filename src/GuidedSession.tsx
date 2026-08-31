@@ -2759,6 +2759,33 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     const clean = (outcome: { ok: boolean; spellingNote?: boolean; capitalizationError?: boolean; phrasingNote?: boolean }) =>
       outcome.ok && !outcome.spellingNote && !outcome.capitalizationError && !outcome.phrasingNote;
 
+    /**
+     * Reordering finishes the moment the words are in the right order.
+     *
+     * The typed stages below wait out a pause because what has been typed can
+     * still grow. Nothing here can: every word is on the board from the
+     * start, so an arrangement that matches the sentence is a finished answer
+     * and there is nothing a further keystroke could turn it into. Waiting
+     * would only be a delay, and asking for Check as well would be a second
+     * action for something already done — the learner put the words in order,
+     * which is the whole exercise.
+     *
+     * Still guarded on a move having been made, because a board nobody has
+     * touched is the app's arrangement rather than the learner's. The shuffle
+     * already refuses to deal a correct order, so this bites only on the one
+     * sentence it cannot shuffle: every word the same.
+     *
+     * And not mid-drag. A word under the cursor has not landed yet, and the
+     * order it is passing over is not one anybody chose.
+     */
+    if (phase === "Order") {
+      if (!orderChecked && orderTouched && orderIsCorrect
+        && orderDragging === null && draggedOrderTokenId.current === null) {
+        checkOrder();
+      }
+      return clear;
+    }
+
     let run: null | (() => void) = null;
     // What was typed, so a finished answer can be recognised as finished.
     let typed = "";
@@ -2819,7 +2846,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, listeningMode, listeningInput, listeningTypeChecked, listeningTypeResult,
     input, checked, result, translationMode, translationAnswer, enChecked, enResult,
-    acceptedAnswers]);
+    acceptedAnswers, orderChecked, orderTouched, orderIsCorrect, orderDragging]);
 
   const retryEn = () => {
     setEnInput("");

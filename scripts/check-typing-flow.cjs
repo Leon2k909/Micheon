@@ -151,6 +151,27 @@ for (const phase of ["ListenPick", "Type", "TypeAgain", "Translate", "TranslateA
 }
 // And it must not fire twice on the same answer.
 const effect = session.slice(session.indexOf("const autoCheckRef"), session.indexOf("const retryEn"));
+
+// ── the one stage that does not ask for typing, checked here anyway ─────────
+//
+// Reordering is finished the moment the words are in the right order. Every
+// word is on the board from the start, so nothing can grow, nothing has to be
+// waited out, and asking for Check as well is a second action for something
+// already done — the learner put the words in order, which is the whole
+// exercise. It is pinned in this file rather than beside the rest of the
+// reorder UI because the rule it belongs to is this one: a right answer moves
+// on by itself.
+assert.ok(/if \(phase === "Order"\) \{[\s\S]{0,400}?checkOrder\(\);/.test(effect),
+  "a correct word order still waits for Check, so the one stage whose answer cannot grow is the "
+  + "one that makes you confirm it");
+for (const [guard, why] of [
+  ["orderTouched", "a board nobody has touched checks itself, crediting the shuffle to the learner"],
+  ["!orderChecked", "the check fires again on an order that was already checked"],
+  ["orderDragging === null", "a word still under the cursor counts as placed, so an order nobody "
+    + "chose can be accepted on the way past"],
+]) {
+  assert.ok(effect.includes(guard), why);
+}
 for (const already of ["!listeningTypeChecked", "!checked", "!enChecked"]) {
   assert.ok(effect.includes(already),
     `the timer re-arms on an answer that was already checked (${already} is missing), so a card `
