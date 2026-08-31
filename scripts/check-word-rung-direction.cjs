@@ -39,6 +39,7 @@ const built = esbuild.buildSync({
       export { wordLadderRung, spokenWordRung } from "./src/lib/wordSession.ts";
       export { cefrRung } from "./src/lib/cefr.ts";
       export { everydayWordPartBlueprints } from "./src/lib/everydayWordPacks.ts";
+      export { BEYOND_A_BEGINNER } from "./src/lib/beyondBeginnerWords.ts";
     `,
     resolveDir: root, sourcefile: "rung.ts", loader: "ts",
   },
@@ -49,7 +50,7 @@ const built = esbuild.buildSync({
 const mod = new Module("rung", null);
 mod.paths = Module._nodeModulePaths(root);
 mod._compile(built.outputFiles[0].text, path.join(root, "rung.cjs"));
-const { wordLadderRung, spokenWordRung, cefrRung, everydayWordPartBlueprints } = mod.exports;
+const { wordLadderRung, spokenWordRung, cefrRung, everydayWordPartBlueprints, BEYOND_A_BEGINNER } = mod.exports;
 
 let failed = 0;
 const check = (name, ok, detail) => {
@@ -81,6 +82,21 @@ check(`no word is ranked harder than its own pack (${examined} words)`,
     : "");
 
 // ── and the same for the spoken ladder, which already had it right ──────────
+//
+// "Never raises" was the whole rule, and it is narrowed here to what it is
+// actually protecting: no word may be raised by FREQUENCY. That is the bug
+// this file was written for - a rescue firing on a bank rank and leaving a
+// word worse off than not firing at all - and it stays forbidden.
+//
+// What is now allowed is a word raised because somebody named it. A pack's
+// level is its topic's, so an A1 topic teaches die Kartoffel and die
+// Artischocke alike, and no frequency signal separates them: the bank has
+// ranked neither and a conversational corpus mentions neither, because
+// conversation has no occasion to mention a cow OR a porcupine. Demoting on
+// that silence took die Kuh, das Knie and die Jacke with it. So the later
+// half is written out by hand in beyondBeginnerWords.ts, and a judgement made
+// one word at a time is the one thing this check should not stand in the way
+// of. Every other seed still may not move.
 const spokenDemoted = [];
 for (const [id, pack] of Object.entries(everydayWordPartBlueprints)) {
   const level = String(pack.level || "").toUpperCase();
@@ -89,6 +105,7 @@ for (const [id, pack] of Object.entries(everydayWordPartBlueprints)) {
   for (const seed of pack.seeds || []) {
     const lookup = seed.lookup || seed.de;
     if (!lookup) continue;
+    if (BEYOND_A_BEGINNER.has(seed.de) || BEYOND_A_BEGINNER.has(lookup)) continue;
     const own = wordLadderRung({ level, lookup, de: seed.de });
     // Every tier of the spoken rescue, including the one that fires for the
     // most common words of all.
@@ -98,9 +115,21 @@ for (const [id, pack] of Object.entries(everydayWordPartBlueprints)) {
     }
   }
 }
-check("the spoken ladder never raises a word's rung either",
+check("no word is raised by frequency alone; only by being named",
   spokenDemoted.length === 0,
   spokenDemoted.slice(0, 6).join("\n     "));
+
+// ...and the naming has to stay a judgement about difficulty rather than a
+// place to put anything awkward. These are the words it must never contain:
+// if one of them ever needs excluding, the packs are wrong, not the ladder.
+const mustStayBeginner = [
+  "die Kuh", "das Pferd", "die Katze", "der Hund", "das Knie", "der Mund",
+  "die Jacke", "das Hemd", "die Kartoffel", "die Tomate", "der B\u00e4cker",
+  "die Ampel", "regnen", "duschen", "der Teller", "die Flasche", "der Mond",
+];
+const wronglyNamed = mustStayBeginner.filter((word) => BEYOND_A_BEGINNER.has(word));
+check("the named list holds none of the words a beginner plainly needs",
+  wronglyNamed.length === 0, wronglyNamed.join(", "));
 
 /**
  * The words the bug was found on, by name.

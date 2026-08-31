@@ -63,6 +63,9 @@ const result = esbuild.buildSync({
       'export { buildCorpusIndex } from "./src/lib/corpusFrequency.ts";',
       'export { FRENCH_BY_GERMAN } from "./src/lib/frenchTranslations.ts";',
       'export { POLISH_BY_GERMAN } from "./src/lib/polishTranslations.ts";',
+      'export { SPANISH_BY_GERMAN } from "./src/lib/spanishTranslations.ts";',
+      'export { PORTUGUESE_BY_GERMAN } from "./src/lib/portugueseTranslations.ts";',
+      'export { RUSSIAN_BY_GERMAN } from "./src/lib/russianTranslations.ts";',
       'export { primeTranslations } from "./src/lib/translations.ts";',
     ].join("\n"),
     resolveDir: root,
@@ -123,6 +126,9 @@ const {
 const M = compiled.exports;
 M.primeTranslations("fr", M.FRENCH_BY_GERMAN);
 M.primeTranslations("pl", M.POLISH_BY_GERMAN);
+M.primeTranslations("es", M.SPANISH_BY_GERMAN);
+M.primeTranslations("pt", M.PORTUGUESE_BY_GERMAN);
+M.primeTranslations("ru", M.RUSSIAN_BY_GERMAN);
 
 // Asked for rather than assembled: lesson state is stored per learning
 // direction now, so the address is "session-completed@learn-de:default" and
@@ -753,7 +759,7 @@ check("a word with no spoken evidence keeps the rung its pack gave it",
   // knows would not test what this is about.
   && spokenWordRung({ level: "C1", lookup: "Rundumschlag", de: "der Rundumschlag" }, 9e9, null) === 6);
 
-// ── the first rung is a claim, and it has to be earned ──────────────────
+// ── the first rung is the first words, and it is named as such ─────────
 // A pack's level is its TOPIC's, not its words'. The A1 weather pack teaches
 // hageln and wechselhaft, the A1 kitchen pack die Artischocke and der
 // Granatapfel, and all of them said A1 on the card: 451 of the 1,152 cards on
@@ -771,22 +777,73 @@ const rungAudit = rungCatalogue.map((word) => ({
   freq: frequencyRank(word.lookup || word.de),
   spoken: rungSpokenOrder.get(word.id) ?? 9e9,
 }));
-const unearned = rungAudit.filter((w) => w.rung === 1 && !(w.freq <= 1200) && w.spoken >= 1200);
-check(
-  "no word reaches the first rung without one of the two sources putting it there"
-    + (unearned.length ? " - " + unearned.slice(0, 4).map((w) => w.de).join(", ") : ""),
-  // The exceptions are the function words, which both sources are silent
-  // about for reasons that have nothing to do with difficulty.
-  unearned.length <= 8 && unearned.every((w) => isCoreFunctionWord(w.de))
-);
+// A pack's level is its TOPIC's, not its words': the A1 kitchen pack teaches
+// die Kartoffel and die Artischocke alike, and the card said A1 for both.
+// Frequency cannot separate them - the bank has ranked neither and a
+// conversational corpus mentions neither - so the later half is named by hand
+// in beyondBeginnerWords.ts. What this asserts is that the naming is actually
+// wired to the ladder, and it is checked from the queue rather than from the
+// list, because a list nothing reads would pass by itself.
+const namedLater = ["das Fensterbrett", "die Artischocke", "der Blumenkohl", "die Nagelschere", "der Granatapfel", "der Bildschirmschoner", "das Faultier"];
+const stillBeginner = ["die Kuh", "das Knie", "die Jacke", "die Kartoffel", "der Apfel", "hungrig"];
+const ladderRungOf = new Map(rungAudit.map((w) => [w.de, w.rung]));
+check("a word named as beyond a beginner does not sit on the first rung",
+  namedLater.every((text) => (ladderRungOf.get(text) ?? 1) > 1));
+check("...and the beginner's own words are left exactly where they were",
+  stillBeginner.every((text) => ladderRungOf.get(text) === 1));
 // The two failures by name, so the classes stay closed rather than the count.
-const rungOfWord = new Map(rungAudit.map((w) => [w.de, w.rung]));
+
 check("an A1 topic's rare words are not taught as A1",
   ["das Fensterbrett", "die Artischocke", "der Blumenkohl", "die Nagelschere", "der Granatapfel"]
-    .every((text) => (rungOfWord.get(text) ?? 1) > 1));
+    .every((text) => (ladderRungOf.get(text) ?? 1) > 1));
 check("and an everyday word is not taught as C1",
   ["flach", "steil", "feucht", "zumindest", "zugleich"]
-    .every((text) => (rungOfWord.get(text) ?? 9) <= 3));
+    .every((text) => (ladderRungOf.get(text) ?? 9) <= 3));
+// ── and the ladder is the same one in every course ──────────────────────
+// A1 is meant to be the things you have to learn first, and that is the same
+// claim in French as in German. It holds by construction rather than by
+// intent: a card's rung is worked out from the German lemma before the course
+// swaps the text, so every language inherits one ladder. Worth asserting
+// anyway, because "by construction" is a property of today's code and this is
+// a promise about the product.
+const rungById = (direction) => new Map(
+  buildListenQueue(parts, {}, { contentSource: "words", order: "level", direction })
+    .map((item) => [item.id, item.rung])
+);
+setInterfaceLanguage("en");
+const germanLadder = rungById("learn-de");
+const otherCourses = ["learn-en", "learn-fr", "learn-pl", "learn-es", "learn-pt", "learn-ru"];
+const ladderFaults = [];
+let comparedCourses = 0;
+for (const direction of otherCourses) {
+  const ladder = rungById(direction);
+  // A course whose table is still being written teaches a subset, which is
+  // fine; a course teaching nothing would make this check vacuous.
+  if (ladder.size < 200) { ladderFaults.push(direction + " has almost nothing to compare (" + ladder.size + ")"); continue; }
+  comparedCourses += 1;
+  for (const [id, rung] of ladder) {
+    const german = germanLadder.get(id);
+    if (german === undefined) { ladderFaults.push(direction + " teaches " + id + ", which the German course does not"); break; }
+    if (german !== rung) { ladderFaults.push(direction + " puts " + id + " on rung " + rung + ", German on " + german); break; }
+  }
+}
+check(
+  "every course sorts by the same ladder, card for card (" + comparedCourses + " compared)"
+    + (ladderFaults.length ? " - " + ladderFaults[0] : ""),
+  comparedCourses === otherCourses.length && ladderFaults.length === 0
+);
+// ...and the first rung really is the first words, whichever language says
+// them. Read out of the course rather than asserted about it.
+const firstRungOf = (direction) => buildListenQueue(parts, {}, { contentSource: "words", order: "level", direction })
+  .filter((item) => item.rung === 1).slice(0, 6).map((item) => item.de);
+check("the first rung opens with the first words of the language, in each of them",
+  firstRungOf("learn-fr")[0] === "avoir"
+  && firstRungOf("learn-pl")[0] === "mie\u0107"
+  && firstRungOf("learn-es")[0] === "tener"
+  && firstRungOf("learn-en")[0] === "to have"
+  && firstRungOf("learn-de")[0] === "haben");
+setLearningDirection("learn-de");
+setInterfaceLanguage("auto");
 // ...while an everyday word taught inside a B1 lesson is rescued by it. These
 // are real: finden, das Problem, die T\ür, trinken and die Hilfe are all
 // taught in B1 packs and are all in the three hundred this course says most.

@@ -17,6 +17,7 @@
  * "Prost!", "Genau!" — which are sentences by intent: things you say on
  * their own.
  */
+import { BEYOND_A_BEGINNER } from "@/lib/beyondBeginnerWords";
 import { cefrRung } from "@/lib/cefr";
 import { frequencyRank, speechPrefers } from "@/lib/wordFrequency";
 import { spokenFrequencyRank, type NounEvidence } from "@/lib/spokenFrequency";
@@ -844,20 +845,24 @@ export function spokenWordRung(
    * heute, bitte, danke and obwohl would all be pushed off the rung they
    * belong on by a rule reading their absence as rarity.
    */
-  // The first rung is a claim about the first thousand words, so it is only
-  // given where one of the two sources actually says so. Absence was read as
-  // permission at first - a word neither source had ever seen kept whatever
-  // its pack's topic had given it - and being said ONCE in ten thousand
-  // sentences was enough to count as evidence, which left der Blumenkohl and
-  // das Leckerli on the A1 rung on the strength of a single line each.
-  // Function words are the one exemption. The corpus index drops them by
-  // design, and the bank misses half of them, so both sources are silent
-  // about heute, bitte, danke, obwohl and nachdem for reasons that have
-  // nothing to do with how hard they are. Being merely ABSENT from the index
-  // exempted a word too at first, which is a wider hole than it looks: it is
-  // how der BH and der Po kept the first rung.
-  const amongTheCommonest = rank <= WRITTEN_EVERYDAY || rankAmongSpoken < SPOKEN_EVERYDAY;
-  if (!amongTheCommonest && !isCoreFunctionWord(name)) {
+  /**
+   * A pack's level is its TOPIC's, and a beginner's topic teaches words that
+   * are not a beginner's: the A1 kitchen pack has die Kartoffel and die
+   * Artischocke in it, the A1 office pack der Bleistift and der
+   * Bildschirmschoner. The card said A1 for all four.
+   *
+   * Frequency cannot separate them, and that was tried first: the bank has
+   * never ranked either half and this course's conversational text says
+   * neither, because a conversation has no occasion to mention a cow OR a
+   * porcupine. Demoting on that silence takes die Kuh, das Knie and die Jacke
+   * with it - 462 words across the everyday packs, about half of them plainly
+   * first-thousand vocabulary.
+   *
+   * So the later half is named instead. See beyondBeginnerWords.ts: it is a
+   * judgement about what a learner needs first, and a list is the honest
+   * shape for a judgement rather than a threshold pretending to be one.
+   */
+  if (BEYOND_A_BEGINNER.has(word.de) || BEYOND_A_BEGINNER.has(name)) {
     rung = Math.max(rung, 2);
   }
 
