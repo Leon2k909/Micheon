@@ -9803,4 +9803,607 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Neun Prozent von der Lohnsteuer, weil du getauft bist.": "Nove por cento do imposto sobre o rendimento, porque és batizado.",
   "Auch wenn ich nie hingehe?": "Mesmo nunca lá indo?",
   "Ja. Austreten kannst du beim Standesamt.": "Sim. Podes sair no Standesamt.",
+
+  // ── Going out for a drink: the wine list and the last one (part312) ────
+  //
+  // Der Absacker is a saideira — the drink you have on the way out, and
+  // Portuguese names it for exactly that. Angeheitert is estar alegre, the
+  // same cheerful understatement. Lieblich is meio doce, the word on a
+  // Portuguese wine label.
+  //
+  // Die Schorle has no Portuguese category to sit in, so it is described
+  // rather than named: juice with sparkling water. The wine keeps its German
+  // name because it is a German wine, but the Pfalz becomes o Palatinado,
+  // which is what Portuguese has always called that region.
+  "die Weinkarte": "a carta de vinhos",
+  "die Cocktailkarte": "a carta de cocktails",
+  "lieblich": "meio doce",
+  "der Absacker": "a saideira",
+  "alkoholfrei": "sem álcool",
+  "die Schorle": "o sumo com água com gás",
+  "die Sperrstunde": "a hora de fecho",
+  "die Karaffe": "o jarro",
+  "angeheitert": "alegre",
+  "Gehen wir nachher noch was trinken?": "Vamos beber um copo mais logo?",
+  "Nur auf ein Glas, ich muss morgen früh raus.": "Só um copo, amanhã tenho de me levantar cedo.",
+  "Sind die Plätze hier noch zu haben?": "Estes lugares estão livres?",
+  "Können wir die Weinkarte haben?": "Pode trazer-nos a carta de vinhos?",
+  "Trocken oder lieblich?": "Seco ou meio doce?",
+  "Ein Glas Weißen, trocken bitte.": "Um copo de branco, seco se faz favor.",
+  "Nehmen wir gleich eine Karaffe, das ist günstiger.": "Levamos já um jarro, fica mais em conta.",
+  "Was würden Sie uns heute empfehlen?": "O que é que nos aconselha hoje?",
+  "Auf der Cocktailkarte steht auch etwas ohne Alkohol.": "Na carta de cocktails também há coisas sem álcool.",
+  "Für mich alkoholfrei, ich fahre.": "Para mim sem álcool, sou eu que conduzo.",
+  "Eine Apfelschorle, bitte — die geht immer.": "Um sumo de maçã com água com gás, se faz favor — esse serve sempre.",
+  "Prost! Und schön in die Augen schauen.": "Saúde! E olhos nos olhos.",
+  "Die nächste Runde übernehme ich.": "A próxima rodada fica por minha conta.",
+  "Wir bestellen noch eine Runde, dann ist Schluss.": "Pedimos mais uma rodada e depois acabou.",
+  "Einen Absacker noch?": "Ainda uma saideira?",
+  "Der Absacker ist immer der, der zu viel war.": "A saideira é sempre a que ficou a mais.",
+  "Ich bin schon leicht angeheitert.": "Já estou um bocadinho alegre.",
+  "Trink mal ein Wasser zwischendurch.": "Bebe lá uma água pelo meio.",
+  "Wann fährt die letzte Bahn?": "A que horas é o último comboio?",
+  "Die letzte fährt um zehn nach eins.": "O último é à uma e dez.",
+  "Um zwei ist hier Sperrstunde.": "Aqui fecham às duas.",
+  "Der Wirt macht schon die Stühle hoch.": "O dono já anda a pôr as cadeiras em cima das mesas.",
+  "Wir teilen uns ein Taxi.": "Dividimos um táxi.",
+  "Fahr auf keinen Fall mehr selbst.": "Não vás de maneira nenhuma a conduzir.",
+  "Schreib mir kurz, wenn du zu Hause bist.": "Manda-me uma mensagem quando chegares a casa.",
+  "Morgen habe ich garantiert einen Kater.": "Amanhã tenho ressaca de certeza.",
+  "Gegen den Kater hilft nur Wasser und Zeit.": "Contra a ressaca só há água e tempo.",
+  "Es war ein schöner Abend — machen wir bald wieder.": "Foi uma bela noite — vamos repetir em breve.",
+  "Gern. Mögen Sie es trocken oder lieblich?": "Com certeza. Prefere seco ou meio doce?",
+  "Trocken. Was können Sie empfehlen?": "Seco. O que é que aconselha?",
+  "Den Grauburgunder aus der Pfalz — sehr beliebt.": "O Grauburgunder do Palatinado — tem muita saída.",
+  "Noch einen Absacker?": "Mais uma saideira?",
+  "Wann fährt deine letzte Bahn?": "A que horas é o teu último comboio?",
+  "Zehn nach eins. Also genau einen.": "À uma e dez. Portanto, exatamente uma.",
+  "Abgemacht. Und diese Runde geht auf mich.": "Combinado. E esta rodada é por minha conta.",
+
+  // ── Volunteering: the fire brigade, the food bank, the pager (part313) ──
+  //
+  // This pack needs no explaining in Portuguese at all, because Portugal runs
+  // the same institutions under the same names. Die Feuerwehr is os bombeiros
+  // voluntários — the volunteer brigade that covers most of the country, the
+  // same drill night, the same pager, the same call-out at three in the
+  // morning. Die Tafel is o banco alimentar.
+  //
+  // Der Einsatz is uma saída, which is the word Portuguese firefighters use
+  // for going out on a call, and der Pieper is o bip, which is what they call
+  // the thing that sends them.
+  "das Ehrenamt": "o voluntariado",
+  "sich engagieren": "ser voluntário",
+  "die Feuerwehr": "os bombeiros",
+  "die Tafel": "o banco alimentar",
+  "der Helferkreis": "o grupo de voluntários",
+  "die Aufwandsentschädigung": "o subsídio de despesas",
+  "der Einsatz": "a saída",
+  "die Spende": "o donativo",
+  "der Freiwillige": "o voluntário",
+  "die Vereinsarbeit": "o trabalho na associação",
+  "unentgeltlich": "sem remuneração",
+  "der Pieper": "o bip",
+  "die Nachbarschaftshilfe": "a entreajuda de vizinhança",
+  "Fast jeder Dritte macht hier irgendein Ehrenamt.": "Quase um em cada três aqui faz voluntariado de algum tipo.",
+  "Ich engagiere mich seit zwei Jahren bei der Tafel.": "Há dois anos que sou voluntário no banco alimentar.",
+  "Man bekommt mehr zurück, als man reinsteckt.": "Recebe-se mais do que se dá.",
+  "Zwei Stunden die Woche kann fast jeder aufbringen.": "Duas horas por semana quase toda a gente consegue arranjar.",
+  "Ohne Ehrenamt läuft im Dorf gar nichts.": "Sem voluntariado, na aldeia não funcionava nada.",
+  "Bei uns ist die Feuerwehr komplett freiwillig.": "Aqui os bombeiros são todos voluntários.",
+  "Über neunzig Prozent der Feuerwehrleute sind Ehrenamtliche.": "Mais de noventa por cento dos bombeiros são voluntários.",
+  "Der Pieper geht, und du lässt alles stehen.": "O bip toca e larga-se tudo.",
+  "Freitags ist Übung, jede Woche.": "À sexta há instrução, todas as semanas.",
+  "Der Einsatz dauerte bis drei Uhr nachts.": "A saída durou até às três da manhã.",
+  "Der Arbeitgeber muss dich für Einsätze freistellen.": "A entidade patronal tem de te dispensar para as saídas.",
+  "Die Jugendfeuerwehr fängt schon mit zehn an.": "Os bombeiros juvenis começam logo aos dez anos.",
+  "Donnerstags helfe ich bei der Tafel aus.": "À quinta dou uma ajuda no banco alimentar.",
+  "Wir sortieren und geben Lebensmittel aus.": "Separamos e distribuímos alimentos.",
+  "Die Nachfrage ist in den letzten Jahren stark gestiegen.": "Nos últimos anos a procura subiu muito.",
+  "Wir sammeln Spenden für den Kühlwagen.": "Andamos a angariar donativos para a carrinha frigorífica.",
+  "Sachspenden nehmen wir gern, aber bitte haltbar.": "Donativos em géneros aceitamos com gosto, mas que não se estraguem.",
+  "Der Helferkreis trifft sich einmal im Monat.": "O grupo de voluntários reúne uma vez por mês.",
+  "Ich trainiere die E-Jugend, zweimal die Woche.": "Treino os escalões mais novos, duas vezes por semana.",
+  "Die Vereinsarbeit macht mehr Arbeit, als man denkt.": "O trabalho na associação dá mais trabalho do que se pensa.",
+  "Der Vorstand sucht dringend einen neuen Kassenwart.": "A direção precisa urgentemente de um novo tesoureiro.",
+  "Bei der Nachbarschaftshilfe fahre ich Ältere zum Arzt.": "Na entreajuda de vizinhança levo pessoas idosas ao médico.",
+  "Es ist unentgeltlich, aber die Fahrtkosten bekomme ich.": "É sem remuneração, mas as despesas de deslocação são pagas.",
+  "Manche Ämter bekommen eine kleine Aufwandsentschädigung.": "Alguns cargos recebem um pequeno subsídio de despesas.",
+  "Die Ehrenamtspauschale ist bis achthundertvierzig Euro steuerfrei.": "O subsídio de voluntariado está isento de imposto até oitocentos e quarenta euros.",
+  "Sag rechtzeitig, wenn es dir zu viel wird.": "Diz a tempo se começar a ser de mais para ti.",
+  "Lieber zwei Stunden verlässlich als zehn unregelmäßig.": "Mais vale duas horas com que se possa contar do que dez a saltar.",
+  "Frag einfach mal nach, sie brauchen immer Leute.": "Vai lá perguntar, eles precisam sempre de gente.",
+  "Dein Pieper!": "O teu bip!",
+  "Ich muss los. Einsatz, wahrscheinlich ein Kellerbrand.": "Tenho de ir. Saída, deve ser um incêndio numa cave.",
+  "Mitten beim Abendessen.": "Mesmo a meio do jantar.",
+  "So ist das bei der Freiwilligen. Ich stell es warm.": "É assim com os bombeiros voluntários. Eu deixo o jantar quente.",
+  "Ich hätte Lust, mich zu engagieren, weiß aber nicht wo.": "Apetecia-me ser voluntário, mas não sei onde.",
+  "Was machst du gern? Kochen? Sport? Kinder?": "Do que é que gostas? Cozinhar? Desporto? Crianças?",
+  "Kochen, eindeutig.": "Cozinhar, sem dúvida.",
+  "Dann frag bei der Tafel. Zwei Stunden die Woche reichen schon.": "Então pergunta no banco alimentar. Duas horas por semana já chega.",
+
+  // ── At the barber's: the clippers, the fade and the beard (part314) ────
+  //
+  // Koteletten are patilhas and stutzen is aparar — the two words a
+  // Portuguese barber uses without thinking. Der Dreitagebart has no noun in
+  // Portuguese, only the state it describes: a barba por fazer.
+  //
+  // Der Übergang is o esbatido, the blend between two lengths. The German
+  // word is geometric and the Portuguese one is about how it looks, which is
+  // what the customer in the chair is actually asking for.
+  "der Herrenfriseur": "o barbeiro",
+  "die Maschine": "a máquina",
+  "der Bart": "a barba",
+  "die Koteletten": "as patilhas",
+  "rasieren": "barbear",
+  "stutzen": "aparar",
+  "der Übergang": "o esbatido",
+  "der Schnurrbart": "o bigode",
+  "der Dreitagebart": "a barba por fazer",
+  "die Glatze": "a careca",
+  "das Haarwasser": "a loção capilar",
+  "gestuft": "em camadas",
+  "Kann ich ohne Termin kommen?": "Posso vir sem marcação?",
+  "Wie lange dauert es ungefähr?": "Demora aí quanto tempo?",
+  "Setzen Sie sich schon mal, ich bin gleich so weit.": "Sente-se, já estou consigo.",
+  "Die Seiten kurz, oben lassen.": "Os lados curtos, em cima deixe estar.",
+  "An den Seiten die Maschine, Nummer drei.": "Nos lados a máquina, número três.",
+  "Oben zwei Zentimeter kürzer, aber nicht mehr.": "Em cima dois centímetros mais curto, mas não mais do que isso.",
+  "Einen weichen Übergang, bitte.": "Um esbatido suave, se faz favor.",
+  "Bitte nicht zu kurz an den Ohren.": "Junto às orelhas não muito curto, se faz favor.",
+  "Oben etwas gestuft, damit es nicht so dick wirkt.": "Em cima um pouco em camadas, para não parecer tão cheio.",
+  "Können Sie es etwas ausdünnen?": "Pode desbastar um bocadinho?",
+  "Den Scheitel trage ich rechts.": "Faço o risco do lado direito.",
+  "Bei mir wird es oben immer weniger.": "Em cima está-me cada vez mais ralo.",
+  "Dann machen wir es überall gleich kurz, das wirkt besser.": "Então cortamos tudo do mesmo tamanho, fica melhor.",
+  "Einmal komplett ab — Glatze.": "Corte tudo — careca rapada.",
+  "Machen Sie den Bart bitte mit?": "Faz-me também a barba, se faz favor?",
+  "Nur stutzen, nicht abnehmen.": "Só aparar, não tirar.",
+  "Die Konturen bitte scharf, mit dem Messer.": "Os contornos bem definidos, com a navalha, se faz favor.",
+  "Den Schnurrbart etwas kürzer, er stört beim Essen.": "O bigode um pouco mais curto, incomoda a comer.",
+  "Die Koteletten gerade abschneiden, bitte.": "As patilhas a direito, se faz favor.",
+  "Ich lasse mir gerade einen Dreitagebart wachsen.": "Estou a deixar crescer a barba por fazer.",
+  "Den Nacken bitte mit dem Rasierer sauber machen.": "A nuca acabe com a máquina de barbear, se faz favor.",
+  "Soll ich die Ohren mitmachen?": "Faço também as orelhas?",
+  "Waschen brauche ich nicht, danke.": "Lavar não é preciso, obrigado.",
+  "Kein Gel, bitte — ich mache das zu Hause.": "Gel não, se faz favor — isso faço eu em casa.",
+  "Etwas Haarwasser? — Gern, das riecht gut.": "Um pouco de loção? — Sim, cheira bem.",
+  "Passt so, vielen Dank.": "Ficou bom, muito obrigado.",
+  "Was bin ich schuldig?": "Quanto é que lhe devo?",
+  "In vier Wochen wieder — dann sieht es genauso aus.": "Daqui a quatro semanas outra vez — assim fica sempre igual.",
+  "Wie hätten Sie es gern?": "Como é que quer?",
+  "Seiten kurz, Maschine Nummer drei, oben lassen.": "Lados curtos, máquina número três, em cima deixe estar.",
+  "Weicher Übergang zum Oberkopf?": "Esbatido suave para cima?",
+  "Genau. Und den Bart bitte nur stutzen.": "Exatamente. E a barba só aparar, se faz favor.",
+  "Den Nacken mache ich noch mit dem Messer sauber.": "A nuca ainda acabo com a navalha.",
+  "Sehr gern. Kein Gel danach, bitte.": "Faz favor. Mas gel depois não, se faz favor.",
+  "Etwas Haarwasser?": "Um pouco de loção?",
+  "Das ja. Passt so — was bin ich schuldig?": "Isso sim. Ficou bom — quanto é que lhe devo?",
+
+  // ── Storm warning: the cellar, the sandbags and the neighbours (part315) ──
+  //
+  // Hochwasser is a cheia, which is what Portuguese calls water where it
+  // should not be, and der Dachziegel is a telha. Gekippt is em báscula, as in
+  // the airing pack — the same window position, and the one thing you must
+  // not leave a window in when a storm is coming.
+  //
+  // Die halbe Straße hat zusammen aufgeräumt is the point the pack ends on,
+  // and Portuguese says it the same way: meia rua, working together, with
+  // buckets and coffee.
+  "die Unwetterwarnung": "o aviso de mau tempo",
+  "der Starkregen": "a chuva forte",
+  "das Hochwasser": "a cheia",
+  "vollaufen": "encher de água",
+  "die Sturmböe": "a rajada de vento",
+  "die Pumpe": "a bomba",
+  "der Sandsack": "o saco de areia",
+  "absichern": "pôr a salvo",
+  "der Dachziegel": "a telha",
+  "die Warn-App": "a aplicação de avisos",
+  "der Stromausfall": "o corte de energia",
+  "umgestürzt": "tombado",
+  "Für heute Abend gibt es eine Unwetterwarnung.": "Há aviso de mau tempo para esta noite.",
+  "Die Warn-App hat um Mitternacht losgeschrien.": "A aplicação de avisos começou a apitar à meia-noite.",
+  "Warnstufe Rot heißt: nicht mehr rausgehen.": "Aviso vermelho quer dizer: não sair mais à rua.",
+  "Nimm die Warnung ernst, auch wenn der Himmel noch blau ist.": "Leva o aviso a sério, mesmo com o céu ainda azul.",
+  "Sichert alles ab, was wegfliegen kann.": "Ponham a salvo tudo o que possa voar.",
+  "Die Gartenmöbel kommen in die Garage.": "Os móveis do jardim vão para a garagem.",
+  "Rollläden runter, Fenster zu und gekippt bloß nicht.": "Estores em baixo, janelas fechadas e nada de as deixar em báscula.",
+  "Sandsäcke gibt es beim Bauhof.": "Há sacos de areia nos serviços da câmara.",
+  "Räum den Keller vom Boden hoch.": "Tira as coisas da cave, começando pelo chão.",
+  "Der Starkregen kam innerhalb von zwanzig Minuten.": "A chuva forte caiu toda em vinte minutos.",
+  "Der Keller ist vollgelaufen.": "A cave encheu-se de água.",
+  "Wir pumpen seit zwei Stunden und es wird nicht weniger.": "Estamos a bombear há duas horas e a água não baixa.",
+  "Die Feuerwehr ist im Dauereinsatz.": "Os bombeiros não param de sair.",
+  "Ruf die Hundertzwölf nur, wenn wirklich Gefahr besteht.": "Liga o cento e doze só se houver mesmo perigo.",
+  "Eine Sturmböe hat den Baum umgeworfen.": "Uma rajada de vento deitou a árvore abaixo.",
+  "Auf der Straße liegt ein umgestürzter Baum.": "Está uma árvore tombada na estrada.",
+  "Uns haben Dachziegel gefehlt, drei Stück.": "Faltaram-nos telhas, três.",
+  "Der Strom war vier Stunden weg.": "Estivemos quatro horas sem luz.",
+  "Bleib vom Fenster weg, solange es stürmt.": "Afasta-te da janela enquanto houver tempestade.",
+  "Am Morgen sah der Garten schlimm aus.": "De manhã o jardim estava num estado.",
+  "Mach Fotos, bevor du aufräumst.": "Tira fotografias antes de arrumares.",
+  "Den Schaden meldest du sofort der Versicherung.": "O prejuízo comunica-se logo ao seguro.",
+  "Elementarschäden sind nicht in jeder Police drin.": "Os danos por fenómenos naturais não estão em todas as apólices.",
+  "Hochwasser zahlt die normale Hausrat nicht.": "As cheias o seguro normal do recheio da casa não paga.",
+  "Die halbe Straße hat zusammen aufgeräumt.": "Meia rua arrumou tudo em conjunto.",
+  "Nachbarn kamen mit Eimern und Kaffee.": "Os vizinhos apareceram com baldes e café.",
+  "Solche Unwetter gibt es jetzt öfter als früher.": "Temporais destes há agora mais vezes do que dantes.",
+  "Beim nächsten Mal sind wir besser vorbereitet.": "Para a próxima estamos mais preparados.",
+  "Warnstufe Rot ab acht. Räumst du die Terrasse?": "Aviso vermelho a partir das oito. Arrumas o terraço?",
+  "Mache ich. Sonnenschirm und Stühle in die Garage.": "Arrumo. Chapéu de sol e cadeiras para a garagem.",
+  "Und die Fenster ganz zu, nicht gekippt.": "E as janelas bem fechadas, não em báscula.",
+  "Und ich hole schon mal die Taschenlampen raus.": "E eu já vou buscar as lanternas.",
+  "Wie sieht es bei euch aus?": "Como é que está aí em vossa casa?",
+  "Keller zwanzig Zentimeter. Wir pumpen seit sechs.": "Cave com vinte centímetros. Estamos a bombear desde as seis.",
+  "Ich bringe die zweite Pumpe und Kaffee.": "Levo a segunda bomba e café.",
+  "Du rettest den Tag. Fotos habe ich schon gemacht.": "És um salvador. Fotografias já tirei.",
+
+  // ── Accounts, passwords and the update you keep postponing (part316) ───
+  //
+  // Every one of these is a word somebody reads off a Portuguese screen, so
+  // the interface wording is what got used: terminar sessão for logging out,
+  // a conta de utilizador — never usuário, which is Brazilian — as definições
+  // for settings, a cópia de segurança for a backup, and a autenticação em
+  // dois passos, which is what the bank calls it.
+  //
+  // Sicher ist sicher is a fixed phrase and Portuguese has its own for the
+  // same shrug before doing something sensible: mais vale prevenir.
+  "zurücksetzen": "repor",
+  "der Spam-Ordner": "a pasta do spam",
+  "das Update": "a atualização",
+  "der Cookie-Banner": "o aviso de cookies",
+  "die Zwei-Faktor-Authentifizierung": "a autenticação em dois passos",
+  "der Bestätigungslink": "a ligação de confirmação",
+  "die Datenschutzerklärung": "a política de privacidade",
+  "sich einloggen": "entrar na conta",
+  "das Benutzerkonto": "a conta de utilizador",
+  "der Passwortmanager": "o gestor de palavras-passe",
+  "abmelden": "terminar sessão",
+  "veraltet": "desatualizado",
+  "Ich habe mein Passwort schon wieder vergessen.": "Esqueci-me outra vez da palavra-passe.",
+  "Klick auf Passwort vergessen und setz es zurück.": "Carrega em esqueci-me da palavra-passe e repõe-na.",
+  "Der Link zum Zurücksetzen ist nur eine Stunde gültig.": "A ligação para repor só é válida durante uma hora.",
+  "Das neue Passwort darf nicht wie das alte sein.": "A palavra-passe nova não pode ser igual à antiga.",
+  "Ein Passwortmanager löst das Problem endgültig.": "Um gestor de palavras-passe resolve o problema de vez.",
+  "Schreib Passwörter nicht auf einen Zettel am Bildschirm.": "Não escrevas palavras-passe num papel colado ao ecrã.",
+  "Bei der Zwei-Faktor kommt noch ein Code aufs Handy.": "Na autenticação em dois passos vem ainda um código para o telemóvel.",
+  "Der Code kam erst, als er schon abgelaufen war.": "O código só chegou quando já tinha expirado.",
+  "Ich habe die Bestätigungsmail nicht bekommen.": "Não recebi o e-mail de confirmação.",
+  "Schau mal im Spam-Ordner nach.": "Vê lá na pasta do spam.",
+  "Da war sie, zwischen zehn Werbemails.": "Estava lá, no meio de dez e-mails de publicidade.",
+  "Klick auf den Bestätigungslink, dann ist das Konto aktiv.": "Carrega na ligação de confirmação e a conta fica ativa.",
+  "Ich kann mich nicht einloggen, es sagt: Benutzer unbekannt.": "Não consigo entrar, diz: utilizador desconhecido.",
+  "Vielleicht hast du dich mit der anderen Mailadresse angemeldet.": "Se calhar registaste-te com o outro endereço de e-mail.",
+  "Vergiss nicht, dich abzumelden, das ist ein fremder Rechner.": "Não te esqueças de terminar sessão, o computador não é teu.",
+  "Das Benutzerkonto kannst du unten in den Einstellungen löschen.": "A conta de utilizador podes apagar em baixo nas definições.",
+  "Dieser Cookie-Banner geht wirklich nicht weg.": "Este aviso de cookies não sai dali de maneira nenhuma.",
+  "Klick auf Ablehnen, nicht auf Alle akzeptieren.": "Carrega em rejeitar, não em aceitar tudo.",
+  "Ablehnen ist manchmal drei Klicks tiefer versteckt.": "Rejeitar está às vezes escondido três cliques mais abaixo.",
+  "Die Datenschutzerklärung liest sowieso niemand.": "A política de privacidade não é lida por ninguém, de qualquer maneira.",
+  "Gib online nur an, was wirklich nötig ist.": "Na internet dá só o que for mesmo preciso.",
+  "Das Update kannst du nicht ewig verschieben.": "A atualização não a podes adiar eternamente.",
+  "Updates schließen Sicherheitslücken, deshalb sind sie wichtig.": "As atualizações tapam falhas de segurança, é por isso que são importantes.",
+  "Mach es abends, dann stört es nicht.": "Faz isso à noite, assim não incomoda.",
+  "Vorher eine Sicherung machen, sicher ist sicher.": "Fazer uma cópia de segurança antes, mais vale prevenir.",
+  "Mein Handy ist veraltet, es bekommt keine Updates mehr.": "O meu telemóvel está desatualizado, já não recebe atualizações.",
+  "Sichere deine Fotos, bevor irgendetwas passiert.": "Faz cópia das tuas fotografias antes que aconteça alguma coisa.",
+  "Zwei Minuten Aufwand sparen dir zwei Tage Ärger.": "Dois minutos de trabalho poupam-te dois dias de chatices.",
+  "Ich komme nicht in mein Konto rein.": "Não consigo entrar na minha conta.",
+  "Passwort zurücksetzen. Mail kommt sofort.": "Repõe a palavra-passe. O e-mail chega logo.",
+  "Da ist keine Mail.": "Não há e-mail nenhum.",
+  "Spam-Ordner. Wetten?": "Pasta do spam. Apostas?",
+  "Mein Rechner will schon seit Wochen ein Update.": "Há semanas que o meu computador quer uma atualização.",
+  "Dann mach es heute Abend.": "Então faz isso hoje à noite.",
+  "Und wenn danach etwas nicht mehr geht?": "E se depois alguma coisa deixar de funcionar?",
+  "Deshalb vorher eine Sicherung. Dann kann nichts passieren.": "É por isso que se faz cópia antes. Assim não pode acontecer nada.",
+
+  // ── Translating: false friends, compounds and what will not go over (part317) ──
+  //
+  // SIX CARDS OF THIS PACK ARE LEFT OUT and the build now refuses them, along
+  // with the other sentences this course does not carry — see the list in
+  // check-portuguese-table.cjs. They are the ones whose entire point is an
+  // English word-form: bekommen against become, sensibel against sensible,
+  // and the four-line joke about ordering a steak and announcing you are
+  // about to turn into one. A Portuguese speaker never makes those mistakes,
+  // because Portuguese has no become and no sensible — so the cards teach
+  // nothing and the punchline lands on nobody.
+  //
+  // What stays is everything about German itself. Gemütlich and Feierabend
+  // really are hard to carry over; Handschuh really is a shoe for the hand;
+  // and Tomaten auf den Augen is funnier in Portuguese, not less, because
+  // Portuguese has no such expression at all.
+  //
+  // Umgekehrt fehlt dem Deutschen ein Wort für privacy gets better in
+  // Portuguese rather than worse: Portuguese does have privacidade, so the
+  // observation about German lands with something behind it.
+  "wörtlich": "à letra",
+  "der falsche Freund": "o falso amigo",
+  "die Übersetzung": "a tradução",
+  "das Lehnwort": "o empréstimo",
+  "die Bedeutung": "o significado",
+  "das Sprichwort": "o provérbio",
+  "die Endung": "a terminação",
+  "das Fremdwort": "o estrangeirismo",
+  "unübersetzbar": "intraduzível",
+  "das Kompositum": "a palavra composta",
+  "verwechseln": "confundir",
+  "Wie sagt man das auf Englisch?": "Como é que se diz isso em inglês?",
+  "Im Deutschen heißt das anders.": "Em alemão isso chama-se outra coisa.",
+  "Wörtlich übersetzt ergibt das keinen Sinn.": "Traduzido à letra não faz sentido nenhum.",
+  "Das kann man nicht wörtlich übersetzen.": "Isso não se pode traduzir à letra.",
+  "Dafür gibt es im Englischen kein einziges Wort.": "Para isso o inglês não tem uma única palavra.",
+  "Gemütlich ist so ein unübersetzbares Wort.": "Gemütlich é uma dessas palavras intraduzíveis.",
+  "Schadenfreude haben andere Sprachen einfach übernommen.": "Schadenfreude foi simplesmente adotada por outras línguas.",
+  "Feierabend ist mehr als nur Feierabend.": "Feierabend é mais do que o fim do trabalho.",
+  "Umgekehrt fehlt dem Deutschen ein Wort für privacy.": "Ao contrário, o alemão não tem palavra para privacidade.",
+  "Vorsicht, das ist ein falscher Freund.": "Atenção, isso é um falso amigo.",
+  "Und Chef ist der Boss, nicht der Koch.": "E Chef é o patrão, não é o cozinheiro.",
+  "Solche Wörter merkt man sich erst nach dem ersten Fehler.": "Palavras destas só ficam depois do primeiro erro.",
+  "Diese Redewendung gibt es fast genauso auf Englisch.": "Esta expressão existe quase igual em inglês.",
+  "Manche Sprichwörter sind in beiden Sprachen gleich.": "Há provérbios que são iguais nas duas línguas.",
+  "Andere klingen völlig verrückt, wenn man sie übersetzt.": "Outros soam completamente doidos quando se traduzem.",
+  "Da hast du Tomaten auf den Augen — Tomaten!": "Tens tomates nos olhos — tomates!",
+  "Deutsche Komposita sind für Lernende ein Geschenk.": "As palavras compostas alemãs são um presente para quem aprende.",
+  "Handschuh ist einfach ein Schuh für die Hand.": "Handschuh é simplesmente um sapato para a mão.",
+  "Wenn du die Teile kennst, verstehst du auch lange Wörter.": "Se conheceres as partes, também percebes as palavras compridas.",
+  "Die Endung verrät oft den Artikel.": "A terminação revela muitas vezes o artigo.",
+  "Fremdwörter behalten meistens ihr Geschlecht mit.": "Os estrangeirismos trazem quase sempre o género consigo.",
+  "Viele Lehnwörter kommen aus dem Englischen.": "Muitos empréstimos vêm do inglês.",
+  "Im Dialekt verstehe ich manchmal gar nichts.": "Em dialeto às vezes não percebo rigorosamente nada.",
+  "Selbst Deutsche verstehen Schweizerdeutsch kaum.": "Até os próprios alemães mal percebem o alemão da Suíça.",
+  "Hochdeutsch versteht man überall.": "O alemão padrão percebe-se em toda a parte.",
+  "Am Ende geht es nicht um perfekt, sondern um verstanden.": "No fim não se trata de ser perfeito, trata-se de ser percebido.",
+  "Wie sagt man gemütlich auf Englisch?": "Como é que se diz gemütlich em inglês?",
+  "Cosy — aber das trifft es nicht ganz.": "Cosy — mas não é bem isso.",
+  "Was fehlt denn?": "Então o que é que falta?",
+  "Die Ruhe. Und dass man bleiben möchte.": "O sossego. E a vontade de ficar.",
+
+  // ── A correction to an earlier exclusion (part57) ───────────────────────
+  //
+  // This one was left out with the three der-die-das cards from the same
+  // pack, and that was wrong. It is not about German gender at all — it is
+  // about dialect, and a Portuguese speaker standing in Bavaria needs it as
+  // much as anybody. The pack beside it keeps a card saying even Germans
+  // barely follow Swiss German, so leaving this one out was inconsistent.
+  "Ich verstehe Hochdeutsch, aber kein Bayrisch!": "Percebo o alemão padrão, mas bávaro não!",
+
+  // ── Retirement: the statement, the gap and the last working day (part318) ──
+  //
+  // Beitragsjahre are anos de descontos, because descontar is the verb
+  // Portuguese uses for paying into the state system — the money is discounted
+  // off the payslip. Abschlagsfrei is sem penalização, which is the term on a
+  // Portuguese pension calculation.
+  //
+  // The Rentenversicherung keeps its name in the sentence that sends you to
+  // its counter, and the headword says what it is. Portugal has a Segurança
+  // Social that does the same job, but nobody in Germany will know what you
+  // are asking for if you say that at the desk.
+  "die Rentenversicherung": "o seguro de pensões do Estado",
+  "die Altersvorsorge": "a poupança para a reforma",
+  "der Rentenbescheid": "o extrato da pensão",
+  "das Renteneintrittsalter": "a idade da reforma",
+  "die Betriebsrente": "a pensão da empresa",
+  "die Rentenlücke": "a lacuna da reforma",
+  "die Beitragsjahre": "os anos de descontos",
+  "die Altersteilzeit": "a reforma a tempo parcial",
+  "die Rentenpunkte": "os pontos de pensão",
+  "die Verabschiedung": "a festa de despedida",
+  "abschlagsfrei": "sem penalização",
+  "In zwei Jahren gehe ich in Rente.": "Daqui a dois anos vou para a reforma.",
+  "Das Renteneintrittsalter liegt inzwischen bei siebenundsechzig.": "A idade da reforma está agora nos sessenta e sete.",
+  "Mit fünfundvierzig Beitragsjahren kannst du abschlagsfrei früher gehen.": "Com quarenta e cinco anos de descontos podes ir mais cedo sem penalização.",
+  "Früher gehen kostet Abschläge, jeden Monat.": "Ir mais cedo custa penalização, todos os meses.",
+  "Der Rentenbescheid kommt einmal im Jahr.": "O extrato da pensão chega uma vez por ano.",
+  "Auf dem Bescheid stehen deine Rentenpunkte.": "No extrato vêm os teus pontos de pensão.",
+  "Lass dich bei der Rentenversicherung beraten, das ist kostenlos.": "Vai pedir aconselhamento à Rentenversicherung, é gratuito.",
+  "Prüf, ob alle Zeiten erfasst sind.": "Confirma se estão lá todos os períodos.",
+  "Kindererziehungszeiten zählen auch mit.": "Os anos a criar filhos também contam.",
+  "Von der gesetzlichen Rente allein wird es knapp.": "Só com a pensão do Estado fica apertado.",
+  "Die Rentenlücke musst du irgendwie schließen.": "A lacuna da reforma tens de a tapar de alguma maneira.",
+  "Zusätzlich habe ich eine Betriebsrente.": "Além disso tenho uma pensão da empresa.",
+  "Fang früh an mit der Altersvorsorge, auch mit wenig.": "Começa cedo a poupar para a reforma, mesmo que seja pouco.",
+  "Zwanzig Euro im Monat mit dreißig sind mehr wert als hundert mit fünfzig.": "Vinte euros por mês aos trinta valem mais do que cem aos cinquenta.",
+  "Über Altersteilzeit kannst du langsam ausschleichen.": "Com a reforma a tempo parcial podes ir saindo aos poucos.",
+  "Nächsten Freitag ist mein letzter Arbeitstag.": "Na próxima sexta é o meu último dia de trabalho.",
+  "Nach vierzig Jahren im selben Betrieb — das gibt es kaum noch.": "Ao fim de quarenta anos na mesma empresa — isso já quase não existe.",
+  "Zur Verabschiedung kommt die ganze Abteilung.": "À festa de despedida vem o departamento inteiro.",
+  "Sie haben mir einen Gutschein für eine Reise geschenkt.": "Ofereceram-me um vale para uma viagem.",
+  "Der Abschied fällt schwerer, als ich dachte.": "A despedida está a custar mais do que eu pensava.",
+  "Am Montag klingelt zum ersten Mal kein Wecker.": "Na segunda, pela primeira vez, não toca despertador nenhum.",
+  "Die ersten Wochen fühlen sich an wie Urlaub.": "As primeiras semanas sabem a férias.",
+  "Danach braucht man eine neue Struktur.": "Depois disso é preciso arranjar uma rotina nova.",
+  "Ich habe mir gleich etwas gesucht: Ehrenamt und Garten.": "Arranjei logo qualquer coisa: voluntariado e a horta.",
+  "Er ist im Ruhestand, aber alles andere als ruhig.": "Está reformado, mas tudo menos sossegado.",
+  "Endlich Zeit für die Enkel.": "Finalmente tempo para os netos.",
+  "Rente heißt nicht Ende, nur ein anderer Takt.": "Reforma não quer dizer fim, é só outro compasso.",
+  "Auf den Ruhestand — den hast du dir verdient!": "À reforma — bem merecida!",
+  "Hast du deinen Rentenbescheid gelesen?": "Já leste o teu extrato da pensão?",
+  "Überflogen. Sieht dünner aus als gehofft.": "Passei os olhos. Parece mais magro do que eu esperava.",
+  "Geh mal zur Beratung, die ist kostenlos.": "Vai lá pedir aconselhamento, é gratuito.",
+  "Und prüf, ob die Studienzeit drin ist. Bei mir fehlte sie.": "E confirma se os anos de estudo lá estão. A mim faltavam.",
+  "Freitag ist es so weit. Vierzig Jahre.": "Na sexta é o dia. Quarenta anos.",
+  "Wahnsinn. Freust du dich?": "Que loucura. Estás contente?",
+  "Ja. Und es fällt mir schwerer, als ich dachte.": "Estou. E está-me a custar mais do que eu pensava.",
+  "Am Montag klingelt kein Wecker — dann weißt du es.": "Na segunda não toca despertador — aí é que vais ver.",
+
+  // ── Screens and children: the rules, the age rating, the class chat (part319) ──
+  //
+  // Portuguese parents have the terms already: a classificação etária on the
+  // box, o controlo parental in the settings, o grupo da turma on the phone.
+  // Abmachen is combinar, the verb for agreeing something between people, and
+  // it is the verb the whole pack turns on — the rules are combinadas, not
+  // imposed.
+  //
+  // Ohne Ärger is sem levar raspanete, which is what a Portuguese child is
+  // actually afraid of and what the parent is promising not to do.
+  "die Bildschirmzeit": "o tempo de ecrã",
+  "die Altersfreigabe": "a classificação etária",
+  "die Medienzeit": "o tempo com os ecrãs",
+  "abmachen": "combinar",
+  "die Kindersicherung": "o controlo parental",
+  "der Medienvertrag": "o acordo familiar sobre ecrãs",
+  "zocken": "jogar",
+  "das Tablet": "o tablet",
+  "altersgerecht": "adequado à idade",
+  "der Klassenchat": "o grupo da turma",
+  "streiten": "discutir",
+  "die Regel": "a regra",
+  "süchtig": "viciado",
+  "Wie viel Bildschirmzeit ist eigentlich okay?": "Afinal quanto tempo de ecrã é aceitável?",
+  "Faustregel: pro Lebensjahr etwa zehn Minuten am Tag.": "Regra grosseira: cerca de dez minutos por dia por cada ano de idade.",
+  "Wichtiger als die Minuten ist, was sie schauen.": "Mais importante do que os minutos é o que eles veem.",
+  "Bei uns gibt es Medienzeit erst nach den Hausaufgaben.": "Cá em casa só há ecrãs depois dos trabalhos de casa.",
+  "Wir haben feste Regeln abgemacht, zusammen.": "Combinámos regras fixas, em conjunto.",
+  "Wir haben einen Medienvertrag geschrieben und alle unterschrieben.": "Escrevemos um acordo sobre os ecrãs e assinaram todos.",
+  "Am Wochenende ist mehr erlaubt als unter der Woche.": "Ao fim de semana é permitido mais do que durante a semana.",
+  "Kein Bildschirm eine Stunde vor dem Schlafen.": "Nada de ecrãs uma hora antes de dormir.",
+  "Beim Essen liegen alle Handys in der Kiste.": "Às refeições todos os telemóveis ficam na caixa.",
+  "Regeln gelten für alle, auch für uns.": "As regras valem para todos, nós incluídos.",
+  "Noch eine Folge — das sagen sie jeden Abend.": "Mais um episódio — é o que eles dizem todas as noites.",
+  "Wir streiten öfter über Medienzeit als über alles andere.": "Discutimos por causa dos ecrãs mais do que por tudo o resto.",
+  "Wenn du das Tablet nicht ausmachst, ist morgen Pause.": "Se não desligares o tablet, amanhã não há.",
+  "Kündige das Ende an, fünf Minuten vorher.": "Avisa que está a acabar, cinco minutos antes.",
+  "Mitten in der Folge abbrechen geht immer schief.": "Cortar a meio do episódio corre sempre mal.",
+  "Achte auf die Altersfreigabe, auch bei Spielen.": "Repara na classificação etária, também nos jogos.",
+  "Ab zwölf heißt nicht: für alle Zwölfjährigen geeignet.": "Maiores de doze não quer dizer: bom para todos os de doze anos.",
+  "Schau die erste Folge einmal mit.": "Vê o primeiro episódio com eles, uma vez que seja.",
+  "Die Kindersicherung ist schnell eingerichtet.": "O controlo parental configura-se num instante.",
+  "Kinder finden Wege drum herum — rechne damit.": "As crianças arranjam maneira de dar a volta — conta com isso.",
+  "Rede lieber darüber, als alles zu verbieten.": "Mais vale falar sobre o assunto do que proibir tudo.",
+  "Ab wann bekommt sie ein eigenes Handy?": "A partir de que idade é que ela tem telemóvel próprio?",
+  "Die meisten bekommen es zum Wechsel auf die weiterführende Schule.": "A maioria recebe-o na passagem para o ciclo seguinte.",
+  "Alle in der Klasse haben eins — das Argument kommt garantiert.": "Toda a gente na turma tem um — esse argumento vem de certeza.",
+  "Erst ein einfaches, ohne Internet.": "Primeiro um simples, sem internet.",
+  "Mit dem Handy kommt der Klassenchat, und der hat es in sich.": "Com o telemóvel vem o grupo da turma, e esse não é brincadeira nenhuma.",
+  "Sag ihm, er kann jederzeit zu dir kommen, ohne Ärger.": "Diz-lhe que pode vir ter contigo a qualquer hora, sem levar raspanete.",
+  "Süchtig ist ein großes Wort — aber Gewohnheiten prägen sich schnell ein.": "Viciado é uma palavra pesada — mas os hábitos pegam-se depressa.",
+  "Wir brauchen klare Regeln für die Medienzeit.": "Precisamos de regras claras para o tempo com os ecrãs.",
+  "Und die machen wir zusammen mit ihnen ab.": "E combinamo-las com eles.",
+  "Hausaufgaben zuerst, dann eine Stunde?": "Primeiro os trabalhos de casa, depois uma hora?",
+  "Und beim Essen liegen alle Handys in der Kiste. Auch unsere.": "E às refeições todos os telemóveis na caixa. Os nossos também.",
+  "Mama, alle in meiner Klasse haben ein Handy.": "Mãe, toda a gente na minha turma tem telemóvel.",
+  "Zum Schulwechsel bekommst du eins, das haben wir gesagt.": "Quando mudares de escola tens um, foi o que combinámos.",
+  "Das dauert noch ewig!": "Isso ainda demora uma eternidade!",
+  "Ein halbes Jahr. Und dann reden wir über den Klassenchat.": "Meio ano. E depois falamos sobre o grupo da turma.",
+
+  // ── Living more sustainably: green power, refills, repairs (part320) ───
+  //
+  // Unverpackt is a granel, which is how Portuguese has always sold flour and
+  // beans out of a sack, and der Fußabdruck is a pegada — the same footprint,
+  // the same ecological sense. Das Repair-Café stays o café de reparações, as
+  // in the appliances pack.
+  //
+  // Kaputt heißt nicht automatisch weg is the argument the pack makes, and
+  // Portuguese makes it with the bin rather than with absence: avariado não
+  // quer automaticamente dizer para o lixo.
+  "der Ökostrom": "a eletricidade verde",
+  "das Mehrweg": "o sistema reutilizável",
+  "unverpackt": "a granel",
+  "das Repair-Café": "o café de reparações",
+  "der Fußabdruck": "a pegada",
+  "das Lastenrad": "a bicicleta de carga",
+  "der Second-Hand-Laden": "a loja de segunda mão",
+  "die Kleiderspende": "a recolha de roupa usada",
+  "wegwerfen": "deitar fora",
+  "die Einwegverpackung": "a embalagem descartável",
+  "der Anbieterwechsel": "a mudança de fornecedor",
+  "tauschen": "trocar",
+  "die Wärmepumpe": "a bomba de calor",
+  "regional": "da região",
+  "die Nachhaltigkeit": "a sustentabilidade",
+  "Wir sind letztes Jahr auf Ökostrom umgestiegen.": "No ano passado mudámos para eletricidade verde.",
+  "Der Anbieterwechsel dauert zehn Minuten und spart oft Geld.": "A mudança de fornecedor demora dez minutos e muitas vezes poupa dinheiro.",
+  "Der Strom kommt aus derselben Leitung, das ändert sich nicht.": "A eletricidade vem pelo mesmo fio, isso não muda.",
+  "Wichtig ist, dass der Anbieter wirklich neue Anlagen baut.": "O que interessa é que o fornecedor construa mesmo instalações novas.",
+  "Eine Wärmepumpe lohnt sich nur in einem gut gedämmten Haus.": "Uma bomba de calor só compensa numa casa bem isolada.",
+  "Energie sparen fängt beim Thermostat an.": "Poupar energia começa no termóstato.",
+  "Im Unverpackt-Laden bringst du deine eigenen Gläser mit.": "Na loja a granel levas os teus próprios frascos.",
+  "Das ist etwas teurer, dafür kaufst du genau so viel, wie du brauchst.": "Fica um pouco mais caro, mas levas exatamente o que precisas.",
+  "Mehrweg statt Einweg, wo es geht.": "Reutilizável em vez de descartável, sempre que der.",
+  "Für Kaffee zum Mitnehmen habe ich meinen eigenen Becher dabei.": "Para o café para levar trago o meu próprio copo.",
+  "Regional und saisonal ist oft wirkungsvoller als bio aus Übersee.": "Da região e da época faz muitas vezes mais efeito do que biológico vindo do outro lado do mundo.",
+  "Erdbeeren im Dezember muss ich nicht haben.": "Morangos em dezembro não me fazem falta nenhuma.",
+  "Kaputt heißt nicht automatisch weg.": "Avariado não quer automaticamente dizer para o lixo.",
+  "Im Repair-Café hilft dir jemand beim Selbstreparieren.": "No café de reparações há sempre alguém que te ajuda a arranjar tu mesmo.",
+  "Die Kaffeemaschine läuft nach der Reparatur wieder wie neu.": "Depois de arranjada, a máquina de café trabalha outra vez como nova.",
+  "Reparieren lassen ist manchmal teurer — aber nicht immer.": "Mandar arranjar sai às vezes mais caro — mas nem sempre.",
+  "Erst mal suchen, ob es das gebraucht gibt.": "Primeiro ver se aquilo existe em segunda mão.",
+  "Im Second-Hand-Laden findest du erstaunlich gute Sachen.": "Numa loja de segunda mão encontram-se coisas surpreendentemente boas.",
+  "Kinderkleidung kaufen wir fast nur gebraucht.": "Roupa de criança compramos quase só em segunda mão.",
+  "Was wir nicht mehr brauchen, geben wir in die Kleiderspende.": "O que já não precisamos vai para a recolha de roupa usada.",
+  "Auf dem Kinderflohmarkt tauschen wir jedes Frühjahr.": "Na feira de trocas para crianças trocamos todas as primaveras.",
+  "Mit dem Lastenrad brauche ich für Einkäufe kein Auto.": "Com a bicicleta de carga não preciso de carro para as compras.",
+  "Manche Städte verleihen Lastenräder kostenlos.": "Há cidades que emprestam bicicletas de carga de graça.",
+  "Kurze Strecken mache ich zu Fuß oder mit dem Rad.": "As distâncias curtas faço-as a pé ou de bicicleta.",
+  "Der Fußabdruck von einem Flug frisst ein ganzes Jahr Mülltrennen auf.": "A pegada de um único voo come um ano inteiro de separação do lixo.",
+  "Das heißt nicht, dass Mülltrennen sinnlos ist.": "Isso não quer dizer que separar o lixo não sirva de nada.",
+  "Mach das, was in deinen Alltag passt.": "Faz aquilo que couber no teu dia a dia.",
+  "Nachhaltigkeit ist kein Wettbewerb.": "A sustentabilidade não é uma competição.",
+  "Wir sollten mal auf Ökostrom wechseln.": "Devíamos mudar para eletricidade verde.",
+  "Ist das kompliziert?": "Isso é complicado?",
+  "Zehn Minuten online, den Rest macht der neue Anbieter.": "Dez minutos na internet, o resto trata o novo fornecedor.",
+  "Und es kostet nicht mehr? Dann sofort.": "E não fica mais caro? Então já.",
+  "Die Kaffeemaschine macht keinen Mucks mehr.": "A máquina de café não dá sinal de vida.",
+  "Stell sie mal hier hin. Vermutlich der Schalter.": "Põe-na aqui. Deve ser o interruptor.",
+  "Kann man das noch reparieren?": "Ainda se consegue arranjar isso?",
+  "Fast immer. Und kaputt ist sie ja jetzt schon.": "Quase sempre. E avariada já ela está.",
+
+  // ── The back: physiotherapy, the prescription and the exercises (part321) ──
+  //
+  // Die Zuzahlung is a taxa moderadora — Portugal has the same institution
+  // under its own name, the fixed share the patient pays. Die Überweisung is
+  // uma credencial, the paper that gets you to a specialist, and der
+  // Bandscheibenvorfall is uma hérnia discal.
+  //
+  // Mir ist der Rücken rausgeflogen is not anatomy, it is what somebody says
+  // holding the doorframe. Portuguese says deu-me um jeito nas costas, which
+  // is the same complaint arrived at from a different picture.
+  "die Physiotherapie": "a fisioterapia",
+  "die Verordnung": "a prescrição",
+  "der Bandscheibenvorfall": "a hérnia discal",
+  "die Reha": "a reabilitação",
+  "die Verspannung": "a contratura muscular",
+  "der Orthopäde": "o ortopedista",
+  "blockieren": "bloquear",
+  "die Zuzahlung": "a taxa moderadora",
+  "die Krankengymnastik": "os exercícios terapêuticos",
+  "die Massage": "a massagem",
+  "dehnen": "alongar",
+  "der Ischias": "o nervo ciático",
+  "schmerzfrei": "sem dores",
+  "Mir ist der Rücken rausgeflogen.": "Deu-me um jeito nas costas.",
+  "Beim Schuhebinden hat es plötzlich geknackt.": "A apertar os atacadores estalou-me qualquer coisa.",
+  "Der Nacken ist völlig verspannt.": "Tenho o pescoço todo contraído.",
+  "Es zieht vom Rücken bis ins Bein.": "Puxa-me das costas até à perna.",
+  "Der Arzt vermutet einen Bandscheibenvorfall.": "O médico desconfia de uma hérnia discal.",
+  "Ich brauche eine Überweisung zum Orthopäden.": "Preciso de uma credencial para o ortopedista.",
+  "Er hat mir Krankengymnastik verordnet.": "Prescreveu-me exercícios terapêuticos.",
+  "Eine Verordnung sind meistens sechs Termine.": "Uma prescrição são normalmente seis sessões.",
+  "Die Verordnung musst du innerhalb von vier Wochen einlösen.": "A prescrição tens de a usar dentro de quatro semanas.",
+  "Zehn Prozent Zuzahlung plus zehn Euro pro Rezept.": "Dez por cento de taxa moderadora mais dez euros por receita.",
+  "Beim Physiotherapeuten wartet man oft Wochen auf einen Termin.": "No fisioterapeuta espera-se muitas vezes semanas por uma marcação.",
+  "Frag nach einem Termin auf der Warteliste.": "Pede para ficar na lista de espera.",
+  "Zuerst schaut sie sich meine Haltung an.": "Primeiro ela vê-me a postura.",
+  "Der Schmerz sitzt gar nicht da, wo er wehtut.": "A dor não está de todo onde dói.",
+  "Sie hat die Verspannung sofort gefunden.": "Encontrou logo a contratura.",
+  "Massage ist angenehm, die Übungen bringen mehr.": "A massagem é agradável, os exercícios é que rendem.",
+  "Nach der dritten Sitzung wurde es deutlich besser.": "À terceira sessão melhorou muito.",
+  "Wärme tut mir gut, Kälte gar nicht.": "O calor faz-me bem, o frio não.",
+  "Die Übungen für zu Hause macht kaum jemand.": "Os exercícios para casa quase ninguém os faz.",
+  "Zehn Minuten täglich reichen, aber wirklich täglich.": "Dez minutos por dia chegam, mas mesmo todos os dias.",
+  "Ich dehne morgens beim Zähneputzen.": "Faço alongamentos de manhã enquanto lavo os dentes.",
+  "Beweg dich, auch wenn es zieht — nur nicht, wenn es sticht.": "Mexe-te, mesmo que puxe — só não se der pontadas.",
+  "Liegen ist beim Rücken meistens die schlechteste Idee.": "Para as costas, ficar deitado é quase sempre a pior ideia.",
+  "Ein höherer Schreibtisch hat mehr gebracht als jede Massage.": "Uma secretária mais alta fez mais do que qualquer massagem.",
+  "Nach der Operation kommt die Reha.": "Depois da operação vem a reabilitação.",
+  "Die Reha wird von der Rentenversicherung bezahlt.": "A reabilitação é paga pela Rentenversicherung.",
+  "Drei Wochen Reha, mit Sport und Vorträgen.": "Três semanas de reabilitação, com exercício e palestras.",
+  "Ich bin seit acht Wochen schmerzfrei — das erste Mal seit Jahren.": "Há oito semanas que estou sem dores — pela primeira vez em anos.",
+  "Seit wann? Und wird es beim Sitzen schlimmer?": "Desde quando? E piora quando está sentado?",
+  "Seit zwei Wochen. Sitzen ist am schlimmsten.": "Há duas semanas. Sentado é que é pior.",
+  "Ich verordne Ihnen erst mal sechs Mal Krankengymnastik.": "Para já prescrevo-lhe seis sessões de exercícios terapêuticos.",
+  "Machen Sie die Übungen zu Hause?": "Faz os exercícios em casa?",
+  "Ehrlich? Zweimal die Woche vielleicht.": "Sinceramente? Talvez duas vezes por semana.",
+  "Zehn Minuten täglich bringen mehr als eine Stunde am Sonntag.": "Dez minutos por dia rendem mais do que uma hora ao domingo.",
+  "Dann mache ich sie beim Zähneputzen. Das klappt.": "Então faço-os enquanto lavo os dentes. Assim resulta.",
 };

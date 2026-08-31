@@ -111,6 +111,13 @@ const KEPT_GREETINGS = ["Grüß dich", "Grüß Gott", "Grüezi", "Tschüss", "Ts
  */
 const KEPT_FORMULAS = ["Mit freundlichen Grüßen", "Mit besten Grüßen", "Viele Grüße"];
 /**
+ * And the German words this course quotes AS words. The pack on translation
+ * argues that gemütlich does not go over into another language, and the only
+ * way to make that argument is to put gemütlich in the sentence. Replacing it
+ * with a Portuguese word would refute the card it appears on.
+ */
+const QUOTED_AS_WORDS = ["Gemütlich", "gemütlich"];
+/**
  * Street names are not worth listing one at a time. Anything ending in
  * -straße is an address, and an address is read out as it is written —
  * Gartenstraße acht is Gartenstraße oito.
@@ -118,7 +125,7 @@ const KEPT_FORMULAS = ["Mit freundlichen Grüßen", "Mit besten Grüßen", "Viel
 const STREET = /\b[A-ZÄÖÜ][\wäöüß-]*straße\b/g;
 const stillGerman = pairs.filter((row) => {
   let rest = row.portuguese.replace(STREET, " ");
-  for (const name of [...PROPER_NAMES, ...KEPT_GREETINGS, ...KEPT_FORMULAS]) rest = rest.split(name).join(" ");
+  for (const name of [...PROPER_NAMES, ...KEPT_GREETINGS, ...KEPT_FORMULAS, ...QUOTED_AS_WORDS]) rest = rest.split(name).join(" ");
   return /[äöüßÄÖÜ]/.test(rest);
 });
 check(`no Portuguese line still carries an umlaut${stillGerman.length ? ` — "${stillGerman[0].portuguese}"` : ""}`,
@@ -230,9 +237,68 @@ for (const [id, file] of Object.entries(EXCLUDED_PACKS)) {
 }
 check(`the excluded packs were found and read (${excluded.size} sentences)`, excluded.size > 30);
 
+/**
+ * And the single cards, scattered through packs this course otherwise keeps.
+ *
+ * Two whole packs could be refused by name above. These cannot: they sit
+ * inside packs full of cards a Portuguese speaker wants, and only the
+ * individual line is dead. Left as a note they would be translated on the
+ * next pass through the curriculum by somebody working in order, so they are
+ * listed here and the build refuses them.
+ *
+ * THE GERMAN ARTICLE. Der Kühlschrank — der, nicht das is a lesson in German
+ * gender and nothing else. There is no Portuguese in it to write.
+ *
+ * THE ENGLISH TRAPS. The rest are word-forms that catch English speakers and
+ * nobody else. Gift is a present in English and poison in German; eventuell
+ * looks like eventually; bekommen looks like become; sensibel looks like
+ * sensible. Portuguese has none of those look-alikes — there is no become and
+ * no sensible — so the card explains a mistake the learner was never going to
+ * make, and the joke lands on nobody. Cards about German words being hard to
+ * carry into English are a different thing and are kept: gemütlich really is
+ * hard to carry, and that is a fact about German.
+ */
+const NOT_FOR_PORTUGUESE = new Set([
+  // part57 — the German article
+  "Der Kühlschrank. Der, nicht das!",
+  "Der Kühlschrank. Habe ich das richtig gesagt?",
+  "Der, die oder das?",
+  // part174 — Gift and eventuell, traps for English speakers
+  "Eventuell? Also ja oder nein?",
+  "Wahrscheinlich ja! Eventuell heißt vielleicht, oder?",
+  "Genau. Auf Englisch klingt es nur ganz anders.",
+  "Ich habe ein Gift für dich!",
+  "Ein Gift?! Du meinst hoffentlich ein Geschenk.",
+  "Oh nein. Gift heißt Poison, stimmt's?",
+  "Stimmt. Das Geschenk nehme ich trotzdem gern.",
+  // part317 — bekommen against become, sensibel against sensible
+  "Bekommen heißt nicht become, sondern to get.",
+  "Ich verwechsle ständig sensibel und sensible.",
+  "Ich möchte ein Steak bekommen — sagt man das so?",
+  "Ja. Aber sag bloß nicht: I become a steak.",
+  "Warum? — Oh. Weil become werden heißt.",
+  "Genau. Klassischer falscher Freund.",
+]);
+/**
+ * A list of sentences protects nothing if one of them has a typo in it, or if
+ * a card gets reworded upstream — the entry would quietly stop matching and
+ * the card would slip back into the course with nobody noticing. So each one
+ * is looked for in the curriculum first, and the build says which is missing.
+ */
+const curriculum = [
+  fs.readFileSync(path.join(root, "src/lib/data.ts"), "utf8"),
+  fs.readFileSync(path.join(root, "src/lib/expansionPacks.ts"), "utf8"),
+].join("\n");
+const vanished = [...NOT_FOR_PORTUGUESE].filter((german) => !curriculum.includes(`"${german}"`));
+check(
+  `every excluded card still exists to be excluded${vanished.length ? ` — ${vanished[0]}` : ""}`,
+  vanished.length === 0
+);
+for (const german of NOT_FOR_PORTUGUESE) excluded.add(german);
+
 const shouldNotBeHere = pairs.filter((row) => excluded.has(row.german));
 check(
-  `no card about typing German is translated${shouldNotBeHere.length ? ` — ${shouldNotBeHere[0].german}` : ""}`,
+  `no card this course leaves out is translated${shouldNotBeHere.length ? ` — ${shouldNotBeHere[0].german}` : ""}`,
   shouldNotBeHere.length === 0
 );
 
