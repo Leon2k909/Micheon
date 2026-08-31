@@ -210,6 +210,10 @@ const PROGRESSIVE = /\b(?:estou|estás|está|estamos|estão|estava|estavas|está
  */
 const NOT_A_GERUND = new Set([
   "quando", "comando", "bando", "brando", "tremendo", "estupendo", "horrendo", "reverendo",
+  // Adjectives that end the same way and follow estar for entirely innocent
+  // reasons. O teu cabelo está lindo is a compliment, not a Brazilian
+  // progressive, and findo behaves the same.
+  "lindo", "linda", "lindos", "lindas", "findo",
 ]);
 const brazilianProgressive = pairs.filter((row) => {
   for (const match of row.portuguese.matchAll(PROGRESSIVE)) {
