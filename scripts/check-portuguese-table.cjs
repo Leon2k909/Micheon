@@ -89,7 +89,9 @@ check(`no card has an empty Portuguese side${blank.length ? ` — ${blank[0].ger
 const PROPER_NAMES = [
   "Müller", "Schröder", "Grün", "Björn", "Jürgen", "Günther", "Käthe",
   "München", "Köln", "Düsseldorf", "Nürnberg", "Zürich", "Österreich",
-  "Bürgeramt", "Ausländerbehörde", "Straße", "Goethestraße",
+  // The offices and the schemes, which keep the name written on the door or
+  // on the form. Somebody applying for BAföG says BAföG, in any language.
+  "Bürgeramt", "Ausländerbehörde", "Straße", "Goethestraße", "TÜV", "BAföG",
 ];
 const KEPT_GREETINGS = ["Grüß dich", "Grüß Gott", "Grüezi", "Tschüss", "Tschüs"];
 const stillGerman = pairs.filter((row) => {
