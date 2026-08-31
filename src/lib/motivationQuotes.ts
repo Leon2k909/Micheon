@@ -34,12 +34,27 @@ import type { ResolvedInterfaceLanguage } from "@/lib/interfaceLanguage";
  * language falls back to. The rest are optional so that a gap shows the
  * English line instead of an empty banner.
  */
+/**
+ * One line, in every language the app can be read in.
+ *
+ * Every entry but `en` is optional because the lookup falls back to English,
+ * and `it` is optional for that reason and no better one: Italian became an
+ * app language before these were translated, so an Italian reader gets the
+ * English line. That is a real gap, not a design — the other five are at
+ * 365 of 365.
+ *
+ * The type has to name every ResolvedInterfaceLanguage whether or not the
+ * strings exist, because the lookup indexes this by that type. Leaving `it`
+ * out did not keep Italian honest; it stopped the project compiling, and main
+ * was red from v1.2.807 until this line.
+ */
 export type MotivationQuote = {
   en: string;
   de?: string;
   fr?: string;
   pl?: string;
   es?: string;
+  it?: string;
   pt?: string;
 };
 

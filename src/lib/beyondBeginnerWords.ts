@@ -83,4 +83,51 @@ export const BEYOND_A_BEGINNER = new Set([
   "eisig", "heiter", "bewölkt", "das Duschgel",
   "das Deo", "die Nagelschere", "die Pinzette", "der Nachttisch",
   "der Hocker", "das Fensterbrett", "der Kleiderschrank",
+
+  // ── the abstract tail, which is a different kind of mistake ───────────────
+  //
+  // Everything above is a CONCRETE noun a beginner's topic reached too far
+  // for: a porcupine in the animal pack, a paperclip in the office pack. The
+  // words below are not that. They are abstract and administrative vocabulary
+  // sitting in packs called Common words 2, 3 and 4, Everyday basics, and
+  // Useful words from real browsing — pack names that promise the opposite of
+  // what these are.
+  //
+  // Found by asking which rung-1 words the spoken bank ranks rarer than
+  // 15,000th and then reading the answer rather than acting on it, because
+  // the answer is mostly wrong: die Tomate is 15,840th, die Gurke 16,188th,
+  // die Bushaltestelle 16,363rd and die Hausaufgabe 30,984th, and every one
+  // of those is a beginner's word that film dialogue simply has no occasion
+  // to say. Eighty-seven words came back and roughly a quarter of them
+  // belonged here; the rest are staying exactly where they are. That ratio is
+  // the reason this file is a list and not a threshold.
+  //
+  // What these have in common is not rarity, which is why frequency found
+  // them only by accident: die Umsetzung, die Anforderung and der Landkreis
+  // are ordinary words in a German office or council letter. They are simply
+  // nobody's first three hundred, and a course that opens with them is
+  // teaching the register of a form before the register of a conversation.
+  "die Anforderung", "die Umsetzung", "der Landkreis", "die Nutzung",
+  "die Integration", "das Zutun", "die Augenhöhe",
+  "europäisch", "individuell", "konkret", "kollektiv", "optimal",
+  "verabscheuen", "angewidert", "zusammenhängen", "begründen",
+  "sich mit etwas auskennen", "jemandem etwas zutrauen", "missverstehen",
+
+  // ── and the same tail among the words the bank cannot see at all ──────────
+  //
+  // The bank is a 6,314-word subset, so a word missing from it carries no
+  // evidence either way: sprechen is absent from it, and so are der Bär,
+  // putzen, die Soße and der Cousin. Eighty-nine unranked words sit on rung
+  // one and the great majority of them belong there.
+  //
+  // These do not, and they are the same kind of thing as the group above —
+  // the register of a company report or a deli counter, not of a first
+  // conversation. Read one by one, because there was nothing else to read:
+  // no rank, no corpus count, only the word and the pack that claimed it.
+  "das Unternehmen", "der Betrieb", "die Hochschule", "der Teamkollege",
+  "fördern", "jeweilig", "sogenannt", "landesweit", "nahtlos", "anstelle",
+  "zusammentragen", "die Absicht", "fällen", "durchdrehen", "zweisprachig",
+  "sich etwas angewöhnen", "mit jemandem mitfühlen", "das Premium-Abo",
+  "die Frischetheke", "der Kilopreis", "der Stückpreis", "die Rohmilch",
+  "das Körnerbrötchen", "der Brotlaib",
 ]);
