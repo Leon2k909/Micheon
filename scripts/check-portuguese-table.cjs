@@ -110,6 +110,12 @@ const PROPER_NAMES = [
   // Übergabe-Einschreiben by any other name gets you a blank look, and there
   // is no Portuguese service to borrow a name from.
   "Kompaktbrief", "Einwurf-Einschreiben", "Übergabe-Einschreiben",
+  // The carnival pack turns on two shouts and one beer. Kölle Alaaf is what
+  // Cologne shouts, in Cologne dialect, and the card next to it says shouting
+  // the other city's word gets you cut off from the Kölsch. Give either of
+  // them a Portuguese form and the rule they teach stops existing. The city
+  // itself is still Colónia in the sentence around them.
+  "Kölle", "Kölsch",
 ];
 const KEPT_GREETINGS = ["Grüß dich", "Grüß Gott", "Grüezi", "Tschüss", "Tschüs"];
 /**
