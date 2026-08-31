@@ -101,6 +101,11 @@ const PROPER_NAMES = [
   // about Leberkäse is a joke about the word itself — it contains neither
   // liver nor cheese — so translating the word away takes the card with it.
   "Leberkäse",
+  // And the products sold over a German counter under a German name. The
+  // postal tiers are prices on a sign at the post office: asking for an
+  // Übergabe-Einschreiben by any other name gets you a blank look, and there
+  // is no Portuguese service to borrow a name from.
+  "Kompaktbrief", "Einwurf-Einschreiben", "Übergabe-Einschreiben",
 ];
 const KEPT_GREETINGS = ["Grüß dich", "Grüß Gott", "Grüezi", "Tschüss", "Tschüs"];
 /**
@@ -116,7 +121,14 @@ const KEPT_FORMULAS = ["Mit freundlichen Grüßen", "Mit besten Grüßen", "Viel
  * way to make that argument is to put gemütlich in the sentence. Replacing it
  * with a Portuguese word would refute the card it appears on.
  */
-const QUOTED_AS_WORDS = ["Gemütlich", "gemütlich"];
+const QUOTED_AS_WORDS = [
+  "Gemütlich", "gemütlich",
+  // And the reference-letter code, which is a set of German phrases that mean
+  // the opposite of what they say. Er bemühte sich looks like praise and means
+  // he never managed it — a card that translated the phrase would be handing
+  // the reader the answer instead of the trap.
+  "Er bemühte sich",
+];
 /**
  * Street names are not worth listing one at a time. Anything ending in
  * -straße is an address, and an address is read out as it is written —
