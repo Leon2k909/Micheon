@@ -117,7 +117,7 @@ const BANDS = [
 // first day.
 // Russian is still at zero, because while a table is being written the rule
 // that matters is only that its number never falls.
-const TRANSLATED_QUEUE_FLOORS = { fr: 17300, pl: 18700, es: 24000, it: 24000, pt: 4370, ru: 0 };
+const TRANSLATED_QUEUE_FLOORS = { fr: 17300, pl: 18700, es: 24000, it: 24000, pt: 4370, ru: 3800 };
 
 /**
  * How much of the word tracker the French course is allowed to be missing.

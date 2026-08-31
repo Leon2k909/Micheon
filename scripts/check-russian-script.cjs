@@ -106,6 +106,74 @@ check("no two German cards collapse onto one Russian line", () => {
   );
 });
 
+/**
+ * The course does not decide the learner's gender.
+ *
+ * Russian marks gender on the short adjective and on the past tense, so "I am
+ * free" is свободен from a man and свободна from a woman, and "I understood"
+ * is понял or поняла. German hides the choice — "Ich bin frei" is the same
+ * sentence either way — so a translator writes the masculine without noticing
+ * and the app has quietly decided who is using it.
+ *
+ * The Polish course already refuses this; check-polish-interface says nothing
+ * may address the reader in the gendered past. Same rule here, and the way out
+ * is the same: rewrite rather than pick. "Я свободен" becomes "у меня нет
+ * дел", "Рад тебя видеть" becomes "Приятно тебя видеть" — both are what a
+ * Russian says anyway.
+ *
+ * WHAT IS NOT CAUGHT, deliberately: gender ON THE CARD. A card about a Lehrer
+ * says учитель, because that is the card, not the reader. Only я and ты are
+ * looked at.
+ */
+const MASCULINE_SHORT = [
+  "свободен", "занят", "готов", "уверен", "рад", "должен", "согласен",
+  "болен", "голоден", "прав", "доволен", "женат", "здоров", "виноват",
+];
+/** Masculine past tense. Listed, not matched on -л, because стол is a table. */
+const MASCULINE_PAST = [
+  "понял", "хотел", "сделал", "сказал", "видел", "думал", "забыл", "знал",
+  "пришёл", "ушёл", "нашёл", "был", "смог", "взял", "дал", "мог", "писал",
+  "читал", "работал", "жил", "ел", "пил", "спал", "играл", "купил", "спросил",
+  "ответил", "решил", "начал", "закончил", "успел", "устал", "проспал",
+];
+
+/**
+ * Somebody else is being talked about, so the gender is theirs, not the
+ * reader's. Written as a third-person subject or a name, because those are the
+ * two ways a card says "not you": "Он был врачом" is about him, and its был is
+ * correct.
+ *
+ * Asking instead for я or ты to be PRESENT was the first attempt and it let
+ * "Рад тебя видеть" through — Russian drops the subject pronoun, so the
+ * sentence that addresses the reader most directly is exactly the one that
+ * does not name them.
+ */
+const THIRD_PERSON = ["он", "она", "оно", "они", "его", "её", "их", "ему", "ей", "им"];
+
+check("the course never decides the learner's gender", () => {
+  const offenders = [];
+  for (const [de, ru] of Object.entries(RUSSIAN_BY_GERMAN)) {
+    // A lower-case single word is a dictionary card, not something anybody
+    // says: müssen glosses as должен because that is the word, and there is no
+    // reader in it to misgender.
+    if (!/\s/.test(de.trim()) && de === de.toLocaleLowerCase("de-DE")) continue;
+    const words = ru.toLowerCase().replace(/[.,!?;:—–-]/g, " ").split(/\s+/).filter(Boolean);
+    if (words.some((word) => THIRD_PERSON.includes(word))) continue;
+    // A name inside the line is somebody else too. The first word is skipped
+    // because every sentence starts with a capital.
+    if ([...ru.split(/\s+/)].slice(1).some((word) => /^[А-ЯЁ]/.test(word))) continue;
+    const bad = words.find((word) =>
+      MASCULINE_SHORT.includes(word) || MASCULINE_PAST.includes(word));
+    if (bad) offenders.push(`"${de}" -> "${ru}" (${bad})`);
+  }
+  assert.strictEqual(
+    offenders.length,
+    0,
+    "these address the learner as male; rewrite them rather than pick a gender — "
+    + offenders.slice(0, 6).join("; ")
+  );
+});
+
 // ---------------------------------------------------------------- rule 2
 const ATTESTED = [
   ["de", "Хрущёв", "Chruschtschow"],
