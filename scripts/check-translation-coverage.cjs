@@ -130,7 +130,7 @@ const FLOORS = {
   // reason Italian is: what matters while a table is being written is that
   // its number never falls. It is the seed a first lesson is built from —
   // see the header of russianTranslations.ts for what it is not.
-  ru: 3720,
+  ru: 3880,
 };
 
 // The percentage is still reported, because it is the honest measure of how
