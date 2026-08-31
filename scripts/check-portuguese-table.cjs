@@ -116,6 +116,10 @@ const PROPER_NAMES = [
   // them a Portuguese form and the rule they teach stops existing. The city
   // itself is still Colónia in the sentence around them.
   "Kölle", "Kölsch",
+  // And one word that is quoted rather than used. The card asks how you say
+  // fridge in German, so der Kühlschrank is the answer to the question — the
+  // Portuguese is the sentence around it, exactly as with the Bürgeramt.
+  "Kühlschrank",
 ];
 const KEPT_GREETINGS = ["Grüß dich", "Grüß Gott", "Grüezi", "Tschüss", "Tschüs"];
 /**
@@ -285,9 +289,12 @@ check(`the excluded packs were found and read (${excluded.size} sentences)`, exc
  * hard to carry, and that is a fact about German.
  */
 const NOT_FOR_PORTUGUESE = new Set([
-  // part57 — the German article
-  "Der Kühlschrank. Der, nicht das!",
-  "Der Kühlschrank. Habe ich das richtig gesagt?",
+  // part57 — the German article, asked as a quiz with no Portuguese answer.
+  // Only the standalone card. Two more sentences of this pack were once listed
+  // here and are not any more: they are the middle of a conversation, and
+  // taking them out left the partner praising an answer nobody had given. A
+  // dialogue is carried whole or not at all, so they went back in — see the
+  // note beside them in the table.
   "Der, die oder das?",
   // part174 — Gift and eventuell, traps for English speakers
   "Eventuell? Also ja oder nein?",
