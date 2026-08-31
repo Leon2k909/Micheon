@@ -4,6 +4,7 @@ import { syncLocalStorageItem } from "@/lib/profileStorage";
 import { LIFE_IN_THE_UK_DE } from "@/lib/lifeInTheUkTranslationsDe";
 import { LIFE_IN_THE_UK_PL } from "@/lib/lifeInTheUkTranslationsPl";
 import { LEBEN_IN_DEUTSCHLAND_PL } from "@/lib/lebenInDeutschlandTranslationsPl";
+import { VIVRE_EN_FRANCE_PL } from "@/lib/vivreEnFranceTranslationsPl";
 import { LIFE_IN_THE_UK_FR } from "@/lib/lifeInTheUkTranslationsFr";
 import { LEBEN_IN_DEUTSCHLAND_FR } from "@/lib/lebenInDeutschlandTranslationsFr";
 import { LEBEN_IN_DEUTSCHLAND_EN } from "@/lib/lebenInDeutschlandTranslationsEn";
@@ -65,10 +66,8 @@ export const TRANSLATION_LANGUAGES: Array<{
   { id: "off", label: "No translation", endonym: "No translation", from: null },
   { id: "de", label: "German", endonym: "Deutsch", from: ["en", "fr"] },
   { id: "en", label: "English", endonym: "English", from: ["de", "fr"] },
-  // English and German: those two courses have Polish tables. The French
-  // course still offers nothing in a Polish app rather than a menu entry that
-  // would answer in French.
-  { id: "pl", label: "Polish", endonym: "Polski", from: ["en", "de"] },
+  // All three country courses have Polish tables now.
+  { id: "pl", label: "Polish", endonym: "Polski", from: ["en", "de", "fr"] },
   // English and German: both country courses have French tables. Vivre en
   // France needs none — those cards are already French.
   { id: "fr", label: "French", endonym: "Français", from: ["en", "de"] },
@@ -77,7 +76,7 @@ export const TRANSLATION_LANGUAGES: Array<{
 const TRANSLATIONS: Partial<Record<TranslationLanguage, Record<string, string>>> = {
   de: { ...LIFE_IN_THE_UK_DE, ...VIVRE_EN_FRANCE_DE, ...CSHARP_COURSE_DE },
   en: { ...LEBEN_IN_DEUTSCHLAND_EN, ...VIVRE_EN_FRANCE_EN },
-  pl: { ...LIFE_IN_THE_UK_PL, ...LEBEN_IN_DEUTSCHLAND_PL },
+  pl: { ...LIFE_IN_THE_UK_PL, ...LEBEN_IN_DEUTSCHLAND_PL, ...VIVRE_EN_FRANCE_PL },
   fr: { ...LIFE_IN_THE_UK_FR, ...LEBEN_IN_DEUTSCHLAND_FR },
 };
 

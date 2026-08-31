@@ -69,12 +69,10 @@ const CASES = [
   ["en", "de", "off,en"],
   ["en", "fr", "off,en"],
   ["en", "en", "off"],
-  // Polish reads the English course — that table exists. Beside the German and
-  // French courses it offers nothing, because those tables have not been
-  // written yet, and an entry that answered in English would be a lie.
+  // Polish reads all three country courses.
   ["pl", "en", "off,pl"],
   ["pl", "de", "off,pl"],
-  ["pl", "fr", "off"],
+  ["pl", "fr", "off,pl"],
   // French reads both country courses. Beside Vivre en France nothing is
   // needed, because those cards are already French.
   ["fr", "en", "off,fr"],

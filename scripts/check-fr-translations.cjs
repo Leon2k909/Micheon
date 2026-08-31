@@ -18,6 +18,8 @@
  * translated course is a legitimate state and the interface says so per card.
  * Both tables happen to be complete, and the percentage below is what says so.
  */
+const assert = require("assert");
+const fs = require("fs");
 const path = require("path");
 const Module = require("module");
 const esbuild = require("esbuild");
@@ -30,8 +32,11 @@ const built = esbuild.buildSync({
       'export { vivreEnFranceCourse } from "./src/lib/vivreEnFranceCourse.ts";\n' +
       'export { VIVRE_EN_FRANCE_DE } from "./src/lib/vivreEnFranceTranslationsDe.ts";\n' +
       'export { VIVRE_EN_FRANCE_EN } from "./src/lib/vivreEnFranceTranslationsEn.ts";\n' +
+      'export { VIVRE_EN_FRANCE_PL } from "./src/lib/vivreEnFranceTranslationsPl.ts";\n' +
       'export { LIFE_IN_THE_UK_DE } from "./src/lib/lifeInTheUkTranslationsDe.ts";\n' +
-      'export { LEBEN_IN_DEUTSCHLAND_EN } from "./src/lib/lebenInDeutschlandTranslationsEn.ts";',
+      'export { LEBEN_IN_DEUTSCHLAND_EN } from "./src/lib/lebenInDeutschlandTranslationsEn.ts";\n' +
+      'export { LIFE_IN_THE_UK_PL } from "./src/lib/lifeInTheUkTranslationsPl.ts";\n' +
+      'export { LEBEN_IN_DEUTSCHLAND_PL } from "./src/lib/lebenInDeutschlandTranslationsPl.ts";',
     resolveDir: root,
     sourcefile: "fr-translations-entry.ts",
   },
@@ -52,8 +57,11 @@ const {
   vivreEnFranceCourse,
   VIVRE_EN_FRANCE_DE,
   VIVRE_EN_FRANCE_EN,
+  VIVRE_EN_FRANCE_PL,
   LIFE_IN_THE_UK_DE,
   LEBEN_IN_DEUTSCHLAND_EN,
+  LIFE_IN_THE_UK_PL,
+  LEBEN_IN_DEUTSCHLAND_PL,
 } = compiled.exports;
 
 // Every French string a lesson can offer a translation for, in the same sense
@@ -128,6 +136,26 @@ const check = (label, table, sharedWith, sharedLabel) => {
 
 check("German", VIVRE_EN_FRANCE_DE, LIFE_IN_THE_UK_DE, "LIFE_IN_THE_UK_DE");
 check("English", VIVRE_EN_FRANCE_EN, LEBEN_IN_DEUTSCHLAND_EN, "LEBEN_IN_DEUTSCHLAND_EN");
+// Polish is spread on top of TWO other tables, not one, so both are the thing
+// it must not collide with.
+check(
+  "Polish",
+  VIVRE_EN_FRANCE_PL,
+  { ...LIFE_IN_THE_UK_PL, ...LEBEN_IN_DEUTSCHLAND_PL },
+  "LIFE_IN_THE_UK_PL or LEBEN_IN_DEUTSCHLAND_PL"
+);
+
+// ── the picker can reach it ───────────────────────────────────────────────
+// A table nothing offers is a file that sits there unread.
+const lib = fs.readFileSync(path.join(root, "src/lib/courseTranslation.ts"), "utf8");
+assert.ok(
+  /id: "pl"[^}]*from: \[[^\]]*"fr"/.test(lib),
+  "Polish must be registered as translating FROM French, or it is never offered beside this course"
+);
+assert.ok(
+  /pl: \{[^}]*VIVRE_EN_FRANCE_PL/.test(lib),
+  "the Polish table is not registered in TRANSLATIONS, so nothing would ever look it up"
+);
 
 if (failures.length) {
   console.error("FAIL check-fr-translations");
@@ -139,8 +167,12 @@ const total = translatable.size;
 // Floor, not round: 660 of 664 is not "100%", and reporting it as such is how
 // the last few strings stay missing for ever.
 const share = (table) => Math.floor((Object.keys(table).length / total) * 100);
+const coverage = [
+  ["German", VIVRE_EN_FRANCE_DE],
+  ["English", VIVRE_EN_FRANCE_EN],
+  ["Polish", VIVRE_EN_FRANCE_PL],
+].map(([language, table]) => `${Object.keys(table).length} have ${language} (${share(table)}%)`).join(", ");
 console.log(
-  `check-fr-translations: ${Object.keys(VIVRE_EN_FRANCE_DE).length} of ${total} translatable strings have German ` +
-    `(${share(VIVRE_EN_FRANCE_DE)}%) and ${Object.keys(VIVRE_EN_FRANCE_EN).length} have English ` +
-    `(${share(VIVRE_EN_FRANCE_EN)}%), every key matches real course text, and neither table collides with another course`
+  `check-fr-translations: of ${total} translatable strings, ${coverage}; every key matches real course text, ` +
+    "no table collides with another course, and the picker offers them beside the French course"
 );
