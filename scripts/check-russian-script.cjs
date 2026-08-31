@@ -198,9 +198,19 @@ check("the course never decides the learner's gender", () => {
     if (!/\s/.test(de.trim()) && de === de.toLocaleLowerCase("de-DE")) continue;
     const words = ru.toLowerCase().replace(/[.,!?;:—–-]/g, " ").split(/\s+/).filter(Boolean);
     if (words.some((word) => THIRD_PERSON.includes(word))) continue;
-    // A name inside the line is somebody else too. The first word is skipped
-    // because every sentence starts with a capital.
-    if ([...ru.split(/\s+/)].slice(1).some((word) => /^[А-ЯЁ]/.test(word))) continue;
+    /**
+     * A name inside the line is somebody else too — but only a capital that
+     * is NOT opening a sentence counts as one.
+     *
+     * Skipping the first word of the WHOLE value was the first version, and a
+     * two-sentence card walked straight through it: "Вы не могли бы позвонить?
+     * Я всё время был дома" opens its second sentence with Я, the capital read
+     * as a name, and the whole card went unchecked. Sentences are split first
+     * now, and each one loses only its own opening word.
+     */
+    const named = ru.split(/(?<=[.!?])\s+/).some((sentence) =>
+      sentence.trim().split(/\s+/).slice(1).some((word) => /^[А-ЯЁ]/.test(word)));
+    if (named) continue;
 
     /**
      * The two forms are not caught the same way, because they fail differently.
