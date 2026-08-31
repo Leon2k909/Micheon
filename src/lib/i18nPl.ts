@@ -87,6 +87,8 @@ export const PL: Record<string, string> = {
   "Done": "Gotowe",
   "Next": "Dalej",
   "Try again": "Jeszcze raz",
+  "Write it out to carry on — the answer is above.": "Napisz to, aby przejść dalej — odpowiedź jest powyżej.",
+  "Build it correctly to carry on — the answer is above.": "Ułóż to poprawnie, aby przejść dalej — odpowiedź jest powyżej.",
   "Skip": "Pomiń",
   "Skip for now": "Pomiń na razie",
   "← Back": "← Wstecz",

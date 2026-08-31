@@ -94,6 +94,8 @@ export const DE: Record<string, string> = {
   "Done": "Fertig",
   "Next": "Weiter",
   "Try again": "Nochmal",
+  "Write it out to carry on — the answer is above.": "Schreib ihn aus, um weiterzukommen — die Antwort steht oben.",
+  "Build it correctly to carry on — the answer is above.": "Bau ihn richtig zusammen, um weiterzukommen — die Antwort steht oben.",
   "Skip": "Überspringen",
   "Skip for now": "Vorerst überspringen",
   "← Back": "← Zurück",

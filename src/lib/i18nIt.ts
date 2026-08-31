@@ -145,6 +145,8 @@ export const IT: Record<string, string> = {
   "Refresh": "Aggiorna",
   "Search pets…": "Cerca mascotte…",
   "Try again": "Riprova",
+  "Write it out to carry on — the answer is above.": "Scrivila per intero per andare avanti — la risposta è qui sopra.",
+  "Build it correctly to carry on — the answer is above.": "Ricomponila correttamente per andare avanti — la risposta è qui sopra.",
   "Pet gallery results": "Risultati della galleria delle mascotte",
   "Installing…": "Installazione…",
   "Installed": "Installata",

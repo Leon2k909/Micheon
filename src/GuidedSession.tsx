@@ -4211,15 +4211,12 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             </AnimatePresence>
 
             {sayChecked && !sayResult.ok ? (
-              <div className="flex gap-3">
+              <div className="space-y-2">
                 <Button onClick={retrySay} variant="outline"
-                  className="h-12 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
+                  className="h-12 w-full rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
                   <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
-                <Button onClick={advanceOrFinish}
-                  className="app-skip-button h-12 flex-1 rounded-2xl font-black">
-                  {ui("Skip")}
-                </Button>
+                <div className="fs-hint">{ui("Write it out to carry on — the answer is above.")}</div>
               </div>
             ) : (
               <div className="fs-hint"><kbd>↵</kbd> {ui("Press Enter when you are ready.")}</div>
@@ -4590,17 +4587,28 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               )}
             </AnimatePresence>
 
-            {/* Wrong answer: retry / skip. Otherwise the panel's Check handles it. */}
+            {/*
+              A wrong answer is repaired, not walked past.
+
+              Skip used to sit beside Try again, directly under a panel that had
+              just printed the sentence. So the cheapest way through a sentence
+              you could not write was to read it and press the other button —
+              and the one thing the stage exists to make you do, produce it, was
+              the one thing you could decline. The closed-book recall stages
+              never offered that; this brings the production stages into line.
+
+              Nothing here is a trap. The answer is on screen, the grader
+              forgives spelling and phrasing, the accent row supplies the
+              characters, and the session's own exit is still a press away — so
+              what is being asked for is a copy, which is the repair.
+            */}
             {checked && !result.ok ? (
-              <div className="flex gap-3">
+              <div className="space-y-2">
                 <Button onClick={retry} variant="outline"
-                  className="h-12 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
+                  className="h-12 w-full rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
                   <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
-                <Button onClick={onSkip ?? onNext}
-                  className="app-skip-button h-12 flex-1 rounded-2xl font-black">
-                  {ui("Skip")}
-                </Button>
+                <div className="fs-hint">{ui("Write it out to carry on — the answer is above.")}</div>
               </div>
             ) : (
               <div className="fs-hint"><kbd>↵</kbd> {ui("Press Enter when you are ready.")}</div>
@@ -4752,15 +4760,16 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               )}
             </AnimatePresence>
             {enChecked && !enResult.ok ? (
-              <div className="flex gap-3">
+              <div className="space-y-2">
                 <Button onClick={retryEn} variant="outline"
-                  className="h-12 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
+                  className="h-12 w-full rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
                   <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
-                <Button onClick={onSkip ?? onNext}
-                  className="app-skip-button h-12 flex-1 rounded-2xl font-black">
-                  {ui("Skip")}
-                </Button>
+                <div className="fs-hint">
+                  {ui(translationMode === "type"
+                    ? "Write it out to carry on — the answer is above."
+                    : "Build it correctly to carry on — the answer is above.")}
+                </div>
               </div>
             ) : translationMode === "type" ? (
               <div className="fs-hint"><kbd>↵</kbd> {ui("Press Enter when you are ready.")}</div>
@@ -4884,15 +4893,12 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             </AnimatePresence>
 
             {gapChecked && !gapResult.ok ? (
-              <div className="flex gap-3">
+              <div className="space-y-2">
                 <Button onClick={retryGap} variant="outline"
-                  className="h-12 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
+                  className="h-12 w-full rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
                   <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
-                <Button onClick={advanceOrFinish}
-                  className="app-skip-button h-12 flex-1 rounded-2xl font-black">
-                  {ui("Skip")}
-                </Button>
+                <div className="fs-hint">{ui("Write it out to carry on — the answer is above.")}</div>
               </div>
             ) : (
               <div className="fs-hint"><kbd>↵</kbd> {ui("Press Enter when you are ready.")}</div>
@@ -5105,15 +5111,12 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               )}
             </AnimatePresence>
             {frChecked && !frResult.ok ? (
-              <div className="flex gap-3">
+              <div className="space-y-2">
                 <Button onClick={retryFr} variant="outline"
-                  className="h-12 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
+                  className="h-12 w-full rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
                   <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
-                <Button onClick={onSkip ?? onNext}
-                  className="app-skip-button h-12 flex-1 rounded-2xl font-black">
-                  {ui("Skip")}
-                </Button>
+                <div className="fs-hint">{ui("Write it out to carry on — the answer is above.")}</div>
               </div>
             ) : (
               <div className="fs-hint"><kbd>↵</kbd> {ui("Press Enter when you are ready.")}</div>
@@ -5209,15 +5212,12 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
 
             {/* Actions */}
             {memDeChecked && !(memDeResult.ok && memFrResult.ok) ? (
-              <div className="flex gap-3">
+              <div className="space-y-2">
                 <Button onClick={retryMemory} variant="outline"
-                  className="h-14 flex-1 rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
+                  className="h-14 w-full rounded-2xl border-zinc-200 bg-white font-black text-zinc-700 hover:bg-zinc-50">
                   <RotateCcw className="mr-2 h-4 w-4" /> {ui("Try again")}
                 </Button>
-                <Button onClick={onSkip ?? onNext}
-                  className="app-skip-button h-14 flex-1 rounded-2xl font-black">
-                  {ui("Skip")}
-                </Button>
+                <div className="fs-hint">{ui("Write it out to carry on — the answer is above.")}</div>
               </div>
             ) : (
               <Button onClick={memDeChecked && memDeResult.ok && memFrResult.ok ? onNext : checkMemory}

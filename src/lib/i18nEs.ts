@@ -1235,6 +1235,8 @@ export const ES: Record<string, string> = {
   "Refresh": "Actualizar",
   "Search pets…": "Buscar mascotas…",
   "Try again": "Volver a intentarlo",
+  "Write it out to carry on — the answer is above.": "Escríbela entera para continuar: la respuesta está arriba.",
+  "Build it correctly to carry on — the answer is above.": "Móntala bien para continuar: la respuesta está arriba.",
   "Pet gallery results": "Resultados de la galería de mascotas",
   "Installing…": "Instalando…",
   "Installed": "Instalada",
