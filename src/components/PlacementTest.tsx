@@ -12,6 +12,7 @@ import { courseSides } from "@/lib/courseLanguages";
 import { matchFrenchPhrase } from "@/lib/frenchTextMatch";
 import { matchPolishPhrase } from "@/lib/polishTextMatch";
 import { matchSpanishPhrase } from "@/lib/spanishTextMatch";
+import { matchItalianPhrase } from "@/lib/italianTextMatch";
 import { matchPortuguesePhrase } from "@/lib/portugueseTextMatch";
 import { ui, uiFmt } from "@/lib/i18n";
 
@@ -45,6 +46,7 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
   const learnFr = sides.target.code === "fr";
   const learnPl = sides.target.code === "pl";
   const learnEs = sides.target.code === "es";
+  const learnIt = sides.target.code === "it";
   const learnPt = sides.target.code === "pt";
   const reverse = learningEnglish();
   const prompt = learnFr || learnPl || learnPt
@@ -61,6 +63,8 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
       ? matchPolishPhrase(typed, target).ok
       : learnEs
       ? matchSpanishPhrase(typed, target).ok
+      : learnIt
+      ? matchItalianPhrase(typed, target).ok
       : learnPt
       ? matchPortuguesePhrase(typed, target).ok
       : normalize(typed) === normalize(target);

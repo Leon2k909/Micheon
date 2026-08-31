@@ -446,11 +446,64 @@ const RU: PlacementQuestion[] = [
   q("ru-c1-5", "C1", "What does this mean?", "У него денег куры не клюют.", ["He has no money at all", "He has money to burn", "He keeps chickens", "He spends money on food"], 1, "So much money that even the hens will not peck at it."),
 ];
 
+const IT: PlacementQuestion[] = [
+  // A1
+  q("it-a1-1", "A1", "Which is correct?", "Come ___ chiami?", ["ti", "si", "mi", "le"], 0, "chiamarsi \u2014 the reflexive pronoun for tu is ti."),
+  q("it-a1-2", "A1", "When do you say it?", "Buonanotte", ["di mattina", "a mezzogiorno", "di pomeriggio", "di notte"], 3, "Buonanotte is the night greeting; buongiorno covers the morning."),
+  q("it-a1-3", "A1", "Which is correct?", "Lei ___ mia sorella.", ["sono", "\u00e8", "essere", "sei"], 1, "\u00e8 \u2014 third person singular of essere."),
+  q("it-a1-4", "A1", "Which is correct?", "Ho due ___.", ["cane", "cani", "il cane", "i cane"], 1, "A number above one takes the plural noun on its own."),
+  q("it-a1-5", "A1", "What is the number?", "quarantadue", ["24", "42", "52", "72"], 1, "quaranta = 40, due = 2."),
+  q("it-a1-6", "A1", "What does this mean?", "grazie mille", ["prego", "arrivederci", "grazie infinite", "per favore"], 2, "mille makes the thanks bigger, not the reply to it."),
+  q("it-a1-7", "A1", "Which is correct?", "Noi ___ italiano.", ["parlo", "parla", "parliamo", "parlano"], 2, "noi parliamo \u2014 first person plural."),
+  q("it-a1-8", "A1", "Which is correct?", "Abito ___ Roma.", ["a", "di", "in", "per"], 0, "A city takes a; a country takes in."),
+
+  // A2
+  q("it-a2-1", "A2", "Which is correct?", "Ieri ___ al cinema.", ["vado", "andavo", "sono andato", "andr\u00f2"], 2, "The passato prossimo, because ieri closes the action."),
+  q("it-a2-2", "A2", "Which is correct?", "___ piace il caff\u00e8.", ["Io", "Mi", "Mio", "Me"], 1, "piacere takes an indirect object: the coffee is pleasing to me."),
+  q("it-a2-3", "A2", "What does this mean?", "fa freddo", ["it is cold", "he is cold", "it is hot", "he makes cold"], 0, "Weather is fare plus a noun, not essere or stare."),
+  q("it-a2-4", "A2", "Which is correct?", "Sto ___ un libro.", ["leggere", "leggendo", "letto", "leggo"], 1, "stare plus the gerund for what is happening now."),
+  q("it-a2-5", "A2", "Which is correct?", "\u00c8 ___ alta di sua sorella.", ["piu", "pi\u00f9", "molto", "troppo"], 1, "pi\u00f9 carries the accent, and it is the comparative."),
+  q("it-a2-6", "A2", "What does this mean?", "devo andare", ["I want to go", "I have to go", "I can go", "I am going"], 1, "dovere plus infinitive is obligation."),
+  q("it-a2-7", "A2", "Which is correct?", "Non c\u2019\u00e8 ___ in frigo.", ["qualcosa", "niente", "nessuno", "alcuno"], 1, "Italian doubles the negative: non ... niente."),
+  q("it-a2-8", "A2", "Which is correct?", "___ \u00e8 il tuo compleanno?", ["Quando", "Quanto", "Come", "Dove"], 0, "quando asks for a time."),
+
+  // B1
+  q("it-b1-1", "B1", "Which is correct?", "Voglio che tu ___ con me.", ["vieni", "venga", "sei venuto", "verrai"], 1, "A wish about someone else takes the subjunctive."),
+  q("it-b1-2", "B1", "Which is correct?", "Se avessi soldi, ___ una macchina.", ["compro", "comprer\u00f2", "comprerei", "comprassi"], 2, "Imperfect subjunctive in the if, conditional in the result."),
+  q("it-b1-3", "B1", "What does this mean?", "sono qui da due anni", ["I came two years ago", "I have been here two years", "I am staying two years", "I took two years"], 1, "da plus a period says how long something has been going on."),
+  q("it-b1-4", "B1", "Which is correct?", "Le ho ___ ieri.", ["visto", "viste", "vista", "visti"], 1, "A direct object pronoun before avere makes the participle agree: le ho viste."),
+  q("it-b1-5", "B1", "Which is correct?", "Non ___ ancora finito.", ["ho", "sono", "avevo", "sar\u00f2"], 0, "finire with a direct sense takes avere."),
+  q("it-b1-6", "B1", "Which is correct?", "Bisogna che lui ___ subito.", ["parte", "parta", "partir\u00e0", "partiva"], 1, "bisogna che takes the subjunctive."),
+  q("it-b1-7", "B1", "What does this mean?", "prendere in giro", ["to take a walk", "to make fun of someone", "to take a turn", "to go around"], 1, "Nothing in the words says it; it is simply the phrase for teasing."),
+  q("it-b1-8", "B1", "Which is correct?", "Ci ___ andati insieme.", ["abbiamo", "siamo", "avevamo", "avremmo"], 1, "andare takes essere in the compound past."),
+
+  // B2
+  q("it-b2-1", "B2", "Which is correct?", "Bench\u00e9 ___ caro, lo comprerei.", ["\u00e8", "sia", "sar\u00e0", "era"], 1, "bench\u00e9 always takes the subjunctive."),
+  q("it-b2-2", "B2", "What does this mean?", "mi manchi", ["I miss you", "you miss me", "I am missing", "you are missing"], 0, "The Italian turns it round: you are lacking to me."),
+  q("it-b2-3", "B2", "Which is correct?", "Nel caso in cui ___ tardi, chiamami.", ["arrivi", "arriverai", "arrivavi", "arriveresti"], 0, "nel caso in cui takes the subjunctive."),
+  q("it-b2-4", "B2", "Which is correct?", "\u00c8 il film pi\u00f9 bello che ___ visto.", ["ho", "abbia", "avevo", "avrei"], 1, "A superlative followed by che takes the subjunctive."),
+  q("it-b2-5", "B2", "What does this mean?", "dare per scontato", ["to give a discount", "to take for granted", "to settle a bill", "to give up"], 1, "scontato here is settled, not discounted."),
+  q("it-b2-6", "B2", "Which is correct?", "Sono ___ costruiti tre ponti.", ["stato", "stati", "state", "stata"], 1, "The passive agrees with what was built, and three bridges are masculine plural."),
+  q("it-b2-7", "B2", "What does this mean?", "a malapena", ["with great sorrow", "hardly, barely", "with hard labour", "in great pain"], 1, "It measures how narrowly something happened."),
+  q("it-b2-8", "B2", "Which is correct?", "L\u2019ha fatto senza che nessuno lo ___.", ["sapeva", "sapesse", "seppe", "sapr\u00e0"], 1, "senza che always takes the subjunctive."),
+
+  // C1
+  q("it-c1-1", "C1", "What does this mean?", "non avere peli sulla lingua", ["to be speechless", "to speak bluntly", "to have a sore throat", "to talk very fast"], 1, "Nothing slows the words down."),
+  q("it-c1-2", "C1", "Which is correct?", "Se l\u2019avessi saputo, ___ venuto.", ["sarei", "ero", "fossi", "sono"], 0, "A counterfactual past pairs the pluperfect subjunctive with the past conditional."),
+  q("it-c1-3", "C1", "What does this mean?", "essere in alto mare", ["essere in volo", "essere lontani dalla fine", "essere contenti", "essere stanchi"], 1, "Said of a job nobody is anywhere near finishing."),
+  q("it-c1-4", "C1", "Which is correct?", "Per quanto ci ___, non ci riesco.", ["provo", "provi", "provavo", "prover\u00f2"], 1, "per quanto takes the subjunctive."),
+  q("it-c1-5", "C1", "What does this mean?", "in seguito a", ["before", "as a result of", "in spite of", "in the middle of"], 1, "It means following on from something."),
+  q("it-c1-6", "C1", "Which is correct?", "Magari ___ venuto prima!", ["sei", "eri", "fossi", "saresti"], 2, "magari as a regret about the past takes the pluperfect subjunctive."),
+  q("it-c1-7", "C1", "What does this mean?", "gettare la spugna", ["to do the washing", "to give up", "to throw a party", "to waste money"], 1, "The same sponge a boxer\u2019s corner throws in."),
+  q("it-c1-8", "C1", "Which is correct?", "\u00c8 stato lui a ___ l\u2019idea.", ["propose", "proporre", "proponga", "proponeva"], 1, "After a, the verb stays in the infinitive."),
+];
+
 export function placementQuestions(direction: PlacementDirection): PlacementQuestion[] {
   if (direction === "learn-en") return EN;
   if (direction === "learn-fr") return FR;
   if (direction === "learn-pl") return PL;
   if (direction === "learn-es") return ES;
+  if (direction === "learn-it") return IT;
   if (direction === "learn-pt") return PT;
   if (direction === "learn-ru") return RU;
   return DE;

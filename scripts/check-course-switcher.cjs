@@ -46,8 +46,19 @@ const expanded = visibleLanguageRows(languages, { searching: false, showAll: tru
 const searched = visibleLanguageRows(languages, { searching: true, showAll: false });
 
 // Short enough to draw without a wait.
-assert.ok(atRest.length <= 8,
-  `the picker still opens with ${atRest.length} language rows, which is the wait this exists to remove`);
+//
+// Written as "no more than eight" while eight was more than there were
+// courses, and the day the ninth shipped the two halves of that sentence
+// stopped agreeing: every course you can choose has to be here from the
+// start — the loop below says so — and a fixed ceiling eventually forbids
+// exactly that. So the rule is said instead of counted. At rest the picker
+// holds the courses that can be chosen and nothing else, and what it holds
+// back is the eighty-odd rows of catalogue that are the reason this exists.
+const chooseable = languages.filter((course) => course.available);
+assert.strictEqual(atRest.length, chooseable.length,
+  `the picker opens with ${atRest.length} rows against ${chooseable.length} courses that can be chosen`);
+assert.ok(atRest.length * 4 < languages.length,
+  `the picker still opens with ${atRest.length} of ${languages.length} rows, which is the wait this exists to remove`);
 
 // Everything you can actually pick has to be there from the start — a picker
 // that hides a course you own is worse than a slow one.

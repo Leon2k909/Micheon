@@ -4,6 +4,7 @@ import { swapStepForPolish } from "@/lib/polishCourse";
 import { swapStepForPortuguese } from "@/lib/portugueseCourse";
 import { swapStepForRussian } from "@/lib/russianCourse";
 import { swapStepForSpanish } from "@/lib/spanishCourse";
+import { swapStepForItalian } from "@/lib/italianCourse";
 
 // Flip a built session step's display fields (de<->en) so English becomes the
 // target and German becomes the meaning. IDs and progress metadata stay put.
@@ -69,6 +70,9 @@ export function stepsForLearningDirection(
   }
   if (direction === "learn-es") {
     return steps.map((step) => swapStepForSpanish(step)).filter((step) => step !== null);
+  }
+  if (direction === "learn-it") {
+    return steps.map((step) => swapStepForItalian(step)).filter((step) => step !== null);
   }
   if (direction === "learn-pt") {
     return steps.map((step) => swapStepForPortuguese(step)).filter((step) => step !== null);

@@ -84,6 +84,18 @@ export const COURSES: Course[] = [
     available: true,
     builtIn: true,
   },
+  // Italian is the second of those, on the same terms: italianTranslations.ts
+  // covers the catalogue entry for entry, so nothing a learner meets in German
+  // is missing from it either. See italianCourse.ts.
+  {
+    id: "italian",
+    kind: "language",
+    name: "Italian",
+    tagline: "Read, listen, type and translate real Italian.",
+    icon: "🇮🇹",
+    available: true,
+    builtIn: true,
+  },
   {
     id: "portuguese",
     kind: "language",

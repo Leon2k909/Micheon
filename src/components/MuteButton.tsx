@@ -215,6 +215,7 @@ export function MuteButton({
   const frenchMuted = isTtsLanguageMuted("french");
   const polishMuted = isTtsLanguageMuted("polish");
   const spanishMuted = isTtsLanguageMuted("spanish");
+  const italianMuted = isTtsLanguageMuted("italian");
   const portugueseMuted = isTtsLanguageMuted("portuguese");
   const russianMuted = isTtsLanguageMuted("russian");
   /**
@@ -339,6 +340,18 @@ export function MuteButton({
           testId="spanish"
           unmuteLabel={ui("Unmute Spanish voice")}
           value={settings.spanishVolume}
+        />
+      )}
+      {inPlay.includes("italian") && (
+        <VolumeRow
+          label={ui("Italian voice")}
+          muteLabel={ui("Mute Italian voice")}
+          muted={italianMuted}
+          onChange={(value) => setLanguageVolume("italian", value)}
+          onToggleMuted={() => toggleTtsLanguageMuted("italian")}
+          testId="italian"
+          unmuteLabel={ui("Unmute Italian voice")}
+          value={settings.italianVolume}
         />
       )}
       {inPlay.includes("russian") && (

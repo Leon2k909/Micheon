@@ -4,6 +4,7 @@ import { frenchFor } from "@/lib/frenchCourse";
 import { polishFor } from "@/lib/polishCourse";
 import { portugueseFor } from "@/lib/portugueseCourse";
 import { spanishFor } from "@/lib/spanishCourse";
+import { italianFor } from "@/lib/italianCourse";
 import { sentenceIdentityKey } from "@/lib/germanTextMatch";
 
 /**
@@ -75,8 +76,9 @@ export function buildScenarios(apiParts: Record<string, any>): Scenario[] {
   const french = sides.target.code === "fr";
   const polish = sides.target.code === "pl";
   const spanish = sides.target.code === "es";
+  const italian = sides.target.code === "it";
   const portuguese = sides.target.code === "pt";
-  const translatedCourse = french || polish || spanish || portuguese;
+  const translatedCourse = french || polish || spanish || italian || portuguese;
   const meaningIsGerman = sides.meaning.code === "de";
   const scenarios: Scenario[] = [];
   for (const [partKey, part] of Object.entries(apiParts ?? {})) {
@@ -92,6 +94,7 @@ export function buildScenarios(apiParts: Record<string, any>): Scenario[] {
         const translated = french ? frenchFor(de, line?.fr)
           : polish ? polishFor(de)
           : spanish ? spanishFor(de)
+          : italian ? italianFor(de)
           : portuguese ? portugueseFor(de)
           : null;
         if (translatedCourse && !translated) { turns.length = 0; break; }

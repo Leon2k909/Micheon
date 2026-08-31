@@ -35,7 +35,9 @@ import { matchFrenchMeaning } from "@/lib/frenchTextMatch";
 import { polishFor, polishMeaningLanguage } from "@/lib/polishCourse";
 import { matchPolishMeaning } from "@/lib/polishTextMatch";
 import { spanishFor, spanishMeaningLanguage } from "@/lib/spanishCourse";
+import { italianFor, italianMeaningLanguage } from "@/lib/italianCourse";
 import { matchSpanishMeaning } from "@/lib/spanishTextMatch";
+import { matchItalianMeaning } from "@/lib/italianTextMatch";
 import { portugueseFor, portugueseMeaningLanguage } from "@/lib/portugueseCourse";
 import { matchPortugueseMeaning } from "@/lib/portugueseTextMatch";
 import { PlacementLadder } from "@/components/tests/PlacementLadder";
@@ -948,10 +950,12 @@ function buildTestBank(apiParts: Record<string, Part>, profile: UserProfile): Te
   const frenchCourse = courseSides().target.code === "fr";
   const polishCourse = courseSides().target.code === "pl";
   const spanishCourse = courseSides().target.code === "es";
+  const italianCourse = courseSides().target.code === "it";
   const portugueseCourse = courseSides().target.code === "pt";
   const meaningIsGerman = (frenchCourse && frenchMeaningLanguage() === "de")
     || (polishCourse && polishMeaningLanguage() === "de")
     || (spanishCourse && spanishMeaningLanguage() === "de")
+    || (italianCourse && italianMeaningLanguage() === "de")
     || (portugueseCourse && portugueseMeaningLanguage() === "de");
   const grades = loadGradeStore(profile);
   const catalog = buildCatalog(apiParts);
@@ -1048,6 +1052,11 @@ function buildTestBank(apiParts: Record<string, Part>, profile: UserProfile): Te
     if (!spanish) return [];
     return [{ ...item, de: spanish, en: meaningIsGerman ? item.de : item.en }];
   });
+  if (italianCourse) return bank.flatMap((item) => {
+    const italian = italianFor(item.de);
+    if (!italian) return [];
+    return [{ ...item, de: italian, en: meaningIsGerman ? item.de : item.en }];
+  });
   if (portugueseCourse) return bank.flatMap((item) => {
     const portuguese = portugueseFor(item.de);
     if (!portuguese) return [];
@@ -1115,6 +1124,8 @@ function matchTestAnswer(input: string, target: string, language: AnswerLanguage
         ? matchPolishMeaning(input, alternative)
       : answerLanguage === "es"
         ? matchSpanishMeaning(input, alternative)
+      : answerLanguage === "it"
+        ? matchItalianMeaning(input, alternative)
         : answerLanguage === "pt"
         ? matchPortugueseMeaning(input, alternative)
         : answerLanguage === "de"

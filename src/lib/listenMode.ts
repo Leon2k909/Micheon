@@ -26,6 +26,7 @@ import { polishFor } from "@/lib/polishCourse";
 import { portugueseFor } from "@/lib/portugueseCourse";
 import { russianFor } from "@/lib/russianCourse";
 import { spanishFor } from "@/lib/spanishCourse";
+import { italianFor } from "@/lib/italianCourse";
 import { primaryAnswer } from "@/lib/germanTextMatch";
 import { buildCatalog } from "@/session";
 import { buildWordCatalog, rankWordCatalog, spokenWordRung } from "@/lib/wordSession";
@@ -1311,6 +1312,7 @@ export function buildListenQueue(
       if (language === "en") return item.en;
       if (language === "pl") return polishFor(item.de);
       if (language === "es") return spanishFor(item.de);
+      if (language === "it") return italianFor(item.de);
       if (language === "pt") return portugueseFor(item.de);
       if (language === "ru") return russianFor(item.de);
       return frenchFor(item.de);

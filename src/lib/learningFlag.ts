@@ -30,6 +30,7 @@ export function learningFlagId(activeCourseId: string): string {
     || activeCourseId === "french"
     || activeCourseId === "polish"
     || activeCourseId === "spanish"
+    || activeCourseId === "italian"
     || activeCourseId === "portuguese"
     || activeCourseId.startsWith("english-");
   if (reversible || !hasFlagArt(activeCourseId)) {
@@ -37,6 +38,7 @@ export function learningFlagId(activeCourseId: string): string {
     if (direction === "learn-fr") return "french";
     if (direction === "learn-pl") return "polish";
     if (direction === "learn-es") return "spanish";
+    if (direction === "learn-it") return "italian";
     if (direction === "learn-pt") return "portuguese";
     if (direction === "learn-ru") return "russian";
     if (direction !== "learn-en") return "german";

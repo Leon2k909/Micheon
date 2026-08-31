@@ -13,8 +13,9 @@ export const DIRECTION_CHANGE_EVENT = "gl-direction-change";
 // polishCourse.ts, which is frenchCourse.ts with its own vocabulary.
 // "learn-es" is the fourth of that family and the first that is not
 // narrowed: the Spanish table covers the whole catalogue, so the course
-// is the German one entry for entry. See spanishCourse.ts.
-export type LearningDirection = "learn-de" | "learn-en" | "learn-fr" | "learn-pl" | "learn-es" | "learn-pt" | "learn-ru";
+// is the German one entry for entry. See spanishCourse.ts. "learn-it" is
+// the second of those: same shape, same coverage, its own table.
+export type LearningDirection = "learn-de" | "learn-en" | "learn-fr" | "learn-pl" | "learn-es" | "learn-it" | "learn-pt" | "learn-ru";
 
 /**
  * Which translation table a direction cannot be built without.
@@ -27,16 +28,17 @@ export type LearningDirection = "learn-de" | "learn-en" | "learn-fr" | "learn-pl
  */
 export function translationLanguageFor(
   direction: LearningDirection
-): "fr" | "pl" | "es" | "pt" | "ru" | null {
+): "fr" | "pl" | "es" | "it" | "pt" | "ru" | null {
   if (direction === "learn-fr") return "fr";
   if (direction === "learn-pl") return "pl";
   if (direction === "learn-es") return "es";
+  if (direction === "learn-it") return "it";
   if (direction === "learn-pt") return "pt";
   if (direction === "learn-ru") return "ru";
   return null;
 }
 
-const DIRECTIONS: LearningDirection[] = ["learn-de", "learn-en", "learn-fr", "learn-pl", "learn-es", "learn-pt", "learn-ru"];
+const DIRECTIONS: LearningDirection[] = ["learn-de", "learn-en", "learn-fr", "learn-pl", "learn-es", "learn-it", "learn-pt", "learn-ru"];
 
 /** Read a stored value as a direction, defaulting to the original mode. */
 export function asLearningDirection(value: unknown): LearningDirection {
@@ -80,6 +82,10 @@ export function learningSpanish(): boolean {
   return getLearningDirection() === "learn-es";
 }
 
+export function learningItalian(): boolean {
+  return getLearningDirection() === "learn-it";
+}
+
 export function learningRussian(): boolean {
   return getLearningDirection() === "learn-ru";
 }
@@ -108,6 +114,7 @@ export function targetLangTag(): string {
     case "learn-fr": return "fr-FR";
     case "learn-pl": return "pl-PL";
     case "learn-es": return "es-ES";
+    case "learn-it": return "it-IT";
     case "learn-pt": return "pt-PT";
     default: return "de-DE";
   }

@@ -23,6 +23,7 @@ const SCOPES: Array<{ value: TtsSpeechScope; label: string }> = [
   { value: "french", label: "French" },
   { value: "polish", label: "Polish" },
   { value: "spanish", label: "Spanish" },
+  { value: "italian", label: "Italian" },
   { value: "portuguese", label: "Portuguese" },
   { value: "russian", label: "Russian" },
 ];

@@ -42,6 +42,7 @@ import { frenchFor } from "@/lib/frenchCourse";
 import { polishFor } from "@/lib/polishCourse";
 import { portugueseFor } from "@/lib/portugueseCourse";
 import { spanishFor } from "@/lib/spanishCourse";
+import { italianFor } from "@/lib/italianCourse";
 import {
   WORD_PART_OF_SPEECH_FILTERS,
   wordMatchesPartOfSpeech,
@@ -611,8 +612,9 @@ export function WordsTracker({ apiParts, user }: {
             const french = sides.target.code === "fr" ? frenchFor(word.de) : null;
             const polish = sides.target.code === "pl" ? polishFor(word.de) : null;
             const spanish = sides.target.code === "es" ? spanishFor(word.de) : null;
+            const italian = sides.target.code === "it" ? italianFor(word.de) : null;
             const portuguese = sides.target.code === "pt" ? portugueseFor(word.de) : null;
-            const primaryText = french ?? polish ?? spanish ?? portuguese ?? (learnsEnglish ? word.en : word.de);
+            const primaryText = french ?? polish ?? spanish ?? italian ?? portuguese ?? (learnsEnglish ? word.en : word.de);
             const meaningText = sides.meaning.code === "de" ? word.de : word.en;
             const example = exampleIndex.exampleFor(word);
             return (

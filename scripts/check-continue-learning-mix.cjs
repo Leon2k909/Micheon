@@ -569,12 +569,12 @@ check(
   "the proactive desktop pet remains responsible for later memory questions",
   labSource.includes('getCodexPetCadence("questions", petCoachingFrequencies.questions)')
     // The question names the course it is asking about, in whichever interface
-    // language the learner reads — five courses now, so the name is picked once
+    // language the learner reads — six courses now, so the name is picked once
     // and dropped into both sentences rather than spelled out inside each. Matched
-    // on the languages rather than on one line of source, so adding a sixth is a
+    // on the languages rather than on one line of source, so adding a seventh is a
     // failure here and not a silent "Englisch" for a course that is not English.
-    && /const askedLanguageDe = learnsFrench \? "Französisch"[\s\S]{0,120}?learnsPolish \? "Polnisch"[\s\S]{0,120}?learnsSpanish \? "Spanisch"[\s\S]{0,60}?: "Englisch";/.test(labSource)
-    && /const askedLanguageEn = learnsFrench \? "French"[\s\S]{0,120}?learnsPolish \? "Polish"[\s\S]{0,120}?learnsSpanish \? "Spanish"[\s\S]{0,60}?: "German";/.test(labSource)
+    && /const askedLanguageDe = learnsFrench \? "Französisch"[\s\S]{0,120}?learnsPolish \? "Polnisch"[\s\S]{0,120}?learnsSpanish \? "Spanisch"[\s\S]{0,60}?learnsItalian \? "Italienisch"[\s\S]{0,60}?: "Englisch";/.test(labSource)
+    && /const askedLanguageEn = learnsFrench \? "French"[\s\S]{0,120}?learnsPolish \? "Polish"[\s\S]{0,120}?learnsSpanish \? "Spanish"[\s\S]{0,60}?learnsItalian \? "Italian"[\s\S]{0,60}?: "German";/.test(labSource)
     && labSource.includes('Do you remember how to say “${meaning}” in ${askedLanguageEn}?')
     && labSource.includes('Erinnerst du dich, wie man „${meaning}“ auf ${askedLanguageDe} sagt?')
     && petProviderSource.includes("setItemStatus(")

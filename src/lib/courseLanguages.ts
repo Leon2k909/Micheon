@@ -17,10 +17,10 @@ import { resolveInterfaceLanguage } from "@/lib/interfaceLanguage";
  * So the question is asked in one place. A fourth course is one more case
  * here rather than a hunt through six screens.
  */
-export type CourseLanguage = "de" | "en" | "fr" | "pl" | "es" | "pt" | "ru";
+export type CourseLanguage = "de" | "en" | "fr" | "pl" | "es" | "it" | "pt" | "ru";
 
 /** Every BCP-47 tag the app asks a voice for. */
-export type VoiceTag = "de-DE" | "en-GB" | "en-US" | "fr-FR" | "pl-PL" | "es-ES" | "pt-PT" | "ru-RU";
+export type VoiceTag = "de-DE" | "en-GB" | "en-US" | "fr-FR" | "pl-PL" | "es-ES" | "it-IT" | "pt-PT" | "ru-RU";
 
 export type CourseSide = {
   code: CourseLanguage;
@@ -40,6 +40,7 @@ export const LANGUAGE_LABEL: Record<CourseLanguage, string> = {
   fr: "French",
   pl: "Polish",
   es: "Spanish",
+  it: "Italian",
   pt: "Portuguese",
   ru: "Russian",
 };
@@ -51,6 +52,7 @@ export const AUDIO_LANGUAGE: Record<CourseLanguage, TtsAudioLanguage> = {
   fr: "french",
   pl: "polish",
   es: "spanish",
+  it: "italian",
   pt: "portuguese",
   ru: "russian",
 };
@@ -64,6 +66,7 @@ export function courseSide(code: CourseLanguage): CourseSide {
       : code === "fr" ? "fr-FR"
       : code === "pl" ? "pl-PL"
       : code === "es" ? "es-ES"
+      : code === "it" ? "it-IT"
       : code === "pt" ? "pt-PT"
       : code === "ru" ? "ru-RU"
       : englishVoice,
@@ -77,6 +80,7 @@ export function targetLanguage(direction: LearningDirection = getLearningDirecti
   if (direction === "learn-fr") return "fr";
   if (direction === "learn-pl") return "pl";
   if (direction === "learn-es") return "es";
+  if (direction === "learn-it") return "it";
   if (direction === "learn-pt") return "pt";
   if (direction === "learn-ru") return "ru";
   return "de";
@@ -124,11 +128,11 @@ export function meaningLanguageFor(
  */
 export function translationLanguagesNeeded(
   direction: LearningDirection = getLearningDirection()
-): Array<"fr" | "pl" | "es" | "pt" | "ru"> {
+): Array<"fr" | "pl" | "es" | "it" | "pt" | "ru"> {
   const target = targetLanguage(direction);
-  const wanted = new Set<"fr" | "pl" | "es" | "pt" | "ru">();
+  const wanted = new Set<"fr" | "pl" | "es" | "it" | "pt" | "ru">();
   for (const code of [target, meaningLanguageFor(target)]) {
-    if (code === "fr" || code === "pl" || code === "es" || code === "pt" || code === "ru") wanted.add(code);
+    if (code === "fr" || code === "pl" || code === "es" || code === "it" || code === "pt" || code === "ru") wanted.add(code);
   }
   return [...wanted];
 }
@@ -150,6 +154,12 @@ export function courseSides(direction: LearningDirection = getLearningDirection(
     // two meanings that exist for every card.
     const app = meaningLanguageFor("es");
     return { target: courseSide("es"), meaning: courseSide(app === "de" ? "de" : "en") };
+  }
+  if (direction === "learn-it") {
+    // Same narrowing again, same reason: the Italian table is keyed by the
+    // German, so German and English are the only two meanings every card has.
+    const app = meaningLanguageFor("it");
+    return { target: courseSide("it"), meaning: courseSide(app === "de" ? "de" : "en") };
   }
   if (direction === "learn-pt") {
     const app = meaningLanguageFor("pt");

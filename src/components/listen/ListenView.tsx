@@ -319,6 +319,7 @@ const YOUR_TURN_LABEL: Record<CourseLanguage, string> = {
   fr: "Your turn — say it in French",
   pl: "Your turn — say it in Polish",
   es: "Your turn — say it in Spanish",
+  it: "Your turn — say it in Italian",
   pt: "Your turn — say it in Portuguese",
   ru: "Your turn — say it in Russian",
 };
@@ -329,6 +330,7 @@ const REPEATS_LABEL: Record<CourseLanguage, string> = {
   fr: "French repeats",
   pl: "Polish repeats",
   es: "Spanish repeats",
+  it: "Italian repeats",
   pt: "Portuguese repeats",
   ru: "Russian repeats",
 };
@@ -339,6 +341,7 @@ const MUTED_VOICE_LABEL: Record<CourseLanguage, string> = {
   fr: "French voice is muted and will be skipped.",
   pl: "Polish voice is muted and will be skipped.",
   es: "Spanish voice is muted and will be skipped.",
+  it: "Italian voice is muted and will be skipped.",
   pt: "Portuguese voice is muted and will be skipped.",
   ru: "Russian voice is muted and will be skipped.",
 };
@@ -349,6 +352,7 @@ const SAY_IT_FIRST_LABEL: Record<CourseLanguage, string> = {
   fr: "Your turn to say the French before it is spoken",
   pl: "Your turn to say the Polish before it is spoken",
   es: "Your turn to say the Spanish before it is spoken",
+  it: "Your turn to say the Italian before it is spoken",
   pt: "Your turn to say the Portuguese before it is spoken",
   ru: "Your turn to say the Russian before it is spoken",
 };
@@ -359,6 +363,7 @@ const FIRST_LABEL: Record<CourseLanguage, string> = {
   fr: "French first",
   pl: "Polish first",
   es: "Spanish first",
+  it: "Italian first",
   pt: "Portuguese first",
   ru: "Russian first",
 };
@@ -371,6 +376,7 @@ const VOICE_LABEL: Record<CourseLanguage, string> = {
   fr: "French voice",
   pl: "Polish voice",
   es: "Spanish voice",
+  it: "Italian voice",
   pt: "Portuguese voice",
   ru: "Russian voice",
 };
@@ -381,6 +387,7 @@ const MUTE_VOICE_LABEL: Record<CourseLanguage, string> = {
   fr: "Mute French voice",
   pl: "Mute Polish voice",
   es: "Mute Spanish voice",
+  it: "Mute Italian voice",
   pt: "Mute Portuguese voice",
   ru: "Mute Russian voice",
 };
@@ -391,6 +398,7 @@ const UNMUTE_VOICE_LABEL: Record<CourseLanguage, string> = {
   fr: "Unmute French voice",
   pl: "Unmute Polish voice",
   es: "Unmute Spanish voice",
+  it: "Unmute Italian voice",
   pt: "Unmute Portuguese voice",
   ru: "Unmute Russian voice",
 };
@@ -470,6 +478,7 @@ const VOLUME_SETTING = {
   fr: "frenchVolume",
   pl: "polishVolume",
   es: "spanishVolume",
+  it: "italianVolume",
   pt: "portugueseVolume",
   ru: "russianVolume",
 } as const;

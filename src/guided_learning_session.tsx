@@ -21,6 +21,7 @@ import { frenchFor, frenchMeaningLanguage } from "@/lib/frenchCourse";
 import { polishFor, polishMeaningLanguage } from "@/lib/polishCourse";
 import { portugueseFor, portugueseMeaningLanguage } from "@/lib/portugueseCourse";
 import { spanishFor, spanishMeaningLanguage } from "@/lib/spanishCourse";
+import { italianFor, italianMeaningLanguage } from "@/lib/italianCourse";
 import {
   detectRegister, pickRegisterQuestion, recordRegisterAnswer,
   type Register, type RegisterState,
@@ -274,6 +275,7 @@ export default function GuidedLearningSession() {
     const learnsFrench = direction === "learn-fr";
     const learnsPolish = direction === "learn-pl";
     const learnsSpanish = direction === "learn-es";
+    const learnsItalian = direction === "learn-it";
     const learnsPortuguese = direction === "learn-pt";
     // The catalogue is German either way round, so a table-backed course has to
     // ask for its own text rather than for whichever column happens to be there.
@@ -281,6 +283,7 @@ export default function GuidedLearningSession() {
       || (learnsFrench && frenchMeaningLanguage() === "de")
       || (learnsPolish && polishMeaningLanguage() === "de")
       || (learnsSpanish && spanishMeaningLanguage() === "de")
+      || (learnsItalian && italianMeaningLanguage() === "de")
       || (learnsPortuguese && portugueseMeaningLanguage() === "de");
 
     const scheduleQuestion = (delayMs: number) => {
@@ -338,9 +341,10 @@ export default function GuidedLearningSession() {
       const french = learnsFrench ? frenchFor(item.de, item.fr) : null;
       const polish = learnsPolish ? polishFor(item.de) : null;
       const spanish = learnsSpanish ? spanishFor(item.de) : null;
+      const italian = learnsItalian ? italianFor(item.de) : null;
       const portuguese = learnsPortuguese ? portugueseFor(item.de) : null;
       // A word the tables do not reach cannot be asked about in this course.
-      if ((learnsFrench && !french) || (learnsPolish && !polish) || (learnsSpanish && !spanish) || (learnsPortuguese && !portuguese)) {
+      if ((learnsFrench && !french) || (learnsPolish && !polish) || (learnsSpanish && !spanish) || (learnsItalian && !italian) || (learnsPortuguese && !portuguese)) {
         scheduleQuestion(cadence.intervalMs);
         return;
       }
@@ -348,17 +352,20 @@ export default function GuidedLearningSession() {
       const target = learnsFrench ? french!
         : learnsPolish ? polish!
         : learnsSpanish ? spanish!
+        : learnsItalian ? italian!
         : learnsPortuguese ? portuguese!
         : learnsEnglish ? item.en
         : item.de;
       const askedLanguageDe = learnsFrench ? "Französisch"
         : learnsPolish ? "Polnisch"
         : learnsSpanish ? "Spanisch"
+        : learnsItalian ? "Italienisch"
         : learnsPortuguese ? "Portugiesisch"
         : "Englisch";
       const askedLanguageEn = learnsFrench ? "French"
         : learnsPolish ? "Polish"
         : learnsSpanish ? "Spanish"
+        : learnsItalian ? "Italian"
         : learnsPortuguese ? "Portuguese"
         : "German";
       const question = meaningIsGerman
@@ -593,7 +600,7 @@ export default function GuidedLearningSession() {
           if (swapDirection === "learn-en") {
             return { de: String(step.item?.en ?? ""), en: String(step.item?.de ?? "") };
           }
-          if (swapDirection === "learn-fr" || swapDirection === "learn-pl" || swapDirection === "learn-es" || swapDirection === "learn-pt" || swapDirection === "learn-ru") {
+          if (swapDirection === "learn-fr" || swapDirection === "learn-pl" || swapDirection === "learn-es" || swapDirection === "learn-it" || swapDirection === "learn-pt" || swapDirection === "learn-ru") {
             return { de: String(step.item?.originalDe ?? ""), en: String(step.item?.en ?? "") };
           }
           return { de: String(step.item?.de ?? ""), en: String(step.item?.en ?? "") };

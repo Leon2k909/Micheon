@@ -188,6 +188,55 @@ function pickVerb(verbs: typeof VERBS) {
   return verbs[Math.floor(Math.random() * verbs.length)];
 }
 
+// And in Italian. The same principle a third time: the verbs worth drilling
+// first are the irregular ones, every decoy is a real form of the same verb,
+// and the four persons are the ones a beginner meets. essere and stare are
+// both here because Italian splits being between them, and potere, volere and
+// dovere because their stems change in three persons out of four and settle
+// back down in noi \u2014 which is exactly the shape nobody guesses.
+const ITALIAN_VERBS: typeof VERBS = [
+  { infinitive: "essere", en: "to be", pronoun: "io", correct: "sono", wrong: ["sei", "è", "siamo"] },
+  { infinitive: "essere", en: "to be", pronoun: "tu", correct: "sei", wrong: ["sono", "è", "siete"] },
+  { infinitive: "essere", en: "to be", pronoun: "lui", correct: "è", wrong: ["sono", "sei", "siete"] },
+  { infinitive: "essere", en: "to be", pronoun: "noi", correct: "siamo", wrong: ["sono", "è", "siete"] },
+  { infinitive: "stare", en: "to be", pronoun: "io", correct: "sto", wrong: ["stai", "sta", "stiamo"] },
+  { infinitive: "stare", en: "to be", pronoun: "tu", correct: "stai", wrong: ["sto", "sta", "state"] },
+  { infinitive: "stare", en: "to be", pronoun: "lui", correct: "sta", wrong: ["sto", "stai", "stanno"] },
+  { infinitive: "stare", en: "to be", pronoun: "noi", correct: "stiamo", wrong: ["sto", "sta", "state"] },
+  { infinitive: "avere", en: "to have", pronoun: "io", correct: "ho", wrong: ["hai", "ha", "abbiamo"] },
+  { infinitive: "avere", en: "to have", pronoun: "tu", correct: "hai", wrong: ["ho", "ha", "avete"] },
+  { infinitive: "avere", en: "to have", pronoun: "lui", correct: "ha", wrong: ["ho", "hai", "hanno"] },
+  { infinitive: "avere", en: "to have", pronoun: "noi", correct: "abbiamo", wrong: ["ho", "ha", "avete"] },
+  { infinitive: "andare", en: "to go", pronoun: "io", correct: "vado", wrong: ["vai", "va", "andiamo"] },
+  { infinitive: "andare", en: "to go", pronoun: "tu", correct: "vai", wrong: ["vado", "va", "andate"] },
+  { infinitive: "andare", en: "to go", pronoun: "lui", correct: "va", wrong: ["vado", "vai", "vanno"] },
+  { infinitive: "andare", en: "to go", pronoun: "noi", correct: "andiamo", wrong: ["vado", "va", "andate"] },
+  { infinitive: "fare", en: "to do", pronoun: "io", correct: "faccio", wrong: ["fai", "fa", "facciamo"] },
+  { infinitive: "fare", en: "to do", pronoun: "tu", correct: "fai", wrong: ["faccio", "fa", "fate"] },
+  { infinitive: "fare", en: "to do", pronoun: "lui", correct: "fa", wrong: ["faccio", "fai", "fanno"] },
+  { infinitive: "fare", en: "to do", pronoun: "noi", correct: "facciamo", wrong: ["faccio", "fa", "fate"] },
+  { infinitive: "potere", en: "to be able", pronoun: "io", correct: "posso", wrong: ["puoi", "può", "possiamo"] },
+  { infinitive: "potere", en: "to be able", pronoun: "tu", correct: "puoi", wrong: ["posso", "può", "potete"] },
+  { infinitive: "potere", en: "to be able", pronoun: "lui", correct: "può", wrong: ["posso", "puoi", "possono"] },
+  { infinitive: "potere", en: "to be able", pronoun: "noi", correct: "possiamo", wrong: ["posso", "può", "potete"] },
+  { infinitive: "volere", en: "to want", pronoun: "io", correct: "voglio", wrong: ["vuoi", "vuole", "vogliamo"] },
+  { infinitive: "volere", en: "to want", pronoun: "tu", correct: "vuoi", wrong: ["voglio", "vuole", "volete"] },
+  { infinitive: "volere", en: "to want", pronoun: "lui", correct: "vuole", wrong: ["voglio", "vuoi", "vogliono"] },
+  { infinitive: "volere", en: "to want", pronoun: "noi", correct: "vogliamo", wrong: ["voglio", "vuole", "volete"] },
+  { infinitive: "venire", en: "to come", pronoun: "io", correct: "vengo", wrong: ["vieni", "viene", "veniamo"] },
+  { infinitive: "venire", en: "to come", pronoun: "tu", correct: "vieni", wrong: ["vengo", "viene", "venite"] },
+  { infinitive: "venire", en: "to come", pronoun: "lui", correct: "viene", wrong: ["vengo", "vieni", "vengono"] },
+  { infinitive: "venire", en: "to come", pronoun: "noi", correct: "veniamo", wrong: ["vengo", "viene", "venite"] },
+  { infinitive: "dovere", en: "to have to", pronoun: "io", correct: "devo", wrong: ["devi", "deve", "dobbiamo"] },
+  { infinitive: "dovere", en: "to have to", pronoun: "tu", correct: "devi", wrong: ["devo", "deve", "dovete"] },
+  { infinitive: "dovere", en: "to have to", pronoun: "lui", correct: "deve", wrong: ["devo", "devi", "devono"] },
+  { infinitive: "dovere", en: "to have to", pronoun: "noi", correct: "dobbiamo", wrong: ["devo", "deve", "dovete"] },
+  { infinitive: "sapere", en: "to know", pronoun: "io", correct: "so", wrong: ["sai", "sa", "sappiamo"] },
+  { infinitive: "sapere", en: "to know", pronoun: "tu", correct: "sai", wrong: ["so", "sa", "sapete"] },
+  { infinitive: "sapere", en: "to know", pronoun: "lui", correct: "sa", wrong: ["so", "sai", "sanno"] },
+  { infinitive: "sapere", en: "to know", pronoun: "noi", correct: "sappiamo", wrong: ["so", "sa", "sapete"] },
+];
+
 export default function VerbShooter() {
   const { learningDirection } = useGameContent();
   const sides = courseSides(learningDirection);
@@ -195,6 +244,7 @@ export default function VerbShooter() {
   const learnsFrench = sides.target.code === "fr";
   const learnsPolish = sides.target.code === "pl";
   const learnsSpanish = sides.target.code === "es";
+  const learnsItalian = sides.target.code === "it";
 
   const buildPrompt = useCallback(() => {
     // French, Polish and Spanish each have their own table; English is derived
@@ -204,6 +254,7 @@ export default function VerbShooter() {
       learnsFrench ? FRENCH_VERBS
         : learnsPolish ? POLISH_VERBS
         : learnsSpanish ? SPANISH_VERBS
+        : learnsItalian ? ITALIAN_VERBS
         : VERBS
     );
     if (!learnsEnglish) return source;

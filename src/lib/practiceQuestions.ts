@@ -4,6 +4,7 @@ import { frenchFor } from "@/lib/frenchCourse";
 import { polishFor } from "@/lib/polishCourse";
 import { portugueseFor } from "@/lib/portugueseCourse";
 import { spanishFor } from "@/lib/spanishCourse";
+import { italianFor } from "@/lib/italianCourse";
 import type { CatalogItem } from "@/session";
 
 /**
@@ -102,6 +103,7 @@ export function practiceCandidates(items: readonly CatalogItem[]): PracticeCandi
   const toFrench = sides.target.code === "fr";
   const toPolish = sides.target.code === "pl";
   const toSpanish = sides.target.code === "es";
+  const toItalian = sides.target.code === "it";
   const toPortuguese = sides.target.code === "pt";
   const seen = new Set<string>();
   const out: PracticeCandidate[] = [];
@@ -121,9 +123,11 @@ export function practiceCandidates(items: readonly CatalogItem[]): PracticeCandi
     if (toPolish && !polish) continue;
     const spanish = toSpanish ? spanishFor(item.de ?? "") : null;
     if (toSpanish && !spanish) continue;
+    const italian = toItalian ? italianFor(item.de ?? "") : null;
+    if (toItalian && !italian) continue;
     const portuguese = toPortuguese ? portugueseFor(item.de ?? "") : null;
     if (toPortuguese && !portuguese) continue;
-    const answer = firstWording(french ?? polish ?? spanish ?? portuguese ?? ((toEnglish ? item.en : item.de) ?? ""));
+    const answer = firstWording(french ?? polish ?? spanish ?? italian ?? portuguese ?? ((toEnglish ? item.en : item.de) ?? ""));
     const prompt = firstWording((sides.meaning.code === "de" ? item.de : item.en) ?? "");
     if (!usable(answer) || !usable(prompt)) continue;
     // Same wording on both sides teaches nothing and reads as a bug.

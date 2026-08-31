@@ -8,6 +8,7 @@ import { hasPolish, polishParts } from "./polishCourse";
 import { hasPortuguese, portugueseParts } from "./portugueseCourse";
 import { hasRussian, russianParts } from "./russianCourse";
 import { hasSpanish, spanishParts } from "./spanishCourse";
+import { hasItalian, italianParts } from "./italianCourse";
 
 /**
  * Bundled, always-available content.
@@ -674,6 +675,7 @@ export function filterPartsForLearningDirection<T extends Part>(
   if (direction === "learn-fr") return frenchParts(forDirection);
   if (direction === "learn-pl") return polishParts(forDirection);
   if (direction === "learn-es") return spanishParts(forDirection);
+  if (direction === "learn-it") return italianParts(forDirection);
   if (direction === "learn-pt") return portugueseParts(forDirection);
   if (direction === "learn-ru") return russianParts(forDirection);
   return forDirection;
@@ -689,6 +691,7 @@ export function getAllBundledSentences(direction: LearningDirection = getLearnin
   if (direction === "learn-fr") return phrases.filter(hasFrench);
   if (direction === "learn-pl") return phrases.filter(hasPolish);
   if (direction === "learn-es") return phrases.filter(hasSpanish);
+  if (direction === "learn-it") return phrases.filter(hasItalian);
   if (direction === "learn-pt") return phrases.filter(hasPortuguese);
   if (direction === "learn-ru") return phrases.filter(hasRussian);
   return phrases;

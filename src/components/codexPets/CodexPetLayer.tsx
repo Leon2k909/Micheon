@@ -315,6 +315,17 @@ const SPANISH_PET_TIPS = [
   "Spanish tip: an accent can be the whole word \u2014 \u201c\u00e9l\u201d is he and \u201cel\u201d is the; \u201cs\u00ed\u201d is yes and \u201csi\u201d is if.",
 ];
 
+const ITALIAN_PET_TIPS = [
+  "Italian tip: the ending already says who — “vado” is I go, so “io vado” puts the stress on the I.",
+  "Italian tip: essere is what a thing IS, stare is how or where it is — “è bene” is it is good, “sta bene” is he is well.",
+  "Italian tip: a noun takes il, lo or la by the sound that follows — “lo zaino” and “lo studente”, never “il”.",
+  "Italian tip: a double consonant is a longer sound, not a spelling — “nonno” is grandfather and “nono” is ninth.",
+  "Italian tip: describing words come after the thing — “una casa bianca” — and agree with it: “case bianche”.",
+  "Italian tip: an accent can be the whole word — “è” is is and “e” is and; “sì” is yes and “si” is if.",
+  "Italian tip: gli is one sound rather than g plus l — the one in “famiglia” and “figli”.",
+  "Italian tip: two negatives are correct — “non c'è niente” is how you say there is nothing.",
+];
+
 const PORTUGUESE_PET_TIPS = [
   "Portuguese tip: the article belongs with the noun — a casa, o trabalho, a cidade.",
   "Portuguese tip: European Portuguese often drops the subject pronoun because the verb ending already tells you who is speaking.",
@@ -338,6 +349,7 @@ const LANGUAGE_TIPS: Record<CourseLanguage, string[]> = {
   fr: FRENCH_PET_TIPS,
   pl: POLISH_PET_TIPS,
   es: SPANISH_PET_TIPS,
+  it: ITALIAN_PET_TIPS,
   ru: RUSSIAN_PET_TIPS,
   pt: PORTUGUESE_PET_TIPS,
 };

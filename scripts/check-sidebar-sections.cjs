@@ -152,7 +152,7 @@ export { setEnglishVariant } from "./src/lib/englishVariant.ts";`,
   const { hasFlagArt, learningFlagId, setEnglishVariant, setLearningDirection } = compiled.exports;
 
   // Every finished course has art, or the roundel falls through to a globe.
-  for (const id of ["german", "english-uk", "english-us", "spanish", "french"]) {
+  for (const id of ["german", "english-uk", "english-us", "spanish", "italian", "french"]) {
     assert.ok(hasFlagArt(id), `"${id}" has no drawn flag, so its heading would show a globe`);
   }
 
@@ -175,17 +175,22 @@ export { setEnglishVariant } from "./src/lib/englishVariant.ts";`,
   assert.strictEqual(learningFlagId("german"), "french", "the French course flies the French flag");
   assert.strictEqual(learningFlagId("french"), "french", "...whichever of its two names is stored");
 
+  setLearningDirection("learn-it");
+  assert.strictEqual(learningFlagId("german"), "italian", "the Italian course flies the Italian flag");
+  assert.strictEqual(learningFlagId("italian"), "italian", "...whichever of its two names is stored");
+
   setLearningDirection("learn-es");
   assert.strictEqual(learningFlagId("german"), "spanish", "the Spanish course flies the Spanish flag");
   assert.strictEqual(learningFlagId("spanish"), "spanish", "...whichever of its two names is stored");
 
   // A language course of its OWN — one that is not part of the reversible set
-  // — names itself, whichever way the set is pointed. Italian is only planned,
-  // so it is nobody's direction and has nothing to follow; the day it becomes
-  // a course it joins the block above instead and this line has to move.
-  for (const direction of ["learn-de", "learn-en", "learn-fr", "learn-es"]) {
+  // — names itself, whichever way the set is pointed. Dutch is only planned, so
+  // it is nobody's direction and has nothing to follow; the day it becomes a
+  // course it joins the block above instead and this line has to move. Italian
+  // was the example here until it did exactly that.
+  for (const direction of ["learn-de", "learn-en", "learn-fr", "learn-es", "learn-it"]) {
     setLearningDirection(direction);
-    assert.strictEqual(learningFlagId("italian"), "italian", "Italian is Italian either way");
+    assert.strictEqual(learningFlagId("dutch"), "dutch", "Dutch is Dutch either way");
   }
 
   // And the two courses that are not languages never reach the globe.

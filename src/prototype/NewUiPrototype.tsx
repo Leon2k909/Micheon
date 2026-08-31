@@ -4511,6 +4511,7 @@ export default function NewUiPrototype({
     else if (courseId === "french") setLearningDirection("learn-fr");
     else if (courseId === "polish") setLearningDirection("learn-pl");
     else if (courseId === "spanish") setLearningDirection("learn-es");
+    else if (courseId === "italian") setLearningDirection("learn-it");
     else if (courseId === "portuguese") setLearningDirection("learn-pt");
     else if (courseId === "russian") setLearningDirection("learn-ru");
     persistActiveCourseId(courseId, profile);

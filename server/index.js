@@ -45,6 +45,8 @@ const VOICE_BY_LANG = {
   pl: "pl-PL-ZofiaNeural",
   "es-ES": "es-ES-ElviraNeural",
   es: "es-ES-ElviraNeural",
+  "it-IT": "it-IT-ElsaNeural",
+  it: "it-IT-ElsaNeural",
   "pt-PT": "pt-PT-RaquelNeural",
   "ru-RU": "ru-RU-SvetlanaNeural",
   pt: "pt-PT-RaquelNeural",
@@ -108,6 +110,10 @@ const VOICE_CHOICES = {
   "es-ES": [
     { id: "es-ES-ElviraNeural", label: "Elvira", note: "Spanish — female" },
     { id: "es-ES-AlvaroNeural", label: "Álvaro", note: "Spanish — male" },
+  ],
+  "it-IT": [
+    { id: "it-IT-ElsaNeural", label: "Elsa", note: "Italian — female" },
+    { id: "it-IT-DiegoNeural", label: "Diego", note: "Italian — male" },
   ],
   "pt-PT": [
     { id: "pt-PT-RaquelNeural", label: "Raquel", note: "Portuguese — female" },

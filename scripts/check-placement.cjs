@@ -60,7 +60,7 @@ M.primeTranslations("pl", M.POLISH_BY_GERMAN);
 const LEVELS = M.PLACEMENT_LEVELS;
 assert.deepStrictEqual(LEVELS, ["A1", "A2", "B1", "B2", "C1"], "the ladder should run A1 to C1");
 
-for (const direction of ["learn-de", "learn-en", "learn-fr", "learn-pl", "learn-es", "learn-pt", "learn-ru"]) {
+for (const direction of ["learn-de", "learn-en", "learn-fr", "learn-pl", "learn-es", "learn-it", "learn-pt", "learn-ru"]) {
   const questions = M.placementQuestions(direction);
   const ids = new Set();
   for (const question of questions) {
@@ -163,8 +163,8 @@ assert.ok(
 console.log(
   `check-placement: ${de.length} German, ${en.length} English, `
   + `${M.placementQuestions("learn-fr").length} French, ${M.placementQuestions("learn-pl").length} Polish, `
-  + `${M.placementQuestions("learn-es").length} Spanish, ${M.placementQuestions("learn-pt").length} Portuguese `
-  + `and ${M.placementQuestions("learn-ru").length} Russian `
+  + `${M.placementQuestions("learn-es").length} Spanish, ${M.placementQuestions("learn-it").length} Italian, `
+  + `${M.placementQuestions("learn-pt").length} Portuguese and ${M.placementQuestions("learn-ru").length} Russian `
   + `questions across ${LEVELS.length} levels; `
   + `A1 places at ${placed.A1} and C1 at ${placed.C1}`
 );

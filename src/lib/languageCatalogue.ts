@@ -22,7 +22,6 @@ export type LanguageEntry = {
 };
 
 export const PLANNED_LANGUAGES: LanguageEntry[] = [
-  { id: "italian", name: "Italian", icon: "🇮🇹", search: "it italiano italy italien" },
   { id: "dutch", name: "Dutch", icon: "🇳🇱", search: "nl nederlands holland netherlands flemish vlaams" },
   // Languages leave this list when they become courses you can start. Everything
   // here is drawn only behind "Show more", which is the wrong place for a
