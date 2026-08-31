@@ -2690,6 +2690,7 @@ export const DE: Record<string, string> = {
     "Geschichte, Regierung und Traditionen – wie das Leben in Großbritannien funktioniert.",
   Germany: "Deutschland",
   France: "Frankreich",
+  Poland: "Polen",
   "Learn first": "Erst lernen",
   "Overview": "Übersicht",
   "By topic": "Nach Thema",

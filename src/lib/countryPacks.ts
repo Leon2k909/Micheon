@@ -8,6 +8,9 @@ import { DE_ERA_LABELS, DE_ERA_ORDER, DE_TIMELINE } from "@/lib/lebenInDeutschla
 import { vivreEnFranceCourse } from "@/lib/vivreEnFranceCourse";
 import { FR_QUESTIONS } from "@/lib/frQuestionBank";
 import { FR_ERA_LABELS, FR_ERA_ORDER, FR_TIMELINE } from "@/lib/vivreEnFranceTimeline";
+import { zycieWPolsceCourse } from "@/lib/zycieWPolsceCourse";
+import { PL_QUESTIONS } from "@/lib/plQuestionBank";
+import { PL_ERA_LABELS, PL_ERA_ORDER, PL_TIMELINE } from "@/lib/zycieWPolsceTimeline";
 
 /**
  * The countries Country studies covers.
@@ -101,7 +104,41 @@ export const FR_PACK: CountryPack = {
   contentLang: "fr",
 };
 
-export const COUNTRY_PACKS: CountryPack[] = [UK_PACK, DE_PACK, FR_PACK];
+/**
+ * Życie w Polsce.
+ *
+ * The one pack that imitates no exam, because Poland holds none: becoming
+ * a Polish citizen asks for a B1 certificate in the language, which tests
+ * Polish rather than Poland. A civic-knowledge test was proposed in 2025
+ * and never enacted. So the figures below are this course's own — thirty
+ * questions, three quarters of an hour, seventy per cent to pass — and the
+ * screen calls it a practice test rather than a simulation, because there
+ * is nothing to simulate.
+ *
+ * That also decides the content: the other three ask what an examiner
+ * might set, this one asks what is worth knowing to understand the
+ * country.
+ */
+export const PL_PACK: CountryPack = {
+  id: "pl",
+  flagId: "polish",
+  label: "Poland – Land and Culture",
+  country: "Poland",
+  course: zycieWPolsceCourse,
+  questions: PL_QUESTIONS,
+  timeline: PL_TIMELINE,
+  eraOrder: [...PL_ERA_ORDER],
+  eraLabels: PL_ERA_LABELS,
+  storeKey: "pl-quiz-v1",
+  exam: {
+    questionCount: 30,
+    durationMs: 45 * 60 * 1000,
+    passMark: 21,
+  },
+  contentLang: "pl",
+};
+
+export const COUNTRY_PACKS: CountryPack[] = [UK_PACK, DE_PACK, FR_PACK, PL_PACK];
 
 export function countryPack(id: CountryId): CountryPack {
   return COUNTRY_PACKS.find((pack) => pack.id === id) ?? UK_PACK;

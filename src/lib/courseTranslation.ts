@@ -52,7 +52,7 @@ export const COURSE_TRANSLATION_CHANGE_EVENT = "gl-course-translation-change";
 export type TranslationLanguage = "off" | "de" | "en" | "pl" | "fr";
 
 /** The language a course is written in, which decides what can be offered. */
-export type ContentLanguage = "en" | "de" | "fr";
+export type ContentLanguage = "en" | "de" | "fr" | "pl";
 
 export const TRANSLATION_LANGUAGES: Array<{
   id: TranslationLanguage;
