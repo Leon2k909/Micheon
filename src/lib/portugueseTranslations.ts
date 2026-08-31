@@ -19819,4 +19819,402 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Für die einen verzerren Subventionen den Wettbewerb, für die anderen sichern sie Arbeitsplätze.": "Para uns os subsídios distorcem a concorrência; para outros, garantem empregos.",
   "Als Steuerzahler frage ich mich, wofür dieses Haushaltsdefizit eigentlich gut sein soll.": "Como contribuinte, pergunto-me para que serve afinal este défice orçamental.",
   "Sobald die Hypothek abbezahlt ist, gehört das Haus endlich uns.": "Assim que o crédito à habitação estiver pago, a casa é finalmente nossa.",
+
+  // ── Studying, and what you are studying at (part100) ────────────────────
+  //
+  // Die Ausbildung is a formação profissional, das Studium is o curso
+  // superior, and der Abschluss is o grau. Portugal keeps the three apart the
+  // same way German does. Der Unterricht fällt aus is a aula foi anulada,
+  // which is what the noticeboard says.
+  "Meine Schwester ist noch Schülerin.": "A minha irmã ainda anda na escola.",
+  "Er ist Schüler an einem Gymnasium.": "Ele é aluno de um Gymnasium.",
+  "Ich mache gerade eine Ausbildung als Krankenpfleger.": "Estou a tirar uma formação profissional de enfermeiro.",
+  "Nach der Ausbildung will sie noch studieren.": "Depois da formação ainda quer tirar um curso superior.",
+  "Ich studiere an der Universität Köln.": "Estudo na Universidade de Colónia.",
+  "Sie ist an einer Hochschule für Musik.": "Ela anda numa escola superior de música.",
+  "Wie lange dauert dein Studium noch?": "Quanto tempo falta para acabares o curso?",
+  "Ich habe mein Studium letztes Jahr abgeschlossen.": "Acabei o curso no ano passado.",
+  "Was für einen Abschluss hast du?": "Que grau é que tens?",
+  "Der Kurs findet jeden Dienstag statt.": "O curso é todas as terças.",
+  "An dem Vortrag nehmen etwa fünfzig Leute teil.": "Na palestra participam umas cinquenta pessoas.",
+  "Ich muss das Kapitel bis morgen lesen.": "Tenho de ler o capítulo até amanhã.",
+  "Sie hält morgen einen Vortrag über ihr Projekt.": "Amanhã dá uma palestra sobre o projeto dela.",
+  "In meiner Klasse sind neunzehn Kinder.": "Na minha turma há dezanove crianças.",
+  "Das Seminar ist leider schon voll.": "Infelizmente o seminário já está cheio.",
+  "Ich habe die Prüfung im ersten Versuch bestanden.": "Passei no exame à primeira.",
+  "Der Unterricht fällt heute aus.": "Hoje a aula foi anulada.",
+  "Sie hat sich für ein Auslandssemester beworben.": "Candidatou-se a um semestre no estrangeiro.",
+
+  // ── The phone, the app and the battery (part101) ────────────────────────
+  //
+  // The screen words this table settled on hold: o ficheiro, as definições, o
+  // armazenamento, os dados móveis, a aplicação. Das Gerät is o aparelho, and
+  // der Flugmodus is o modo de voo, which is what the toggle says in
+  // Portuguese.
+  "Mein Smartphone ist fast leer.": "O meu telemóvel está quase sem bateria.",
+  "Welches Gerät benutzt du?": "Que aparelho é que usas?",
+  "Die App funktioniert bei mir nicht.": "A aplicação não me funciona.",
+  "Ich habe die App gerade erst installiert.": "Acabei agora mesmo de instalar a aplicação.",
+  "Schau mal auf die Website.": "Vê lá no site.",
+  "Kannst du mir den Link schicken?": "Podes mandar-me a ligação?",
+  "Das Programm braucht ein Update.": "O programa precisa de uma atualização.",
+  "Ich muss die Datei noch speichern.": "Ainda tenho de guardar o ficheiro.",
+  "Hast du das irgendwo gesichert?": "Fizeste cópia disso nalgum sítio?",
+  "Wie viele Nutzer hat die Seite?": "Quantos utilizadores tem o site?",
+  "Die Nutzung ist kostenlos.": "A utilização é gratuita.",
+  "Ich habe ein neues Konto erstellt.": "Criei uma conta nova.",
+  "Der Akku hält nur noch drei Stunden.": "A bateria já só aguenta três horas.",
+  "Ich bin im WLAN, aber es lädt nicht.": "Estou ligada à rede, mas não carrega.",
+  "Kannst du mal kurz auf mein Handy schauen?": "Podes dar uma vista de olhos ao meu telemóvel?",
+  "Das Gerät erkennt die Karte nicht.": "O aparelho não reconhece o cartão.",
+  "Die neue Version ist deutlich besser.": "A versão nova é bastante melhor.",
+  "Ich nutze das jeden Tag.": "Uso isso todos os dias.",
+  "Mein Speicher ist voll, ich lösche alte Fotos.": "Tenho o armazenamento cheio, vou apagar fotografias antigas.",
+  "Die App stürzt ab, sobald ich sie öffne.": "A aplicação fecha-se assim que a abro.",
+  "Ich habe das Update gestern Abend installiert.": "Instalei a atualização ontem à noite.",
+  "Ohne WLAN verbraucht das Video mein ganzes Datenvolumen.": "Sem rede sem fios, o vídeo gasta-me os dados todos.",
+  "Schalte den Flugmodus ein, dann stört nichts mehr.": "Liga o modo de voo, assim já não incomoda nada.",
+  "Mein altes Handy war langsamer, aber der Akku hielt länger.": "O meu telemóvel antigo era mais lento, mas a bateria durava mais.",
+  "Das Passwort wird bei jedem Tippfehler neu verlangt.": "A palavra-passe é pedida de novo a cada erro de escrita.",
+  "Ich zeige dir gleich, welche Einstellung du ändern musst.": "Já te mostro que definição é que tens de mudar.",
+
+  // ── Exhibitions, concerts and the months they fall in (part102) ─────────
+  //
+  // Der Eintritt is a entrada, ermäßigt is com desconto, and die Führung is a
+  // visita guiada. Es war viel los is havia muito movimento — Portuguese
+  // measures a busy place by its movement.
+  "Was für Veranstaltungen gibt es dieses Wochenende?": "Que eventos é que há este fim de semana?",
+  "Die Ausstellung läuft noch bis Juni.": "A exposição fica patente até junho.",
+  "Wir waren gestern im Museum.": "Ontem fomos ao museu.",
+  "Was kostet der Eintritt?": "Quanto custa a entrada?",
+  "Für Schüler ist der Eintritt ermäßigt.": "Para estudantes a entrada tem desconto.",
+  "Die Führung dauert etwa eine Stunde.": "A visita guiada dura cerca de uma hora.",
+  "Muss man sich vorher anmelden?": "É preciso inscrever-se antes?",
+  "Das Konzert findet im Park statt.": "O concerto é no parque.",
+  "Es waren erstaunlich viele Besucher da.": "Havia um número surpreendente de visitantes.",
+  "Wir haben Gäste am Samstag.": "No sábado temos visitas.",
+  "Der Markt ist jedes Jahr im Dezember.": "A feira é todos os anos em dezembro.",
+  "Im März ist hier noch ziemlich wenig los.": "Em março ainda há aqui pouco movimento.",
+  "Wir treffen uns im April wieder.": "Voltamos a encontrar-nos em abril.",
+  "Der Kurs beginnt Anfang November.": "O curso começa no princípio de novembro.",
+  "Im Februar ist die Stadt ziemlich leer.": "Em fevereiro a cidade fica bastante vazia.",
+  "Wir haben im Juli zwei Wochen frei.": "Em julho temos duas semanas de folga.",
+  "Wir fahren jedes Jahr im Juni ans Meer.": "Todos os anos vamos ao mar em junho.",
+  "Hat es dir gefallen?": "Gostaste?",
+  "Das war wirklich ein tolles Erlebnis.": "Foi mesmo uma experiência e tanto.",
+  "So etwas erlebt man nicht jeden Tag.": "Uma coisa dessas não se vive todos os dias.",
+
+  // ── Offering, belonging, working out (part103) ──────────────────────────
+  //
+  // Es hat nicht geklappt is não deu certo and diesmal ist es mir gelungen is
+  // desta vez consegui — German changes the subject of the sentence between
+  // the two, and Portuguese does the same, which is why the pair is worth
+  // keeping side by side.
+  "Was bietet ihr denn an?": "Então o que é que vocês oferecem?",
+  "Das Hotel bietet auch Frühstück an.": "O hotel também oferece pequeno-almoço.",
+  "Ich habe deine Nachricht erhalten.": "Recebi a tua mensagem.",
+  "Wem gehört das?": "Isto é de quem?",
+  "Das gehört mir nicht.": "Isso não é meu.",
+  "Was bedeutet das auf Deutsch?": "O que é que isso quer dizer em alemão?",
+  "Das scheint mir keine gute Idee.": "Isso não me parece boa ideia.",
+  "Es hat leider nicht geklappt.": "Infelizmente não deu certo.",
+  "Diesmal ist es mir gelungen.": "Desta vez consegui.",
+  "Wie sieht das aus?": "Que aspeto é que isso tem?",
+  "Ich brauche dafür ein bisschen mehr Zeit.": "Para isso preciso de um bocadinho mais de tempo.",
+  "Dafür benötigen Sie einen Termin.": "Para isso é necessária marcação.",
+  "Wir haben das komplett verändert.": "Mudámos aquilo por completo.",
+  "Das hat sich stark verbessert.": "Aquilo melhorou muito.",
+  "Ich habe da ein gutes Café entdeckt.": "Descobri ali um bom café.",
+  "Das zählt nicht!": "Isso não conta!",
+  "Wozu dient das?": "Para que é que isso serve?",
+
+  // ── Comparing two things and saying which (part104) ─────────────────────
+  //
+  // Das Lokal is o estabelecimento when it is being described and o café or o
+  // restaurante when somebody is going there; this card is the first. Das
+  // Angebot ist vielfältig is a oferta é variada, and der Support is o apoio
+  // ao cliente, as elsewhere in this table.
+  "Das Lokal ist hier ziemlich bekannt.": "O estabelecimento é bastante conhecido por aqui.",
+  "Die Auswahl ist wirklich groß.": "A escolha é mesmo grande.",
+  "Das ist im Vergleich ziemlich günstig.": "Em comparação, isso é bastante barato.",
+  "Der große Vorteil ist der Preis.": "A grande vantagem é o preço.",
+  "Das ist praktisch, aber nicht besonders schön.": "Isso é prático, mas não é especialmente bonito.",
+  "Ich finde die Qualität überraschend gut.": "Acho a qualidade surpreendentemente boa.",
+  "So etwas sieht man hier selten.": "Uma coisa dessas vê-se poucas vezes por aqui.",
+  "Das ist ein wesentlicher Unterschied.": "Essa é uma diferença essencial.",
+  "Es gibt hier ein sehr vielfältiges Angebot.": "Aqui a oferta é muito variada.",
+  "Zusätzlich bekommst du noch einen Kaffee.": "Além disso ainda levas um café.",
+  "Ist das noch vorhanden?": "Isso ainda existe em stock?",
+  "Der Laden ist auch am Sonntag geöffnet.": "A loja também abre ao domingo.",
+  "Das ist regional ganz unterschiedlich.": "Isso varia muito de região para região.",
+  "Die Firma ist weltweit tätig.": "A empresa atua em todo o mundo.",
+  "Er ist im Verein sehr aktiv.": "Ele é muito ativo na associação.",
+  "Das kostet jährlich etwa hundert Euro.": "Isso custa cerca de cem euros por ano.",
+  "Modern ist das nicht gerade.": "Moderno é que aquilo não é.",
+  "Speziell dafür gibt es eine eigene App.": "Especificamente para isso há uma aplicação própria.",
+  "Verglichen mit dem alten Modell ist das neue viel leiser.": "Comparado com o modelo antigo, o novo é muito mais silencioso.",
+  "Beide sind gut, aber das hier hat den besseren Griff.": "Ambos são bons, mas este tem melhor pega.",
+  "Ich würde dir das kleinere Zelt empfehlen, weil es leichter aufzubauen ist.": "Eu recomendava-te a tenda mais pequena, porque é mais fácil de montar.",
+  "Je nach Wetter ist mal die Bahn, mal das Rad schneller.": "Conforme o tempo, ora é o comboio ora é a bicicleta que é mais rápido.",
+  "Das klingt teurer, als es ist.": "Isso soa mais caro do que é.",
+  "Am meisten überzeugt mich, wie leicht sich alles reinigen lässt.": "O que mais me convence é a facilidade com que se limpa tudo.",
+  "Für Anfänger reicht das günstige völlig aus.": "Para quem começa, o barato chega perfeitamente.",
+  "Ich rate dir von diesem Anbieter ab, der Support meldet sich nie.": "Desaconselho-te este fornecedor, o apoio ao cliente nunca responde.",
+
+  // ── At a counter, asking for what you are owed (part105) ────────────────
+  //
+  // Angaben machen is prestar as informações, die Voraussetzungen erfüllen is
+  // reunir as condições, and darauf habe ich einen Anspruch is a isso tenho
+  // direito — the sentence somebody says when the form is being handed back.
+  "Wo bekomme ich dazu Informationen?": "Onde é que obtenho informações sobre isso?",
+  "Gibt es dazu eine Beratung?": "Há apoio de aconselhamento sobre isso?",
+  "Ich brauche dafür Unterstützung.": "Para isso preciso de apoio.",
+  "Welche Voraussetzungen muss ich erfüllen?": "Que condições é que tenho de reunir?",
+  "Darauf habe ich einen Anspruch.": "A isso tenho direito.",
+  "Danke für den Hinweis.": "Obrigada pela indicação.",
+  "Bitte machen Sie hier Ihre Angaben.": "Preste aqui as suas informações, se faz favor.",
+  "Das Formular müssen Sie vollständig ausfüllen.": "Tem de preencher o formulário na totalidade.",
+  "Wo befindet sich das Büro?": "Onde é que fica o escritório?",
+  "Das Gebäude liegt direkt am Bahnhof.": "O edifício fica mesmo ao pé da estação.",
+  "Die Unterlagen liegen Ihnen bereits vor.": "Os documentos já se encontram na sua posse.",
+  "Ich habe alles per E-Mail geschickt.": "Enviei tudo por e-mail.",
+  "Bis wann muss das eingereicht werden?": "Até quando é que isso tem de ser entregue?",
+  "Das gilt nur bis Ende des Monats.": "Isso só é válido até ao fim do mês.",
+  "Der Antrag wird zurzeit bearbeitet.": "O pedido está neste momento em tratamento.",
+  "Können Sie mir das bitte erklären?": "Importa-se de me explicar isso?",
+  "Ich verstehe die Anforderungen nicht ganz.": "Não percebo bem os requisitos.",
+  "Können Sie mir jemanden empfehlen?": "Pode recomendar-me alguém?",
+
+  // ── The surgery, the ward and getting better (part106) ──────────────────
+  //
+  // Die Praxis is o consultório, die Klinik is o hospital, and die Pflege is
+  // os cuidados. Gute Besserung is as melhoras — two words, said at a door,
+  // and no verb needed.
+  "Ich hätte gern einen Termin in Ihrer Praxis.": "Queria marcar uma consulta no seu consultório.",
+  "Seit wann haben Sie die Beschwerden?": "Desde quando tem essas queixas?",
+  "Der Arzt will mich noch einmal untersuchen.": "O médico quer observar-me outra vez.",
+  "Das muss erst behandelt werden.": "Isso tem primeiro de ser tratado.",
+  "Sie liegt seit Montag in der Klinik.": "Está internada no hospital desde segunda.",
+  "Mein Opa braucht jetzt Pflege.": "O meu avô precisa agora de cuidados.",
+  "Die Versorgung hier ist wirklich gut.": "O acompanhamento aqui é mesmo bom.",
+  "Wer betreut ihn tagsüber?": "Quem é que fica com ele durante o dia?",
+  "Es ist zum Glück nichts Ernstes.": "Ainda bem que não é nada de grave.",
+  "Ich muss das noch abklären lassen.": "Ainda tenho de mandar esclarecer isso.",
+  "Nehmen Sie das Medikament dreimal täglich.": "Tome o medicamento três vezes por dia.",
+  "Das kann in seltenen Fällen auftreten.": "Isso pode ocorrer em casos raros.",
+  "Wie geht es deiner Mutter inzwischen?": "E a tua mãe, como está entretanto?",
+  "Er hat sich zum Glück schnell erholt.": "Ainda bem que recuperou depressa.",
+  "Ich muss mich krankmelden.": "Tenho de comunicar que estou doente.",
+  "Die Krankenkasse zahlt das nicht.": "A Krankenkasse não paga isso.",
+  "Ich wünsche dir gute Besserung.": "Desejo-te as melhoras.",
+  "Pass gut auf dich auf, ja?": "Cuida bem de ti, está bem?",
+  "Praxis Dr. Weber, guten Tag.": "Consultório do doutor Weber, boa tarde.",
+  "Guten Tag, ich hätte gern einen Termin.": "Boa tarde, queria marcar uma consulta.",
+  "Waren Sie schon einmal bei uns?": "Já cá esteve alguma vez?",
+  "Nein, ich bin neu hier.": "Não, sou nova cá.",
+  "Geht Donnerstag um halb zehn?": "Pode ser quinta às nove e meia?",
+  "Ja, das passt gut. Vielen Dank.": "Pode, dá-me jeito. Muito obrigada.",
+
+  // ── Colleagues, the firm and the week ahead (part107) ───────────────────
+  //
+  // Der Betrieb is a empresa, die Sitzung is a reunião, das Praktikum is o
+  // estágio, and die Branche is o setor. Das gehört nicht zu meinen Aufgaben
+  // is isso não é das minhas funções, which is what somebody says without
+  // raising their voice.
+  "Meine Kollegen sind wirklich in Ordnung.": "Os meus colegas são mesmo boa gente.",
+  "Wir sind ein ziemlich kleiner Betrieb.": "Somos uma empresa bastante pequena.",
+  "Bei uns arbeiten etwa vierzig Mitarbeiter.": "Trabalham connosco uns quarenta colaboradores.",
+  "Wir haben gerade einen großen Auftrag bekommen.": "Acabámos de receber uma encomenda grande.",
+  "Die Sitzung dauert bestimmt zwei Stunden.": "A reunião de certeza que dura duas horas.",
+  "Ich mache dort gerade ein Praktikum.": "Estou a fazer lá um estágio.",
+  "Sie stellen gerade neue Leute ein.": "Estão a contratar pessoas novas.",
+  "In welcher Branche arbeitest du?": "Em que setor é que trabalhas?",
+  "Das gehört nicht zu meinen Aufgaben.": "Isso não é das minhas funções.",
+  "Womit beschäftigst du dich gerade?": "Em que é que andas a trabalhar neste momento?",
+  "Sie leitet das ganze Projekt.": "É ela que dirige o projeto todo.",
+  "Ich arbeite seit zwei Jahren dort.": "Trabalho lá há dois anos.",
+  "Nächste Woche habe ich frei.": "Para a semana estou de folga.",
+  "Können wir das kurz besprechen?": "Podemos falar disso um momento?",
+  "Das machen wir am besten gleich.": "É melhor tratarmos disso já.",
+  "Ich bin ab Montag wieder im Büro.": "A partir de segunda estou outra vez no escritório.",
+  "Meine Tätigkeit hat sich stark verändert.": "A minha atividade mudou muito.",
+  "Kannst du das bitte an die Kollegen weiterleiten?": "Importas-te de reencaminhar isso aos colegas?",
+  "Na, wie war dein Wochenende?": "Então, como foi o teu fim de semana?",
+  "Ganz ruhig, zum Glück. Und deins?": "Muito sossegado, ainda bem. E o teu?",
+  "Auch gut. Hast du kurz Zeit?": "Também foi bom. Tens um bocadinho?",
+  "Klar, worum geht es?": "Claro, do que é que se trata?",
+  "Wir haben einen neuen Auftrag bekommen.": "Recebemos uma encomenda nova.",
+  "Oh, das besprechen wir am besten gleich.": "Ah, é melhor falarmos disso já.",
+
+  // ── Finding your way and missing the connection (part108) ───────────────
+  //
+  // Sich auskennen is conhecer bem a zona, and sich verlaufen is perder-se —
+  // the same verb this table uses in the cave. Sie können es nicht verfehlen
+  // is não tem como enganar-se, which is what the person pointing says.
+  "Kennst du dich hier in der Umgebung aus?": "Conheces bem esta zona?",
+  "Das ist genau in die falsche Richtung.": "Isso é exatamente no sentido errado.",
+  "Welche Linie fährt zum Bahnhof?": "Que linha é que vai para a estação?",
+  "Wann kommen wir ungefähr an?": "Chegamos mais ou menos a que horas?",
+  "Ich bin gerade unterwegs.": "Vou a caminho.",
+  "Wir sind schon fast da.": "Já estamos quase lá.",
+  "Der Standort ist eigentlich ideal.": "A localização é, na verdade, ideal.",
+  "In der Gegend war ich noch nie.": "Nunca estive nessa zona.",
+  "Fahr an der Kirche rechts.": "Na igreja vira à direita.",
+  "Das ist unmittelbar hinter dem Bahnhof.": "Isso é logo atrás da estação.",
+  "Wie weit ist es bis dahin?": "Fica a que distância?",
+  "Wir haben den Anschluss verpasst.": "Perdemos a ligação.",
+  "Der Zug hat zwanzig Minuten Verspätung.": "O comboio traz vinte minutos de atraso.",
+  "Ist hier irgendwo eine Apotheke?": "Há aqui alguma farmácia?",
+  "Ich habe mich total verlaufen.": "Perdi-me completamente.",
+  "Zu Fuß sind das etwa zehn Minuten.": "A pé são uns dez minutos.",
+  "Wir treffen uns direkt am Ausgang.": "Encontramo-nos mesmo à saída.",
+  "Nimm lieber die Bahn, das geht schneller.": "É melhor ires de comboio, é mais rápido.",
+  "Entschuldigung, wie komme ich zum Bahnhof?": "Desculpe, como é que se vai para a estação?",
+  "Immer geradeaus, dann an der Ampel rechts.": "Sempre em frente e depois à direita no semáforo.",
+  "Ist das weit von hier?": "É longe daqui?",
+  "Super, vielen Dank!": "Ótimo, muito obrigado!",
+  "Gern. Sie können es nicht verfehlen.": "De nada. Não tem como enganar-se.",
+
+  // ── Buying, returning and choosing between two (part109) ────────────────
+  //
+  // Reicht das so is assim chega, and zwei Stück reichen völlig is dois
+  // chegam perfeitamente. Portuguese counts with chegar where German counts
+  // with reichen, and the shop conversation runs on it.
+  "Welche Marke ist das?": "Isso é de que marca?",
+  "Meine Bestellung ist noch nicht da.": "A minha encomenda ainda não chegou.",
+  "Das lohnt sich wirklich nicht.": "Isso não vale mesmo a pena.",
+  "Die Qualität ist ziemlich hochwertig.": "A qualidade é bastante elevada.",
+  "Das Modell ist gerade sehr beliebt.": "Esse modelo está agora muito na moda.",
+  "Ich kann mich nicht entscheiden.": "Não me consigo decidir.",
+  "Umtauschen geht noch, oder?": "Ainda dá para trocar, não dá?",
+  "Reicht das so?": "Assim chega?",
+  "Zwei Stück reichen völlig.": "Dois chegam perfeitamente.",
+  "Wir müssen den Toaster ersetzen.": "Temos de substituir a torradeira.",
+  "Wie viele hast du davon?": "Quantos é que tens disso?",
+  "Das besitzt sie schon lange.": "Isso ela tem há muito tempo.",
+  "Such dir was aus.": "Escolhe uma coisa.",
+  "Ich habe zwischen zwei Modellen ausgewählt.": "Escolhi entre dois modelos.",
+  "Der Preis ist völlig in Ordnung.": "O preço está perfeitamente bem.",
+  "Das gibt es nur noch online.": "Isso já só existe na internet.",
+  "Die Lieferung dauert etwa drei Tage.": "A entrega demora uns três dias.",
+  "Ich schicke es einfach zurück.": "Devolvo aquilo e pronto.",
+  "Haben Sie das auch eine Nummer größer?": "Tem isso também num número acima?",
+  "Ich schaue mal kurz nach.": "Vou já ver.",
+  "Danke. Und kann ich es sonst umtauschen?": "Obrigada. E, se for preciso, posso trocar?",
+  "Ja, innerhalb von vierzehn Tagen.": "Pode, no prazo de catorze dias.",
+  "Dann nehme ich es.": "Então levo.",
+  "Sehr gern. Zahlen Sie bar oder mit Karte?": "Com certeza. Paga em dinheiro ou com cartão?",
+
+  // ── Agreeing, disagreeing, remembering (part110) ────────────────────────
+  //
+  // Da gehe ich völlig mit is estou inteiramente de acordo, and das kann man
+  // so nicht sagen is não se pode dizer bem assim. Mit dem Begriff kann ich
+  // nichts anfangen is esse termo não me diz nada — the term is the one doing
+  // the failing, in both languages.
+  "Aus meiner Sicht ist das kein Problem.": "Do meu ponto de vista, isso não é problema.",
+  "Ich möchte nur betonen, dass es freiwillig ist.": "Queria apenas sublinhar que é voluntário.",
+  "Erinnerst du dich noch an gestern?": "Ainda te lembras de ontem?",
+  "Das erinnert mich an meine Kindheit.": "Isso faz-me lembrar a minha infância.",
+  "Wie hat sie darauf reagiert?": "E ela como é que reagiu?",
+  "Das würde ich mir nicht erlauben.": "Eu não me permitiria isso.",
+  "Darauf kann ich gut verzichten.": "Disso posso bem prescindir.",
+  "Bei Gelegenheit machen wir das mal.": "Numa oportunidade fazemos isso.",
+  "Mit dem Begriff kann ich nichts anfangen.": "Esse termo não me diz nada.",
+  "Das kann man so nicht sagen.": "Não se pode dizer bem assim.",
+  "Da hast du völlig recht.": "Nisso tens toda a razão.",
+  "Das würde ich anders sehen.": "Eu veria isso de outra maneira.",
+  "Ehrlich gesagt hatte ich das vergessen.": "Para ser franca, tinha-me esquecido disso.",
+  "Ich kann das gut nachvollziehen.": "Compreendo bem esse raciocínio.",
+  "Das ist mir ehrlich gesagt zu viel.": "Para ser franca, isso é de mais para mim.",
+  "Kein Wunder, dass sie sauer ist.": "Não admira que ela esteja zangada.",
+  "Das hätte ich nicht gedacht.": "Isso é que eu não esperava.",
+  "Da gehe ich völlig mit.": "Nisso estou inteiramente de acordo.",
+
+  // ── Art, books and what you are into (part111) ──────────────────────────
+  //
+  // Für etwas nicht viel übrig haben is não ter grande queda para, and damit
+  // kann ich nichts anfangen is aquilo não me diz nada. Der Film hat mich
+  // mitgenommen is o filme abalou-me, the same verb this table uses when
+  // something takes it out of somebody.
+  "Für moderne Kunst habe ich nicht viel übrig.": "Não tenho grande queda para arte moderna.",
+  "Wer ist der Künstler?": "Quem é o artista?",
+  "Das Werk hängt in Hamburg.": "A obra está em Hamburgo.",
+  "Wie heißt der Titel noch mal?": "Como é que era o título?",
+  "Ich sammle alte Platten.": "Coleciono discos antigos.",
+  "Er hat einen ganz eigenen Stil.": "Ele tem um estilo muito próprio.",
+  "Das Buch hat meine Perspektive verändert.": "O livro mudou-me a maneira de ver.",
+  "Von der Autorin habe ich noch nichts gelesen.": "Dessa autora ainda não li nada.",
+  "Das Konzert war ein echtes Erlebnis.": "O concerto foi uma verdadeira experiência.",
+  "Kulturell ist hier ziemlich viel los.": "Em termos culturais há aqui bastante movimento.",
+  "Was hörst du denn so?": "E tu ouves o quê?",
+  "Das ist genau mein Geschmack.": "Isso é exatamente o meu gosto.",
+  "Damit kann ich echt nichts anfangen.": "Aquilo não me diz mesmo nada.",
+  "Sie spielt seit Jahren in einer Band.": "Ela toca numa banda há anos.",
+  "Der Film hat mich ziemlich mitgenommen.": "O filme abalou-me bastante.",
+  "Das muss man gesehen haben.": "Aquilo é para se ver.",
+  "Ich stehe total auf so was.": "Curto imenso esse género de coisas.",
+  "Sag Bescheid, wenn ihr wieder hingeht.": "Avisa quando voltarem lá.",
+
+  // ── The family, counted and introduced (part112) ────────────────────────
+  //
+  // Sie kommt ganz nach ihrer Mutter is saiu toda à mãe, the same verb this
+  // table already uses for taking after a parent. Wir kommen zu viert is somos
+  // quatro — Portuguese counts the people rather than the arriving.
+  "Das ist mein Sohn.": "Este é o meu filho.",
+  "Ihre Tochter ist schon fünfzehn.": "A filha dela já tem quinze anos.",
+  "Das Mädchen dort ist die Nachbarin.": "A rapariga ali é a vizinha.",
+  "Wir haben zwei Kinder, einen Jungen und ein Mädchen.": "Temos dois filhos, um rapaz e uma rapariga.",
+  "Für Erwachsene kostet es zwölf Euro.": "Para adultos custa doze euros.",
+  "Mein Partner kommt später nach.": "O meu companheiro vem ter connosco mais tarde.",
+  "Meine Eltern sind eine ganz andere Generation.": "Os meus pais são de outra geração completamente.",
+  "Die Bewohner hier kennen sich alle.": "Os moradores daqui conhecem-se todos.",
+  "Er ist der Ältere von beiden.": "É o mais velho dos dois.",
+  "Sie kommt ganz nach ihrer Mutter.": "Saiu toda à mãe.",
+  "Wir kommen zu viert.": "Somos quatro.",
+  "Meine Schwiegereltern wohnen um die Ecke.": "Os meus sogros moram ali na esquina.",
+  "Er ist bei seinen Großeltern aufgewachsen.": "Cresceu em casa dos avós.",
+  "Die Kleine schläft schon.": "A pequena já está a dormir.",
+  "Wie alt ist deine Tochter jetzt?": "A tua filha tem agora que idade?",
+  "Sie erwarten im Sommer ein Kind.": "Esperam um filho para o verão.",
+  "Er hat ein Kind aus erster Ehe.": "Tem um filho do primeiro casamento.",
+  "Wir kommen alle gut miteinander aus.": "Damo-nos todos bem uns com os outros.",
+  "Das Baby schläft endlich.": "O bebé finalmente adormeceu.",
+  "Meine Nichte wird morgen sechs.": "A minha sobrinha faz amanhã seis anos.",
+  "Mein Opa ist über achtzig und fährt noch Rad.": "O meu avô tem mais de oitenta e ainda anda de bicicleta.",
+  "Die Zwillinge sind sich sehr ähnlich.": "Os gémeos são muito parecidos.",
+  "Als Kind ist man schnell wieder froh.": "Em criança, a alegria volta depressa.",
+  "Sie ist die Jüngste in der Familie.": "É a mais nova da família.",
+  "Mit sechzehn will man alles auf einmal.": "Aos dezasseis quer-se tudo ao mesmo tempo.",
+  "Unser Nachbar ist im Ruhestand.": "O nosso vizinho está reformado.",
+  "Das ist mein Sohn, Jonas.": "Este é o meu filho, o Jonas.",
+  "Hallo Jonas! Wie alt bist du?": "Olá, Jonas! Que idade tens?",
+  "Er ist sechs. Und das ist meine Tochter.": "Tem seis. E esta é a minha filha.",
+  "Sie kommt ganz nach dir.": "Saiu toda a ti.",
+  "Das sagen alle.": "É o que toda a gente diz.",
+  "Ihr seid also zu viert?": "Então são quatro?",
+
+  // ── Seasons, degrees and going outside anyway (part113) ─────────────────
+  //
+  // Örtlich kann es Gewitter geben is pode haver trovoada em alguns pontos —
+  // the phrasing of a Portuguese forecast. Der Weg ist glatt is o caminho está
+  // escorregadio, as elsewhere in this table.
+  "Die Temperatur fällt heute Nacht unter null.": "Esta noite a temperatura desce abaixo de zero.",
+  "Im Sommer ist hier Hochsaison.": "No verão isto aqui é época alta.",
+  "Die Saison fängt im Mai an.": "A época começa em maio.",
+  "Der See ist an der Stelle ziemlich tief.": "O lago naquele ponto é bastante fundo.",
+  "Das ist nur zehn Minuten entfernt.": "Isso fica só a dez minutos.",
+  "Wir sollten mehr für die Umwelt tun.": "Devíamos fazer mais pelo ambiente.",
+  "Örtlich kann es Gewitter geben.": "Pode haver trovoada em alguns pontos.",
+  "Es soll morgen den ganzen Tag regnen.": "Amanhã é suposto chover o dia todo.",
+  "Zieh dir was Warmes an.": "Veste uma coisa quente.",
+  "Bei dem Wetter bleibe ich lieber drin.": "Com este tempo prefiro ficar dentro de casa.",
+  "Endlich mal wieder Sonne!": "Finalmente outra vez sol!",
+  "Der Sommer war dieses Jahr ziemlich verregnet.": "Este ano o verão foi bastante chuvoso.",
+  "Wir waren den ganzen Tag draußen.": "Estivemos o dia todo na rua.",
+  "Im Herbst ist es hier am schönsten.": "É no outono que isto aqui está mais bonito.",
+  "Pass auf, der Weg ist glatt.": "Cuidado, o caminho está escorregadio.",
+  "Es wird langsam dunkel.": "Está a começar a escurecer.",
+  "Wollen wir eine Runde spazieren gehen?": "Vamos dar uma volta a pé?",
+  "Nimm lieber eine Jacke mit.": "É melhor levares um casaco.",
+  "Draußen sind gerade zwei Grad.": "Lá fora estão dois graus.",
 };
