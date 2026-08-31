@@ -3133,4 +3133,7 @@ export const PL: Record<string, string> = {
   "What did you notice, and what would you like?": "Co zauważyłaś lub zauważyłeś i czego byś chciała lub chciał?",
   "What are you looking for?": "Czego szukasz?",
   "Here are your friends.": "Tu są twoi znajomi.",
+  "Fast track": "Szybka ścieżka",
+  "Straight to talking": "Prosto do mówienia",
+  "Only what a conversation needs — greetings, reactions, plans, family, food. No rooms, no furniture.": "Tylko to, czego potrzebuje rozmowa — powitania, reakcje, plany, rodzina, jedzenie. Żadnych pokoi ani mebli.",
 };

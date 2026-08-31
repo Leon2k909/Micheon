@@ -4523,6 +4523,21 @@ export default function NewUiPrototype({
     window.location.assign(url.toString());
   };
 
+  /**
+   * The same door as Continue learning, with a smaller course behind it.
+   *
+   * A sentinel rather than a pack id, because which pack the fast track opens
+   * on depends on what is already finished, and that is known where the
+   * sitting is built rather than here. Sending a resolved id from this side
+   * would bake in an answer computed before the lesson engine had loaded.
+   */
+  const openFastTrack = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("tab");
+    url.searchParams.set("guided", "fast");
+    window.location.assign(url.toString());
+  };
+
   const openGuidedLesson = (partId: string) => {
     const url = new URL(window.location.href);
     url.searchParams.delete("tab");
@@ -4768,6 +4783,7 @@ export default function NewUiPrototype({
         <DuoPathView
           apiParts={apiParts}
           lessonsCompleted={stats.sessionsCompleted}
+          onFastTrack={openFastTrack}
           onGuidedSession={openGuidedSession}
         />
       </Suspense>

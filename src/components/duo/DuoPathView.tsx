@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Check, ChevronRight, Lock, MessagesSquare, Play, Shuffle, Star, Zap } from "lucide-react";
+import { Check, ChevronRight, Lock, MessagesSquare, Play, Rocket, Shuffle, Star, Zap } from "lucide-react";
 import { ui, uiFmt } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { buildDuoPath, type DuoNode } from "@/lib/duoPath";
@@ -10,7 +10,7 @@ import { ConversationView } from "@/components/conversation/ConversationView";
 import { duoUnitAnchorId } from "@/lib/scrollToAnchor";
 
 /**
- * Four ways in, side by side.
+ * Five ways in, side by side.
  *
  * The app already had one: a button that hands you the next thing you should
  * see. It is efficient and it is opaque — you cannot tell where you are, what
@@ -22,14 +22,21 @@ import { duoUnitAnchorId } from "@/lib/scrollToAnchor";
  * moments — the guided session for sitting down properly, the path for five
  * minutes standing up — which is why both are on screen at the same time
  * rather than behind a setting.
+ *
+ * The fast track answers a different question again: not where am I in the
+ * course, but what do I need to hold a conversation. The curriculum has the
+ * rooms of a house and the things on a desk in it, and somebody who wants to
+ * talk to a person this month should not have to walk past them.
  */
 export function DuoPathView({
   apiParts,
   onGuidedSession,
+  onFastTrack,
   lessonsCompleted,
 }: {
   apiParts: Record<string, unknown>;
   onGuidedSession: () => void;
+  onFastTrack: () => void;
   lessonsCompleted: number;
 }) {
   const [activeNode, setActiveNode] = useState<DuoNode | null>(null);
@@ -79,8 +86,16 @@ export function DuoPathView({
 
   return (
     <div className="space-y-4">
-      {/* The ways in, side by side. */}
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {/*
+        The ways in, side by side.
+
+        Five of them, so the breakpoints are not the obvious 2-then-5: five
+        cards across a laptop leaves each one too narrow for the sentence it
+        has to carry, and the last row of a 2-column layout would be a single
+        card on its own. Three at laptop width and five only when there is
+        room for five keeps every card wide enough to read.
+      */}
+      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <button
           type="button"
           onClick={onGuidedSession}
@@ -98,6 +113,39 @@ export function DuoPathView({
             </strong>
             <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">
               {uiFmt("Lesson {n}. Seven stages on one phrase at a time — read, choose, type, translate, recall.", { n: lessonsCompleted + 1 })}
+            </span>
+          </span>
+          <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-black text-[var(--accent)]">
+            {ui("Start")} <ChevronRight className="h-3.5 w-3.5" />
+          </span>
+        </button>
+
+        {/*
+          The second way in, and the one that skips the rest of the course.
+          Continue learning walks the curriculum in order, which is right for
+          somebody working through it and slow for somebody who wants to talk
+          to a person this month — the order has the rooms of a house and the
+          things on a desk in it. This draws on the conversational packs only:
+          greetings, repairing a conversation, reacting, plans, then family,
+          food, money, health. Same seven stages, much smaller course.
+        */}
+        <button
+          type="button"
+          onClick={onFastTrack}
+          className="card card-hover flex flex-col items-start gap-3 p-5 text-left"
+        >
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--accent-dim)] text-[var(--accent)]">
+            <Rocket className="h-5 w-5" />
+          </span>
+          <span>
+            <span className="block text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
+              {ui("Fast track")}
+            </span>
+            <strong className="mt-1 block text-lg font-black tracking-tight text-[var(--text-1)]">
+              {ui("Straight to talking")}
+            </strong>
+            <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">
+              {ui("Only what a conversation needs — greetings, reactions, plans, family, food. No rooms, no furniture.")}
             </span>
           </span>
           <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-black text-[var(--accent)]">

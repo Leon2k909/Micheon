@@ -2665,4 +2665,7 @@ export const PT: Record<string, string> = {
   "What did you notice, and what would you like?": "O que notaste e o que gostarias?",
   "What are you looking for?": "O que procuras?",
   "Here are your friends.": "Aqui estão os teus amigos.",
+  "Fast track": "Via rápida",
+  "Straight to talking": "Direto a falar",
+  "Only what a conversation needs — greetings, reactions, plans, family, food. No rooms, no furniture.": "Só o que uma conversa precisa — cumprimentos, reações, planos, família, comida. Nada de divisões nem mobília.",
 };

@@ -29,7 +29,7 @@ import {
 import { computeAbility, itemDifficulty, itemPriority } from "@/lib/ability";
 import { getMutedPacks, withoutMutedPacks } from "@/lib/mutedPacks";
 import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
-import { conversationPriorityScore } from "@/lib/conversationPriority";
+import { conversationPriorityScore, nextFastTrackPart } from "@/lib/conversationPriority";
 
 /** Fresh sentences per lesson — matches NEW_PER_LESSON inside buildSession. */
 /**
@@ -808,6 +808,28 @@ export default function GuidedLearningSession() {
     sessionStartRef.current = Date.now();
   };
 
+  /**
+   * Which pack a Fast track sitting opens on.
+   *
+   * Resolved here rather than in conversationPriority because "still has
+   * something to teach" means building the pack's session, which needs the
+   * review state and the lesson engine. The list of conversational packs is
+   * that file's business; whether one is finished is this one's.
+   *
+   * Muted packs are dropped first, for the same reason Continue learning
+   * drops them: pausing a pack is an instruction, and a second button that
+   * ignored it would be a way to be served the thing you asked not to see.
+   */
+  const fastTrackPart = (): string | null => {
+    const reviewState = loadCompleted();
+    const activeParts = withoutMutedPacks(apiParts);
+    return nextFastTrackPart(activeParts, (packId) => {
+      const pack = (activeParts as Record<string, any>)[packId];
+      if (!pack) return false;
+      return buildSession({ ...pack, partKey: packId }, [], reviewState, 0).length > 0;
+    });
+  };
+
   const startSession = (partId?: string) => {
     // Explicit pack picks are respected. Continue Learning passes no id and
     // gets the curriculum treatment: due reviews from ANY pack first (most
@@ -1367,7 +1389,15 @@ export default function GuidedLearningSession() {
 
   startSessionRef.current = startSession;
   useEffect(() => {
-    const requestedPart = guidedRequest && guidedRequest !== "continue" ? guidedRequest : undefined;
+    // "fast" is Continue learning over the conversational packs only, so it
+    // resolves to a real pack id here and then takes the ordinary explicit
+    // path — the sitting itself is built exactly as any other, which is the
+    // point: the fast track is a smaller course, not a different lesson.
+    const requestedPart = !guidedRequest || guidedRequest === "continue"
+      ? undefined
+      : guidedRequest === "fast"
+        ? (fastTrackPart() ?? undefined)
+        : guidedRequest;
     if (
       !guidedRequest
       || guidedAutoStartedRef.current
@@ -1427,6 +1457,7 @@ export default function GuidedLearningSession() {
     && (
       Object.keys(apiParts).length === 0
       || guidedRequest === "continue"
+      || guidedRequest === "fast"
       || Boolean(apiParts[guidedRequest])
     )
   ) return (

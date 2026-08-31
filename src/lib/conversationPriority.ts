@@ -657,3 +657,52 @@ export function conversationPriorityScore(input: ConversationPriorityInput): num
     + kindOffset
     + info.packRank;
 }
+
+/**
+ * The packs a Fast track sitting is allowed to draw from.
+ *
+ * Continue learning walks the whole curriculum in order, which is right for
+ * somebody working through a course and wrong for somebody who wants to hold
+ * a conversation this month. The course teaches the rooms of a house, the
+ * things on a desk, the parts of a car — all of it worth knowing, none of it
+ * what you reach for first when you are talking to a person.
+ *
+ * So this is the two conversational bands and nothing else, in the order they
+ * were already authored in: opening a conversation, repairing it, reacting,
+ * making plans, and then the topics a normal exchange actually turns to —
+ * family, food, money, health, directions, the weather. What it leaves out is
+ * as deliberate as what it keeps: no rooms, no furniture, no stationery.
+ *
+ * Written as the two existing lists joined rather than a third list copied
+ * out of them, so a pack promoted into the essentials tomorrow is in the fast
+ * track tomorrow and nobody has to remember this file exists.
+ */
+export const FAST_TRACK_PACKS: readonly string[] = [
+  ...CONVERSATION_ESSENTIAL_PACKS,
+  ...EVERYDAY_CONVERSATION_PACKS,
+];
+
+/**
+ * Where a Fast track sitting picks up.
+ *
+ * The first conversational pack that still has something to teach, in the
+ * authored order — so it continues rather than restarting, the same promise
+ * Continue learning makes, over a much smaller course.
+ *
+ * `hasFresh` is passed in rather than computed here because deciding whether
+ * a pack has fresh content means building its session, which needs the review
+ * state, the learner and half the lesson engine. This file knows which packs
+ * are conversational; it should not also have to know how a sitting is built.
+ *
+ * When every conversational pack is finished it returns the first one that
+ * exists instead of null: the button is on screen and pressing it has to
+ * teach something. Reviews inside that pack are what a finished course has
+ * left to offer, and that is the same answer Continue learning gives.
+ */
+export function nextFastTrackPart(
+  available: Record<string, unknown>,
+  hasFresh: (packId: string) => boolean
+): string | null {
+  const present = FAST_TRACK_PACKS.filter((packId) => Boolean(available[packId]));
+  return present.find((packId) => hasFresh(packId)) ?? present[0] ?? null;
+}

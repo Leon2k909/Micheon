@@ -147,10 +147,21 @@ const learn = fs.readFileSync(path.join(root, "src/components/duo/DuoPathView.ts
 assert.ok(learn.includes("<ConversationView") && learn.includes("setConversing(true)"),
   "the mode exists but Learn has no card that opens it");
 assert.ok(learn.includes('ui("Say something back")'),
-  "the fourth card has no label");
-// Four cards need four columns; three-across strands the fourth on its own row.
-assert.ok(learn.includes("sm:grid-cols-2 lg:grid-cols-4"),
-  "the ways into Learn are still laid out three across, so the fourth card sits alone");
+  "the Conversation card has no label");
+/**
+ * The row's column count is NOT asserted here any more.
+ *
+ * Three separate checks had a copy of it, each naming the number of cards
+ * there were on the day it was written — four here, four in check-matcher.
+ * Adding a fifth broke two of them at once, neither for a reason that had
+ * anything to do with conversations or with matching. A layout rule repeated
+ * in three files is a rule that will be wrong in at least one of them.
+ *
+ * check-fast-track owns it now, in one place, expressed against however many
+ * ways into Learn there actually are. What belongs here is only what this
+ * check is about: that the conversation mode has a card, and that the card
+ * opens it.
+ */
 
 const shell = fs.readFileSync(path.join(root, "src/prototype/NewUiPrototype.tsx"), "utf8");
 assert.ok(!shell.includes("CONVERSATION_NAVIGATION_ITEM") && !shell.includes("conversationUnlocked"),
