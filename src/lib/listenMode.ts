@@ -24,6 +24,7 @@ import { meaningLanguageFor, targetLanguage, type CourseLanguage } from "@/lib/c
 import { frenchFor } from "@/lib/frenchCourse";
 import { polishFor } from "@/lib/polishCourse";
 import { portugueseFor } from "@/lib/portugueseCourse";
+import { russianFor } from "@/lib/russianCourse";
 import { spanishFor } from "@/lib/spanishCourse";
 import { primaryAnswer } from "@/lib/germanTextMatch";
 import { buildCatalog } from "@/session";
@@ -1279,6 +1280,7 @@ export function buildListenQueue(
       if (language === "pl") return polishFor(item.de);
       if (language === "es") return spanishFor(item.de);
       if (language === "pt") return portugueseFor(item.de);
+      if (language === "ru") return russianFor(item.de);
       return frenchFor(item.de);
     };
     combined = combined.flatMap((item) => {

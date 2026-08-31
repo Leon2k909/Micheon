@@ -216,6 +216,7 @@ export function MuteButton({
   const polishMuted = isTtsLanguageMuted("polish");
   const spanishMuted = isTtsLanguageMuted("spanish");
   const portugueseMuted = isTtsLanguageMuted("portuguese");
+  const russianMuted = isTtsLanguageMuted("russian");
   /**
    * Only the voices that can actually be heard.
    *
@@ -338,6 +339,18 @@ export function MuteButton({
           testId="spanish"
           unmuteLabel={ui("Unmute Spanish voice")}
           value={settings.spanishVolume}
+        />
+      )}
+      {inPlay.includes("russian") && (
+        <VolumeRow
+          label={ui("Russian voice")}
+          muteLabel={ui("Mute Russian voice")}
+          muted={russianMuted}
+          onChange={(value) => setLanguageVolume("russian", value)}
+          onToggleMuted={() => toggleTtsLanguageMuted("russian")}
+          testId="russian"
+          unmuteLabel={ui("Unmute Russian voice")}
+          value={settings.russianVolume}
         />
       )}
       {inPlay.includes("portuguese") && (

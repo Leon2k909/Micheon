@@ -6,6 +6,7 @@ import { getLearningDirection, type LearningDirection } from "./direction";
 import { frenchParts, hasFrench } from "./frenchCourse";
 import { hasPolish, polishParts } from "./polishCourse";
 import { hasPortuguese, portugueseParts } from "./portugueseCourse";
+import { hasRussian, russianParts } from "./russianCourse";
 import { hasSpanish, spanishParts } from "./spanishCourse";
 
 /**
@@ -674,6 +675,7 @@ export function filterPartsForLearningDirection<T extends Part>(
   if (direction === "learn-pl") return polishParts(forDirection);
   if (direction === "learn-es") return spanishParts(forDirection);
   if (direction === "learn-pt") return portugueseParts(forDirection);
+  if (direction === "learn-ru") return russianParts(forDirection);
   return forDirection;
 }
 
@@ -688,6 +690,7 @@ export function getAllBundledSentences(direction: LearningDirection = getLearnin
   if (direction === "learn-pl") return phrases.filter(hasPolish);
   if (direction === "learn-es") return phrases.filter(hasSpanish);
   if (direction === "learn-pt") return phrases.filter(hasPortuguese);
+  if (direction === "learn-ru") return phrases.filter(hasRussian);
   return phrases;
 }
 

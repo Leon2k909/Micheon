@@ -2,6 +2,7 @@ import { getLearningDirection, type LearningDirection } from "@/lib/direction";
 import { swapStepForFrench } from "@/lib/frenchCourse";
 import { swapStepForPolish } from "@/lib/polishCourse";
 import { swapStepForPortuguese } from "@/lib/portugueseCourse";
+import { swapStepForRussian } from "@/lib/russianCourse";
 import { swapStepForSpanish } from "@/lib/spanishCourse";
 
 // Flip a built session step's display fields (de<->en) so English becomes the
@@ -71,6 +72,9 @@ export function stepsForLearningDirection(
   }
   if (direction === "learn-pt") {
     return steps.map((step) => swapStepForPortuguese(step)).filter((step) => step !== null);
+  }
+  if (direction === "learn-ru") {
+    return steps.map((step) => swapStepForRussian(step)).filter((step) => step !== null);
   }
   return steps;
 }

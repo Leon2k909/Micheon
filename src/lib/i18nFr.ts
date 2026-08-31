@@ -1139,6 +1139,7 @@ export const FR: Record<string, string> = {
   "Cyrillic": "Cyrillique",
   "Latin": "Latin",
   "Read, listen, type and translate real Portuguese.": "Lis, écoute, tape et traduis du vrai portugais.",
+  "Learn Russian in Cyrillic, or in letters you already read.": "Apprends le russe en cyrillique, ou dans des lettres que tu lis déjà.",
   "Packs": "Packs",
   "Any pack you pause on the Learn screen is left out of Listen too — nothing from it is played, and unpausing brings it straight back.": "Un pack mis en pause dans l'écran Apprendre est aussi exclu de l'écoute — rien n'en est joué, et le remettre en route le ramène aussitôt.",
   "No language matches that.": "Aucune langue ne correspond.",

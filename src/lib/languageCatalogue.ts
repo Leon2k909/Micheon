@@ -27,7 +27,6 @@ export const PLANNED_LANGUAGES: LanguageEntry[] = [
   // Languages leave this list when they become courses you can start. Everything
   // here is drawn only behind "Show more", which is the wrong place for a
   // language you own — it is written out in courseRegistry.ts instead.
-  { id: "russian", name: "Russian", icon: "🇷🇺", search: "ru russkiy русский russia" },
   { id: "ukrainian", name: "Ukrainian", icon: "🇺🇦", search: "uk ukrainska українська ukraine" },
   { id: "czech", name: "Czech", icon: "🇨🇿", search: "cs cestina čeština czechia bohemian" },
   { id: "slovak", name: "Slovak", icon: "🇸🇰", search: "sk slovencina slovenčina slovakia" },
