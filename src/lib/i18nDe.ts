@@ -3380,4 +3380,6 @@ export const DE: Record<string, string> = {
   "Feedback and wishes": "Rückmeldung und Wünsche",
   "Say what is missing, what got in the way, or what you would like next.": "Sag, was fehlt, was im Weg war oder was du dir als Nächstes wünschst.",
   "What did you notice, and what would you like?": "Was ist dir aufgefallen, und was wünschst du dir?",
+  "What are you looking for?": "Was suchst du?",
+  "Here are your friends.": "Hier siehst du deine Freunde.",
 };

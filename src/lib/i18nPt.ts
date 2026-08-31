@@ -2663,4 +2663,6 @@ export const PT: Record<string, string> = {
   "Feedback and wishes": "Comentários e desejos",
   "Say what is missing, what got in the way, or what you would like next.": "Diz o que falta, o que atrapalhou ou o que gostarias a seguir.",
   "What did you notice, and what would you like?": "O que notaste e o que gostarias?",
+  "What are you looking for?": "O que procuras?",
+  "Here are your friends.": "Aqui estão os teus amigos.",
 };

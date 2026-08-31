@@ -1453,14 +1453,19 @@ function StatChip({ kind, value, label }: { kind: RewardKind; value: string; lab
 /**
  * The line under the greeting, per screen.
  *
- * Two screens differ: you arrive at settings to change something and at
- * progress to look back, and neither is an invitation to start a lesson.
- * Anything not named here keeps the invitation, which is what the rest of the
- * app is.
+ * The default is an invitation to start a lesson, and it is right on every
+ * screen you open in order to learn. It is wrong on the ones you open for
+ * something else: settings is where you change something, progress is where
+ * you look back, More is where you go when you are looking for a thing, and
+ * Friends is a list of people rather than anything to practise. Those say so.
+ *
+ * Anything not named here keeps the invitation.
  */
 const HEADER_SUBTITLES: Partial<Record<PrototypeView, string>> = {
+  more: "What are you looking for?",
   profile: "What would you like to change?",
   progress: "How far have you come?",
+  social: "Here are your friends.",
 };
 
 function Header({

@@ -2681,4 +2681,6 @@ export const ES: Record<string, string> = {
   "Feedback and wishes": "Comentarios y deseos",
   "Say what is missing, what got in the way, or what you would like next.": "Cuenta qué falta, qué te estorbó o qué te gustaría a continuación.",
   "What did you notice, and what would you like?": "¿Qué has notado y qué te gustaría?",
+  "What are you looking for?": "¿Qué estás buscando?",
+  "Here are your friends.": "Aquí están tus amigos.",
 };

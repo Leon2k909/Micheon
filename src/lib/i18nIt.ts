@@ -2662,4 +2662,6 @@ export const IT: Record<string, string> = {
   "Feedback and wishes": "Riscontri e desideri",
   "Say what is missing, what got in the way, or what you would like next.": "Di' che cosa manca, che cosa ti ha intralciato o che cosa vorresti dopo.",
   "What did you notice, and what would you like?": "Che cosa hai notato, e che cosa vorresti?",
+  "What are you looking for?": "Che cosa cerchi?",
+  "Here are your friends.": "Ecco i tuoi amici.",
 };
