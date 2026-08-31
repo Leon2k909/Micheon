@@ -131,7 +131,11 @@ const QUOTED_AS_WORDS = [
   // the opposite of what they say. Er bemühte sich looks like praise and means
   // he never managed it — a card that translated the phrase would be handing
   // the reader the answer instead of the trap.
-  "Er bemühte sich",
+  "Er bemühte sich", "Er war stets bemüht", "Stets bemüht",
+  // And the opening line of a German resignation letter, for the same reason
+  // as the sign-off formulas: the card is teaching what to type, and two
+  // sentences of it are the whole letter.
+  "Hiermit kündige ich fristgerecht zum",
 ];
 /**
  * Street names are not worth listing one at a time. Anything ending in
