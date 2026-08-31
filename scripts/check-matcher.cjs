@@ -179,11 +179,11 @@ for (const kind of ["words", "sentences"]) {
 
   const cards = fs.readFileSync(path.join(root, "src/components/duo/DuoPathView.tsx"), "utf8");
   assert.ok(cards.includes('ui("Matcher")'), "the Matcher card is missing from the ways in");
-  // Four ways in now — the guided session, the path, the Matcher and
-  // Conversation. The row has to fit however many there are, or the last one
-  // added sits alone on a second row looking like an afterthought.
-  assert.ok(cards.includes("lg:grid-cols-4"),
-    "the card row does not fit the four ways into Learn, so the last one is stranded on its own row");
+  // Three ways in now — the guided session, the Matcher and Conversation.
+  // The row has to fit however many there are, or the last one added sits
+  // alone on a second row looking like an afterthought.
+  assert.ok(cards.includes("lg:grid-cols-3"),
+    "the card row does not fit the three ways into Learn, so the last one is stranded on its own row");
   assert.ok(cards.includes("<MatcherView"), "the Matcher card opens nothing");
 
   // German, because the app offers a German interface and this is new copy.

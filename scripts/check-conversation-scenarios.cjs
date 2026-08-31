@@ -138,19 +138,20 @@ assert.deepStrictEqual(first.map((o) => o.de), again.map((o) => o.de),
   "the replies are shuffled afresh on every call, so they would move under the cursor mid-answer");
 
 // ── and it is reachable ─────────────────────────────────────────────────────
-// Conversation is the fourth way into Learn rather than a nav entry of its
+// Conversation is the third way into Learn rather than a nav entry of its
 // own, because it is another way through the same course rather than a
-// separate place to be. So the way in is a card beside the guided session,
-// the path and the Matcher — and the nav must NOT also carry it, or there
-// would be two doors to one room.
+// separate place to be. So the way in is a card beside the guided session
+// and the Matcher — and the nav must NOT also carry it, or there would be
+// two doors to one room.
 const learn = fs.readFileSync(path.join(root, "src/components/duo/DuoPathView.tsx"), "utf8");
 assert.ok(learn.includes("<ConversationView") && learn.includes("setConversing(true)"),
   "the mode exists but Learn has no card that opens it");
 assert.ok(learn.includes('ui("Say something back")'),
-  "the fourth card has no label");
-// Four cards need four columns; three-across strands the fourth on its own row.
-assert.ok(learn.includes("sm:grid-cols-2 lg:grid-cols-4"),
-  "the ways into Learn are still laid out three across, so the fourth card sits alone");
+  "the third card has no label");
+// Three cards need three columns; a wider grid leaves a hole where the quick
+// path used to be.
+assert.ok(learn.includes("sm:grid-cols-2 lg:grid-cols-3"),
+  "the ways into Learn are laid out for a card that is no longer there");
 
 const shell = fs.readFileSync(path.join(root, "src/prototype/NewUiPrototype.tsx"), "utf8");
 assert.ok(!shell.includes("CONVERSATION_NAVIGATION_ITEM") && !shell.includes("conversationUnlocked"),

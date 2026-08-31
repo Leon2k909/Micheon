@@ -6250,9 +6250,18 @@ function buildMatchingItems(cards: SessionPreviewCard[]): MatchingItem[] {
   }));
 }
 
-function shuffledMatchTargets(items: MatchingItem[], direction: MatchDirection): MatchingItem[] {
+function shuffledMatchTargets(
+  items: MatchingItem[],
+  direction: MatchDirection,
+  // Which pass over the cards this is. The layout is derived from the cards
+  // rather than rolled, so a re-render never deals a new board under the
+  // cursor — but with a small session the same cards come round again, and
+  // without this they would come round in the same two columns, which is a
+  // memory test of the layout rather than of the language.
+  pass = 0
+): MatchingItem[] {
   const shuffled = [...items].sort(
-    (a, b) => choiceHash(`match|${direction}|${a.matchId}`) - choiceHash(`match|${direction}|${b.matchId}`)
+    (a, b) => choiceHash(`match|${direction}|${pass}|${a.matchId}`) - choiceHash(`match|${direction}|${pass}|${b.matchId}`)
   );
   if (
     shuffled.length > 1
@@ -6263,17 +6272,37 @@ function shuffledMatchTargets(items: MatchingItem[], direction: MatchDirection):
   return shuffled;
 }
 
+/**
+ * Six pairs at a time. Six fits a phone without scrolling, and it is what the
+ * standalone Matcher deals, so the two look like one exercise in two places.
+ */
+const SESSION_MATCH_BOARD = 6;
+
+/**
+ * Matching, on the phrases this session is teaching, for as long as you like.
+ *
+ * It used to be a gate: every pair on one board, Continue greyed out until the
+ * last one landed, and then it was over whether or not you wanted it to be.
+ * Both halves of that were wrong. Making it compulsory turned the one warm-up
+ * in the session into a lock on the door, and ending it at the last pair took
+ * away the thing matching is actually good for — going round again on the same
+ * handful of phrases until they come without thinking.
+ *
+ * So it deals six at a time and refills: clear a board and the next one comes,
+ * wrapping back to the start when the session's cards run out, because coming
+ * round again for review is the point rather than a shortage. And Continue is
+ * always live, so leaving is a decision rather than a reward.
+ */
 function SessionMatchingPairs({
   cards,
   onAnswer,
   onProgress,
-  onSkip,
   onComplete,
 }: {
   cards: SessionPreviewCard[];
   onAnswer?: (correct: boolean) => void;
-  onProgress: (matched: number) => void;
-  onSkip: () => void;
+  /** Pairs landed on the board in front of you, and how many it holds. */
+  onProgress: (matched: number, boardSize: number) => void;
   onComplete: () => void;
 }) {
   const items = useMemo(() => buildMatchingItems(cards), [cards]);
@@ -6289,25 +6318,60 @@ function SessionMatchingPairs({
   const [matchedIds, setMatchedIds] = useState<Set<string>>(() => new Set());
   const [wrongIds, setWrongIds] = useState<Set<string>>(() => new Set());
   const [resolving, setResolving] = useState(false);
+  // Where in the session's cards this board starts, and how many pairs have
+  // been landed on the boards before it.
+  const [boardStart, setBoardStart] = useState(0);
+  const [cleared, setCleared] = useState(0);
   const resetTimer = useRef<number | undefined>(undefined);
+  const refillTimer = useRef<number | undefined>(undefined);
+
+  const boardItems = useMemo(() => {
+    if (items.length === 0) return [];
+    const size = Math.min(SESSION_MATCH_BOARD, items.length);
+    return Array.from({ length: size }, (_, offset) => items[(boardStart + offset) % items.length]);
+  }, [items, boardStart]);
 
   const targetItems = useMemo(
-    () => shuffledMatchTargets(items, direction),
-    [items, direction]
+    // The pass number, so a board of the same cards lays out differently the
+    // second time round. Integer division rather than boardStart itself, or a
+    // session of seven cards would call every board a new pass.
+    () => shuffledMatchTargets(boardItems, direction, Math.floor(cleared / Math.max(1, boardItems.length))),
+    [boardItems, direction, cleared]
   );
   const readingMeaningFirst = direction === "meaning-target";
   const sourceSide = readingMeaningFirst ? sides.meaning : sides.target;
   const targetSide = readingMeaningFirst ? sides.target : sides.meaning;
   const sourceText = (item: MatchingItem) => readingMeaningFirst ? item.meaning : item.target;
   const targetText = (item: MatchingItem) => readingMeaningFirst ? item.target : item.meaning;
-  const complete = items.length > 0 && matchedIds.size === items.length;
+  const boardCleared = boardItems.length > 0 && matchedIds.size === boardItems.length;
 
   useEffect(() => {
-    onProgress(matchedIds.size);
-  }, [matchedIds, onProgress]);
+    onProgress(matchedIds.size, boardItems.length);
+  }, [matchedIds, boardItems.length, onProgress]);
+
+  /**
+   * A cleared board deals the next one rather than ending the round.
+   *
+   * After a beat, so the last pair is seen to land green instead of vanishing
+   * under its replacement — the whole board turning over the instant you match
+   * reads as having got something wrong.
+   */
+  useEffect(() => {
+    if (!boardCleared) return;
+    refillTimer.current = window.setTimeout(() => {
+      setCleared((total) => total + boardItems.length);
+      setBoardStart((start) => (start + boardItems.length) % items.length);
+      setMatchedIds(new Set());
+      setSourceId(null);
+      setTargetId(null);
+      setWrongIds(new Set());
+    }, 620);
+    return () => window.clearTimeout(refillTimer.current);
+  }, [boardCleared, boardItems.length, items.length]);
 
   useEffect(() => () => {
     if (resetTimer.current) window.clearTimeout(resetTimer.current);
+    if (refillTimer.current) window.clearTimeout(refillTimer.current);
   }, []);
 
   const resetRound = (nextDirection: MatchDirection) => {
@@ -6415,7 +6479,7 @@ function SessionMatchingPairs({
         </div>
 
         <div className="fs-match-grid">
-          {items.map((sourceItem, rowIndex) => {
+          {boardItems.map((sourceItem, rowIndex) => {
             const targetItem = targetItems[rowIndex];
             const sourceMatched = matchedIds.has(sourceItem.matchId);
             const targetMatched = matchedIds.has(targetItem.matchId);
@@ -6460,22 +6524,27 @@ function SessionMatchingPairs({
       <div className="fs-match-footer">
         <div className="fs-match-progress" aria-live="polite">
           <div>
-            <strong>{complete ? ui("All pairs matched") : `${ui("Matched")} ${matchedIds.size} ${ui("of")} ${items.length}`}</strong>
-            <span>{ui(complete ? "Ready for sentence practice." : "Match every pair to continue.")}</span>
+            <strong>
+              {boardCleared
+                ? ui("Board cleared — here comes the next one")
+                : `${ui("Matched")} ${matchedIds.size} ${ui("of")} ${boardItems.length}`}
+            </strong>
+            <span>
+              {cleared > 0
+                ? uiFmt("{n} pairs so far. Keep going, or move on whenever you like.", { n: cleared + matchedIds.size })
+                : ui("Keep going as long as you like — move on whenever you want.")}
+            </span>
           </div>
           <div className="fs-match-progress-track" aria-hidden>
-            <i style={{ width: `${items.length ? (matchedIds.size / items.length) * 100 : 0}%` }} />
+            <i style={{ width: `${boardItems.length ? (matchedIds.size / boardItems.length) * 100 : 0}%` }} />
           </div>
         </div>
         <div className="fs-match-actions">
-          <button type="button" className="fs-preview-skip" onClick={onSkip}>
-            <SkipForward className="h-4 w-4" />
-            {ui("Skip matching")}
-          </button>
+          {/* Never disabled. Leaving is the learner's call, not something the
+              board grants once it is finished with them. */}
           <button
             type="button"
             className="fs-preview-next"
-            disabled={!complete}
             onClick={onComplete}
           >
             {ui("Start sentence practice")}
@@ -6498,6 +6567,10 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   const [previewIndex, setPreviewIndex] = useState(0);
   const [matchingActive, setMatchingActive] = useState(false);
   const [matchingProgress, setMatchingProgress] = useState(0);
+  // The board in front of the learner, not the session's whole card list.
+  // Matching refills for as long as they want it, so "of every card today"
+  // is a total the count would walk straight past.
+  const [matchingBoardSize, setMatchingBoardSize] = useState(0);
   const [lessonNavigatorOpen, setLessonNavigatorOpen] = useState(false);
   const [completedLessonNumbers, setCompletedLessonNumbers] = useState<Set<number>>(() => new Set());
   const [lastManualReviewChange, setLastManualReviewChange] = useState<{
@@ -6756,7 +6829,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   const progress = inPreview
     ? Math.round(((previewIndex + 1) / previewCards.length) * 100)
     : inMatching
-      ? Math.round((matchingProgress / previewCards.length) * 100)
+      ? Math.round((matchingProgress / Math.max(1, matchingBoardSize)) * 100)
       : safeSteps.length > 1 ? Math.round((index / (safeSteps.length - 1)) * 100) : 100;
   // Count only real exercises, not the final "lesson complete" summary screen,
   // so the header reads "4 of 6", not "4 of 7".
@@ -7021,7 +7094,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
             <div className="fs-progress-copy">
               <span>{ui(inPreview ? "Preview" : inMatching ? "Matching" : "Lesson")}</span>
               <strong>
-                {inPreview ? previewIndex + 1 : inMatching ? matchingProgress : exercisePos} {ui("of")} {inIntro ? previewCards.length : exerciseCount}
+                {inPreview ? previewIndex + 1 : inMatching ? matchingProgress : exercisePos} {ui("of")} {inMatching ? matchingBoardSize : inPreview ? previewCards.length : exerciseCount}
               </strong>
             </div>
             <div className="fs-progress-track"><i style={{ width: `${progress}%` }} /></div>
@@ -7124,12 +7197,14 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
                   <SessionMatchingPairs
                     cards={previewCards}
                     onAnswer={registerAnswer}
-                    onProgress={setMatchingProgress}
-                    onSkip={() => {
+                    onProgress={(matched, boardSize) => {
+                      setMatchingProgress(matched);
+                      setMatchingBoardSize(boardSize);
+                    }}
+                    onComplete={() => {
                       setMatchingActive(false);
                       setMatchingProgress(0);
                     }}
-                    onComplete={() => setMatchingActive(false)}
                   />
                 ) : (
                   <>

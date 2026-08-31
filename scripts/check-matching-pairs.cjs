@@ -143,11 +143,22 @@ check(
   "skipping flashcards still reaches the guided matching round",
   /onSkip=\{\(\) => \{[\s\S]*?setPreviewActive\(false\);[\s\S]*?setMatchingActive\(previewCards\.length > 1\);/.test(guidedSource)
 );
+// The round used to hold the door shut until every pair was matched, and then
+// push you through it whether you wanted to go or not. It now refills instead
+// of ending, so both halves of that had to go: a Continue that waits for a
+// finished board would be a door that never opens.
 check(
-  "the guided matching round remains optional",
-  guidedSource.includes('{ui("Skip matching")}')
-    && guidedSource.includes("onSkip={() => {")
-    && guidedSource.includes("setMatchingProgress(0);")
+  "leaving the guided matching round is never gated on finishing the board",
+  /<button\s+type="button"\s+className="fs-preview-next"\s+onClick=\{onComplete\}/.test(guidedSource)
+    && !guidedSource.includes("disabled={!complete}")
+);
+check(
+  "a cleared board deals the next one rather than ending the round",
+  guidedSource.includes("const SESSION_MATCH_BOARD = 6;")
+    && /setBoardStart\(\(start\) => \(start \+ boardItems\.length\) % items\.length\)/.test(guidedSource)
+    // Wrapping, so a short session comes round again for review rather than
+    // running out of board after one pass.
+    && guidedSource.includes("items[(boardStart + offset) % items.length]")
 );
 
 if (failures) {

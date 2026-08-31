@@ -202,38 +202,12 @@ check(
     && guided.includes('this effect is their single')
 );
 
-// ── The quick path grades a choice on the tap ───────────────────────────────
-// Picking an answer and then reaching for Check underneath it was two actions
-// where one would do, and the second never told us anything the first had not.
-const duo = read("src/components/duo/DuoLesson.tsx");
-// index.css is already read above as `css`.
+// ── The session's raised key ──────────────────────────────────────
+// The quick path had a Check button of its own, built to match this one, and
+// a copy of it in CSS. Both are gone with the mode; what is left is the key
+// this check was really about.
 check(
-  "tapping a multiple-choice option grades it there and then",
-  duo.includes("onClick={() => { setPicked(optionIndex); submit(optionIndex); }}")
-    // The index has to travel as an argument: setPicked is asynchronous, so
-    // reading `picked` inside submit would grade the previous selection.
-    && duo.includes("const submit = useCallback((choice?: number)")
-    && duo.includes("const chosen = choice ?? picked;")
-);
-check(
-  "...so no Check button sits under a question that already graded itself",
-  duo.includes("{!verdict && !exercise.options && (")
-);
-check(
-  "an unanswered question is not marked wrong by a stray Return",
-  duo.includes("if (chosen == null) return;")
-);
-check(
-  "the quick path's Check button is the guided session's raised key",
-  duo.includes('className="np-check-3d w-full"')
-    && css.includes(".np-check-3d {")
-    // Edge and ink from the accent, not the hardcoded gold this was copied
-    // from — on a purple accent that edge rendered olive under a violet face.
-    && /\.np-check-3d \{[^}]*0 5px 0 var\(--accent-pressed\)/s.test(css)
-    && /\.np-check-3d \{[^}]*color: var\(--accent-text\)/s.test(css)
-);
-check(
-  "...and the guided session's own key follows the accent too, so they match",
+  "the guided session's key takes its edge from the accent, not a hardcoded gold",
   css.includes("0 5px 0 var(--accent-pressed, #a77b00)")
 );
 

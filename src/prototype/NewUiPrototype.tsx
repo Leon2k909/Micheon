@@ -4769,6 +4769,7 @@ export default function NewUiPrototype({
           apiParts={apiParts}
           lessonsCompleted={stats.sessionsCompleted}
           onGuidedSession={openGuidedSession}
+          onOpenLesson={openGuidedLesson}
         />
       </Suspense>
     </div>
