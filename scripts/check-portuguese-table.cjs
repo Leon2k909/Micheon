@@ -146,6 +146,11 @@ const QUOTED_AS_WORDS = [
   // as the sign-off formulas: the card is teaching what to type, and two
   // sentences of it are the whole letter.
   "Hiermit kündige ich fristgerecht zum",
+  // And one word the course quotes in order to warn about it. The card says
+  // that only a particular crowd uses this term, which is the whole lesson.
+  // Rendered in Portuguese it would stop being that term and become a neutral
+  // description of the press — the opposite of what the card is for.
+  "Lügenpresse",
 ];
 /**
  * Street names are not worth listing one at a time. Anything ending in
