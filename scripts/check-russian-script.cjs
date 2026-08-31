@@ -80,15 +80,32 @@ function check(label, run) {
 }
 
 // ---------------------------------------------------------------- rule 1
-check("only Cyrillic is stored — the table holds no Latin spellings", () => {
-  const offenders = Object.entries(RUSSIAN_BY_GERMAN)
-    .filter(([, value]) => /[A-Za-z]/.test(value))
-    .slice(0, 5);
+check("only Cyrillic is stored — no Latin spelling of a Russian word", () => {
+  /**
+   * A Latin word is allowed only where the GERMAN card already carries it.
+   *
+   * The rule being protected is that a Russian word has one stored spelling
+   * and the transcriptions are computed. "No Latin at all" was the first way
+   * of saying it, and it was too blunt: some cards QUOTE a foreign word —
+   * asking how to say birthday in German, or naming Der Kühlschrank — and
+   * that word has to survive into the Russian, because it is the thing being
+   * asked about.
+   *
+   * Quoted-from-the-source is the line that separates the two. A transcription
+   * like Schena never appears in the German card, so it is still caught; a
+   * quotation always does.
+   */
+  const offenders = [];
+  for (const [de, ru] of Object.entries(RUSSIAN_BY_GERMAN)) {
+    const source = de.toLowerCase();
+    const stray = (ru.match(/[A-Za-z]+/g) ?? []).filter((word) => !source.includes(word.toLowerCase()));
+    if (stray.length) offenders.push(`"${de}" -> "${ru}" (${stray.join(", ")})`);
+  }
   assert.strictEqual(
     offenders.length,
     0,
-    "these values carry Latin letters, so a second spelling has been written down: "
-    + offenders.map(([de, ru]) => `"${de}" -> "${ru}"`).join(", ")
+    "these carry Latin the German card does not, so a second spelling has been written down: "
+    + offenders.slice(0, 5).join("; ")
   );
 });
 
@@ -162,9 +179,29 @@ check("the course never decides the learner's gender", () => {
     // A name inside the line is somebody else too. The first word is skipped
     // because every sentence starts with a capital.
     if ([...ru.split(/\s+/)].slice(1).some((word) => /^[А-ЯЁ]/.test(word))) continue;
-    const bad = words.find((word) =>
-      MASCULINE_SHORT.includes(word) || MASCULINE_PAST.includes(word));
-    if (bad) offenders.push(`"${de}" -> "${ru}" (${bad})`);
+
+    /**
+     * The two forms are not caught the same way, because they fail differently.
+     *
+     * A SHORT ADJECTIVE with no subject named is the reader: nobody writes
+     * "Рад тебя видеть" about a third party without saying who. Flagged
+     * whether or not я or ты appears — and it usually does not, because
+     * Russian drops the pronoun exactly where the address is most direct.
+     *
+     * A PAST VERB agrees with whatever its subject is, and most subjects are
+     * not the reader. "Последний раз был давно" is был agreeing with раз, and
+     * flagging it would be asking a translator to avoid the masculine gender
+     * of an ordinary noun. So the past tense counts only where я or ты is
+     * actually in the sentence.
+     */
+    const shortAdjective = words.find((word) => MASCULINE_SHORT.includes(word));
+    if (shortAdjective) {
+      offenders.push(`"${de}" -> "${ru}" (${shortAdjective})`);
+      continue;
+    }
+    if (!words.includes("я") && !words.includes("ты")) continue;
+    const past = words.find((word) => MASCULINE_PAST.includes(word));
+    if (past) offenders.push(`"${de}" -> "${ru}" (${past})`);
   }
   assert.strictEqual(
     offenders.length,
