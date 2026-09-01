@@ -21723,4 +21723,71 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "der Drehbuchautor": "o argumentista",
   "der Ersteller": "o criador",
   "der Gesprächsverlauf": "o histórico da conversa",
+
+  // ── Websites, sleep and the value of things (part444) ───────────────────
+  //
+  // Anstatt and anstelle both mean instead of, so they take em vez de and em
+  // lugar de rather than one answer twice. Standardmäßig is por predefinição,
+  // matching a predefinição elsewhere in this table.
+  "innerhalb": "dentro de",
+  "international": "internacional",
+  "das Investment": "o investimento",
+  "der Newsletter": "a newsletter",
+  "quantisieren": "quantizar",
+  "die Redefreiheit": "a liberdade de expressão",
+  "scheinen": "parecer",
+  "der Schlaf": "o sono",
+  "der Schritt": "o passo",
+  "die Sensation": "o furor",
+  "standardmäßig": "por predefinição",
+  "der Trick": "o truque",
+  "wachsen": "crescer",
+  "der Webdesigner": "o web designer",
+  "die Website": "o site",
+  "wecken": "acordar",
+  "weiter": "mais",
+  "der Wert": "o valor",
+  "willkommen": "bem-vindo",
+  "zurückbringen": "levar de volta",
+
+  // ── Small words, and one insult (part445) ───────────────────────────────
+  //
+  // Dumm is parvo. Estúpido exists in Portuguese and is a good deal ruder than
+  // the German, so the card would have raised the register on its own.
+  "reposten": "voltar a publicar",
+  "möchten": "gostaria de",
+  "danke": "obrigada",
+  "dann": "então",
+  "still": "silencioso",
+  "derzeit": "atualmente",
+  "anstelle": "em lugar de",
+  "darüber": "sobre isso",
+  "ein bisschen": "um bocadinho",
+  "dumm": "parvo",
+  "die Hitze": "o calor",
+  "irgendwie": "de alguma maneira",
+  "schlau": "esperto",
+  "arm": "pobre",
+
+  // ── Bans, cracks and the press office (part446) ─────────────────────────
+  //
+  // Weiterhin is como até agora. Portuguese normally lets the verb carry it —
+  // continua válido — so the card gives the adverbial phrase that survives on
+  // its own.
+  "bitte": "por favor",
+  "entkommen": "escapar",
+  "ernsthaft": "a sério",
+  "explizit": "explícito",
+  "die Konversation": "a conversa",
+  "mitten": "mesmo no meio",
+  "verfassen": "redigir",
+  "verfügen": "dispor de",
+  "verärgern": "irritar",
+  "das Verbot": "a proibição",
+  "die Abschreckung": "a dissuasão",
+  "die Pressestelle": "a assessoria de imprensa",
+  "der Riss": "a fenda",
+  "weiterhin": "como até agora",
+  "wohlhabend": "abastado",
+  "worum": "acerca de quê",
 };
