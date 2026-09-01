@@ -20992,4 +20992,80 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Ich habe die Fahrkarte auf dem Handy.": "Tenho o bilhete no telemóvel.",
   "Wo kommen wir denn hier raus?": "Por onde é que se sai daqui?",
   "Das war ein guter Tag.": "Foi um bom dia.",
+
+  // ── Adjectives for weighing things up (part411) ─────────────────────────
+  //
+  // A pack of judgement words, where the trap is that the Latin-looking one is
+  // usually right and occasionally a false friend. Vage is vago, präzise is
+  // preciso, inhärent is inerente — but zwingend is irrefutável rather than
+  // anything about force, zweckmäßig is funcional, and naheliegend is simply
+  // óbvio.
+  //
+  // Beträchtlich takes substancial because erheblich already holds
+  // considerável in this table, and a course that answers two different German
+  // words with one Portuguese word teaches neither.
+  //
+  // Der Pendler has no Portuguese noun. The sentence names what the person
+  // does instead: quem viaja todos os dias para o trabalho.
+  "subtil": "subtil",
+  "vage": "vago",
+  "unkompliziert": "descomplicado",
+  "überwältigend": "esmagador",
+  "widerwillig": "relutante",
+  "eifrig": "empenhado",
+  "vernünftig": "sensato",
+  "unvernünftig": "insensato",
+  "irreführend": "enganador",
+  "voreingenommen": "tendencioso",
+  "zerbrechlich": "frágil",
+  "langlebig": "duradouro",
+  "reichlich": "abundante",
+  "präzise": "preciso",
+  "absichtlich": "intencional",
+  "unangebracht": "despropositado",
+  "überzeugend": "convincente",
+  "vernachlässigbar": "negligenciável",
+  "beträchtlich": "substancial",
+  "einheitlich": "uniforme",
+  "willkürlich": "arbitrário",
+  "inhärent": "inerente",
+  "beispiellos": "sem precedentes",
+  "nachteilig": "desvantajoso",
+  "vorteilhaft": "vantajoso",
+  "außergewöhnlich": "excecional",
+  "übermäßig": "excessivo",
+  "mäßig": "moderado",
+  "aufeinanderfolgend": "consecutivo",
+  "gleichzeitig": "simultâneo",
+  "naheliegend": "óbvio",
+  "praktisch": "prático",
+  "unverkennbar": "inconfundível",
+  "unauffällig": "discreto",
+  "zwingend": "irrefutável",
+  "maßgeblich": "determinante",
+  "zweckmäßig": "funcional",
+  "unbestreitbar": "inegável",
+  "vorwiegend": "predominantemente",
+  "unmissverständlich": "categórico",
+  "Der Unterschied ist subtil, aber entscheidend.": "A diferença é subtil, mas decisiva.",
+  "Ihre Antwort blieb vage, was das Misstrauen nur verstärkte.": "A resposta dela ficou-se pelo vago, o que só aumentou a desconfiança.",
+  "Die Bedienung ist erfreulich unkompliziert.": "Os comandos são agradavelmente descomplicados.",
+  "Die Resonanz war überwältigend: dreitausend Bewerbungen in einer Woche.": "A adesão foi esmagadora: três mil candidaturas numa semana.",
+  "Nur widerwillig stimmte der Aufsichtsrat zu.": "O conselho fiscal só concordou a contragosto.",
+  "Je eifriger er half, desto misstrauischer wurde sie.": "Quanto mais empenhado ele era a ajudar, mais desconfiada ela ficava.",
+  "Der Vorschlag klingt vernünftig, die Umsetzung wäre unvernünftig teuer.": "A proposta parece sensata, mas pô-la em prática sairia insensatamente caro.",
+  "Die Überschrift ist nicht falsch, aber bewusst irreführend.": "O título não é falso, mas é deliberadamente enganador.",
+  "Wer voreingenommen liest, findet nur, was er sucht.": "Quem lê com a ideia já feita só encontra o que anda à procura.",
+  "Das Material ist langlebig, aber die Verpackung zerbrechlich.": "O material é duradouro, mas a embalagem é frágil.",
+  "Belege gibt es reichlich, nur zitiert sie niemand.": "Provas há em abundância, só que ninguém as cita.",
+  "Drücken Sie sich bitte präziser aus: Wen genau meinen Sie?": "Seja mais preciso, se faz favor: a quem é que se refere ao certo?",
+  "Ob absichtlich oder nicht: Die Wirkung bleibt dieselbe.": "Intencional ou não, o efeito é o mesmo.",
+  "Die Bemerkung war unangebracht, der Zeitpunkt noch mehr.": "O comentário foi despropositado, e a altura ainda mais.",
+  "Das Risiko ist vernachlässigbar, der Nutzen beträchtlich.": "O risco é negligenciável e o benefício substancial.",
+  "Ein einheitliches Vorgehen wäre effizienter als dreißig Einzellösungen.": "Um procedimento uniforme seria mais eficiente do que trinta soluções avulsas.",
+  "Die Auswahl wirkt willkürlich, folgt aber einem klaren Kriterium.": "A seleção parece arbitrária, mas obedece a um critério claro.",
+  "Dem System inhärent ist ein Zielkonflikt, den keine Reform auflöst.": "É inerente ao sistema um conflito de objetivos que nenhuma reforma resolve.",
+  "Der Andrang war beispiellos, die Organisation ihm nicht gewachsen.": "A afluência foi sem precedentes e a organização não esteve à altura.",
+  "Für Pendler ist die neue Regelung eher nachteilig, für Familien vorteilhaft.": "Para quem viaja todos os dias para o trabalho a nova regra é antes desvantajosa; para as famílias é vantajosa.",
+  "Mäßig begabt, aber außergewöhnlich fleißig: So beschrieb ihn sein Lehrer.": "Moderadamente dotado, mas excecionalmente trabalhador: era assim que o professor o descrevia.",
 };
