@@ -2365,13 +2365,37 @@ a { color: inherit; text-decoration: none; }
 .fs-progress-trigger.is-navigable:hover,
 .fs-progress-trigger.is-navigable:focus-visible { border-color: rgba(168,120,255,0.24); background: rgba(139,76,255,0.07); outline: none; }
 .fs-progress-trigger.is-navigable:active { transform: translateY(1px); }
-.fs-progress .fs-progress-copy { display: flex; align-items: baseline; gap: 7px; white-space: nowrap; }
+/* Two rows: the lesson count, and how much course is left underneath it.
+   On one line the course figure ran straight on from "1 of 7", so two
+   numbers about different things shared a line and the bigger one read as
+   belonging to the smaller — "lesson 1 of 7 16,986". It also made this
+   column as wide as both together, which is width taken off the bar. */
+.fs-progress .fs-progress-copy {
+  display: grid;
+  /* The second column takes the slack, not both of them. The row underneath
+     is the wider of the two rows, so `auto auto` shared its extra width
+     between the columns and left the lesson count stranded a hundred pixels
+     from the word LESSON. */
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  gap: 1px 7px;
+  white-space: nowrap;
+}
 .fs-progress .fs-progress-copy span { color: var(--fs-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
 .fs-progress .fs-progress-copy strong { font-size: 13px; color: var(--fs-text); }
-/* How much course is left, beside how much lesson is left.
+/* How much course is left, under how much lesson is left.
    Quieter than both, and the first thing to go when the header is narrow —
    it is context rather than the thing being read. */
 .fs-progress .fs-progress-remaining {
+  grid-column: 1 / -1;
+  /* Cut it off rather than let it run under the progress bar. This column is
+     squeezed on a narrower window, and a line that must not wrap spills its
+     text sideways instead of shrinking: measured at 900px it reached 60px
+     past where the bar starts. The leading figure is the one worth reading,
+     and it is the part that survives the trim. */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: var(--fs-muted);
   font-size: 10px;
   font-weight: 700;
