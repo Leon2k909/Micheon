@@ -120,6 +120,11 @@ const PROPER_NAMES = [
   // fridge in German, so der Kühlschrank is the answer to the question — the
   // Portuguese is the sentence around it, exactly as with the Bürgeramt.
   "Kühlschrank",
+  // And the two names in the beer-garden and first-day-of-school packs. Both
+  // packs are about Germany end to end — the Stammtisch, the Brezel, the
+  // Einschulung — so the names in them stay German, and these are the only two
+  // carrying an umlaut or an ß for the check above to trip over.
+  "Maß", "Schultüte",
 ];
 const KEPT_GREETINGS = ["Grüß dich", "Grüß Gott", "Grüezi", "Tschüss", "Tschüs"];
 /**

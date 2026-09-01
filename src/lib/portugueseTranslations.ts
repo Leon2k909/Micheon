@@ -25711,4 +25711,104 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Ist hier noch frei?": "Dá licença, está ocupado?",
   "Ich hätte gern ein Helles vom Fass.": "Queria um Helles de barril.",
   "Prost! Auf uns!": "Saúde! A nós!",
+
+  // ── The beer garden, the playground, the flea market (phrasebank, tenth) ─
+  //
+  // The beer-garden pack is about Germany from end to end, so every name in it
+  // stays: der Biergarten, der Radler, der Stammtisch, das Weizenbier, die
+  // Brezel, die Apfelschorle, das Volksfest, die Maß. A Portuguese word for a
+  // Stammtisch would name a thing that does not exist.
+  //
+  // The childcare pack splits. Die Kita is o infantário and die Tagesmutter is
+  // a ama, because both exist in Portugal under those names; die Elternzeit,
+  // das Kindergeld, die Einschulung and die Schultüte are German schemes and
+  // German ceremonies, and they keep their names.
+  //
+  // The flea market is Portuguese throughout: der Flohmarkt is a feira da
+  // ladra, ein Schnäppchen is uma pechincha, feilschen is regatear, der Trödel
+  // is a tralha.
+  //
+  // And the football is the football this table has been speaking all along:
+  // fora de jogo, o penálti, o golo, o árbitro, os adeptos. Die Stadionwurst
+  // becomes uma bifana, which is what is sold at a Portuguese ground.
+  "Im Biergarten darf man sein eigenes Essen mitbringen.": "No Biergarten pode levar-se a própria comida.",
+  "Ich bestelle ein Radler.": "Peço um Radler.",
+  "Wir treffen uns am Stammtisch.": "Encontramo-nos no Stammtisch.",
+  "Ich hätte gern ein Weizenbier, bitte.": "Queria um Weizenbier, se faz favor.",
+  "Bringen Sie uns bitte eine Brezel.": "Traga-nos uma Brezel, se faz favor.",
+  "Ich trinke heute eine Apfelschorle.": "Hoje bebo uma Apfelschorle.",
+  "Gehen wir dieses Jahr zum Volksfest?": "Este ano vamos ao Volksfest?",
+  "Ich trinke eine Maß.": "Bebo uma Maß.",
+  "Die nächste Runde geht auf mich.": "A próxima rodada pago eu.",
+  "Kann man hier auch etwas zu essen bestellen?": "Aqui também se pode pedir comida?",
+  "Der Biergarten schließt um elf Uhr.": "O Biergarten fecha às onze.",
+  "Unser Kind geht ab September in den Kindergarten.": "A partir de setembro o nosso filho vai para o jardim de infância.",
+  "Wir suchen einen Platz in einer Kita.": "Andamos à procura de vaga num infantário.",
+  "Die Tagesmutter betreut heute fünf Kinder.": "A ama toma conta hoje de cinco crianças.",
+  "Komm, wir gehen auf den Spielplatz!": "Anda, vamos ao parque infantil!",
+  "Heute Abend habe ich einen Elternabend.": "Logo à noite tenho reunião de pais.",
+  "Musst du noch die Windeln wechseln?": "Ainda tens de mudar as fraldas?",
+  "Sie macht derzeit ein Jahr Elternzeit.": "Está neste momento a tirar um ano de Elternzeit.",
+  "Wir bekommen jeden Monat das Kindergeld.": "Recebemos todos os meses o Kindergeld.",
+  "Er hat sich auf der Rutsche wehgetan.": "Magoou-se no escorrega.",
+  "Kannst du mich auf der Schaukel anschubsen?": "Podes empurrar-me no baloiço?",
+  "Morgen ist der erste Schultag und die Einschulung.": "Amanhã é o primeiro dia de aulas e a Einschulung.",
+  "Er bringt eine Schultüte voller Süßigkeiten mit.": "Leva uma Schultüte cheia de guloseimas.",
+  "Die Kinder spielen gerne im Sandkasten.": "As crianças gostam de brincar na caixa de areia.",
+  "Wir teilen uns die Erziehung der Kinder auf.": "Dividimos a criação dos filhos.",
+  "Die Kinder müssen pünktlich ins Bett gehen.": "As crianças têm de ir para a cama à hora.",
+  "Ich liebe es, über Flohmärkte zu schlendern.": "Adoro andar a passear pelas feiras da ladra.",
+  "Was soll das kosten?": "Quanto é que quer por isto?",
+  "Kann man am Preis noch was machen?": "Ainda se pode fazer alguma coisa ao preço?",
+  "Das ist mir ein bisschen zu teuer.": "Para mim isso é um bocado caro.",
+  "Ich gebe dir fünf Euro dafür.": "Dou-lhe cinco euros por isso.",
+  "Für zehn Euro nehme ich es.": "Por dez euros levo.",
+  "Abgemacht!": "Fechado!",
+  "Das ist ein echtes Schnäppchen!": "Isso é uma verdadeira pechincha!",
+  "Ist das noch funktionstüchtig?": "Isso ainda funciona?",
+  "Hier gibt es jede Menge Trödel.": "Aqui há tralha aos montes.",
+  "Ich gucke mich nur ein bisschen um.": "Estou só a dar uma vista de olhos.",
+  "Der Krug ist antik und handgefertigt.": "O jarro é antigo e feito à mão.",
+  "Das Buch ist gebraucht, aber in gutem Zustand.": "O livro é usado, mas está em bom estado.",
+  "Feilschen gehört auf dem Flohmarkt einfach dazu.": "Na feira da ladra o regatear faz parte.",
+  "Ich habe diese Jacke aus zweiter Hand gekauft.": "Comprei este casaco em segunda mão.",
+  "Hast du eine Dauerkarte?": "Tens bilhete de época?",
+  "Das war ein klares Foul!": "Aquilo foi falta clara!",
+  "Der Schiedsrichter ist komplett blind!": "O árbitro está completamente cego!",
+  "Das Spiel endete unentschieden.": "O jogo acabou empatado.",
+  "Wer spielt heute gegen wen?": "Hoje joga quem contra quem?",
+  "Wir gehen am Samstag ins Stadion.": "No sábado vamos ao estádio.",
+  "Abseits! Das war doch Abseits!": "Fora de jogo! Aquilo foi fora de jogo!",
+  "Es gibt einen Elfmeter für uns!": "É penálti para nós!",
+  "Tooor! Was für ein Treffer!": "Golooo! Que golo!",
+  "Wir haben das Spiel gewonnen!": "Ganhámos o jogo!",
+  "Sie haben die Meisterschaft verdient.": "Mereceram o campeonato.",
+  "Die Stimmung in der Fankurve ist unglaublich.": "O ambiente na bancada dos adeptos é incrível.",
+  "Er hat eine gelbe Karte bekommen.": "Levou um cartão amarelo.",
+  "Wann ist der Anpfiff?": "A que horas é o pontapé de saída?",
+  "Ich hole uns ein Bier und eine Stadionwurst.": "Vou buscar uma cerveja e uma bifana.",
+  "Wo kann ich mein Paket abholen?": "Onde é que posso levantar a encomenda?",
+  "Ich habe eine Benachrichtigungskarte im Briefkasten gefunden.": "Encontrei um aviso na caixa do correio.",
+  "Das Paket wurde bei einem Nachbarn abgegeben.": "A encomenda foi entregue a um vizinho.",
+  "Haben Sie ein Paket für mich?": "Tem alguma encomenda para mim?",
+  "Ich möchte dieses Paket verschicken.": "Queria enviar esta encomenda.",
+  "Wie hoch ist das Porto für diesen Brief?": "Quanto custa o selo para esta carta?",
+  "Muss ich dafür unterschreiben?": "Tenho de assinar por isso?",
+  "Ich würde gern Briefmarken kaufen.": "Queria comprar selos.",
+  "Das Paket ist beschädigt angekommen.": "A encomenda chegou danificada.",
+  "Ich möchte eine Retoure zurücksenden.": "Queria fazer uma devolução.",
+  "Wo ist die nächste Packstation?": "Onde é a Packstation mais próxima?",
+  "Haben Sie die Sendungsnummer zur Hand?": "Tem à mão o número de seguimento?",
+  "Ich muss das Paket bei der Postfiliale abholen.": "Tenho de levantar a encomenda ao balcão dos correios.",
+  "Der Postbote hat nicht geklingelt.": "O carteiro não tocou à campainha.",
+  "Die Sendungsverfolgung zeigt, dass das Paket zugestellt ist.": "O seguimento mostra que a encomenda foi entregue.",
+  "Ich habe keinen Kontakt mehr zu meinem Vater.": "Já não tenho contacto com o meu pai.",
+  "Wir haben uns total zerstritten.": "Zangámo-nos de vez.",
+  "Familie sucht man sich eben nicht aus.": "A família é que não se escolhe.",
+  "Meine Mutter mischt sich immer in mein Leben ein.": "A minha mãe está sempre a meter-se na minha vida.",
+  "Es gibt oft Streit in unserer Familie.": "Na nossa família há muitas zangas.",
+  "Wir haben uns nach Jahren wieder versöhnt.": "Ao fim de anos voltámos a fazer as pazes.",
+  "Ich kann nicht verstehen, warum sie mir wehtun wollen.": "Não consigo perceber porque é que me querem magoar.",
+  "Er lastet mir die Vergangenheit immer noch an.": "Ele continua a atirar-me o passado à cara.",
+  "Wir haben eine absolute Funkstille.": "Estamos de relações cortadas.",
 };
