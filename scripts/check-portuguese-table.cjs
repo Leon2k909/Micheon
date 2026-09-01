@@ -522,6 +522,15 @@ const ONE_ANSWER = [
     },
   },
   { german: "Brezel", answer: /Brezel/, unless: {} },
+  /**
+   * A Kita is a creche. Portugal separates the two halves of what one German
+   * word covers — a creche takes them to three, an infantário from three to
+   * six — and the table had drifted into using both, twelve cards to nine, for
+   * the same German word. The word card says creche, so creche it is
+   * throughout, and the nursery in the phone call is called Girassol like the
+   * other one is called Raio de Sol.
+   */
+  { german: "Kita", answer: /creche/, unless: {} },
   { german: "Radler", answer: /panaché/, unless: {} },
   { german: "Apfelschorle", answer: /sumo de maçã com água com gás/, unless: {} },
 ];
