@@ -28135,4 +28135,83 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Seit zwei Monaten. Die Küche ist klein, aber sie reicht mir.": "Há dois meses. A cozinha é pequena, mas chega-me.",
   "Und der Balkon! Da bleibe ich im Sommer gleich zum Essen.": "E a varanda! No verão fico logo aqui a comer.",
   "Gern. Nur der Aufzug ist leider öfter kaputt als er fährt.": "Com todo o gosto. Só que infelizmente o elevador está mais vezes avariado do que a funcionar.",
+
+  // ── The capstone conversations, tenth twelve ───────────────────────────
+  //
+  // Two German cities go, because neither card is about Germany. A bag left on
+  // the half-past-eight train comes from Lisbon, and the polytechnic somebody
+  // would rather study at is in Porto. Die Hochschule against die Universität
+  // is o politécnico against a universidade, which is the same distinction a
+  // Portuguese student makes.
+  //
+  // Der Keller is a arrecadação. A Portuguese flat does not come with a cellar
+  // under the house; it comes with a storage room in the building, and that is
+  // what a listing means by it.
+  //
+  // Die Stadt paying for a swimming pool is a câmara: the council, not the
+  // town.
+  //
+  // The idioms were all settled by earlier cards and are repeated exactly:
+  // ich bruete was aus is estou a apanhar alguma coisa, kein Auge zugemacht is
+  // não preguei olho, teils teils is sim e não.
+  "Arbeitest du morgen im Büro oder im Homeoffice?": "Amanhã trabalhas no escritório ou em teletrabalho?",
+  "Im Büro. Wir planen das neue Projekt, da will ich dabei sein.": "No escritório. Vamos planear o projeto novo e quero estar presente.",
+  "Wer erklärt dem Team eigentlich den Plan?": "Afinal quem é que explica o plano à equipa?",
+  "Die Chefin selbst, am Freitag um neun.": "A própria chefe, na sexta às nove.",
+  "Dann arbeite ich Freitag nur bis zwei und komme danach dazu.": "Então na sexta só trabalho até às duas e depois junto-me a vocês.",
+  "Hast du die Nachricht über das neue Schwimmbad gelesen?": "Leste a notícia sobre a piscina nova?",
+  "Ja, heute Morgen in der Zeitung. Ich glaube aber nicht, dass das klappt.": "Li, esta manhã no jornal. Mas não acredito que aquilo resulte.",
+  "Warum nicht? Ich finde die Idee eigentlich gut.": "Porque não? Eu até acho a ideia boa.",
+  "Zu teuer. Und ich glaube, die Stadt hat das Geld nicht.": "É caro de mais. E acho que a câmara não tem o dinheiro.",
+  "Da hast du vielleicht recht. Mal sehen, was daraus wird.": "Talvez tenhas razão. Veremos no que dá.",
+  "Entschuldigung, ich habe meine Tasche im Zug vergessen. Wer kann mir helfen?": "Desculpe, esqueci-me do saco no comboio. Quem é que me pode ajudar?",
+  "Da sind Sie hier richtig. Welcher Zug war es denn?": "Aqui é mesmo o sítio certo. E que comboio era?",
+  "Der um halb neun aus Hamburg. Die Tasche ist blau, mit meinem Regenschirm drin.": "O das oito e meia vindo de Lisboa. O saco é azul e tem lá dentro o meu guarda-chuva.",
+  "Moment ... tatsächlich, die wurde gerade abgegeben. Haben Sie Ihren Pass dabei?": "Um momento... de facto, acabaram de o entregar. Traz consigo o passaporte?",
+  "Ja, zum Glück war der in meiner Jacke und nicht in der Tasche.": "Trago, felizmente estava no casaco e não no saco.",
+  "Ich putz mir noch die Zähne und geh dann ins Bett.": "Vou só lavar os dentes e depois deito-me.",
+  "Schon? Ich wollte noch eine Folge gucken.": "Já? Eu ainda queria ver um episódio.",
+  "Dann leise, bitte. Und weck mich nicht, wenn du kommst.": "Então baixinho, se faz favor. E não me acordes quando vieres.",
+  "Versprochen. Bist du eigentlich noch sauer wegen vorhin?": "Prometo. Afinal ainda estás chateada por causa de há bocado?",
+  "Nein, schon vergessen. Gute Nacht, bis morgen.": "Não, já esqueci. Boa noite, até amanhã.",
+  "Und, wie ist der Neue so?": "Então, e o novo, como é?",
+  "Ich kann ihn gut leiden. Ehrlich, hilfsbereit, macht seine Arbeit.": "Gosto dele. É franco, prestável, faz o seu trabalho.",
+  "Wirklich? Mir gefällt sein Ton nicht besonders.": "A sério? A mim o tom dele não me agrada lá muito.",
+  "Das ist nur seine Art. Er meint das nicht böse.": "É só o feitio dele. Não é por mal.",
+  "Vielleicht. Sympathisch finde ich trotzdem andere.": "Talvez. Mesmo assim há outros que me caem melhor.",
+  "Du hast letztens erzählt, du willst umziehen. Was ist daraus geworden?": "Há uns tempos contaste que te querias mudar. Em que é que ficou?",
+  "Nichts. Der Vermieter hat die Wohnung dann doch anders vergeben.": "Em nada. O senhorio acabou por dar o apartamento a outra pessoa.",
+  "Ach echt? Das hätte ich nicht gedacht. Und wie ging es weiter?": "A sério? Isso não estava à espera. E depois?",
+  "Ich suche noch. Aber ehrlich gesagt ohne Eile.": "Ainda ando à procura. Mas, para ser franca, sem pressa.",
+  "Das kenne ich. Bei mir hat die Suche damals ein Jahr gedauert.": "Conheço bem. Na altura a minha procura demorou um ano.",
+  "Und, wie fandest du den Vorschlag?": "Então, que achaste da proposta?",
+  "Naja, teils teils. Da ist schon was dran, aber so einfach ist das nicht.": "Bem, sim e não. Alguma razão tem, mas não é assim tão simples.",
+  "Kommt drauf an, wen du fragst, oder?": "Depende de a quem se pergunta, não é?",
+  "Genau. Ich sag ja nicht, dass er unrecht hat. Überzeugt bin ich trotzdem nicht.": "Exatamente. Eu não digo que ele não tenha razão. Convencida é que não estou.",
+  "Das kann man so sehen. Schlafen wir eine Nacht drüber.": "Pode ver-se assim. Vamos dormir sobre o assunto.",
+  "Hättest du Lust, diese Woche mal wieder essen zu gehen?": "Apetecia-te irmos outra vez jantar fora esta semana?",
+  "Sehr gern. Geht bei dir Donnerstag?": "Com muito gosto. Podes na quinta?",
+  "Donnerstag ja, aber ich kann leider erst ab acht.": "Na quinta posso, mas infelizmente só a partir das oito.",
+  "Passt mir gut. Ich reserviere uns was und schreibe dir vorher noch kurz.": "Dá-me jeito. Reservo qualquer coisa e mando-te uma mensagem antes.",
+  "Perfekt. Bis Donnerstag dann!": "Perfeito. Então até quinta!",
+  "Du siehst blass aus. Alles okay?": "Estás pálida. Está tudo bem?",
+  "Ich fühl mich total angeschlagen. Ich glaub, ich brüte was aus.": "Sinto-me completamente em baixo. Acho que estou a apanhar alguma coisa.",
+  "Dann geh heim. Hast du was da? Tee, Ibu, Wärmflasche?": "Então vai para casa. Tens alguma coisa em casa? Chá, ibuprofeno, saco de água quente?",
+  "Tee ja. Aber ich hab heute Nacht kein Auge zugemacht.": "Chá tenho. Mas esta noite não preguei olho.",
+  "Eben. Leg dich hin, ich sag den anderen Bescheid.": "Pois é. Deita-te, eu aviso os outros.",
+  "Du bist heute so still. Irgendwas stimmt doch nicht, oder?": "Hoje estás tão calada. Há qualquer coisa que não está bem, não é?",
+  "Ach, ich weiß auch nicht. Irgendwie ist gerade alles viel.": "Ai, também não sei. Neste momento é tudo muita coisa.",
+  "Willst du reden, oder lieber abgelenkt werden?": "Queres falar, ou preferes que te distraia?",
+  "Ehrlich gesagt: im Moment lieber nur reden.": "Para ser franca: neste momento prefiro só falar.",
+  "Dann höre ich zu. Lass dir Zeit, Geduld habe ich genug.": "Então eu ouço. Leva o tempo que precisares, paciência tenho eu de sobra.",
+  "Wie lange dauert deine Ausbildung eigentlich noch?": "Afinal quanto tempo falta para acabares a formação?",
+  "Noch ein Jahr. Danach will ich vielleicht noch studieren.": "Falta um ano. Depois disso se calhar ainda vou estudar.",
+  "An der Universität hier, oder woanders?": "Na universidade daqui, ou noutro sítio?",
+  "Am liebsten an der Hochschule in Köln. Der Kurs dort soll sehr gut sein.": "De preferência no politécnico do Porto. Dizem que o curso de lá é muito bom.",
+  "Dann lies schon mal fleißig. Die nehmen nicht jeden.": "Então começa já a ler com afinco. Eles não aceitam toda a gente.",
+  "Und? Hat es mit der Wohnung geklappt?": "Então? Resultou a coisa do apartamento?",
+  "Diesmal ist es mir gelungen! Ich habe gestern die Nachricht erhalten.": "Desta vez resultou! Recebi a notícia ontem.",
+  "Wie schön! Und wie viel Fläche hat sie?": "Que bom! E que superfície é que tem?",
+  "Drei Zimmer, und der Keller gehört auch dazu.": "Três assoalhadas, e a arrecadação também vem incluída.",
+  "Das scheint mir ein sehr guter Fang. Du siehst richtig glücklich aus.": "Isso parece-me um belo achado. Estás mesmo com cara de feliz.",
 };
