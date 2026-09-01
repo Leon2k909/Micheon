@@ -20912,4 +20912,84 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Ich stehe den ganzen Tag auf den Beinen.": "Passo o dia todo em pé.",
   "Wasch dir bitte die Hände.": "Lava as mãos, se faz favor.",
   "Mein rechtes Knie zwickt beim Treppensteigen.": "O joelho direito dá-me pontadas a subir escadas.",
+
+  // ── The garden, the ladder and the wet paint (part138) ──────────────────
+  //
+  // Die Leiter here is o escadote, the folding one you hold for somebody,
+  // rather than a escada. Sieht doch gut aus, oder is está bom, não está —
+  // the doch and the oder both land in the Portuguese tag.
+  "Ich muss den Rasen mähen.": "Tenho de cortar a relva.",
+  "Im Beet wächst nur noch Unkraut.": "No canteiro já só cresce erva daninha.",
+  "Wir wollen das Zimmer streichen.": "Queremos pintar o quarto.",
+  "Hast du mal die Bohrmaschine?": "Emprestas-me o berbequim?",
+  "Kannst du die Leiter festhalten?": "Podes segurar o escadote?",
+  "Ich messe das nochmal nach.": "Vou medir isso outra vez.",
+  "Das sind ungefähr zwei Zentimeter zu breit.": "Isso está uns dois centímetros largo de mais.",
+  "Passt haargenau.": "Encaixa certinho.",
+  "Wir gießen die Blumen abends.": "Regamos as flores à noite.",
+  "Der Baum muss geschnitten werden.": "A árvore tem de ser podada.",
+  "Bei den Nachbarn wurde eingebrochen.": "Assaltaram a casa dos vizinhos.",
+  "Schließt du bitte ab?": "Trancas a porta, se faz favor?",
+  "Das Licht lassen wir an.": "A luz deixamos acesa.",
+  "Ich räume das Werkzeug weg.": "Vou arrumar as ferramentas.",
+  "Das hält nicht lange.": "Isso não dura muito.",
+  "Wir machen das später fertig.": "Acabamos isso mais tarde.",
+  "Vorsicht, das ist frisch gestrichen!": "Cuidado, isso está pintado de fresco!",
+  "Sieht doch gut aus, oder?": "Está bom, não está?",
+
+  // ── Viewing a flat and moving into it (part139) ─────────────────────────
+  //
+  // Zwei Zimmer is duas assoalhadas. Portugal counts rooms the German way when
+  // it says assoalhada, and only switches to the T-number on a listing, so the
+  // card keeps the count the viewing actually uses.
+  //
+  // Der Nachmieter has no Portuguese noun — the market does not work that way
+  // — so the card asks the question instead: alguém que te fique com a casa.
+  "Wir würden die Wohnung gern besichtigen.": "Gostávamos de ver a casa.",
+  "Läuft das über einen Makler?": "Isso é através de uma imobiliária?",
+  "Wann können wir den Vertrag unterschreiben?": "Quando é que podemos assinar o contrato?",
+  "Wann bekommen wir die Schlüssel?": "Quando é que nos dão as chaves?",
+  "Der Umzug ist am Samstag.": "A mudança é no sábado.",
+  "Suchst du noch einen Nachmieter?": "Ainda procuras alguém que te fique com a casa?",
+  "Wie viele Quadratmeter hat sie?": "Tem quantos metros quadrados?",
+  "Zwei Zimmer, Küche, Bad.": "Duas assoalhadas, cozinha e casa de banho.",
+  "Ist eine Einbauküche drin?": "A cozinha está equipada?",
+  "Ab wann ist sie frei?": "A partir de quando é que fica livre?",
+  "Wir haben eine Zusage bekommen!": "Disseram-nos que sim!",
+  "Ich kündige zum Ende des Monats.": "Rescindo o contrato no fim do mês.",
+  "Die Kaution kommt später zurück.": "A caução é devolvida mais tarde.",
+  "Wir müssen noch renovieren.": "Ainda temos de fazer obras.",
+  "Kannst du beim Umzug helfen?": "Podes ajudar na mudança?",
+  "Alles passt in einen Transporter.": "Cabe tudo numa carrinha.",
+  "Wir sind endlich angekommen.": "Finalmente chegámos.",
+  "Kommt doch mal vorbei!": "Apareçam por cá!",
+  "Schön, dass Sie da sind. Kommen Sie rein.": "Ainda bem que veio. Faça favor de entrar.",
+  "Danke. Wie viele Quadratmeter hat die Wohnung?": "Obrigada. A casa tem quantos metros quadrados?",
+  "Zweiundsechzig, zwei Zimmer, Küche, Bad.": "Sessenta e dois, duas assoalhadas, cozinha e casa de banho.",
+  "Ja, die bleibt drin.": "Sim, essa fica.",
+  "Und ab wann wäre sie frei?": "E a partir de quando é que ficava livre?",
+
+  // ── The platform, the tent and the sea (part140) ────────────────────────
+  //
+  // Einmal umsteigen is um transbordo, a noun where German uses a verb, and
+  // das Gleis is a linha. Ich gehe kurz ins Wasser is vou dar um mergulho:
+  // Portuguese takes a dip rather than going in.
+  "Der Zug fährt von Gleis drei.": "O comboio sai da linha três.",
+  "Einmal umsteigen, dann sind wir da.": "Um transbordo e estamos lá.",
+  "Ist dieses Abteil frei?": "Este compartimento está livre?",
+  "Ist der Platz noch frei?": "Este lugar ainda está livre?",
+  "Der Anschlusszug wartet.": "O comboio de ligação espera.",
+  "Die Wellen sind heute ziemlich hoch.": "Hoje as ondas estão bastante altas.",
+  "Hast du Sonnencreme dabei?": "Trouxeste protetor solar?",
+  "Wir bauen das Zelt hier auf.": "Montamos a tenda aqui.",
+  "Der Schlafsack ist mir zu dünn.": "O saco-cama é fino de mais para mim.",
+  "Wollen wir grillen?": "Vamos fazer um churrasco?",
+  "Das Lagerfeuer geht schon wieder aus.": "A fogueira está outra vez a apagar-se.",
+  "Ich gehe kurz ins Wasser.": "Vou dar um mergulho.",
+  "Der Sand ist wahnsinnig heiß.": "A areia está escaldante.",
+  "Wir sollten langsam zurück.": "Já devíamos ir andando de volta.",
+  "Der Zug hat leider Verspätung.": "Infelizmente o comboio traz atraso.",
+  "Ich habe die Fahrkarte auf dem Handy.": "Tenho o bilhete no telemóvel.",
+  "Wo kommen wir denn hier raus?": "Por onde é que se sai daqui?",
+  "Das war ein guter Tag.": "Foi um bom dia.",
 };
