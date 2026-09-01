@@ -254,7 +254,7 @@ assert(buildWordSitting(ranked, sentenceGraded).every((s) => !s.review),
 // ── the word route is short on purpose ────────────────────────────────────
 assert.deepEqual(
   [...WORD_PHASES],
-  ["Read", "MeaningSelect", "ListenPick", "Type", "Translate", "RecallBoth"]
+  ["Read", "MeaningSelect", "MeaningFirst", "ListenPick", "Type", "Translate", "RecallBoth"]
 );
 // One answer covers both directions, so a word already held is one stage.
 assert.deepEqual([...MASTERED_WORD_PHASES], ["RecallBoth"]);
@@ -268,7 +268,7 @@ assert.deepEqual(
 // Until it is failed, a word asks for the same single typing test a phrase does.
 assert.deepEqual(
   buildSentencePhaseRoute({ mastered: false, bilingual: true, audioMuted: false, word: true }),
-  ["Read", "MeaningSelect", "ListenPick"],
+  ["Read", "MeaningSelect", "MeaningFirst", "ListenPick"],
   "a new word is being asked to write itself out more than once"
 );
 assert.deepEqual(

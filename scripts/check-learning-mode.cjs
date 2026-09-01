@@ -795,7 +795,13 @@ check(
     && AUDIO_REQUIRED_SENTENCE_PHASES.includes("MissingWord")
     && AUDIO_REQUIRED_SENTENCE_PHASES.every((phase) => !mutedFullLessonPhases.includes(phase))
     && mutedFullLessonPhases.length === fullLessonPhases.length - AUDIO_REQUIRED_SENTENCE_PHASES.length
-    && mutedFullLessonPhases[mutedFullLessonPhases.indexOf("MeaningSelect") + 1] === "Type"
+    // The muted route is the full one with the audio stages taken out and
+    // nothing else moved. This used to be written as "the stage after
+    // MeaningSelect is Type", which was the same claim only while those two
+    // happened to be neighbours — adding a stage between them broke a check
+    // about muting for a reason that had nothing to do with audio.
+    && JSON.stringify(mutedFullLessonPhases)
+      === JSON.stringify(fullLessonPhases.filter((phase) => !AUDIO_REQUIRED_SENTENCE_PHASES.includes(phase)))
 );
 check(
   "mute filtering also preserves the useful bilingual and mastered routes",

@@ -11,6 +11,7 @@
 export const SENTENCE_PHASES = [
   "Read",
   "MeaningSelect",
+  "MeaningFirst",
   "ListenPick",
   "MissingWord",
   "Type",
@@ -56,10 +57,19 @@ export const SENTENCE_PHASES = [
  * Closed-book recall moves to the review, where it is a real test. Asking for
  * it ninety seconds after teaching the phrase was measuring the short-term
  * memory of someone who had just read the answer four times.
+ *
+ * MeaningFirst is the one stage added back since, and it adds no writing.
+ * Every other stage puts the target language in front of you and asks what it
+ * means; this one puts the meaning in front of you and shows how it is said,
+ * which is the direction you actually need when you are the one talking. It
+ * is an exposure rather than a test — there is nothing to get wrong — so it
+ * costs a press and buys the pair in the direction the rest of the route
+ * never shows it in.
  */
 export const LEAN_SENTENCE_PHASES: readonly SentencePhase[] = [
   "Read",
   "MeaningSelect",
+  "MeaningFirst",
   "ListenPick",
   "MissingWord",
   "Order",
@@ -69,10 +79,28 @@ export const LEAN_SENTENCE_PHASES: readonly SentencePhase[] = [
 export const LEAN_WORD_PHASES: readonly SentencePhase[] = [
   "Read",
   "MeaningSelect",
+  "MeaningFirst",
   "ListenPick",
 ];
 
 export type SentencePhase = typeof SENTENCE_PHASES[number] | "French" | "Memory";
+
+/**
+ * Stages that ask for nothing to be typed.
+ *
+ * The route is deliberately down to ONE typing test per encounter, and the
+ * writing stages are what missing it costs. So a stage added for pacing or
+ * for a second angle on the same phrase has to be one of these, or it quietly
+ * puts back the thing that was taken out — and it would do it to everyone,
+ * not just to the learner who got the test wrong.
+ */
+export const NON_WRITING_SENTENCE_PHASES: readonly SentencePhase[] = [
+  "Read",
+  "MeaningSelect",
+  "MeaningFirst",
+  "MissingWord",
+  "Order",
+];
 
 export const BILINGUAL_SENTENCE_PHASES: readonly SentencePhase[] = [
   "Read",
@@ -106,6 +134,7 @@ export const MASTERED_SENTENCE_PHASES: readonly SentencePhase[] = [
 export const WORD_PHASES: readonly SentencePhase[] = [
   "Read",
   "MeaningSelect",
+  "MeaningFirst",
   "ListenPick",
   "Type",
   "Translate",

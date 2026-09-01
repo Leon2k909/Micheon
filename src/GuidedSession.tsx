@@ -779,6 +779,7 @@ const RECALL_STAGE_LABEL: Record<string, string> = {
 function phaseLabel(p: Phase, withFrench: boolean, targetLabel = "German", meaningLabel = "English") {
   if (withFrench && p === "Type") return "German";
   if (p === "MeaningSelect") return "Select";
+  if (p === "MeaningFirst") return "Meaning first";
   if (p === "ListenPick") return "Hear & write";
   if (p === "MissingWord") return "Missing word";
   if (p === "Gap") return "Fill in";
@@ -793,6 +794,12 @@ function phaseHeading(p: Phase, withFrench: boolean, targetLabel = "German", mea
   switch (p) {
     case "Read": return "Read & listen";
     case "MeaningSelect": return "Select the correct meaning";
+    // No language names in here on purpose. An interpolated heading is baked
+    // out into the tables one combination at a time — "Recall the German",
+    // "Recall the French" — and this one would need every meaning-to-target
+    // pair the courses can make. The instruction underneath names the
+    // language through a slot, which costs one key instead of dozens.
+    case "MeaningFirst": return "Now the other way round";
     case "ListenPick": return "Write what you hear";
     case "MissingWord": return "Listen for the missing word";
     case "Type": return withFrench ? "Type the German" : "Type the sentence";
@@ -2224,8 +2231,11 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // TTS is a no-op while muted, so the global mute still applies.
   useEffect(() => {
     if (audioMuted) return;
-    if (phase !== "Read" && phase !== "ListenPick") return;
-    if (phase === "ListenPick") lessonSpeak(item.de, 0.88, targetLang);
+    // MeaningFirst plays it too: the point of that stage is meeting the pair
+    // in the direction you speak in, and rehearsing a line you have only read
+    // is how a learner ends up with a sentence they cannot say out loud.
+    if (phase !== "Read" && phase !== "ListenPick" && phase !== "MeaningFirst") return;
+    if (phase === "ListenPick" || phase === "MeaningFirst") lessonSpeak(item.de, 0.88, targetLang);
     else if (hasFr) ttsSequence([{ text: item.de, lang: "de-DE" }, { text: item.fr, rate: 0.85, lang: "fr-FR" }]);
     else lessonSpeak(item.de, 0.88, targetLang);
   }, [phase, item.de, item.fr, hasFr, audioMuted, targetLang]);
@@ -3355,6 +3365,30 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               <p>{shownEnglish}</p>
             </div>
           </>
+        ) : phase === "MeaningFirst" ? (
+          /*
+            The board, the other way round.
+
+            Every other stage puts the target language on the big line and asks
+            what it means. This one puts the meaning there and shows how it is
+            said underneath, because that is the direction somebody who wants
+            to SAY something reads it in — you start from the thought, not from
+            the German. The target keeps its tappable words, so a word you are
+            unsure of is still one tap from being heard on its own.
+          */
+          <>
+            <div className="fs-board">
+              <div className="fs-board-top">
+                <span>{ui(meaningLabel)}</span>
+                <small>{ui("What you want to say")}</small>
+              </div>
+              <div className="fs-line">{shownEnglish}</div>
+            </div>
+            <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="fs-trow">
+              <span className="fs-chip">{meaningIsGerman ? "EN" : "DE"}</span>
+              <p><TappableSentence text={item.de} lang={targetLang} meaningText={item.en} /></p>
+            </motion.div>
+          </>
         ) : phase === "RecallBoth" ? (
           <div className="fs-closed-recall-cue">
             <span><EyeOff aria-hidden="true" className="h-4 w-4" /> {ui("Closed-book recall")}</span>
@@ -3490,6 +3524,19 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   : ui("Read and listen — it plays automatically.")}
             </p>
             {/* One Hear-it only — the purple listen button in the heading replays. */}
+            <Button onClick={advance}
+              className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
+              {ui("Continue")} <ChevronRight className="ml-2 h-4 w-4" />
+            </Button>
+          </motion.div>
+        )}
+
+        {phase === "MeaningFirst" && (
+          <motion.div key="meaning-first" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            className="space-y-4">
+            <p className="text-center text-sm font-semibold text-zinc-500">
+              {uiFmt("This is what you'd want to say. Here it is in {language}.", { language: ui(targetLabel) })}
+            </p>
             <Button onClick={advance}
               className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
               {ui("Continue")} <ChevronRight className="ml-2 h-4 w-4" />

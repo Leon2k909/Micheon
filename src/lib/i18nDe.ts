@@ -71,6 +71,10 @@ export const DE: Record<string, string> = {
   "Geordie / Newcastle English — regional and informal": "Geordie / Englisch aus Newcastle — regional und informell",
   // ── Lesson screen ──
   "Sentence practice": "Satztraining",
+  "Meaning first": "Bedeutung zuerst",
+  "Now the other way round": "Jetzt andersherum",
+  "What you want to say": "Was du sagen willst",
+  "This is what you'd want to say. Here it is in {language}.": "Das willst du sagen. So heißt es auf {language}.",
   "The level of the lesson this comes from": "Das Niveau der Lektion, aus der das stammt",
   "Read, listen, choose, type, translate, then recall.": "Lesen, hören, auswählen, tippen, übersetzen und dann erinnern.",
   "Read, choose, type, translate, then recall.": "Lesen, auswählen, tippen, übersetzen und dann erinnern.",
