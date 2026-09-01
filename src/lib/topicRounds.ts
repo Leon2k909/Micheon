@@ -27,7 +27,7 @@ import { buildCatalog } from "@/session";
  * on screen, the same line Listen and the Matcher draw, so it can be fast:
  * a board a minute, a subject a minute, the whole course by subject.
  */
-export type TopicDef = {
+type TopicDef = {
   id: string;
   /** The subject as a heading — an existing pack label where one fits. */
   label: string;
@@ -76,9 +76,9 @@ export const TOPICS: readonly TopicDef[] = [
 /** How many of the board belong to the subject; the same number do not. */
 export const TOPIC_ROUND_SIZE = 6;
 /** Of those, how many are single words when the subject has them. */
-export const TOPIC_ROUND_WORDS = 3;
+const TOPIC_ROUND_WORDS = 3;
 
-export type TopicCard = {
+type TopicCard = {
   id: string;
   /** The line in the language being learned. */
   de: string;
@@ -256,7 +256,7 @@ export function buildTopicRound(
   return { topic, cards, wanted: belongs.length };
 }
 
-export type TopicRoundResult = {
+type TopicRoundResult = {
   found: TopicCard[];
   missed: TopicCard[];
   wrong: TopicCard[];
