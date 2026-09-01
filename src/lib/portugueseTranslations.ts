@@ -28214,4 +28214,87 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Wie schön! Und wie viel Fläche hat sie?": "Que bom! E que superfície é que tem?",
   "Drei Zimmer, und der Keller gehört auch dazu.": "Três assoalhadas, e a arrecadação também vem incluída.",
   "Das scheint mir ein sehr guter Fang. Du siehst richtig glücklich aus.": "Isso parece-me um belo achado. Estás mesmo com cara de feliz.",
+
+  // ── The capstone conversations, eleventh twelve ────────────────────────
+  //
+  // Two more words take the sense the conversation means rather than the one
+  // their own card teaches. Die Übergabe is a entrega em mão when it is an
+  // object changing hands; here it is a shift being handed over, so the line
+  // says a passagem de serviço. Die Leine is o fio de estender when the
+  // washing hangs on it; on a dog it is a trela, and that card is a few lines
+  // below.
+  //
+  // Der Keller is a cave here — a real cellar, where the phone gets no signal.
+  // In the flat listing two blocks back it was a arrecadação, the storage room
+  // a Portuguese flat is sold with. German has one word for both.
+  //
+  // Betonen is acentuar on its card and frisar in this sentence, which is the
+  // verb somebody actually says out loud when they want a point to stand.
+  //
+  // Köln goes the way Hamburg went: the card is about a cancelled train, not
+  // about Germany, so it is o Porto. The cousin nobody has met comes from Faro.
+  //
+  // The idioms are the ones their own cards settled: auf der Stelle treten is
+  // não sair do sítio, auf den letzten Drücker is em cima da hora, wie aus dem
+  // Gesicht geschnitten is a cara chapada.
+  "Warum kaufst du hier? Der Laden an der Ecke ist doch näher.": "Porque é que compras aqui? A loja da esquina é mais perto.",
+  "Stimmt, aber die Auswahl hier ist wirklich groß.": "É verdade, mas aqui a variedade é mesmo grande.",
+  "Und die Preise?": "E os preços?",
+  "Im Vergleich ziemlich günstig. Zusätzlich ist sonntags geöffnet.": "Em comparação, bastante em conta. Além disso está aberto ao domingo.",
+  "Das ist allerdings ein wesentlicher Unterschied.": "Isso é, de facto, uma diferença essencial.",
+  "Guten Tag, ich brauche Unterstützung bei einem Antrag. Wo finde ich die Beratung?": "Boa tarde, preciso de apoio para um pedido. Onde é o atendimento?",
+  "Hier. Welche Voraussetzungen Sie erfüllen müssen, steht in diesem Heft.": "É aqui. Os pressupostos que tem de cumprir estão neste caderno.",
+  "Habe ich auch Anspruch auf einen Termin zur Beratung vor Ort?": "Também tenho direito a uma marcação para atendimento presencial?",
+  "Ja. Füllen Sie das Formular vollständig aus und bringen Sie Ihre Unterlagen mit.": "Tem. Preencha o formulário na totalidade e traga os seus documentos.",
+  "Danke für den Hinweis. Das Gebäude hier am Bahnhof, richtig?": "Obrigada pela indicação. É o edifício aqui junto à estação, não é?",
+  "Wie hat sie eigentlich auf die Absage reagiert?": "Afinal como é que ela reagiu à recusa?",
+  "Erstaunlich ruhig. Aus meiner Sicht war das kein Problem für sie.": "Surpreendentemente calma. Do meu ponto de vista não foi problema para ela.",
+  "Das würde ich anders sehen. Sie hatte sich sehr darauf gefreut.": "Eu vejo isso de outra maneira. Ela estava muito contente com aquilo.",
+  "Kann ich nachvollziehen. Ich möchte nur betonen: Es war ihre Entscheidung.": "Compreendo o raciocínio. Só quero frisar: foi decisão dela.",
+  "Da hast du völlig recht. Bei Gelegenheit frage ich sie einfach selbst.": "Nisso tens toda a razão. Numa ocasião destas pergunto-lhe eu própria.",
+  "Sollen wir am Samstag an den See? Die Saison fängt doch jetzt an.": "Vamos ao lago no sábado? A época está agora a começar.",
+  "Es soll aber örtlich Gewitter geben.": "Mas é suposto haver trovoadas localizadas.",
+  "Nur am Nachmittag. Vormittags waren wir letztes Mal fast allein dort.": "Só à tarde. De manhã, da última vez, estávamos lá quase sozinhos.",
+  "Gut. Aber der See ist an einer Stelle ziemlich tief, denk an die Kinder.": "Está bem. Mas o lago tem um sítio bastante fundo, atenção aos miúdos.",
+  "Wir bleiben nah am Ufer. Und bei Regen ist das Auto nur zehn Minuten entfernt.": "Ficamos perto da margem. E se chover o carro está só a dez minutos.",
+  "Kommst du morgen mit zum Flohmarkt?": "Vens amanhã comigo à feira da ladra?",
+  "Kann sein. Kommt drauf an, wie viel Zeit wir haben.": "Pode ser. Depende do tempo que tivermos.",
+  "Wir fahren früh los. Mal sehen, ob das Wetter hält.": "Saímos cedo. Vamos ver se o tempo aguenta.",
+  "Ich weiß nicht, ob ich das schaffe. Ich sage dir heute Abend Bescheid.": "Não sei se consigo. Digo-te qualquer coisa logo à noite.",
+  "Gut. Und keine Ahnung, wo mein Schlüssel ist — such du schon mal deinen.": "Está bem. E não faço ideia de onde está a minha chave — vai tu procurando a tua.",
+  "Bevor ich in den Urlaub gehe, machen wir noch die Übergabe.": "Antes de ir de férias ainda fazemos a passagem de serviço.",
+  "Gut. Wer macht deine Vertretung, während du weg bist?": "Está bem. Quem faz a tua substituição enquanto estás fora?",
+  "Der Kollege aus dem Büro nebenan, der hat noch Puffer.": "O colega do escritório ao lado, esse ainda tem folga.",
+  "Und dein Resturlaub? Der ist sonst einfach weg.": "E as tuas férias por gozar? Senão perdem-se.",
+  "Schon eingetragen. Ab morgen habe ich Feierabend.": "Já estão marcadas. A partir de amanhã, o trabalho acabou.",
+  "Hallo, hörst du mich? Der Empfang im Keller ist eine Katastrophe.": "Olá, estás a ouvir-me? A rede na cave é uma catástrofe.",
+  "Halb. Bei dir hat es die ganze Zeit gerauscht.": "Mais ou menos. Do teu lado esteve sempre a chiar.",
+  "Ich gehe mal rauf ans Fenster. Hörst du mich jetzt besser?": "Vou subir até à janela. Ouves-me melhor agora?",
+  "Ja, viel besser. Warum bist du vorhin nicht rangegangen?": "Ouço, muito melhor. Porque é que há bocado não atendeste?",
+  "Dein Anruf ist direkt auf die Mailbox gegangen, sorry.": "A tua chamada foi diretamente para o correio de voz, desculpa.",
+  "Entschuldigung, mein Zug fällt aus. Wie komme ich heute noch nach Köln?": "Desculpe, o meu comboio foi suprimido. Como é que ainda chego hoje ao Porto?",
+  "Es gibt einen Ersatzbus, der fährt in zehn Minuten vor dem Bahnhof ab.": "Há um autocarro de substituição, sai daqui a dez minutos em frente à estação.",
+  "Und erreiche ich damit meinen Anschlusszug?": "E com esse apanho o meu comboio de ligação?",
+  "Das wird knapp. Ab sechzig Minuten Verspätung kriegen Sie aber Geld zurück.": "Vai ser à justa. Mas a partir de sessenta minutos de atraso tem direito a reembolso.",
+  "Gut zu wissen. Dann fülle ich nachher gleich das Formular für die Verspätung aus.": "Bom saber. Então logo a seguir preencho já o formulário do atraso.",
+  "Guten Tag, ich möchte das hier umtauschen. Da fehlt eine Schraube.": "Boa tarde, queria trocar isto. Falta aqui um parafuso.",
+  "Haben Sie den Bon dabei?": "Traz o talão?",
+  "Nein, aber ich habe mit Karte bezahlt. Sie sehen das sicher im System.": "Não, mas paguei com cartão. De certeza que vê isso no sistema.",
+  "Moment, ich schaue nach ... ja, hier ist es. Möchten Sie das Geld zurück?": "Um momento, vou ver... sim, está aqui. Quer o dinheiro de volta?",
+  "Lieber ein neues Gerät, wenn Sie hinten noch eins im Lager haben.": "Prefiro um aparelho novo, se ainda tiver algum lá atrás no armazém.",
+  "Hallo, ich bin der Neue aus dem dritten Stock.": "Olá, sou o novo do terceiro andar.",
+  "Ah, willkommen im Haus! Schon richtig angekommen?": "Ah, bem-vindo ao prédio! Já se instalou como deve ser?",
+  "Fast. Eine Frage: Wann stellt man hier die Tonnen raus?": "Quase. Uma pergunta: quando é que se põem cá fora os contentores?",
+  "Immer montags. Und nach zehn bitte leise, die Wände sind dünn.": "Sempre à segunda. E depois das dez baixinho, se faz favor, as paredes são finas.",
+  "Versprochen. Wenn was ist, klingeln Sie einfach bei mir.": "Prometo. Se for preciso alguma coisa, toque-me à campainha.",
+  "Guckst du die Serie auch? Alle reden davon.": "Também vês a série? Toda a gente fala dela.",
+  "Ja, aber kein Wort — ich bin erst bei der zweiten Folge.": "Vejo, mas nem uma palavra — ainda vou no segundo episódio.",
+  "Okay, ich sage nichts. Ich schicke dir nachher das Meme dazu.": "Está bem, não digo nada. Logo mando-te o meme.",
+  "Bitte nicht in den Gruppenchat, da liest es sonst jeder.": "No grupo é que não, senão toda a gente lê.",
+  "Gut. Und lade vorher dein Handy, sonst bist du gleich wieder raus.": "Está bem. E carrega o telemóvel antes, senão vais outra vez abaixo.",
+  "Kommst du am Sonntag zur Familienfeier? Oma wird neunzig.": "Vens no domingo à festa de família? A avó faz noventa.",
+  "Klar. Und die ganze Verwandtschaft reist wieder an, nehme ich an?": "Claro. E vem outra vez a parentela toda, presumo?",
+  "Alle. Auch der Cousin aus Hamburg, den du noch nie getroffen hast.": "Todos. Também o primo de Faro, que ainda nunca conheceste.",
+  "Der, der dir so ähnlich sieht?": "Aquele que é tão parecido contigo?",
+  "Genau der. Mama sagt, wir sind wie aus dem Gesicht geschnitten.": "Esse mesmo. A mãe diz que somos a cara chapada um do outro.",
 };
