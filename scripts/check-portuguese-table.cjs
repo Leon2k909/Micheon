@@ -106,6 +106,7 @@ const PROPER_NAMES = [
   // onto it, and the person is addressed by the German title whatever language
   // the conversation is in.
   "Ministerpräsident",
+  "Oberbürgermeister",
   // And the things on the counter that only have a German name. The card
   // about Leberkäse is a joke about the word itself — it contains neither
   // liver nor cheese — so translating the word away takes the card with it.
