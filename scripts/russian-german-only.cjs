@@ -100,6 +100,7 @@ const LANGUAGE = [
   "Und Chef ist der Boss", "das Wort selbst?", "Wort für privacy",
   "I become a steak", "Deutsche Größen",
   "sensibel und sensible", "deutschen Saunen",
+  "Realschule, Gesamtschule", "kein Ü gibt", "spricht man in Deutschland",
   "Durchwachsen heißt beim Fleisch", "Halb und halb heißt",
   "Eventuell heißt vielleicht", "Stimmt so heißt",
   "Im Süden sagt man Geldbeutel", "Ich hab ein Gift für dich",
