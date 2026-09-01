@@ -28054,4 +28054,85 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Ja. Der eine optimistisch, der andere vorsichtig. Zusammen perfekt.": "São. Um otimista, o outro cauteloso. Juntos, perfeitos.",
   "Hartnäckig sind sie beide. Das liegt dann wohl in der Familie.": "Teimosos são os dois. Isso deve vir de família.",
   "Die Ansage am Bahnhof war mal wieder völlig undeutlich.": "A mensagem gravada na estação foi outra vez completamente impercetível.",
+
+  // ── The capstone conversations, ninth twelve ───────────────────────────
+  //
+  // The adjectives all had cards and keep their answers: bezahlbar is
+  // comportável, spröde is quebradiço, behindertengerecht is adaptado a
+  // cadeiras de rodas, wassernah is perto de água.
+  //
+  // The abstract nouns did not, and this is where they are settled. Der
+  // Knackpunkt is o busílis, which is the Portuguese for the point everything
+  // turns on and nothing else. Die Gratwanderung is a caminhada no fio da
+  // navalha, die Sternstunde um momento alto, der Lichtblick um raio de
+  // esperança, das Fingerspitzengefühl o tato, die Beklommenheit o aperto no
+  // peito.
+  //
+  // Der Kompromiss is um meio-termo, not um compromisso: in Portuguese a
+  // compromisso is an engagement you have made, not a middle ground you have
+  // found.
+  //
+  // German has both unfair and ungerecht in the same conversation and
+  // Portuguese has one injusto. The first line takes pouco correto so the
+  // second can keep the stronger word.
+  "Wie immer. Und die Anzeige bleibt neutral: Verspätung unklar.": "Como sempre. E o painel mantém-se neutro: atraso indeterminado.",
+  "Unrealistisch ist das nicht, aber unpräzise.": "Irrealista não é, mas é impreciso.",
+  "Identisch mit letzter Woche. Konstant schlecht, immerhin.": "Idêntico ao da semana passada. Constantemente mau, pelo menos.",
+  "Logisch wäre eine klare Ansage. Aber das ist wohl undenkbar.": "O lógico era uma mensagem clara. Mas isso deve ser impensável.",
+  "Ist der Pilz da essbar?": "Aquele cogumelo é comestível?",
+  "Keine Ahnung, und genau deshalb bleibt er stehen.": "Não faço ideia, e é precisamente por isso que fica onde está.",
+  "Gut. Das Wasser hier, ist das trinkbar?": "Boa. E esta água, é potável?",
+  "Ja, steht auf dem Schild. Und die Beeren sind sogar messbar süßer als gekaufte.": "É, está na placa. E os frutos silvestres são até mensuravelmente mais doces do que os comprados.",
+  "Dann ist das Picknick ja bezahlbar: alles umsonst.": "Então o piquenique é bem comportável: é tudo de graça.",
+  "Das Formular ist unnötig kompliziert. Zehn Seiten!": "O formulário é desnecessariamente complicado. Dez páginas!",
+  "Und unpraktisch: Feld drei passt nicht mal auf die Zeile.": "E pouco prático: o campo três nem sequer cabe na linha.",
+  "Unfair ist es auch. Ohne Internet ist es fast unmöglich.": "Pouco correto também é. Sem internet é quase impossível.",
+  "Unvorsichtig ausgefüllt wird es aber erst recht ungerecht.": "Mas preenchido de forma descuidada fica ainda mais injusto.",
+  "Also langsam und produktiv. Zart anfassen, das Papier ist spröde.": "Portanto, devagar e produtivo. Pega com cuidado, o papel é quebradiço.",
+  "Wie beschreiben wir die Wohnung in der Anzeige?": "Como é que descrevemos o apartamento no anúncio?",
+  "Geräumig, renoviert, möbliert. Und die Lage: urban, aber wassernah.": "Espaçoso, renovado, mobilado. E a localização: urbana, mas perto de água.",
+  "Morgendliche Sonne im Schlafzimmer, abendliche auf dem Balkon.": "Sol matinal no quarto, vespertino na varanda.",
+  "Das Viertel ist belebt, aber nachts ruhig.": "O bairro é movimentado, mas de noite é sossegado.",
+  "Perfekt. Altmodisch ist nur das Bad — das nennen wir charmant.": "Perfeito. Antiquada só a casa de banho — a essa chamamos-lhe cheia de charme.",
+  "Das neue Café ist wirklich kinderfreundlich. Und tierfreundlich!": "O café novo é mesmo acolhedor para crianças. E aceita animais!",
+  "Und behindertengerecht, habe ich gelesen. Breite Türen, keine Stufen.": "E adaptado a cadeiras de rodas, li isso. Portas largas, sem degraus.",
+  "Die Verpackung beim Mitnehmen ist umweltfreundlich.": "A embalagem para levar é amiga do ambiente.",
+  "Benutzerfreundlich ist sogar die Karte: drei Seiten, klare Preise.": "Até a ementa é fácil de utilizar: três páginas, preços claros.",
+  "Friedlich ist es auch noch. Da gehen wir jetzt immer hin.": "E ainda por cima é sossegado. A partir de agora é lá que vamos sempre.",
+  "Welche Farbe fürs Arbeitszimmer: hellblau oder dunkelgrün?": "Que cor para o escritório: azul-claro ou verde-escuro?",
+  "Dunkelgrün, mit silbernen Rahmen an der Wand.": "Verde-escuro, com molduras prateadas na parede.",
+  "Und der Teppich? Oval oder rechteckig?": "E o tapete? Oval ou retangular?",
+  "Rechteckig. Oval wirkt schnell altmodisch.": "Retangular. O oval fica antiquado num instante.",
+  "Gut. Violett kommt mir jedenfalls nicht ins Haus.": "Está bem. Roxo é que não me entra em casa, isso é certo.",
+  "Deine These kenne ich. Aber es gibt einen Einwand.": "A tua tese eu conheço. Mas há uma objeção.",
+  "Dann her damit. Ohne Entgegnung wird das keine echte Verhandlung.": "Então diz lá. Sem réplica isto não é uma negociação a sério.",
+  "Deine Behauptung stützt sich auf eine einzige Quelle.": "A tua afirmação assenta numa única fonte.",
+  "Das räume ich ein. Dafür ist es eine sehr gute Quelle.": "Isso reconheço. Em contrapartida é uma fonte muito boa.",
+  "Na schön. Ich mache dir einen Kompromiss: Wir prüfen sie zusammen.": "Muito bem. Proponho-te um meio-termo: verificamo-la juntos.",
+  "Und? Wie war das Gespräch, vor dem du solche Angst hattest?": "Então? Como foi a conversa de que tinhas tanto medo?",
+  "Die Beklommenheit war nach zwei Minuten weg. Danach: pure Erleichterung.": "O aperto no peito passou ao fim de dois minutos. Depois disso: puro alívio.",
+  "Siehst du! Deine Zuversicht war berechtigt.": "Estás a ver! A tua confiança tinha razão de ser.",
+  "Ein bisschen Reue bleibt, dass ich so lange gewartet habe.": "Fica algum arrependimento por ter esperado tanto tempo.",
+  "Kein Neid auf Leute, die das leichter können — jeder hat sein Tempo.": "Nada de inveja de quem faz isto com mais facilidade — cada um tem o seu ritmo.",
+  "Das Projekt war viele Monate ein Teufelskreis: kein Geld, keine Leute.": "Durante muitos meses o projeto foi um círculo vicioso: sem dinheiro, sem pessoas.",
+  "Und dann kam der Durchbruch?": "E depois veio o avanço decisivo?",
+  "Erst ein Lichtblick: eine kleine Zusage. Dann der Wendepunkt.": "Primeiro um raio de esperança: um pequeno compromisso. Depois o ponto de viragem.",
+  "Der Knackpunkt war sicher das Geld.": "O busílis foi de certeza o dinheiro.",
+  "Genau. Jetzt haben wir Spielraum — und ich etwas Fingerspitzengefühl mehr.": "Exatamente. Agora temos margem de manobra — e eu um bocado mais de tato.",
+  "Dann war die ganze Gratwanderung am Ende eine Sternstunde.": "Então, no fim, toda aquela caminhada no fio da navalha foi um momento alto.",
+  "Für moderne Kunst hast du doch nichts übrig — was machst du dann hier?": "Tu não ligas nenhuma à arte moderna — então o que é que estás aqui a fazer?",
+  "Die Ausstellung hat meine Perspektive verändert, ehrlich.": "A exposição mudou-me a perspetiva, a sério.",
+  "Welches Werk denn? Zeig mal.": "Que obra? Mostra lá.",
+  "Das da drüben. Der Künstler hat einen ganz eigenen Stil.": "Aquela ali. O artista tem um estilo muito próprio.",
+  "Hm. Damit kann ich ehrlich gesagt nichts anfangen.": "Hum. Sinceramente, isso não me diz nada.",
+  "Bist du bald fertig? Wir wollten doch noch einkaufen.": "Falta muito? Nós ainda íamos às compras.",
+  "Zehn Minuten noch. Ich muss diese Liste zu Ende schreiben.": "Mais dez minutos. Tenho de acabar de escrever esta lista.",
+  "Gut, dann mache ich schon mal das Fenster zu und packe die Taschen.": "Está bem, então vou já fechando a janela e arrumando os sacos.",
+  "Hast du Kleingeld für den Einkaufswagen?": "Tens trocos para o carrinho de compras?",
+  "Nein, aber wir nehmen einfach den Korb. So viel brauchen wir nicht.": "Não, mas levamos só o cesto. Não precisamos de assim tanto.",
+  "Komm rein! Die Schuhe kannst du gern anlassen.": "Entra! Podes deixar os sapatos calçados, à vontade.",
+  "Schön hell hier. Seit wann wohnst du im dritten Stock?": "Que claro que isto é. Desde quando é que moras no terceiro andar?",
+  "Seit zwei Monaten. Die Küche ist klein, aber sie reicht mir.": "Há dois meses. A cozinha é pequena, mas chega-me.",
+  "Und der Balkon! Da bleibe ich im Sommer gleich zum Essen.": "E a varanda! No verão fico logo aqui a comer.",
+  "Gern. Nur der Aufzug ist leider öfter kaputt als er fährt.": "Com todo o gosto. Só que infelizmente o elevador está mais vezes avariado do que a funcionar.",
 };
