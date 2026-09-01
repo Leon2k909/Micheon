@@ -151,10 +151,25 @@ export const LISTEN_CONTENT_KINDS: readonly ListenContentKind[] = ["sentences", 
  * as the kinds joined by "+".
  */
 export type ListenContentSource = ListenContentKind | "mixed";
-export type ListenQueueOrder = "common" | "learning" | "least-heard" | "newest" | "level";
+export type ListenQueueOrder = "common" | "learning" | "least-heard" | "newest" | "level" | "longest";
 export type ListenLevelFilter = "all" | CefrStep;
 export type ListenUsefulnessFilter = "all" | ConversationUsefulness;
-export const LISTEN_QUEUE_ORDERS: ListenQueueOrder[] = ["level", "common", "learning", "least-heard", "newest"];
+export const LISTEN_QUEUE_ORDERS: ListenQueueOrder[] = ["level", "common", "learning", "least-heard", "newest", "longest"];
+
+/**
+ * How big a card is, for Longest first: the length of what gets spoken.
+ *
+ * The target line only. The meaning is read out too, but it is not the thing
+ * being learned, and a short German sentence with a long English gloss is not
+ * a longer piece of German.
+ *
+ * Measured in characters rather than words because the queue holds three very
+ * different sizes — a paragraph, a sentence, a single word — and any measure
+ * separates those. Characters need no tokenizer to be wrong about.
+ */
+export function listenItemLength(item: Pick<ListenItem, "de">): number {
+  return String(item?.de ?? "").length;
+}
 /**
  * What leads each group the queue order makes.
  *
@@ -1709,6 +1724,30 @@ export function buildListenQueue(
       .sort((a, b) =>
         a.resting - b.resting
         || (itemPackRank.get(b.item.id) ?? -1) - (itemPackRank.get(a.item.id) ?? -1)
+        || leads(a, b)
+      )
+      .map((entry) => entry.item);
+  }
+
+  /**
+   * Longest first: the paragraphs, then the sentences, then the words.
+   *
+   * The other orders all sort by something about how well the material is
+   * known or how useful it is, and none of them by how much of it there is.
+   * Listen now holds three sizes of thing — a whole passage, a sentence, a
+   * single word — and a session of the biggest ones is a different exercise
+   * from a session of the smallest: long pieces are where the language joins
+   * up, and where listening is actually hard.
+   *
+   * Length leaves plenty of ties, so `leads` still decides what comes first
+   * among cards of the same size. That is what keeps this from being a bare
+   * length sort that plays the same forty-character sentences every time.
+   */
+  if (order === "longest") {
+    return available
+      .sort((a, b) =>
+        a.resting - b.resting
+        || listenItemLength(b.item) - listenItemLength(a.item)
         || leads(a, b)
       )
       .map((entry) => entry.item);
