@@ -48,7 +48,10 @@ const INSTITUTIONS = [
   "der U7", "Euro VB",
   // A Sunday-night television institution. Naming it teaches nothing to
   // somebody who will never be in the room where it is on.
-  "Tatort",
+  "Tatort", "DB-App",
+  // German regional words for the same thing. The lesson is which German
+  // region you are standing in, which is not a lesson in Russian.
+  "Buletten", "Fleischpflanzerl",
 ];
 
 /**
@@ -74,6 +77,10 @@ const HOLIDAYS = ["Fronleichnam", "Buß- und Bettag", "Christi Himmelfahrt"];
  */
 const LANGUAGE = [
   /\bDeutsch\b/, /\bDeutschlernen\b/,
+  // The lower-case adjective, but only where it modifies the language or a
+  // German-format document: "deutsche Untertitel", "der deutsche Lebenslauf".
+  // Left alone elsewhere, so "ein deutscher Wald" is still a wood.
+  /deutsche[rnms]? (Untertitel|Lebenslauf|Ton|Synchro)/i,
   "Hochdeutsch", "Bayrisch", "bayerisch", "Plattdeutsch", "Sächsisch",
   "Schweizerdeutsch", "Umlaut", "scharfem S", "scharfes S",
   // German has dialects that stop comprehension; Russian does not in the same
