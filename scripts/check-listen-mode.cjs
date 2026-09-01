@@ -787,7 +787,9 @@ check("choosing one explains in words what it means in hours",
   && listenPanel.includes("listen-return-explained"));
 check("and the loop says what the learner's own numbers add up to",
   listenPanel.includes("listen-loop-example")
-  && listenPanel.includes("You hear all {total}, then the same {total} again"));
+  // Both of the learner's numbers appear in the sentence, so it is computed
+  // from them rather than written once for the defaults.
+  && listenPanel.includes("The first {total} play {passes} times over"));
 // The failure this replaces, asserted as the thing it was: nothing hard may
 // sit in front of a beginner's material any more.
 const firstHard = byLevel.findIndex((item) => rungOf(item) >= 4);
@@ -1983,15 +1985,15 @@ for (const key of [
   "Both languages repeat in small learning loops while you do something else.",
   "{meaning} {en}×, then {target} {de}×",
   "{target} {de}×, then {meaning} {en}×",
-  "{items}-item loop, {passes} passes",
+  "{items} cards at a time, heard {passes}×",
   "Learning pass {pass} of {passes}",
   "What you hear",
   "Which items Listen plays, in what order, and how often they come back.",
   "Learning loop",
-  "Hear a small set, then revisit the same items before moving on.",
-  "Items in each loop",
+  "A few cards at a time, each heard more than once before the next few start.",
+  "Cards at a time",
   "How many different items to hear before they return",
-  "Passes through each loop",
+  "Times you hear each card",
   "2 means every item returns once; 1 turns item repetition off",
   "Language order",
   "English first",
@@ -2016,7 +2018,7 @@ for (const key of [
   "Paragraph",
   "All",
   "Queue order",
-  "Easiest first works through the course by level — all of A1, then A2, then B1 — with the most useful card leading each level. Most common first teaches the phrases and words people are most likely to use, whatever level they are. Newest first plays the packs added most recently, so new content is heard instead of waiting behind thousands of commoner items. Longest first plays the biggest pieces first — whole passages, then sentences, then single words.",
+  "Easiest first works through the course by level — all of A1, then A2, then B1 — with the most useful card leading each level. Most common first teaches the phrases and words people are most likely to use, whatever level they are. Reviews & struggles first plays what is due and what you have marked as hard before anything new. Least heard first plays what you have heard fewest times, so nothing is skipped for long. Newest first plays the packs added most recently, so new content is heard instead of waiting behind thousands of commoner items. Longest first plays the biggest pieces first — whole passages, then sentences, then single words.",
   "Easiest first (A1 → C1)",
   "Newest first",
   "Reviews & struggles first",

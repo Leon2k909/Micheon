@@ -1693,8 +1693,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
             )}
             <span aria-hidden="true" className="text-[var(--text-3)]">·</span>
             <span>{interleaves
-              ? uiFmt("{words} words + {sentences} sentences, {passes} passes", { words: mixedCounts.words, sentences: mixedCounts.sentences, passes: loopPasses })
-              : uiFmt("{items}-item loop, {passes} passes", { items: effectiveLoopItems, passes: loopPasses })}</span>
+              ? uiFmt("{words} words + {sentences} sentences at a time, heard {passes}×", { words: mixedCounts.words, sentences: mixedCounts.sentences, passes: loopPasses })
+              : uiFmt("{items} cards at a time, heard {passes}×", { items: effectiveLoopItems, passes: loopPasses })}</span>
           </div>
         </div>
 
@@ -2170,7 +2170,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
             <fieldset className="mt-4 border-t border-[var(--border)] pt-4">
               <legend className="text-xs font-black text-[var(--text-2)]">{ui("Queue order")}</legend>
               <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">
-                {ui("Easiest first works through the course by level — all of A1, then A2, then B1 — with the most useful card leading each level. Most common first teaches the phrases and words people are most likely to use, whatever level they are. Newest first plays the packs added most recently, so new content is heard instead of waiting behind thousands of commoner items. Longest first plays the biggest pieces first — whole passages, then sentences, then single words.")}
+                {ui("Easiest first works through the course by level — all of A1, then A2, then B1 — with the most useful card leading each level. Most common first teaches the phrases and words people are most likely to use, whatever level they are. Reviews & struggles first plays what is due and what you have marked as hard before anything new. Least heard first plays what you have heard fewest times, so nothing is skipped for long. Newest first plays the packs added most recently, so new content is heard instead of waiting behind thousands of commoner items. Longest first plays the biggest pieces first — whole passages, then sentences, then single words.")}
               </p>
               <div
                 aria-label={ui("Queue order")}
@@ -2364,20 +2364,20 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                 <span>
                   <strong className="block text-xs font-black text-[var(--text-1)]">{ui("Learning loop")}</strong>
                   <small className="mt-0.5 block text-[11px] font-semibold leading-snug text-[var(--text-3)]">
-                    {ui("Hear a small set, then revisit the same items before moving on.")}
+                    {ui("A few cards at a time, each heard more than once before the next few start.")}
                   </small>
                 </span>
               </div>
               <div className="mt-3 space-y-2">
                 {interleaves ? <>
-                  <NumberSetting label={ui("Words in each loop")} max={Math.max(1, 12 - mixedCounts.sentences)} min={1} note={ui("How many words are in the set before it repeats")} onCommit={(value) => commitMixedCounts({ ...mixedCounts, words: value }).words} suffix={ui("words")} testId="listen-loop-words" value={mixedCounts.words} />
-                  <NumberSetting label={ui("Sentences in each loop")} max={Math.max(1, 12 - mixedCounts.words)} min={1} note={ui("How many sentences and phrases are in the set before it repeats")} onCommit={(value) => commitMixedCounts({ ...mixedCounts, sentences: value }).sentences} suffix={ui("sentences")} testId="listen-loop-sentences" value={mixedCounts.sentences} />
-                </> : <NumberSetting label={ui("Items in each loop")} max={12} min={1} note={ui("How many items are in the set before it repeats")} onCommit={commitLoopItems} suffix={ui("items")} testId="listen-loop-items" value={loopItems} />}
+                  <NumberSetting label={ui("Words at a time")} max={Math.max(1, 12 - mixedCounts.sentences)} min={1} note={ui("How many words you hear before they come round again")} onCommit={(value) => commitMixedCounts({ ...mixedCounts, words: value }).words} suffix={ui("words")} testId="listen-loop-words" value={mixedCounts.words} />
+                  <NumberSetting label={ui("Sentences at a time")} max={Math.max(1, 12 - mixedCounts.words)} min={1} note={ui("How many sentences and phrases you hear before they come round again")} onCommit={(value) => commitMixedCounts({ ...mixedCounts, sentences: value }).sentences} suffix={ui("sentences")} testId="listen-loop-sentences" value={mixedCounts.sentences} />
+                </> : <NumberSetting label={ui("Cards at a time")} max={12} min={1} note={ui("How many cards you hear before they come round again")} onCommit={commitLoopItems} suffix={ui("cards")} testId="listen-loop-items" value={loopItems} />}
                 <NumberSetting
-                  label={ui("Passes through each loop")}
+                  label={ui("Times you hear each card")}
                   max={6}
                   min={1}
-                  note={ui("How many times the set plays before moving on to the next one")}
+                  note={ui("How many times those cards play before the next ones start")}
                   onCommit={commitLoopPasses}
                   suffix="×"
                   testId="listen-loop-passes"
@@ -2387,7 +2387,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               <p className="mt-3 text-[11px] font-semibold leading-snug text-[var(--text-2)]" data-testid="listen-loop-example">
                 {interleaves
                   ? uiFmt(
-                    "Right now: {words} words + {sentences} sentences = a set of {total}, played {passes}×. You hear all {total}, then the same {total} again, then the next set.",
+                    "Right now: {words} words + {sentences} sentences = {total} cards at a time, each heard {passes}×. The first {total} play {passes} times over, then the next {total} do the same.",
                     {
                       words: mixedCounts.words,
                       sentences: mixedCounts.sentences,
@@ -2396,10 +2396,10 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                     }
                   )
                   : uiFmt(
-                    "Right now: a set of {total}, played {passes}×. You hear all {total}, then the same {total} again, then the next set.",
+                    "Right now: {total} cards at a time, each heard {passes}×. The first {total} play {passes} times over, then the next {total} do the same.",
                     { total: loopItems, passes: loopPasses }
                   )}
-                {loopPasses === 1 ? " " + ui("At 1× a set plays once and nothing repeats inside it.") : ""}
+                {loopPasses === 1 ? " " + ui("At 1× each card plays once and nothing comes round again.") : ""}
               </p>
             </div>
             <fieldset className="mt-4 border-t border-[var(--border)] pt-4">
@@ -2537,7 +2537,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
             <fieldset className="mt-4 border-t border-[var(--border)] pt-4">
               <legend className="text-xs font-black text-[var(--text-2)]">{ui("Language order")}</legend>
               <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">
-                {ui("Choose which language is spoken first.")}
+                {ui("Which side of the card you hear first. Meaning first lets you have a go at saying it before you hear it said, which is practice; German first makes you work out what it means, which is a test.")}
               </p>
               <div
                 aria-label={ui("Language order")}
