@@ -15,6 +15,7 @@
  *
  *   node scripts/portugal-audit.cjs              everything still German
  *   node scripts/portugal-audit.cjs --word Bier  every answer one word got
+ *   node scripts/portugal-audit.cjs --rivals     words with two answers in use
  *
  * WHY IT EXISTS. The course was translated before the rule existed that a card
  * not about Germany should carry Portuguese things, so roughly twenty thousand
@@ -34,9 +35,21 @@
  * nearly every one is correct: kein Problem is não faz mal, panische Angst is
  * pavor, an der Quelle is na nascente rather than na fonte, and zwei Kaffee is
  * dois cafés, which a search for the singular cannot see. The signal was
- * perhaps one real fault in fifty. A list like that gets skimmed once and
- * never again, so the sweep stays manual and narrow: pick the words you have
- * reason to suspect, and read them with --word.
+ * perhaps one real fault in fifty, and a list like that gets skimmed once and
+ * never again.
+ *
+ * --rivals is that idea with the noise taken out. It only speaks when there is
+ * a RIVAL: a second Portuguese word used at least three times for the same
+ * German word. An idiom appears once; a translation that has drifted appears
+ * again and again. That is what separated creche from infantário, twelve cards
+ * to nine, and it found that nobody says felicitação and that the box says
+ * pizza. Read the ones where EVERY sentence disagrees with the word card
+ * first — those were two real faults out of six.
+ *
+ * It still finds plenty that is simply polysemy, and that is expected rather
+ * than a defect: die Uhr is a relógio and also the o'clock in às sete horas,
+ * das Rad is a wheel and a bicycle, ein Stau is an engarrafamento but you are
+ * preso no trânsito. The tool cannot tell those from a drift. A person can.
  *
  * A NOTE ON WORD EDGES. A regular expression \b is no use over German text.
  * JavaScript defines a word character as [A-Za-z0-9_], so every umlaut and ß
@@ -144,6 +157,51 @@ if (wordFlag !== -1) {
     console.log(`  ${pack.german ? "GERMAN " : "generic"}  ${row.german}`);
     console.log(`            ${row.portuguese}`);
   }
+  process.exit(0);
+}
+
+// ── one German word, two Portuguese answers, both in use ───────────────────
+if (process.argv.includes("--rivals")) {
+  // Portuguese words too common to be anybody's translation of anything.
+  const STOP = new Set(
+    ("o a os as um uma uns umas de do da dos das em no na nos nas por para com sem que se e ou mas não sim já ainda muito mais menos"
+      + " é são está estão ser estar tem têm ter vai vão foi era como quando onde quem qual isso isto aquilo eu tu ele ela nós eles elas"
+      + " meu minha teu tua seu sua nosso nossa lhe me te nos lá cá aqui ali bem mal também só depois antes agora hoje amanhã ontem"
+      + " faz fazer fez pode podem posso quer quero vou vamos vem dia dias ano anos casa coisa coisas gente pessoa favor").split(/\s+/)
+  );
+  const words = (s) =>
+    (s.toLowerCase().match(/[\p{L}][\p{L}-]{3,}/gu) || []).filter((w) => !STOP.has(w));
+
+  const found = [];
+  for (const card of pairs) {
+    // With or without the article: Kita is a word card too, and the first
+    // version of this missed it for having no der/die/das in front.
+    const m = /^(?:(?:der|die|das) )?([\p{Lu}][\p{L}]+)$/u.exec(card.german);
+    if (!m) continue;
+    const answer = card.portuguese.replace(/^(?:o|a|os|as|um|uma) /, "");
+    if (/\s/.test(answer) || answer.length < 4) continue;
+
+    const uses = pairs.filter((r) => r.german !== card.german && edge(m[1]).test(r.german));
+    if (uses.length < 6) continue;
+    const without = uses.filter((r) => !edge(answer).test(r.portuguese));
+    if (without.length < 3) continue;
+
+    const tally = new Map();
+    for (const r of without) for (const w of new Set(words(r.portuguese))) tally.set(w, (tally.get(w) || 0) + 1);
+    const [rival, n] = [...tally].sort((a, b) => b[1] - a[1])[0] || [];
+    if (!rival || n < 3) continue;
+    // A rival that shares a stem is the same word wearing a different ending.
+    if (rival.startsWith(answer.slice(0, 4)) || answer.startsWith(rival.slice(0, 4))) continue;
+    found.push({ noun: m[1], answer, rival, n, of: uses.length, sample: without.filter((r) => edge(rival).test(r.portuguese)) });
+  }
+
+  found.sort((a, b) => b.n / b.of - a.n / a.of);
+  for (const r of found) {
+    const every = r.n === r.of ? "  <- every one of them" : "";
+    console.log(`\n${r.noun}: the card says ${r.answer}, ${r.n} of ${r.of} sentences say ${r.rival}${every}`);
+    for (const s of r.sample.slice(0, 2)) console.log(`   ${s.german}\n     ${s.portuguese}`);
+  }
+  console.log(`\n${found.length} German word(s) with a rival answer used three times or more.`);
   process.exit(0);
 }
 
