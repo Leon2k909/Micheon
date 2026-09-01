@@ -21435,4 +21435,75 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "auf Nummer sicher gehen": "jogar pelo seguro",
   "sich in Acht nehmen vor": "acautelar-se com",
   "rechnen mit": "contar com",
+
+  // ── Weather, tides and the shape of the land (part436) ──────────────────
+  //
+  // Der Wolkenbruch is uma bátega de água and die Dämmerung is o lusco-fusco:
+  // Portuguese has its own word for both, and neither is a description of the
+  // German one.
+  //
+  // The verbs a forecast uses are already fixed in Portuguese too — o vento
+  // refresca, o vento amaina, o céu encobre-se, o tempo virou — so each takes
+  // the verb the forecast would.
+  "der Niederschlag": "a precipitação",
+  "die Feuchtigkeit": "a humidade",
+  "schwül": "abafado",
+  "der Wolkenbruch": "uma bátega de água",
+  "stürmisch": "tempestuoso",
+  "die Sichtweite": "a visibilidade",
+  "frostig": "gélido",
+  "das Tauwetter": "o degelo",
+  "verdunsten": "evaporar-se",
+  "nieseln": "chuviscar",
+  "die Windböe": "a rajada de vento",
+  "auffrischen": "refrescar",
+  "abflauen": "amainar",
+  "sich zuziehen": "encobrir-se",
+  "umschlagen": "virar",
+  "der Wetterumschwung": "a mudança de tempo",
+  "unbeständig": "instável",
+  "Wurzeln schlagen": "criar raízes",
+  "die Dämmerung": "o lusco-fusco",
+  "die Anhöhe": "uma elevação",
+  "der Abhang": "a encosta",
+  "das Ufer": "a margem",
+  "die Ebbe": "a maré baixa",
+  "die Flut": "a maré alta",
+  "das Dickicht": "o matagal",
+  "die Lichtung": "a clareira",
+  "fruchtbar": "fértil",
+  "karg": "árido",
+  "aussterben": "extinguir-se",
+  "verwildern": "ficar ao abandono",
+  "der Feinstaub": "as partículas finas",
+  "vereinzelt": "disperso",
+
+  // ── Numbers, limits and rough arithmetic (part437) ──────────────────────
+  //
+  // Überschlagen is fazer as contas por alto, sich belaufen auf is cifrar-se
+  // em, and ins Gewicht fallen is pesar na balança — the German figure of
+  // speech becomes the Portuguese one rather than its parts.
+  "der Anteil": "a parcela",
+  "die Spanne": "a amplitude",
+  "der Richtwert": "o valor de referência",
+  "die Obergrenze": "o limite máximo",
+  "der Grenzwert": "o valor-limite",
+  "die Toleranz": "a margem de tolerância",
+  "die Größenordnung": "a ordem de grandeza",
+  "der Bruchteil": "uma fração",
+  "annähernd": "aproximadamente",
+  "exakt": "exato",
+  "spürbar": "sensível",
+  "zahlreich": "numeroso",
+  "unzählig": "incontável",
+  "mindestens": "pelo menos",
+  "höchstens": "no máximo",
+  "vergleichsweise": "comparativamente",
+  "überschlagen": "fazer as contas por alto",
+  "veranschlagen": "orçamentar",
+  "beziffern": "quantificar",
+  "überschreiten": "ultrapassar",
+  "unterschreiten": "ficar abaixo de",
+  "sich auf etwas belaufen": "cifrar-se em",
+  "ins Gewicht fallen": "pesar na balança",
 };
