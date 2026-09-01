@@ -44,7 +44,7 @@ global.localStorage = global.window.localStorage;
 const result = esbuild.buildSync({
   stdin: {
     contents: [
-      'export { buildListenQueue, arrangeListenMixedQueue, listenMixGroupFor, getListenMixedCounts, setListenMixedCounts, DEFAULT_LISTEN_MIXED_COUNTS, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenPetBilingualCaptions, setListenPetBilingualCaptions, getListenContentKinds, setListenContentKinds, listenContentKinds, listenContentSourceKey, LISTEN_CONTENT_KINDS, getListenQueueOrder, setListenQueueOrder, getListenQueueWithin, setListenQueueWithin, listenQueueHasGroups, LISTEN_QUEUE_WITHINS, DEFAULT_LISTEN_QUEUE_WITHIN, getListenReturnGap, setListenReturnGap, getListenReturnScope, setListenReturnScope, listenReturnCovers, LISTEN_RETURN_GAPS, LISTEN_RETURN_SCOPES, DEFAULT_LISTEN_RETURN_GAP, DEFAULT_LISTEN_RETURN_SCOPE, LISTEN_RETURN_GAP_MS, LISTEN_RETURN_GAP_CARDS, listenReturnGapIsCounted, getListenCurrentItemId, setListenCurrentItemId, getListenTargetRepeats, setListenTargetRepeats, getListenMeaningRepeats, setListenMeaningRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, getListenLanguageGapMs, setListenLanguageGapMs, buildListenSpeechPlan, DEFAULT_LANGUAGE_GAP_MS, DEFAULT_TARGET_REPEATS, DEFAULT_MEANING_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE, DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";',
+      'export { buildListenQueue, arrangeListenMixedQueue, listenMixGroupFor, getListenMixedCounts, setListenMixedCounts, DEFAULT_LISTEN_MIXED_COUNTS, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenPetBilingualCaptions, setListenPetBilingualCaptions, getListenContentKinds, setListenContentKinds, listenContentKinds, listenContentSourceKey, LISTEN_CONTENT_KINDS, getListenQueueOrder, setListenQueueOrder, getListenQueueWithin, setListenQueueWithin, listenQueueHasGroups, LISTEN_QUEUE_WITHINS, DEFAULT_LISTEN_QUEUE_WITHIN, getListenReturnGap, setListenReturnGap, getListenReturnScope, setListenReturnScope, listenReturnCovers, LISTEN_RETURN_GAPS, LISTEN_RETURN_SCOPES, DEFAULT_LISTEN_RETURN_GAP, DEFAULT_LISTEN_RETURN_SCOPE, LISTEN_RETURN_GAP_MS, LISTEN_RETURN_GAP_CARDS, listenReturnGapIsCounted, getListenCurrentItemId, setListenCurrentItemId, getListenTargetRepeats, setListenTargetRepeats, getListenMeaningRepeats, setListenMeaningRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, getListenLanguageGapMs, setListenLanguageGapMs, buildListenSpeechPlan, DEFAULT_LANGUAGE_GAP_MS, DEFAULT_TARGET_REPEATS, DEFAULT_MEANING_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE, DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";\n      export { formatEnglishText } from "./src/lib/englishVariant.ts";',
       'export { loadGradeStore, saveGradeStore, statusForId, COMPLETED_KEY } from "./src/lib/activity.ts";',
       'export { setInterfaceLanguage } from "./src/lib/interfaceLanguage.ts";',
       'export { setLearningDirection } from "./src/lib/direction.ts";',
@@ -89,6 +89,7 @@ const {
   buildListenQueue, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem,
   getListenBackgroundPlayback, setListenBackgroundPlayback,
   getListenPetBilingualCaptions, setListenPetBilingualCaptions,
+  formatEnglishText,
   getListenContentKinds, setListenContentKinds, listenContentKinds,
   listenContentSourceKey, LISTEN_CONTENT_KINDS,
   getListenQueueOrder, setListenQueueOrder,
@@ -271,6 +272,46 @@ check("every card in the queue knows how hard it is",
     .filter((item) => !item.rung).length === 0);
 
 check("Listen starts at the easiest level by default", DEFAULT_LISTEN_QUEUE_ORDER === "level");
+
+// \u2500\u2500 Listen speaks the learner's English \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// It imported the variant helpers and called neither, so the card showed
+// whatever the catalogue happened to be written in \u2014 a reader set to
+// British English was told an Autobahn is a freeway.
+{
+  const listenSource = fs.readFileSync(path.join(root, "src/lib/listenMode.ts"), "utf8");
+  const view = fs.readFileSync(path.join(root, "src/components/listen/ListenView.tsx"), "utf8");
+  check(
+  "the queue converts whichever side is English into the chosen variant",
+  listenSource.includes("const englishVariant = resolveEnglishVariant(getEnglishVariant());")
+    && listenSource.includes('slots.de === "en" ? formatEnglishText(item.de, englishVariant) : item.de')
+    && listenSource.includes('slots.en === "en" ? formatEnglishText(item.en, englishVariant) : item.en'),
+  "Listen renders the catalogue's own variant whatever the learner picked"
+);
+check(
+  "...and flipping the setting rebuilds the queue rather than waiting for something else to",
+  view.includes("ENGLISH_VARIANT_EVENT, onVariant")
+    && /const baseQueue = useMemo[\s\S]{0,2600}?englishVariantRevision/.test(view)
+);
+// The pair the card was actually wrong about. It belongs in the list by the
+// list's own rule and no other: neither word means anything else in the
+// variant it is being swapped into, so the swap is safe read either way.
+check(
+  "freeway and motorway are the same road in both directions",
+  formatEnglishText("freeway, highway", "british") === "motorway, highway"
+    && formatEnglishText("motorway", "american") === "freeway"
+    && formatEnglishText("Freeway", "british") === "Motorway"
+);
+// The reversal is what makes an ambiguous pair dangerous, so the ones that
+// would break under it must stay out.
+for (const [text, variant] of [["the pavement", "american"], ["a flat tyre", "american"],
+  ["a torch", "american"], ["the holiday", "american"]]) {
+  check(
+    `${JSON.stringify(text)} is left alone rather than guessed at`,
+    formatEnglishText(text, variant) === text,
+    "an ambiguous vocabulary pair got into the display list, and it reverses badly"
+  );
+}
+}
 
 // ── the passages are something Listen can play ───────────────────────
 // Listen walked the sentence tracker and the word tracker, which left the

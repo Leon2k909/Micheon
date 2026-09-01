@@ -1,5 +1,6 @@
 import { borrowedWordSegments } from "@/lib/borrowedWords";
 import { PASSAGES } from "@/lib/passages";
+import { formatEnglishText, getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
 import {
   gradeEntryForId,
   loadGradeStore,
@@ -1471,6 +1472,28 @@ export function buildListenQueue(
         // the German does.
         synonyms: slots.de === "de" ? item.synonyms : undefined,
       }];
+    });
+  }
+
+  /**
+   * Whichever side is English is shown in the learner's own English.
+   *
+   * The catalogue is written in one variant and read in two. Listen was the
+   * one place that never converted — it imported the helpers and called
+   * neither — so a reader set to British English was told an Autobahn is a
+   * freeway, and met color, practicing and aluminum on the cards beside it.
+   *
+   * Done here rather than in the view so the test, the pet captions and the
+   * spoken line all say the same word as the card. Resolved once: "auto"
+   * sniffs the browser, and doing that per item is the same answer 26,000
+   * times.
+   */
+  const englishVariant = resolveEnglishVariant(getEnglishVariant());
+  if (slots.de === "en" || slots.en === "en") {
+    combined = combined.map((item) => {
+      const de = slots.de === "en" ? formatEnglishText(item.de, englishVariant) : item.de;
+      const en = slots.en === "en" ? formatEnglishText(item.en, englishVariant) : item.en;
+      return de === item.de && en === item.en ? item : { ...item, de, en };
     });
   }
 

@@ -90,6 +90,14 @@ function matchWordCase(source: string, replacement: string): string {
  * pairs belong here: words with a second meaning in one variant (tire, meter,
  * story, check, draft, curb) are deliberately left alone — a wrong "tyre" is
  * worse than a tolerated "tire". Suffix families live in the regex rules below.
+ *
+ * A few are vocabulary rather than spelling. They earn their place by the same
+ * test and no other: freeway means nothing else in British English, motorway
+ * means nothing else in American, so the swap is safe read either way. That
+ * test is why sidewalk/pavement, flashlight/torch, apartment/flat and
+ * vacation/holiday are NOT here — the list is reversed to americanise, and
+ * reversing those turns a pavement into a sidewalk, a flaming torch into a
+ * flashlight, and a flat tyre into an apartment tyre.
  */
 const DISPLAY_WORD_PAIRS: Array<[string, string]> = [
   ["practice", "practise"],
@@ -142,6 +150,8 @@ const DISPLAY_WORD_PAIRS: Array<[string, string]> = [
   ["maneuvers", "manoeuvres"],
   ["plow", "plough"],
   ["plows", "ploughs"],
+  ["freeway", "motorway"],
+  ["freeways", "motorways"],
 ];
 
 const AMERICAN_TO_BRITISH = new Map(DISPLAY_WORD_PAIRS);

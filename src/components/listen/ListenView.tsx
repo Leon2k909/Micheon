@@ -22,6 +22,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ENGLISH_VARIANT_EVENT } from "@/lib/englishVariant";
 import { SettingsCategory } from "@/components/SettingsCategory";
 import { ui, uiFmt, uiNumber, uiOr } from "@/lib/i18n";
 import { loadGradeStore } from "@/lib/activity";
@@ -111,7 +112,6 @@ import { LISTEN_TEST_MAX_QUESTIONS } from "@/lib/listenTest";
 import { TappableSentence } from "@/components/shared/TappableSentence";
 import { preloadTts, stopTts, ttsSequence, TTS_SPEAKING_EVENT, type SeqItem } from "@/lib/voice";
 import { readListenSession, writeListenSession } from "@/lib/listenSession";
-import { getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
 import {
   AUDIO_LANGUAGE,
   courseSide,
@@ -597,6 +597,19 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
    * not arrived is dropped — so without this the screen goes empty for as long
    * as the download takes and then fills in, which reads as a fault.
    */
+  /**
+   * Flipping British/American rebuilds the queue.
+   *
+   * The conversion happens as the queue is built, so without this the setting
+   * would take effect on the next thing that happened to invalidate it —
+   * which reads as the switch not working.
+   */
+  const [englishVariantRevision, setEnglishVariantRevision] = useState(0);
+  useEffect(() => {
+    const onVariant = () => setEnglishVariantRevision((n) => n + 1);
+    window.addEventListener(ENGLISH_VARIANT_EVENT, onVariant);
+    return () => window.removeEventListener(ENGLISH_VARIANT_EVENT, onVariant);
+  }, []);
   const [translationsRevision, setTranslationsRevision] = useState(0);
   useEffect(() => {
     if (meaningLanguage !== "fr" && meaningLanguage !== "pl" && meaningLanguage !== "es") return undefined;
@@ -624,7 +637,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
         usefulness: usefulnessFilter,
       })
       : []),
-    [everOpened, apiParts, contentKey, gradesRevision, learningDirection, levelFilter, meaningLanguage, profile, queueOrder, queueWithin, returnGap, returnScope, translationsRevision, usefulnessFilter]
+    [everOpened, apiParts, contentKey, englishVariantRevision, gradesRevision, learningDirection, levelFilter, meaningLanguage, profile, queueOrder, queueWithin, returnGap, returnScope, translationsRevision, usefulnessFilter]
   );
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => new Set());
   const queue = useMemo(
