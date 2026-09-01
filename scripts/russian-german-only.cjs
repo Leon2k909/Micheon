@@ -98,6 +98,7 @@ const LANGUAGE = [
   "Handschuh ist einfach", "Fernweh ist Heimweh", "Gemütlich ist so ein",
   "become werden heißt", "Bekommen heißt nicht become",
   "Und Chef ist der Boss", "das Wort selbst?", "Wort für privacy",
+  "I become a steak", "Deutsche Größen",
   "Durchwachsen heißt beim Fleisch", "Halb und halb heißt",
   "Eventuell heißt vielleicht", "Stimmt so heißt",
   "Im Süden sagt man Geldbeutel", "Ich hab ein Gift für dich",
