@@ -626,7 +626,7 @@ export const ES: Record<string, string> = {
   "You matched the spoken phrase.": "Has acertado la frase hablada.",
   "Space": "Espacio",
   "Go back to writing it": "Volver a escribirla",
-  "Listen to each option and choose the word that completes the sentence.": "Escucha cada opción y elige la palabra que completa la frase.",
+  "The first option plays itself. Choose it, or listen to the others.": "La primera opción suena sola. Elígela o escucha las otras.",
   "Missing-word audio choices": "Opciones de audio para la palabra que falta",
   "Play option": "Reproducir la opción",
   "Choose answer": "Elegir la respuesta",

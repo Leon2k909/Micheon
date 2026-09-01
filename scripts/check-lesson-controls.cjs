@@ -338,6 +338,29 @@ for (const [handler, stage] of [
   );
 }
 
+// ── the missing-word stage opens by playing ────────────────────────────────
+// Three options, one word each, every one behind a button: answering cost
+// three presses before the learner could form an opinion. The first plays on
+// arrival, so the common case is hear-and-choose.
+check(
+  "the first option plays itself when the stage opens",
+  /if \(phase !== "MissingWord" \|\| missingWordChecked\) return;[\s\S]{0,400}?previewMissingWord\(first\)/.test(guided)
+);
+check(
+  "...and only when nothing has played yet, so a retry is not talked over",
+  /if \(missingWordPreview !== null\) return;/.test(guided)
+    && /if \(phase === "MissingWord"\) \{[\s\S]{0,160}?setMissingWordPreview\(null\);/.test(guided),
+  "coming back after a wrong answer either replays over the learner or never replays at all"
+);
+// The one thing this stage must not do. Its options are audio and nothing
+// else, so an answer that favoured a position would be reachable by pressing
+// that position without listening — which is the whole of what it tests.
+check(
+  "the answer is not steered towards a position",
+  !/missingWordChoices[\s\S]{0,200}?(indexOf\(missingWord\.answer\)|unshift|answerFirst|\.sort\()/.test(guided),
+  "the correct option is being moved towards a slot, which makes the stage answerable without listening"
+);
+
 // ── the flag is the switch ──────────────────────────────────────────────────
 // The flag on the typing prompt already says which variant you are being
 // marked against, so it is the obvious thing to press to change it — rather

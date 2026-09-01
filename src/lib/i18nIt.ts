@@ -1359,7 +1359,7 @@ export const IT: Record<string, string> = {
   "You matched the spoken phrase.": "Hai abbinato la frase pronunciata.",
   "Space": "Barra spaziatrice",
   "Go back to writing it": "Torna a scriverla",
-  "Listen to each option and choose the word that completes the sentence.": "Ascolta ogni opzione e scegli la parola che completa la frase.",
+  "The first option plays itself. Choose it, or listen to the others.": "La prima opzione parte da sola. Scegli quella oppure ascolta le altre.",
   "Press 1, 2 or 3 to hear an option again, then Enter to choose it.": "Premi 1, 2 o 3 per risentire un'opzione, poi Invio per sceglierla.",
   "Missing-word audio choices": "Opzioni audio per la parola mancante",
   "Play option": "Riproduci l'opzione",

@@ -160,6 +160,14 @@ const SFX_IDLE_SUSPEND_MS = 4000;
  * the app hesitating over something it has already accepted.
  */
 const AUTO_CHECK_PAUSE_MS = 450;
+/**
+ * How long the missing-word stage waits before playing its first option.
+ *
+ * Long enough for the sentence that opens the stage to be read, short enough
+ * that it feels like the stage starting rather than something the learner
+ * triggered by waiting.
+ */
+const MISSING_WORD_OPENING_MS = 700;
 
 /**
  * An answer reduced to the letters and digits in it, lower case.
@@ -2299,6 +2307,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     if (phase === "MissingWord") {
       setMissingWordChoice(null);
       setMissingWordChecked(false);
+      setMissingWordPreview(null);
     }
     if (phase === "Translate") {
       setEnInput("");
@@ -2913,6 +2922,34 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     setMissingWordPreview(choice);
     lessonSpeak(choice, 0.78, targetLang);
   };
+
+  /**
+   * The first option plays itself when the stage opens.
+   *
+   * Three options, one word each, and every one of them behind a button:
+   * answering took three presses before the learner could form an opinion.
+   * Playing the first on arrival makes the common case hear-and-choose, and
+   * the other two are still there for when it does not fit.
+   *
+   * It is the FIRST option, not the correct one. The options are audio and
+   * nothing else, so an answer that favoured a position would make the stage
+   * answerable by pressing that position without listening — which is the
+   * whole of what it tests.
+   *
+   * Guarded on nothing having been played yet, so returning to the stage
+   * after a wrong answer does not talk over the learner, and on the sentence
+   * itself, because that plays on arrival too and two voices at once is
+   * neither of them.
+   */
+  useEffect(() => {
+    if (phase !== "MissingWord" || missingWordChecked) return;
+    if (missingWordPreview !== null) return;
+    const first = missingWordChoices[0];
+    if (!first) return;
+    const opening = window.setTimeout(() => previewMissingWord(first), MISSING_WORD_OPENING_MS);
+    return () => window.clearTimeout(opening);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, missingWordChoices, missingWordChecked, missingWordPreview]);
 
   const retryMissingWord = () => {
     setMissingWordPreview(null);
@@ -3811,7 +3848,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             className="fs-missing-phase"
           >
             <p className="fs-missing-instruction">
-              {ui("Listen to each option and choose the word that completes the sentence.")}
+              {ui("The first option plays itself. Choose it, or listen to the others.")}
             </p>
             {/* Said where the choosing happens, not in a help screen. The keys
                 are the only way through this round without a mouse, and a

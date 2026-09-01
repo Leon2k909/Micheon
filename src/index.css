@@ -11662,6 +11662,36 @@ html[data-theme="dark"] {
   gap: 14px;
 }
 
+/* Nothing in the column gives up height to fit the box.
+ *
+ * A flex item shrinks by default, and this column has a fixed height — so
+ * content taller than the card did not scroll, it was COMPRESSED: each
+ * paragraph kept its text and lost its box, and the lines ran straight over
+ * whatever came next. On a one-sentence card there was never enough content
+ * to notice. A paragraph is three lines of German and three of English, and
+ * the two landed on top of each other.
+ *
+ * Refusing to shrink is what makes the overflow real, which is what makes
+ * the card's own scrolling work as its height rule already described.
+ */
+.listen-card > * {
+  flex-shrink: 0;
+}
+
+/* A card holding a paragraph grows instead of scrolling.
+ *
+ * The fixed height exists so the controls under the card never move between
+ * one item and the next, and for words and sentences it should stay. A
+ * paragraph is not that: it is meant to be read in one piece, and reading it
+ * through a 340px window while the audio runs is worse than the controls
+ * shifting once. So the height becomes a floor for these, and every other
+ * card is untouched.
+ */
+.listen-card--long {
+  height: auto;
+  min-height: 340px;
+}
+
 /* The Know-it menu is not content, and must not be scrolled like it.
 
    Floating the menu stopped it making the block taller, but an absolutely

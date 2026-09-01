@@ -2076,7 +2076,10 @@ void (async () => {
   // the rest, 24px above the rule and 20px below it.
   const listenCss = read("src/index.css");
   const listenView = read("src/components/listen/ListenView.tsx");
-  const cardBlock = listenCss.slice(listenCss.indexOf(".listen-card {"), listenCss.indexOf(".listen-card:has("));
+  // The base rule alone. Ending this at the next .listen-card selector read
+  // every rule added in between as part of it.
+  const cardStart = listenCss.indexOf(".listen-card {");
+  const cardBlock = listenCss.slice(cardStart, listenCss.indexOf("\n}", cardStart));
   check(
     "the listen card sets one gap for every line it holds",
     cardBlock.includes("gap: 14px")
@@ -2106,6 +2109,31 @@ void (async () => {
     "the listen card is one height, not a floor it can grow past",
     cardBlock.includes("  height: ")
     && !cardBlock.includes("min-height:")
+  );
+  /*
+   * One exception, and it is named here so it stays one.
+   *
+   * The rule above exists because a floor let every card take its own height
+   * and walked Play, Back and Next down the page. That reasoning was measured
+   * on words and sentences, which differ by a line or two. A paragraph is not
+   * that: it is the content, all of it, and a card that windows it makes the
+   * learner scroll to read the thing the card is for — on every paragraph,
+   * not on the rare long one. A second fixed height would not help either,
+   * because the paragraphs run from three lines to a whole conversation.
+   *
+   * So paragraph cards grow, everything else is pinned, and the check is that
+   * nothing ELSE learns to grow.
+   */
+  const growable = [...listenCss.matchAll(/^\.listen-card[^\s,{]*\s*\{[^}]*min-height:/gmu)]
+    .map((m) => m[0].slice(0, m[0].indexOf("{")).trim());
+  check(
+    "only the paragraph card is allowed to grow past that height",
+    growable.length === 1 && growable[0] === ".listen-card--long",
+    `these can grow: ${growable.join(", ") || "(none, so the exception has gone)"}`
+  );
+  check(
+    "...and it is the paragraph cards that get it",
+    listenView.includes('item.kind === "passage" && "listen-card--long"')
   );
   // ...and the one control that must stay reachable does, on the rarer item
   // that still overruns and scrolls inside the card.

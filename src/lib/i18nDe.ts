@@ -389,7 +389,7 @@ export const DE: Record<string, string> = {
   "Go back to writing it": "Zurück zum Schreiben",
   "Space": "Leertaste",
   "Choose the sound that completes the sentence": "Wähle den Klang, der den Satz vervollständigt",
-  "Listen to each option and choose the word that completes the sentence.": "Höre dir jede Option an und wähle das Wort, das den Satz vervollständigt.",
+  "The first option plays itself. Choose it, or listen to the others.": "Die erste Option spielt von selbst. Wähle sie oder hör dir die anderen an.",
   "Missing-word audio choices": "Audioauswahl für das fehlende Wort",
   "Play option": "Option abspielen",
   "Choose": "Auswählen",

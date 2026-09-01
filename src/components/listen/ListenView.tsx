@@ -1697,7 +1697,13 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
           </div>
         </div>
 
-        <div className="listen-card relative mx-1 mt-5 border-t border-[var(--border)] pt-6 text-center sm:mx-3 sm:pt-8">
+        <div
+          className={cn(
+            "listen-card relative mx-1 mt-5 border-t border-[var(--border)] pt-6 text-center sm:mx-3 sm:pt-8",
+            // A paragraph is read in one piece rather than through a window.
+            item.kind === "passage" && "listen-card--long"
+          )}
+        >
           {/* The voice, drawn from the voice. These are the real frequency
               bands of the clip being spoken — the same reading the guided
               session uses — rather than a loop that runs whether or not
