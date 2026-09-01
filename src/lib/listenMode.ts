@@ -1,5 +1,6 @@
 import { borrowedWordSegments } from "@/lib/borrowedWords";
 import { PASSAGES } from "@/lib/passages";
+import { formatEnglishText, getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
 import {
   gradeEntryForId,
   loadGradeStore,
@@ -38,7 +39,7 @@ import {
   USEFULNESS_FILTERS,
   type ConversationUsefulness,
 } from "@/lib/conversationPriority";
-import { cefrRung, cefrStep, cefrStepLabel, CEFR_STEPS, type CefrStep } from "@/lib/cefr";
+import { cefrRung, cefrRungLabel, cefrStep, cefrStepLabel, CEFR_STEPS, type CefrStep } from "@/lib/cefr";
 import { withoutMutedPacks } from "@/lib/mutedPacks";
 import { packMeta, packNoteForWord } from "@/lib/curriculum";
 import {
@@ -138,7 +139,18 @@ export function setListenMixedCounts(counts: Partial<ListenMixedCounts>, directi
 export const DEFAULT_LISTEN_LOOP_PASSES = 2;
 export const DEFAULT_NEXT_CARD_DELAY_MS = 1_100;
 export const DEFAULT_LANGUAGE_GAP_MS = 0;
-export type ListenContentSource = "sentences" | "words" | "passages" | "mixed";
+/** One of the three bodies of material Listen can draw from. */
+export type ListenContentKind = "sentences" | "words" | "passages";
+export const LISTEN_CONTENT_KINDS: readonly ListenContentKind[] = ["sentences", "words", "passages"];
+/**
+ * What a stored setting can say.
+ *
+ * The setting is a SET of kinds, and was a single choice for as long as there
+ * were only two of them. Both spellings still read: "mixed" is the old word
+ * for all of them, a bare kind is a set of one, and anything newer is written
+ * as the kinds joined by "+".
+ */
+export type ListenContentSource = ListenContentKind | "mixed";
 export type ListenQueueOrder = "common" | "learning" | "least-heard" | "newest" | "level";
 export type ListenLevelFilter = "all" | CefrStep;
 export type ListenUsefulnessFilter = "all" | ConversationUsefulness;
@@ -398,26 +410,64 @@ export function setListenLanguageOrder(
   return next;
 }
 
-export function getListenContentSource(
-  direction: LearningDirection = getLearningDirection()
-): ListenContentSource {
-  try {
-    const value = window.localStorage.getItem(courseSettingKey(CONTENT_SOURCE_KEY, direction));
-    if (value === "sentences" || value === "words"
-      || value === "passages" || value === "mixed") return value;
-  } catch { /* storage blocked: use the documented default */ }
-  return DEFAULT_LISTEN_CONTENT_SOURCE;
+/**
+ * Whatever a caller offers, as the set of kinds it means.
+ *
+ * Takes the old single-choice spellings as well as a list, so a setting
+ * stored before there was a third kind still resolves, and so the checks and
+ * callers that ask for one kind by name keep working unchanged.
+ *
+ * Always returns at least one kind. An empty set is a queue with nothing in
+ * it, which is not a preference anybody expressed — it is the setting
+ * failing to load.
+ */
+export function listenContentKinds(
+  value: ListenContentSource | readonly ListenContentKind[] | null | undefined
+): ListenContentKind[] {
+  const raw = Array.isArray(value)
+    ? value
+    : typeof value === "string"
+      ? (value === "mixed" ? LISTEN_CONTENT_KINDS : value.split("+"))
+      : [];
+  const chosen = LISTEN_CONTENT_KINDS.filter((kind) => raw.includes(kind));
+  return chosen.length ? chosen : [...LISTEN_CONTENT_KINDS];
 }
 
-export function setListenContentSource(
-  source: ListenContentSource,
+/**
+ * The cursor's name for a set.
+ *
+ * Where a set means what a single choice used to mean it keeps that word, so
+ * a learner who had Listen on "mixed" or on "words" comes back to the place
+ * they left rather than to the top of a queue with a new key. Only genuinely
+ * new combinations get a new one.
+ */
+export function listenContentSourceKey(kinds: readonly ListenContentKind[]): string {
+  const chosen = listenContentKinds(kinds);
+  if (chosen.length === LISTEN_CONTENT_KINDS.length) return "mixed";
+  if (chosen.length === 1) return chosen[0];
+  return chosen.join("+");
+}
+
+export function getListenContentKinds(
   direction: LearningDirection = getLearningDirection()
-): ListenContentSource {
-  const next = source === "sentences" || source === "words" || source === "passages"
-    ? source
-    : "mixed";
+): ListenContentKind[] {
   try {
-    window.localStorage.setItem(courseSettingKey(CONTENT_SOURCE_KEY, direction), next);
+    const value = window.localStorage.getItem(courseSettingKey(CONTENT_SOURCE_KEY, direction));
+    if (value) return listenContentKinds(value as ListenContentSource);
+  } catch { /* storage blocked: use the documented default */ }
+  return listenContentKinds(DEFAULT_LISTEN_CONTENT_SOURCE);
+}
+
+export function setListenContentKinds(
+  kinds: readonly ListenContentKind[],
+  direction: LearningDirection = getLearningDirection()
+): ListenContentKind[] {
+  const next = listenContentKinds(kinds);
+  try {
+    window.localStorage.setItem(
+      courseSettingKey(CONTENT_SOURCE_KEY, direction),
+      listenContentSourceKey(next)
+    );
   } catch { /* keep Listen usable */ }
   return next;
 }
@@ -926,7 +976,7 @@ export function setListenPetBilingualCaptions(
 
 function currentItemStorageKey(
   direction: LearningDirection,
-  source: ListenContentSource,
+  source: ListenContentSource | readonly ListenContentKind[],
   order: ListenQueueOrder,
   within: ListenQueueWithin
 ): string {
@@ -940,13 +990,13 @@ function currentItemStorageKey(
   // The default is left out of the key so that every cursor stored before
   // there was a second question still resolves.
   const suffix = within === DEFAULT_LISTEN_QUEUE_WITHIN ? "" : `:${within}`;
-  return `${CURRENT_ITEM_KEY}:${direction}:${source}:${order}${suffix}`;
+  return `${CURRENT_ITEM_KEY}:${direction}:${listenContentSourceKey(listenContentKinds(source))}:${order}${suffix}`;
 }
 
 export function getListenCurrentItemId(
   direction: LearningDirection = getLearningDirection(),
   profile: UserProfile | null = getAuthUser(),
-  source: ListenContentSource = getListenContentSource(direction),
+  source: ListenContentSource | readonly ListenContentKind[] = getListenContentKinds(direction),
   order: ListenQueueOrder = getListenQueueOrder(direction),
   within: ListenQueueWithin = getListenQueueWithin(direction)
 ): string {
@@ -958,7 +1008,7 @@ export function setListenCurrentItemId(
   itemId: string,
   direction: LearningDirection = getLearningDirection(),
   profile: UserProfile | null = getAuthUser(),
-  source: ListenContentSource = getListenContentSource(direction),
+  source: ListenContentSource | readonly ListenContentKind[] = getListenContentKinds(direction),
   order: ListenQueueOrder = getListenQueueOrder(direction),
   within: ListenQueueWithin = getListenQueueWithin(direction)
 ): string {
@@ -1115,7 +1165,8 @@ export function formatListenPetCaption(
 }
 
 export type ListenQueueOptions = {
-  contentSource?: ListenContentSource;
+  /** Which bodies of material to draw from. A single kind still reads. */
+  contentSource?: ListenContentSource | readonly ListenContentKind[];
   direction?: LearningDirection;
   order?: ListenQueueOrder;
   within?: ListenQueueWithin;
@@ -1142,7 +1193,7 @@ export function buildListenQueue(
 ): ListenItem[] {
   const parts = withoutMutedPacks(apiParts);
   const direction = options.direction ?? getLearningDirection();
-  const content = options.contentSource ?? getListenContentSource(direction);
+  const content = listenContentKinds(options.contentSource ?? getListenContentKinds(direction));
   const order = options.order ?? getListenQueueOrder(direction);
   const within = options.within ?? getListenQueueWithin(direction);
   const returnGap = options.returnGap ?? getListenReturnGap(direction);
@@ -1217,9 +1268,14 @@ export function buildListenQueue(
       const level = ownLevel ?? parts[key]?.level;
       if (!levelFilter.has(cefrStep(level))) return false;
     }
-    if (usefulnessFilter.size > 0 && !usefulnessFilter.has(conversationPriorityInfo(key).key)) return false;
-    return true;
+    return keepUsefulness(partKey);
   };
+
+  /** The usefulness half on its own, for the callers that judge level apart. */
+  function keepUsefulness(partKey: unknown): boolean {
+    if (usefulnessFilter.size === 0) return true;
+    return usefulnessFilter.has(conversationPriorityInfo(String(partKey ?? "")).key);
+  }
 
   /**
    * The same narrowing, for a card that belongs to no pack.
@@ -1231,16 +1287,35 @@ export function buildListenQueue(
    * this in conversation" with a number nothing computed would put paragraphs
    * in a filter the learner set precisely to keep them out of.
    */
+  /**
+   * A paragraph is one rung above the German inside it.
+   *
+   * The level on a passage describes its sentences, and a passage is not a
+   * sentence. "Ey, bist du heute Abend dabei? Wir treffen uns so um acht am
+   * Bahnhof. Sag kurz Bescheid, ja?" is three easy clauses and was filed at
+   * A2 on that basis — so it turned up in a queue narrowed to A2, where
+   * everything else is one short sentence at a time. Reading three in a row
+   * is a different job from reading the hardest of them: you have to carry
+   * what the first said into the third.
+   *
+   * One rung and no more. The sentences really are what the author said they
+   * are, and the extra difficulty is the holding-together, which is worth a
+   * step rather than a reclassification.
+   */
+  const passageRung = (ownLevel: string) =>
+    Math.min(CEFR_STEPS.length, cefrRung(ownLevel) + 1);
+
   const keepPassage = (ownLevel: string) => {
     if (usefulnessFilter.size > 0) return false;
-    if (levelFilter.size > 0 && !levelFilter.has(cefrStep(ownLevel))) return false;
+    if (levelFilter.size > 0
+      && !levelFilter.has(CEFR_STEPS[passageRung(ownLevel) - 1])) return false;
     return true;
   };
 
   // primaryAnswer on both sides: answer keys list alternatives behind " / "
   // for the matcher's benefit, but a listening card shows (and the voice
   // speaks) one clean form, not the whole key.
-  const rankedSentences = content === "words" || content === "passages"
+  const rankedSentences = !content.includes("sentences")
     ? []
     : buildCatalog(parts)
     .filter((item) => keep(item.partKey))
@@ -1279,12 +1354,41 @@ export function buildListenQueue(
   // The contextual lesson remains available; only the arbitrary global card
   // is withheld. This is intentionally accuracy-first: silence teaches less
   // than a confidently spoken mistranslation, but it does not teach it wrong.
-  const rankedWords = content === "sentences" || content === "passages"
+  /**
+   * Words are ranked before they are narrowed, and narrowed by the rung the
+   * card will actually show.
+   *
+   * Two things were wrong and they hid each other. The filter read the pack
+   * label while the badge read spokenWordRung — and that function exists
+   * precisely to overrule the label, rescuing finden out of a B1 pack and
+   * pushing die Artischocke out of an A1 one. So a word whose pack said A2
+   * passed an A2 filter and then displayed A1, which is the card disagreeing
+   * with the setting that let it in.
+   *
+   * And the rung was computed from the word's index in the ALREADY filtered
+   * list, so narrowing to one level renumbered every word and could change
+   * the badge it was being judged by. The ranking is the course's own count
+   * of how often it says a word; it is a fact about the word, not about who
+   * else is in the queue. So it is taken once, over everything.
+   */
+  const rankedAll = !content.includes("words")
     ? []
     : rankWordCatalog(
-      buildWordCatalog(parts).filter((word) => word.listenSafe !== false && keep(word.partKey, word.level)),
+      buildWordCatalog(parts).filter((word) => word.listenSafe !== false),
       corpusIndex
     );
+  const wordRungs = new Map<string, number>();
+  rankedAll.forEach((word, index) => {
+    wordRungs.set(word.id, spokenWordRung(word, index, corpusIndex));
+  });
+  const rankedWords = rankedAll.filter((word) => {
+    if (!narrowing) return true;
+    if (levelFilter.size > 0) {
+      const rung = wordRungs.get(word.id) ?? cefrRung(word.level);
+      if (!levelFilter.has(CEFR_STEPS[Math.min(Math.max(rung, 1), CEFR_STEPS.length) - 1])) return false;
+    }
+    return keepUsefulness(word.partKey);
+  });
   rankedWords.forEach((word) => rememberPack(word.id, word.partKey));
   const words: ListenItem[] = rankedWords
     .map((word, index, ranked) => ({
@@ -1304,7 +1408,7 @@ export function buildListenQueue(
       // `index` is this word's place in the ranking above, which is the
       // course's own count of how often it says the word — the evidence that
       // decides whether a pack label is the last word on how hard it is.
-      rung: spokenWordRung(word, index, corpusIndex),
+      rung: wordRungs.get(word.id) ?? cefrRung(word.level),
       // The combined card is one queue slot: the common face is what the
       // voice says, and the folded synonyms stay visible on the card.
       // Compared with the face of the card rather than rated alone — the
@@ -1338,7 +1442,7 @@ export function buildListenQueue(
    * written in. There is no frequency score for a paragraph and inventing one
    * would be a number with nothing behind it.
    */
-  const passages: ListenItem[] = content === "sentences" || content === "words"
+  const passages: ListenItem[] = !content.includes("passages")
     ? []
     : PASSAGES
       .map((passage, index) => {
@@ -1347,7 +1451,7 @@ export function buildListenQueue(
         return { passage, index, de, en };
       })
       .filter(({ de, en, passage }) => de && en && keepPassage(passage.level))
-      .sort((a, b) => cefrRung(a.passage.level) - cefrRung(b.passage.level) || a.index - b.index)
+      .sort((a, b) => passageRung(a.passage.level) - passageRung(b.passage.level) || a.index - b.index)
       .map(({ passage, de, en }, index, ranked) => ({
         // Namespaced, so a passage's grade can never land on a card that
         // happens to share its id in the sentence tracker.
@@ -1356,8 +1460,11 @@ export function buildListenQueue(
         de,
         en,
         use: passage.source,
-        rung: cefrRung(passage.level),
-        levelLabel: passage.level,
+        rung: passageRung(passage.level),
+        // The badge shows the rung the filter judged it by, not the label the
+        // sentences carry — a card that says A2 and is kept out of an A2
+        // queue is the two disagreeing in front of the learner.
+        levelLabel: cefrRungLabel(passageRung(passage.level)),
         kind: "passage" as const,
         popularity: index / Math.max(1, ranked.length - 1),
       }));
@@ -1421,6 +1528,28 @@ export function buildListenQueue(
         // the German does.
         synonyms: slots.de === "de" ? item.synonyms : undefined,
       }];
+    });
+  }
+
+  /**
+   * Whichever side is English is shown in the learner's own English.
+   *
+   * The catalogue is written in one variant and read in two. Listen was the
+   * one place that never converted — it imported the helpers and called
+   * neither — so a reader set to British English was told an Autobahn is a
+   * freeway, and met color, practicing and aluminum on the cards beside it.
+   *
+   * Done here rather than in the view so the test, the pet captions and the
+   * spoken line all say the same word as the card. Resolved once: "auto"
+   * sniffs the browser, and doing that per item is the same answer 26,000
+   * times.
+   */
+  const englishVariant = resolveEnglishVariant(getEnglishVariant());
+  if (slots.de === "en" || slots.en === "en") {
+    combined = combined.map((item) => {
+      const de = slots.de === "en" ? formatEnglishText(item.de, englishVariant) : item.de;
+      const en = slots.en === "en" ? formatEnglishText(item.en, englishVariant) : item.en;
+      return de === item.de && en === item.en ? item : { ...item, de, en };
     });
   }
 

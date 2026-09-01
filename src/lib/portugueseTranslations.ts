@@ -20217,4 +20217,2376 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Wollen wir eine Runde spazieren gehen?": "Vamos dar uma volta a pé?",
   "Nimm lieber eine Jacke mit.": "É melhor levares um casaco.",
   "Draußen sind gerade zwei Grad.": "Lá fora estão dois graus.",
+
+  // ── Spending time, and putting it off (part114) ─────────────────────────
+  //
+  // Ich schiebe das vor mir her is ando a empurrar isto com a barriga —
+  // Portuguese pushes it with the belly, which is a better picture and
+  // exactly the same procrastination.
+  "Wir haben das ganze Wochenende zusammen verbracht.": "Passámos o fim de semana todo juntos.",
+  "Wie verbringst du normalerweise deinen Sonntag?": "Como é que costumas passar o domingo?",
+  "Dem widme ich mich am Wochenende.": "A isso dedico-me ao fim de semana.",
+  "Zu welchem Zweck ist das eigentlich?": "Afinal isso é para que fim?",
+  "Künftig machen wir das anders.": "De futuro fazemos isso de outra maneira.",
+  "Ursprünglich wollten wir früher los.": "Originalmente queríamos sair mais cedo.",
+  "Unter den Umständen ist das völlig verständlich.": "Nessas circunstâncias isso é perfeitamente compreensível.",
+  "Das war eine schöne Begegnung.": "Foi um encontro bonito.",
+  "Ich schiebe das schon seit Wochen vor mir her.": "Há semanas que ando a empurrar isto com a barriga.",
+  "Dafür nehme ich mir bewusst Zeit.": "Para isso arranjo tempo de propósito.",
+  "Das dauert höchstens zehn Minuten.": "Isso demora no máximo dez minutos.",
+  "Wir sehen uns dann nächste Woche.": "Então vemo-nos para a semana.",
+  "Ich melde mich, sobald ich mehr weiß.": "Digo alguma coisa assim que souber mais.",
+  "Das hat sich mit der Zeit ergeben.": "Isso foi surgindo com o tempo.",
+  "Damals war das noch ganz anders.": "Na altura isso era completamente diferente.",
+  "Ich komme kaum noch dazu.": "Já quase não arranjo tempo para isso.",
+  "Lass uns das auf nächste Woche verschieben.": "Vamos adiar isso para a semana que vem.",
+  "Zeitlich passt mir das gut.": "Em termos de horário dá-me jeito.",
+
+  // ── The words a brochure uses (part115) ─────────────────────────────────
+  //
+  // Latin-looking words that are the right answer here — atrativo, negativo,
+  // intensivo, exclusivo — with two that are not: effektiv billiger is na
+  // prática mais barato, and generell is de um modo geral.
+  "Das Angebot klingt wirklich attraktiv.": "A oferta soa mesmo atrativa.",
+  "Das ist relativ günstig.": "Isso é relativamente barato.",
+  "Die Reaktion war ziemlich negativ.": "A reação foi bastante negativa.",
+  "Maximal drei Stück pro Person.": "No máximo três por pessoa.",
+  "Das ist nicht optimal, aber es geht.": "Não é o ideal, mas dá.",
+  "Wir haben zwei Wochen intensiv geübt.": "Praticámos intensivamente durante duas semanas.",
+  "Ich bin den ganzen Tag mobil erreichbar.": "Estou contactável no telemóvel o dia todo.",
+  "Generell finde ich die Idee gut.": "De um modo geral acho a ideia boa.",
+  "Das ist effektiv billiger als vorher.": "Na prática isso sai mais barato do que antes.",
+  "Die Software ist relativ einfach zu bedienen.": "O programa é relativamente simples de usar.",
+  "Das Konzept überzeugt mich noch nicht.": "O conceito ainda não me convence.",
+  "Wir müssen das noch analysieren.": "Ainda temos de analisar isso.",
+  "Ich habe alles neu organisiert.": "Reorganizei tudo.",
+  "Die beiden Farben kann man gut kombinieren.": "As duas cores combinam bem.",
+  "Das ist exklusiv für Mitglieder.": "Isso é exclusivo para sócios.",
+  "Wir treffen uns virtuell.": "Encontramo-nos por videochamada.",
+  "Das Potenzial ist auf jeden Fall da.": "Potencial há, sem dúvida.",
+  "Der Effekt war sofort spürbar.": "O efeito sentiu-se de imediato.",
+
+  // ── The office, the form and the deadline (part116) ─────────────────────
+  //
+  // Das Amt is a repartição, der Bescheid is a notificação, der Widerspruch is
+  // a reclamação — the three words a Portuguese counter uses for the same
+  // three things. Von Schalter zu Schalter geschickt is andar de guichet em
+  // guichet, and the exhaustion in it survives.
+  //
+  // Die Anmeldung and das Bundesland keep their German names, as everywhere
+  // else in this table.
+  "Ich muss morgen aufs Amt.": "Amanhã tenho de ir à repartição.",
+  "Das macht die Verwaltung, nicht wir.": "Isso é a administração que faz, não somos nós.",
+  "Bringen Sie bitte alle Dokumente mit.": "Traga todos os documentos, se faz favor.",
+  "Aus Gründen des Datenschutzes darf ich das nicht sagen.": "Por razões de proteção de dados não lhe posso dizer isso.",
+  "In welchem Bundesland wohnen Sie?": "Em que Bundesland é que mora?",
+  "Das ist staatlich gefördert.": "Isso tem apoio do Estado.",
+  "Er arbeitet dort ehrenamtlich.": "Ele trabalha lá em regime de voluntariado.",
+  "Können Sie mir das bitte erläutern?": "Importa-se de me explicitar isso?",
+  "Ich habe den Antrag online gestellt.": "Submeti o pedido pela internet.",
+  "Wie lange dauert die Bearbeitung?": "Quanto tempo demora o tratamento?",
+  "Das gilt bundesweit.": "Isso vale em todo o país.",
+  "Dafür brauchen Sie eine Bescheinigung.": "Para isso precisa de uma declaração.",
+  "Ich bin hier nicht zuständig.": "Não sou eu a responsável por isso.",
+  "An wen kann ich mich da wenden?": "A quem é que me posso dirigir para isso?",
+  "Die Frist läuft Ende des Monats ab.": "O prazo termina no fim do mês.",
+  "Das muss schriftlich erfolgen.": "Isso tem de ser feito por escrito.",
+  "Ich hätte dazu noch eine Frage.": "Ainda tinha uma pergunta sobre isso.",
+  "Vielen Dank für Ihre Unterstützung.": "Muito obrigada pelo seu apoio.",
+  "Bringen Sie bitte beide Formulare ausgefüllt mit.": "Traga os dois formulários já preenchidos, se faz favor.",
+  "Ohne Termin werden Sie hier leider nicht drangenommen.": "Sem marcação, infelizmente aqui não é atendida.",
+  "Der Antrag liegt seit Wochen bei der Behörde.": "Há semanas que o pedido está parado na entidade pública.",
+  "Für die Anmeldung brauchen Sie eine Bestätigung vom Vermieter.": "Para a Anmeldung precisa de uma declaração do senhorio.",
+  "Ich bin von Schalter zu Schalter geschickt worden.": "Andaram a mandar-me de guichet em guichet.",
+  "Falls Unterlagen fehlen, meldet sich das Amt schriftlich.": "Se faltarem documentos, a repartição contacta-a por escrito.",
+  "Der Bescheid kam schneller, als ich erwartet hatte.": "A notificação chegou mais depressa do que eu esperava.",
+  "Widerspruch lohnt sich nur, wenn Sie Fristen und Nachweise beisammenhaben.": "Só vale a pena reclamar se tiver os prazos e os comprovativos todos reunidos.",
+
+  // ── Offering to help, and being thanked for it (part117) ────────────────
+  //
+  // Das kriegen wir hin is havemos de resolver, and ich schaue mal, was sich
+  // machen lässt is vou ver o que se pode arranjar — the two things somebody
+  // says before they have any idea whether they can.
+  "Das kann ich dir leider nicht beantworten.": "Infelizmente isso não te sei responder.",
+  "Darf ich das kurz ergänzen?": "Posso acrescentar uma coisa?",
+  "Das erleichtert die Sache erheblich.": "Isso facilita consideravelmente as coisas.",
+  "Wir wollten nur verhindern, dass es schlimmer wird.": "Só queríamos impedir que piorasse.",
+  "Ich habe das schon länger beobachtet.": "Já reparo nisso há algum tempo.",
+  "Wir begrüßen die Entscheidung.": "Saudamos a decisão.",
+  "Jeder hat da andere Bedürfnisse.": "Nisso cada um tem necessidades diferentes.",
+  "Ich erkläre es dir gern noch mal.": "Explico-te outra vez com todo o gosto.",
+  "Sag Bescheid, wenn du Hilfe brauchst.": "Diz alguma coisa se precisares de ajuda.",
+  "Kein Problem, ich mache das schon.": "Não há problema, eu trato disso.",
+  "Das kriegen wir hin.": "Havemos de resolver.",
+  "Ich schaue mal, was sich machen lässt.": "Vou ver o que se pode arranjar.",
+  "Falls etwas ist, ruf einfach an.": "Se houver alguma coisa, é só ligar.",
+  "Ich wollte nur kurz nachfragen.": "Vinha só perguntar.",
+  "Danke, dass du dich darum gekümmert hast.": "Obrigada por teres tratado disso.",
+  "Das war wirklich nett von dir.": "Foi mesmo simpático da tua parte.",
+  "Ich hätte es sonst nicht geschafft.": "De outra maneira eu não teria conseguido.",
+  "Melde dich, wenn du was brauchst.": "Diz alguma coisa se precisares de alguma coisa.",
+
+  // ── Glasses, hearing, a ramp and an open door (part118) ─────────────────
+  //
+  // Die Brille is os óculos, plural, so ich trage eine Brille is uso óculos
+  // with no article at all. Barrierefrei has no single word: o edifício tem
+  // acessibilidade is how a Portuguese building is asked about.
+  //
+  // Nimm dir ruhig Zeit is não tenhas pressa. The ruhig is not calm, it is
+  // permission, and Portuguese gives that permission by removing the hurry.
+  "Ich trage eine Brille.": "Uso óculos.",
+  "Ich brauche eine neue Brille.": "Preciso de óculos novos.",
+  "Ohne Brille sehe ich fast nichts.": "Sem óculos quase não vejo nada.",
+  "Ich habe meine Brille vergessen.": "Esqueci-me dos óculos.",
+  "Trägst du Kontaktlinsen?": "Usas lentes de contacto?",
+  "Ich brauche mal wieder einen Sehtest.": "Já me faz falta outro exame à vista.",
+  "Ich muss zum Optiker.": "Tenho de ir ao oculista.",
+  "Mein Vater hört schlecht.": "O meu pai ouve mal.",
+  "Er hat seit Kurzem ein Hörgerät.": "Há pouco tempo passou a usar aparelho auditivo.",
+  "Kannst du bitte etwas lauter sprechen?": "Importas-te de falar um bocadinho mais alto?",
+  "Mein Bruder sitzt im Rollstuhl.": "O meu irmão anda de cadeira de rodas.",
+  "Ist das Gebäude barrierefrei?": "O edifício tem acessibilidade?",
+  "Er hat eine körperliche Behinderung.": "Ele tem uma deficiência motora.",
+  "Gibt es hier eine Rampe?": "Há aqui uma rampa?",
+  "Der Aufzug ist leider außer Betrieb.": "O elevador está avariado, infelizmente.",
+  "Der Eingang ist auf der anderen Seite.": "A entrada é do outro lado.",
+  "Brauchst du Hilfe beim Einsteigen?": "Queres ajuda para entrar?",
+  "Nimm dir ruhig Zeit.": "Não tenhas pressa.",
+  "Kann ich Ihnen die Tür aufhalten?": "Quer que lhe segure a porta?",
+  "Danke, das ist lieb, aber es geht schon.": "Obrigada, é simpático, mas não é preciso.",
+  "Wann war Ihr letzter Sehtest?": "Quando é que fez o último exame à vista?",
+  "Das ist bestimmt drei Jahre her.": "De certeza que já vai para três anos.",
+  "Dann machen wir am besten einen neuen.": "Então é melhor fazermos um novo.",
+  "Geht das heute noch?": "Ainda dá hoje?",
+  "Ja, nehmen Sie sich ruhig Zeit.": "Dá sim, esteja à vontade.",
+
+  // ── Saturday morning, divided up (part119) ──────────────────────────────
+  //
+  // Wäsche waschen is pôr uma máquina de roupa, aufhängen is estender, and
+  // durchsaugen is passar o aspirador. Den Boden wischen is passar a esfregona,
+  // as everywhere else in this table.
+  //
+  // Das Bad ist dran is agora é a vez da casa de banho, and lass das ruhig
+  // stehen is deixa lá estar — the ruhig again becomes a small permission
+  // rather than a word.
+  "Ich mache jetzt die Küche sauber.": "Vou agora limpar a cozinha.",
+  "Ich muss noch abwaschen.": "Ainda tenho de lavar a loiça.",
+  "Räumst du bitte die Spülmaschine aus?": "Importas-te de tirar a loiça da máquina?",
+  "Ich putze am Samstag immer die Wohnung.": "Ao sábado limpo sempre a casa.",
+  "Ich räume schnell auf.": "Arrumo isto num instante.",
+  "Ich wasche heute meine Wäsche.": "Hoje vou pôr uma máquina de roupa.",
+  "Hängst du die Wäsche auf?": "Estendes a roupa?",
+  "Das muss noch gebügelt werden.": "Isso ainda tem de ser passado a ferro.",
+  "Ich sauge kurz durch.": "Vou passar o aspirador num instante.",
+  "Den Boden wische ich morgen.": "O chão passo a esfregona amanhã.",
+  "Der Müll muss noch runter.": "Ainda falta descer o lixo.",
+  "Wir müssen den Müll trennen.": "Temos de separar o lixo.",
+  "Das Bad ist dran.": "Agora é a vez da casa de banho.",
+  "Ich habe schon Staub gewischt.": "Já tirei o pó.",
+  "Machst du das oder mache ich das?": "Fazes tu ou faço eu?",
+  "Die Küche sieht wieder gut aus.": "A cozinha está outra vez com bom aspeto.",
+  "Ich bin gleich fertig damit.": "Estou quase a acabar isso.",
+  "Lass das ruhig stehen, ich mache das.": "Deixa lá estar, eu trato disso.",
+  "Können wir das morgen machen?": "Podemos fazer isso amanhã?",
+  "Machst du das Bad oder mache ich das?": "A casa de banho fazes tu ou faço eu?",
+  "Ich räume erst mal auf.": "Eu primeiro arrumo.",
+  "Gut, dann sauge ich kurz durch.": "Está bem, então passo eu o aspirador.",
+  "Der Müll muss auch noch runter.": "E ainda falta descer o lixo.",
+  "Das mache ich gleich, versprochen.": "Faço isso já a seguir, prometo.",
+  "Dann sind wir in einer Stunde fertig.": "Assim numa hora estamos despachados.",
+
+  // ── A parcel, packed and tracked (part120) ──────────────────────────────
+  //
+  // Der Versand is os portes when it costs money and o envio when it takes
+  // time, and Portuguese uses the two words for the two meanings German packs
+  // into one. Ein Paket abholen is levantar uma encomenda, never ir buscar.
+  //
+  // Die Packstation keeps its German name, like every other German counter in
+  // this course.
+  "Vorsicht, das ist zerbrechlich.": "Cuidado, isso é frágil.",
+  "Bitte vorsichtig behandeln.": "Manusear com cuidado, se faz favor.",
+  "Ich muss das noch gut verpacken.": "Ainda tenho de embalar isto bem.",
+  "Die Verpackung war völlig kaputt.": "A embalagem vinha completamente desfeita.",
+  "Hast du Luftpolsterfolie?": "Tens plástico-bolha?",
+  "Ich schicke dir ein Päckchen.": "Vou mandar-te uma encomenda.",
+  "Die Sendung ist unterwegs.": "O envio vem a caminho.",
+  "Der Empfänger war nicht da.": "O destinatário não estava.",
+  "Ich hole das Paket morgen ab.": "Amanhã vou levantar a encomenda.",
+  "Es liegt in der Filiale.": "Está na estação de correios.",
+  "Wie lange dauert der Versand?": "O envio demora quanto tempo?",
+  "Der Versand ist ab dreißig Euro kostenlos.": "Os portes são grátis a partir de trinta euros.",
+  "Schreib bitte die Adresse deutlich drauf.": "Escreve a morada bem legível, se faz favor.",
+  "Ich habe die Sendungsnummer.": "Tenho o número de seguimento.",
+  "Die Kiste war schon offen.": "A caixa já vinha aberta.",
+  "Kann ich das zurückschicken?": "Posso devolver isto?",
+  "Ich lasse es an die Packstation liefern.": "Mando entregar na Packstation.",
+  "Der Nachbar hat es angenommen.": "Foi o vizinho que a recebeu.",
+  "Bitte nicht knicken.": "Não dobrar, se faz favor.",
+  "Ich möchte das als Päckchen schicken.": "Queria mandar isto como encomenda.",
+  "Ja, Vorsicht, das ist aus Glas.": "Sim, cuidado, isso é de vidro.",
+  "Dann kleben wir einen Hinweis drauf.": "Então pomos-lhe um autocolante a avisar.",
+  "Etwa drei Tage, je nach Ziel.": "Uns três dias, conforme o destino.",
+
+  // ── Working for yourself, and being recommended (part121) ───────────────
+  //
+  // Ein Gewerbe anmelden is abrir atividade, which is what the tax office
+  // calls it in Portugal and therefore what people call it too. Ein Angebot
+  // schicken is mandar um orçamento — an offer with a price on it is a
+  // different word from an offer of help.
+  //
+  // Mundpropaganda is o passa-palavra, and das spricht sich schnell herum is
+  // isso corre depressa de boca em boca.
+  "Ich brauche eine Webseite für mein Geschäft.": "Preciso de um site para o meu negócio.",
+  "Ich lasse gerade eine Website bauen.": "Estou a mandar fazer um site.",
+  "Ich muss mehr Werbung machen.": "Tenho de fazer mais publicidade.",
+  "Wie gewinne ich neue Kunden?": "Como é que arranjo clientes novos?",
+  "Wir werben vor allem online.": "Fazemos publicidade sobretudo na internet.",
+  "Wir sind auch auf Instagram.": "Também estamos no Instagram.",
+  "Ich schicke Ihnen ein Angebot.": "Mando-lhe um orçamento.",
+  "Die Rechnung kommt Ende des Monats.": "A fatura chega no fim do mês.",
+  "Zahlbar innerhalb von vierzehn Tagen.": "Pagamento a catorze dias.",
+  "Wir haben sehr gute Bewertungen.": "Temos avaliações muito boas.",
+  "Ich arbeite selbstständig.": "Trabalho por conta própria.",
+  "Ich habe ein Gewerbe angemeldet.": "Abri atividade.",
+  "Mundpropaganda funktioniert am besten.": "O passa-palavra é o que resulta melhor.",
+  "Können Sie mich weiterempfehlen?": "Pode recomendar-me a outras pessoas?",
+  "Was kostet das ungefähr?": "Isso fica mais ou menos por quanto?",
+  "Ich melde mich mit einem Termin.": "Depois digo-lhe uma data.",
+  "Wir sind telefonisch gut erreichbar.": "Pelo telefone é fácil falar connosco.",
+  "Die Nachfrage ist gerade sehr groß.": "A procura neste momento é muito grande.",
+  "Das spricht sich schnell herum.": "Isso corre depressa de boca em boca.",
+
+  // ── Series, episodes and the thing you must not be told (part122) ───────
+  //
+  // Im Fernsehen laufen is dar na televisão — a Portuguese programme gives
+  // itself rather than running. In einem Rutsch durchschauen is ver tudo de
+  // uma assentada, an old expression that fits a night of streaming exactly.
+  //
+  // Düster, of a film, is pesado. Portuguese measures a heavy story by its
+  // weight, not by its darkness.
+  "Ich schaue gerade YouTube.": "Estou a ver YouTube.",
+  "Ich habe die neue Folge schon gesehen.": "Já vi o episódio novo.",
+  "Die zweite Staffel ist besser als die erste.": "A segunda temporada é melhor do que a primeira.",
+  "Verrate mir nichts!": "Não me contes nada!",
+  "Kein Spoiler, bitte!": "Nada de spoilers, por favor!",
+  "Ich habe das in einem Rutsch durchgeschaut.": "Vi aquilo tudo de uma assentada.",
+  "Den Kanal habe ich abonniert.": "Subscrevi o canal.",
+  "Ich höre gerade viele Podcasts.": "Agora ando a ouvir muitos podcasts.",
+  "Das läuft heute Abend im Fernsehen.": "Isso dá hoje à noite na televisão.",
+  "Schau dir das mal an.": "Vê lá isso.",
+  "Das kann ich dir echt empfehlen.": "Isso recomendo-te mesmo.",
+  "Läuft das auf Netflix?": "Isso está na Netflix?",
+  "Ich schaue lieber mit Untertiteln.": "Prefiro ver com legendas.",
+  "Der Ton ist irgendwie weg.": "O som desapareceu não sei porquê.",
+  "Kannst du das lauter machen?": "Podes pôr mais alto?",
+  "Das Video lädt ewig.": "O vídeo está uma eternidade a carregar.",
+  "Hast du das auch gesehen?": "Também viste aquilo?",
+  "Ich mache das Handy jetzt mal weg.": "Vou pousar o telemóvel.",
+  "Wir gucken die Folge heute Abend zusammen.": "Logo à noite vemos o episódio juntos.",
+  "Kein Spoiler bitte, ich bin noch bei Staffel zwei.": "Nada de spoilers, que ainda vou na segunda temporada.",
+  "Die Serie wurde nach einer Staffel abgesetzt.": "A série foi cancelada ao fim de uma temporada.",
+  "Der Film ist im Original besser als in der Übersetzung.": "O filme é melhor no original do que traduzido.",
+  "Ich habe die Doku in einer Nacht durchgeschaut.": "Vi o documentário todo numa noite.",
+  "Der Ton passt nicht zum Bild, das nervt beim Schauen.": "O som não bate certo com a imagem, e assim é irritante ver.",
+  "Empfiehl mir etwas, das nicht zu düster ist.": "Recomenda-me uma coisa que não seja demasiado pesada.",
+  "Den Film kenne ich schon auswendig, so oft lief er bei uns.": "Já sei o filme de cor, de tantas vezes que deu lá em casa.",
+
+  // ── The rent, the rules and the neighbours (part123) ────────────────────
+  //
+  // Warm oder kalt is a German rent question with no Portuguese equivalent, so
+  // the card asks what it actually means: com ou sem despesas. Stoßlüften has
+  // no word either, and becomes the instruction itself — open it wide for a
+  // few minutes, do not leave it tilted.
+  //
+  // Der Hausmeister is o porteiro, die Hausordnung is o regulamento do prédio,
+  // and eine Macke on a wall is uma mazela.
+  "Die Miete ist am Ersten fällig.": "A renda vence-se no dia um.",
+  "Wie hoch ist die Kaution?": "De quanto é a caução?",
+  "Ist das warm oder kalt?": "Isso é com ou sem despesas?",
+  "Steht das in der Hausordnung?": "Isso está no regulamento do prédio?",
+  "Ab zweiundzwanzig Uhr ist Ruhezeit.": "A partir das dez da noite há hora de silêncio.",
+  "Sonntags wird nicht gebohrt.": "Ao domingo não se pega no berbequim.",
+  "Du musst richtig lüften.": "Tens de arejar a casa como deve ser.",
+  "Stoßlüften, nicht kippen.": "Abrir de par em par uns minutos, não deixar a janela encostada.",
+  "Ich habe mit dem Hausmeister gesprochen.": "Falei com o porteiro.",
+  "Die Nachbarn haben sich beschwert.": "Os vizinhos queixaram-se.",
+  "Wir sind gerade erst eingezogen.": "Acabámos de nos mudar para cá.",
+  "Wann ist die Wohnungsübergabe?": "Quando é a entrega das chaves?",
+  "Der Vermieter meldet sich noch.": "O senhorio ainda vai dizer alguma coisa.",
+  "Die Heizung funktioniert nicht richtig.": "O aquecimento não está a funcionar como deve ser.",
+  "Kannst du bitte das Treppenhaus frei halten?": "Importas-te de manter a escada desimpedida?",
+  "Wir haben eine Nebenkostenabrechnung bekommen.": "Recebemos o acerto das despesas.",
+  "Ich hätte da eine Bitte.": "Eu tinha um pedido a fazer.",
+  "Sag mir Bescheid, wenn es zu laut ist.": "Diz-me se estiver barulho a mais.",
+  "Laut Hausordnung ist ab zweiundzwanzig Uhr Ruhe.": "Segundo o regulamento do prédio, a partir das dez da noite é silêncio.",
+  "Die Nebenkosten sind schon wieder gestiegen.": "As despesas subiram outra vez.",
+  "Unser Nachbar hat sich über die Musik beschwert.": "O nosso vizinho queixou-se da música.",
+  "Wer den Flur blockiert, bekommt Post vom Hausmeister.": "Quem entulhar o corredor recebe carta do porteiro.",
+  "Die Waschküche darf nur bis zwanzig Uhr benutzt werden.": "A lavandaria só pode ser usada até às oito da noite.",
+  "Beim Einzug haben wir jede Macke im Protokoll notiert.": "Quando entrámos, apontámos no auto de entrega todas as mazelas.",
+  "Die Kaution bekommen wir erst zurück, wenn alles geprüft ist.": "A caução só nos é devolvida depois de estar tudo verificado.",
+  "Kleinreparaturen bis achtzig Euro zahlt laut Vertrag der Mieter.": "Segundo o contrato, as pequenas reparações até oitenta euros são pagas pelo inquilino.",
+
+  // ── A baby, hour by hour (part124) ──────────────────────────────────────
+  //
+  // Das Fläschchen is o biberão and der Schnuller is a chupeta — two of the
+  // few nursery words where Portugal and Brazil part company completely.
+  // Wickeln is mudar a fralda, since Portuguese changes the nappy rather than
+  // the child.
+  "Die Windel ist voll.": "A fralda está cheia.",
+  "Ich wickle sie schnell.": "Vou já mudar-lhe a fralda.",
+  "Wo ist der Schnuller?": "Onde é que está a chupeta?",
+  "Sie ist gerade eingeschlafen.": "Ela acabou de adormecer.",
+  "Er hat die ganze Nacht durchgeschlafen.": "Ele dormiu a noite toda seguida.",
+  "Sie bringt ihn gerade ins Bett.": "Ela está a deitá-lo.",
+  "Er hat wieder geschrien.": "Ele voltou a berrar.",
+  "Ich muss ihn kurz trösten.": "Tenho de o acalmar um bocadinho.",
+  "Sie geht seit September in die Kita.": "Desde setembro que anda no infantário.",
+  "Wir holen ihn um vier ab.": "Vamos buscá-lo às quatro.",
+  "Der Kinderwagen passt nicht in den Aufzug.": "O carrinho não cabe no elevador.",
+  "Hast du das Fläschchen dabei?": "Trouxeste o biberão?",
+  "Sie isst noch nicht selbst.": "Ela ainda não come sozinha.",
+  "Er läuft schon!": "Ele já anda!",
+  "Nicht anfassen!": "Não mexas!",
+  "Das ist heiß, Vorsicht!": "Isso está quente, cuidado!",
+  "Sie ist gerade in einer schwierigen Phase.": "Ela está numa fase complicada.",
+  "Wir sind ziemlich müde, ehrlich gesagt.": "Para ser franca, estamos bastante cansados.",
+
+  // ── A flat tyre, a garage and a fine (part125) ──────────────────────────
+  //
+  // Bremsen is travar in Portugal, never frear, and der Reifen is o pneu.
+  // Einen Platten haben is ter um furo — the hole, not the flatness, is what
+  // Portuguese names.
+  //
+  // Der TÜV keeps its German name, as the offices do: nicht durch den TÜV
+  // gekommen is não passou no TÜV.
+  "Ich habe einen Platten.": "Tenho um furo.",
+  "Der Reifen hat zu wenig Luft.": "O pneu está com pouco ar.",
+  "Wir hatten eine Panne.": "Tivemos uma avaria.",
+  "Das Auto bremst komisch.": "O carro trava de maneira estranha.",
+  "Ich bringe den Wagen in die Werkstatt.": "Vou levar o carro à oficina.",
+  "Der Wagen muss abgeschleppt werden.": "O carro tem de ser rebocado.",
+  "Wann ist der TÜV fällig?": "Quando é que toca fazer o TÜV?",
+  "Ich muss noch tanken.": "Ainda tenho de meter combustível.",
+  "Der Motor macht ein komisches Geräusch.": "O motor faz um barulho estranho.",
+  "Die Batterie ist leer.": "A bateria está descarregada.",
+  "Kannst du mal Starthilfe geben?": "Podes ajudar-me a arrancar com as pinças?",
+  "Der Ölstand ist zu niedrig.": "O nível do óleo está baixo.",
+  "Ich habe die Kette wieder drauf.": "Já pus a corrente outra vez.",
+  "Vorne bremst es nicht richtig.": "À frente os travões não pegam bem.",
+  "Ich fahre lieber langsam, das ist mir sicherer.": "Prefiro ir devagar, assim sinto-me mais segura.",
+  "Hier ist Parken verboten.": "Aqui é proibido estacionar.",
+  "Ich habe einen Strafzettel bekommen.": "Apanhei uma multa.",
+  "Das lohnt sich nicht mehr zu reparieren.": "Já não vale a pena mandar arranjar.",
+  "Beim Anfahren macht der Motor ein komisches Geräusch.": "No arranque o motor faz um barulho estranho.",
+  "Die Werkstatt hat mir einen Kostenvoranschlag geschickt.": "A oficina mandou-me um orçamento.",
+  "Der Wagen ist nicht mehr durch den TÜV gekommen.": "O carro já não passou no TÜV.",
+  "Mein Hinterreifen verliert langsam Luft.": "O meu pneu de trás vai perdendo ar.",
+  "Ich habe die Kette geölt, jetzt fährt es sich viel leichter.": "Olei a corrente e agora anda muito mais suave.",
+  "Obwohl die Ampel grün war, musste ich bremsen.": "Apesar de o semáforo estar verde, tive de travar.",
+  "Das Ersatzteil muss erst bestellt werden.": "A peça tem primeiro de ser encomendada.",
+  "Nach der Inspektion fuhr das Auto wie neu.": "Depois da revisão o carro andava como novo.",
+
+  // ── How you happen to feel today (part126) ──────────────────────────────
+  //
+  // Mir fällt ein Stein vom Herzen is saiu-me um peso de cima — Portuguese
+  // lifts a weight where German drops a stone, and the relief is identical.
+  // Etwas sacken lassen is deixar assentar, which is what settles in a glass
+  // and in a person alike.
+  //
+  // Peinlich has no adjective here: das war mir peinlich is passei vergonha,
+  // because in Portuguese the shame is something you go through.
+  "Ich war richtig gerührt.": "Fiquei mesmo comovida.",
+  "Langsam nervt das echt.": "Isto está a começar a chatear a sério.",
+  "Ich bin ziemlich genervt gerade.": "Neste momento estou bastante chateada.",
+  "Ich bin schon ganz aufgeregt.": "Já estou toda entusiasmada.",
+  "Das ist mir alles zu viel.": "Isto tudo é de mais para mim.",
+  "Ich bin gerade etwas überfordert.": "Neste momento estou um bocado sobrecarregada.",
+  "Sie bleibt immer ganz gelassen.": "Ela mantém-se sempre muito calma.",
+  "Das war mir echt peinlich.": "Passei mesmo vergonha.",
+  "Ich bin ein bisschen neidisch, ehrlich.": "Estou com um bocadinho de inveja, sinceramente.",
+  "Ich bin froh, dass du da bist.": "Ainda bem que estás aqui.",
+  "Da bin ich echt stolz drauf.": "Disso tenho mesmo orgulho.",
+  "Mir fällt gerade ein Stein vom Herzen.": "Saiu-me um peso de cima.",
+  "Ich weiß gerade nicht weiter.": "Neste momento não sei o que hei de fazer.",
+  "Das hat mich ziemlich mitgenommen.": "Aquilo abalou-me bastante.",
+  "Ich freue mich total für dich.": "Estou muitíssimo contente por ti.",
+  "Mir ist gerade nicht danach.": "Neste momento não me apetece.",
+  "Das tut mir wirklich leid für dich.": "Lamento mesmo por ti.",
+  "Ich muss das erst mal sacken lassen.": "Primeiro tenho de deixar isso assentar.",
+
+  // ── Belief, and the room left for other people to differ (part127) ──────
+  //
+  // In der Kirche heiraten is casar pela igreja, and die Gemeinde, of a
+  // congregation, is a paróquia. Der Gottesdienst is a missa: Portugal has one
+  // default word for the Sunday service and the course uses it.
+  "Ich bete jeden Abend.": "Rezo todas as noites.",
+  "Ich bete für dich.": "Rezo por ti.",
+  "Wir gehen sonntags in den Gottesdienst.": "Ao domingo vamos à missa.",
+  "Der Gottesdienst fängt um zehn an.": "A missa começa às dez.",
+  "Mein Glaube ist mir wichtig.": "A minha fé é importante para mim.",
+  "Das steht in der Bibel.": "Isso está na Bíblia.",
+  "Gott segne dich.": "Deus te abençoe.",
+  "Wir beten vor dem Essen.": "Rezamos antes de comer.",
+  "Sie ist in der Gemeinde sehr aktiv.": "Ela é muito ativa na paróquia.",
+  "Der Pfarrer hat schön gesprochen.": "O padre falou muito bem.",
+  "Wir lassen ihn im Frühling taufen.": "Vamos batizá-lo na primavera.",
+  "Ich bin evangelisch aufgewachsen.": "Cresci numa família protestante.",
+  "Ich bin da nicht so gläubig, aber ich respektiere es.": "Não sou muito crente nessas coisas, mas respeito.",
+  "Da hat jeder seine eigene Meinung.": "Nisso cada um tem a sua opinião.",
+  "Wir haben in der Kirche geheiratet.": "Casámos pela igreja.",
+  "Danke, das bedeutet mir viel.": "Obrigada, isso significa muito para mim.",
+  "Ich denke oft an dich.": "Penso muitas vezes em ti.",
+  "Alles Gute und Gottes Segen.": "Tudo de bom e que Deus te abençoe.",
+
+  // ── Training, and the day after it (part128) ────────────────────────────
+  //
+  // Muskelkater has no noun in Portuguese, so the ache stays a plural: estou
+  // cheia de dores musculares. Die Kondition is o fôlego, the same breath that
+  // runs out in außer Puste, and anstrengend is puxado.
+  "Ich gehe morgens joggen.": "De manhã vou correr.",
+  "Wir waren heute schwimmen.": "Hoje fomos nadar.",
+  "Ich trainiere dreimal die Woche.": "Treino três vezes por semana.",
+  "Ich habe heftigen Muskelkater.": "Estou cheia de dores musculares.",
+  "Wärm dich erst mal auf.": "Primeiro aquece.",
+  "Nach dem Sport dehne ich immer.": "Depois do treino faço sempre alongamentos.",
+  "Wir spielen in derselben Mannschaft.": "Jogamos na mesma equipa.",
+  "Meine Kondition ist gerade nicht so gut.": "Neste momento não estou com grande fôlego.",
+  "Ich habe mir den Knöchel verstaucht.": "Torci o tornozelo.",
+  "Das tut beim Laufen weh.": "Isso dói a correr.",
+  "Ich mache heute lieber Pause.": "Hoje prefiro descansar.",
+  "Kommst du mit ins Fitnessstudio?": "Vens comigo ao ginásio?",
+  "Wir treffen uns um sieben am Sportplatz.": "Encontramo-nos às sete no campo.",
+  "Ich bin völlig außer Puste.": "Estou completamente sem fôlego.",
+  "Gut gemacht!": "Muito bem!",
+  "Ich bin nicht besonders sportlich.": "Não sou lá muito de desporto.",
+  "Wir sind eine Runde spazieren gegangen.": "Fomos dar uma volta a pé.",
+  "Das war ganz schön anstrengend.": "Aquilo foi bastante puxado.",
+
+  // ── Twenty minutes before leaving the house (part129) ───────────────────
+  //
+  // Mit dem Hund Gassi gehen is levar o cão à rua, and der Automat at the wall
+  // is o multibanco, as everywhere else in this table. Kurz aufs Klo müssen is
+  // ir à casa de banho num instante — the instante does the work the kurz does.
+  "Ich muss mich noch rasieren.": "Ainda me tenho de barbear.",
+  "Ich föhne mir kurz die Haare.": "Vou secar o cabelo num instante.",
+  "Ich putze mir noch die Zähne.": "Ainda vou lavar os dentes.",
+  "Wo ist mein Handtuch?": "Onde é que está a minha toalha?",
+  "Ich bin in fünf Minuten fertig.": "Em cinco minutos estou pronta.",
+  "Ich muss noch schnell Geld abheben.": "Ainda tenho de ir levantar dinheiro num instante.",
+  "Der Automat nimmt meine Karte nicht.": "O multibanco não aceita o meu cartão.",
+  "Steht das schon auf der Liste?": "Isso já está na lista?",
+  "Welche Zutaten brauchen wir noch?": "Que ingredientes é que ainda nos faltam?",
+  "Ich habe seit Tagen Husten.": "Ando com tosse há dias.",
+  "Ich gehe mit dem Hund Gassi.": "Vou levar o cão à rua.",
+  "Da fehlt eine Schraube.": "Ali falta um parafuso.",
+  "Kannst du mir mal kurz helfen?": "Dás-me aqui uma ajuda?",
+  "Ich mache das gleich, versprochen.": "Faço isso já, prometo.",
+  "Das habe ich total vergessen.": "Esqueci-me completamente disso.",
+  "Zwei Minuten, ich bin sofort zurück.": "Dois minutos, volto já.",
+  "Ich muss nur kurz aufs Klo.": "Só vou à casa de banho num instante.",
+  "Bin unterwegs, bis gleich!": "Já vou a caminho, até já!",
+
+  // ── Turn left at the lights (part130) ───────────────────────────────────
+  //
+  // Der Kreisverkehr is a rotunda and die Einbahnstraße is uma rua de sentido
+  // único. Wir sind falsch is enganámo-nos no caminho: Portuguese says the
+  // people made the mistake, not that they are wrong.
+  "An der Kreuzung links abbiegen.": "No cruzamento virar à esquerda.",
+  "Bieg an der nächsten Ecke rechts ab.": "Vira à direita na próxima esquina.",
+  "Immer geradeaus, dann siehst du es.": "Sempre em frente e depois vês.",
+  "An der zweiten Ampel rechts.": "No segundo semáforo à direita.",
+  "Es ist direkt gegenüber der Post.": "É mesmo em frente aos correios.",
+  "Da ist eine Umleitung.": "Ali há um desvio.",
+  "Fahr im Kreisverkehr die zweite Ausfahrt.": "Na rotunda sai na segunda saída.",
+  "Das ist eine Einbahnstraße.": "Essa rua é de sentido único.",
+  "Ich glaube, wir sind falsch.": "Acho que nos enganámos no caminho.",
+  "Kannst du mal aufs Navi schauen?": "Vês lá no GPS?",
+  "Zu Fuß ist es schneller.": "A pé é mais rápido.",
+  "Es liegt zwischen der Bank und der Apotheke.": "Fica entre o banco e a farmácia.",
+  "Gehen Sie am Park vorbei.": "Passe ao lado do parque.",
+  "Nach der Brücke sofort links.": "A seguir à ponte logo à esquerda.",
+  "Ich beschreibe es dir kurz.": "Eu explico-te num instante.",
+  "Da vorne ist es schon.": "É já ali à frente.",
+  "Ich habe es gefunden, danke!": "Encontrei, obrigada!",
+
+  // ── What a thing is made of, and how much of it (part131) ───────────────
+  //
+  // Echtes Leder is cabedal verdadeiro. Cabedal is the everyday Portuguese
+  // word for the leather a shoe or a bag is made of, and couro belongs to the
+  // tannery rather than the shop.
+  //
+  // Die Hälfte reicht mir is a mim metade chega-me, with the same chegar the
+  // shop packs already run on.
+  "Ist das echtes Leder?": "Isso é cabedal verdadeiro?",
+  "Die Verpackung ist leider aus Plastik.": "Infelizmente a embalagem é de plástico.",
+  "Der Tisch ist aus massivem Holz.": "A mesa é de madeira maciça.",
+  "Vorsicht, das ist aus Glas.": "Cuidado, isso é de vidro.",
+  "Ich hätte gern einen Liter Milch.": "Queria um litro de leite.",
+  "Zwei Kilo Kartoffeln, bitte.": "Dois quilos de batatas, se faz favor.",
+  "Das sind bestimmt zwei Meter.": "Isso de certeza que tem dois metros.",
+  "Wir brauchen ein Dutzend Eier.": "Precisamos de uma dúzia de ovos.",
+  "Die Hälfte reicht mir.": "A mim metade chega-me.",
+  "Nimm bitte die doppelte Menge.": "Leva o dobro, se faz favor.",
+  "Wie viel wiegt das ungefähr?": "Isso pesa mais ou menos quanto?",
+  "Das passt in ein Glas.": "Isso cabe num frasco.",
+  "Die Pflanze braucht mehr Wasser.": "A planta precisa de mais água.",
+  "Da ist ein Insekt im Glas.": "Está um inseto dentro do copo.",
+  "Aus Papier wäre besser.": "De papel era melhor.",
+  "Das ist ziemlich schwer.": "Isso é bastante pesado.",
+  "Ein bisschen mehr, bitte.": "Um bocadinho mais, se faz favor.",
+  "Reicht das, oder soll ich mehr holen?": "Assim chega ou vou buscar mais?",
+
+  // ── Singing, playing and rehearsing (part132) ───────────────────────────
+  //
+  // Der Ohrwurm has no Portuguese noun: tenho uma música presa na cabeça, the
+  // song stuck rather than the worm. Sing ruhig mit is canta também, à
+  // vontade — the ruhig turns into the permission it actually is.
+  "Das Lied kenne ich!": "Essa música eu conheço!",
+  "Ich singe im Chor.": "Canto num coro.",
+  "Sie spielt seit Jahren Klavier.": "Ela toca piano há anos.",
+  "Ich muss noch üben.": "Ainda tenho de praticar.",
+  "Sing ruhig mit!": "Canta também, à vontade!",
+  "Ich habe einen Ohrwurm.": "Tenho uma música presa na cabeça.",
+  "Kennst du den Text?": "Sabes a letra?",
+  "Der Auftritt war richtig gut.": "A atuação foi mesmo boa.",
+  "Wir proben jeden Donnerstag.": "Ensaiamos todas as quintas.",
+  "Etwas lauter, bitte!": "Um bocadinho mais alto, se faz favor!",
+  "Das ist mein Lieblingslied.": "Essa é a minha música preferida.",
+  "Ich kann leider kein Instrument spielen.": "Infelizmente não sei tocar nenhum instrumento.",
+  "Die Stimme finde ich unglaublich.": "Acho aquela voz incrível.",
+  "Hast du das schon mal live gehört?": "Já ouviste isso ao vivo?",
+  "Ich spiele nur für mich.": "Só toco para mim.",
+  "Der Refrain geht mir nicht aus dem Kopf.": "O refrão não me sai da cabeça.",
+  "Willst du mal hören?": "Queres ouvir?",
+  "Das übe ich gerade.": "É isso que ando a praticar.",
+
+  // ── School, marks and the thing you have not covered yet (part133) ──────
+  //
+  // Mathe ist nicht mein Fach is matemática não é a minha praia, and das
+  // haben wir noch nicht gehabt is isso ainda não demos — Portuguese pupils
+  // give the subject rather than have it.
+  //
+  // Eine Zwei stays a German mark. In Germany one is the best grade and two is
+  // a good one, and renumbering it onto the Portuguese scale would invert the
+  // card: the sentence around it says so instead.
+  "Hast du deine Hausaufgaben gemacht?": "Já fizeste os trabalhos de casa?",
+  "Ich habe morgen eine Klassenarbeit.": "Amanhã tenho um teste.",
+  "Welche Note hast du bekommen?": "Que nota é que tiveste?",
+  "Eine Zwei ist doch gut!": "Então um dois é boa nota!",
+  "Das Zeugnis kommt nächste Woche.": "As notas saem para a semana.",
+  "Mathe ist echt nicht mein Fach.": "Matemática não é mesmo a minha praia.",
+  "In welchem Fach bist du am besten?": "Em que disciplina és melhor?",
+  "Er hat einfach abgeschrieben.": "Ele copiou, simplesmente.",
+  "Wir schreiben morgen einen Test.": "Amanhã fazemos uma ficha.",
+  "Ich muss noch für die Prüfung lernen.": "Ainda tenho de estudar para o exame.",
+  "Die Lehrerin hat es nochmal erklärt.": "A professora explicou outra vez.",
+  "In der Pause treffen wir uns draußen.": "No intervalo encontramo-nos lá fora.",
+  "Ich verstehe die Aufgabe nicht.": "Não percebo o exercício.",
+  "Schaffst du das allein oder soll ich helfen?": "Consegues sozinha ou queres ajuda?",
+  "Das haben wir noch nicht gehabt.": "Isso ainda não demos.",
+  "Ich bin fertig, darf ich raus?": "Já acabei, posso sair?",
+  "Streng dich ein bisschen an.": "Esforça-te um bocadinho.",
+  "Da kannst du stolz auf dich sein.": "Disso podes orgulhar-te.",
+
+  // ── Clearing the air (part134) ──────────────────────────────────────────
+  //
+  // Sich wieder vertragen is fazer as pazes, and beleidigt sein, in this
+  // tone, is estar amuada — a sulk rather than an offence. Für mich ist das
+  // erledigt is por mim está arrumado.
+  "Ich gebe zu, das war mein Fehler.": "Admito, a culpa foi minha.",
+  "Das war ein Missverständnis.": "Foi um mal-entendido.",
+  "Ich wollte das nur kurz klarstellen.": "Só queria esclarecer isto.",
+  "Das war kein Vorwurf.": "Não estava a censurar-te.",
+  "Bist du jetzt beleidigt?": "Agora ficaste amuada?",
+  "Es tut mir aufrichtig leid.": "Lamento sinceramente.",
+  "Ich hätte das anders sagen sollen.": "Eu devia ter dito isso de outra maneira.",
+  "Können wir uns wieder vertragen?": "Fazemos as pazes?",
+  "So war das nicht gemeint.": "Não foi isso que eu quis dizer.",
+  "Lass uns nochmal in Ruhe reden.": "Vamos falar outra vez com calma.",
+  "Ich habe überreagiert, sorry.": "Exagerei na reação, desculpa.",
+  "Da hast du recht, das sehe ich ein.": "Nisso tens razão, reconheço.",
+  "Ich glaube, der Kellner hat sich vertan.": "Acho que o empregado se enganou.",
+  "Kein Problem, wirklich.": "Não há problema nenhum, a sério.",
+  "Das ist für mich erledigt.": "Por mim está arrumado.",
+  "Ich bin dir nicht böse.": "Não estou zangada contigo.",
+  "Reden wir morgen weiter?": "Continuamos a conversa amanhã?",
+  "Danke, dass du es angesprochen hast.": "Obrigada por teres levantado o assunto.",
+  "Hast du kurz Zeit? Ich wollte etwas klarstellen.": "Tens um bocadinho? Queria esclarecer uma coisa.",
+  "Klar, setz dich.": "Claro, senta-te.",
+  "Danke, dass du es ansprichst.": "Obrigada por levantares o assunto.",
+  "Schon gut. Für mich ist das erledigt.": "Está tudo bem. Por mim está arrumado.",
+
+  // ── When the machine stops (part135) ────────────────────────────────────
+  //
+  // Das Passwort is a palavra-passe, die Datei is o ficheiro and der
+  // Bildschirm is o ecrã, as everywhere else in this table. Abstürzen is ir
+  // abaixo — a Portuguese program goes down rather than crashes.
+  "Ich habe mein Passwort vergessen.": "Esqueci-me da palavra-passe.",
+  "Ich kann mich nicht anmelden.": "Não consigo entrar na conta.",
+  "Das Programm ist abgestürzt.": "O programa foi abaixo.",
+  "Auf dem Bildschirm ist alles verschoben.": "No ecrã está tudo desalinhado.",
+  "Die Tastatur reagiert nicht mehr.": "O teclado deixou de responder.",
+  "Der Monitor geht gar nicht erst an.": "O monitor nem sequer liga.",
+  "Ich finde die Datei nicht.": "Não encontro o ficheiro.",
+  "Der Drucker macht wieder Probleme.": "A impressora está outra vez a dar problemas.",
+  "Der Speicher ist voll.": "A memória está cheia.",
+  "Hast du es mal neu gestartet?": "Já experimentaste reiniciar?",
+  "Es lädt und lädt.": "Está sempre a carregar e nunca mais.",
+  "Da kommt eine Fehlermeldung.": "Aparece uma mensagem de erro.",
+  "Ich habe alles gespeichert, zum Glück.": "Ainda bem que gravei tudo.",
+  "Kannst du mal draufschauen?": "Podes dar uma vista de olhos?",
+  "Das Update hat ewig gedauert.": "A atualização demorou um século.",
+  "Ich mache ein Backup, sicherheitshalber.": "Vou fazer uma cópia de segurança, por precaução.",
+  "Es funktioniert wieder!": "Já está a funcionar outra vez!",
+  "Keine Ahnung, was das war.": "Não faço ideia do que foi aquilo.",
+  "Schick mir mal einen Screenshot.": "Manda-me uma captura de ecrã.",
+  "Bei mir funktioniert nichts mehr.": "Aqui já não funciona nada.",
+  "Ja, zweimal. Es lädt und lädt.": "Já, duas vezes. Está sempre a carregar e nunca mais.",
+  "Kommt eine Fehlermeldung?": "Aparece alguma mensagem de erro?",
+  "Moment, ich schicke dir einen Screenshot.": "Espera, mando-te uma captura de ecrã.",
+  "Perfekt, dann schaue ich mal drauf.": "Perfeito, então dou uma vista de olhos.",
+
+  // ── Du, Sie, and the moment somebody offers (part136) ───────────────────
+  //
+  // This is one German pack that crosses over whole, because Portuguese has
+  // the same two doors: duzen is tratar por tu and siezen is tratar por você.
+  // The offer itself, podemos tratar-nos por tu, is made at exactly the same
+  // point in a Portuguese conversation.
+  //
+  // Zu vertraulich sein is ser confiada de mais, which is the word Portuguese
+  // reaches for when somebody has been over-familiar.
+  "Können wir uns duzen?": "Podemos tratar-nos por tu?",
+  "Wir siezen uns hier eigentlich.": "Aqui, na verdade, tratamo-nos por você.",
+  "Gerne, ich bin die Anna.": "Com todo o gosto, eu sou a Anna.",
+  "Entschuldigung, ich wollte nicht zu vertraulich sein.": "Desculpe, não queria ser confiada de mais.",
+  "Bei uns duzen sich alle.": "Aqui tratam-se todos por tu.",
+  "Ich bringe ein kleines Gastgeschenk mit.": "Levo uma lembrança para os anfitriões.",
+  "Blumen gehen eigentlich immer.": "Flores servem sempre.",
+  "Wollen wir anstoßen?": "Vamos brindar?",
+  "Prost! Auf euch!": "Saúde! A vocês!",
+  "Darf ich Ihnen etwas anbieten?": "Posso oferecer-lhe alguma coisa?",
+  "Bitte, nach Ihnen.": "Faça favor, passe primeiro.",
+  "Lassen Sie sich Zeit.": "Não tenha pressa.",
+  "Wie darf ich Sie ansprechen?": "Como prefere que o trate?",
+  "Ich sage lieber Sie, wenn es recht ist.": "Prefiro tratar por você, se não se importa.",
+  "Grüß dich!": "Viva!",
+  "Schön, Sie kennenzulernen.": "Muito prazer em conhecê-lo.",
+  "Danke, dass ich kommen durfte.": "Obrigada pelo convite.",
+  "Ich melde mich, sobald ich zu Hause bin.": "Digo alguma coisa assim que chegar a casa.",
+  "Wir arbeiten jetzt schon ein Jahr zusammen.": "Já trabalhamos juntos há um ano.",
+  "Stimmt, das ist verrückt.": "É verdade, é de doidos.",
+  "Können wir uns nicht duzen?": "Não nos podemos tratar por tu?",
+  "Sehr gern. Ich bin die Anna.": "Com muito gosto. Eu sou a Anna.",
+  "Freut mich, Anna. Ich bin Tom.": "Muito prazer, Anna. Eu sou o Tom.",
+  "Auf uns dann. Prost!": "A nós, então. Saúde!",
+
+  // ── The body, part by part (part137) ────────────────────────────────────
+  //
+  // Die Wade is a barriga da perna, and einen Kloß im Hals haben is ter um nó
+  // na garganta — a knot rather than a dumpling, and the only thing about the
+  // feeling that changes. Sich durchstrecken is espreguiçar-se.
+  "Meine Schulter tut weh.": "Dói-me o ombro.",
+  "Ich habe mir den Ellbogen gestoßen.": "Bati com o cotovelo.",
+  "Mein Handgelenk ist geschwollen.": "Tenho o pulso inchado.",
+  "Ich habe Muskelkater in den Waden.": "Tenho as barrigas das pernas cheias de dores.",
+  "Der Nacken ist total verspannt.": "Tenho a nuca completamente tensa.",
+  "Mir ist der Rücken eingeschlafen.": "Fiquei com as costas dormentes.",
+  "Ich bin auf den Knöchel gefallen.": "Caí em cima do tornozelo.",
+  "Halt mal kurz die Luft an.": "Prende a respiração um bocadinho.",
+  "Beweg bitte mal die Finger.": "Mexe lá os dedos, se faz favor.",
+  "Tut das weh, wenn ich hier drücke?": "Dói quando carrego aqui?",
+  "Ich kann den Arm kaum heben.": "Quase não consigo levantar o braço.",
+  "Mir ist schwindelig.": "Estou tonta.",
+  "Ich habe einen Kloß im Hals.": "Tenho um nó na garganta.",
+  "Meine Füße sind eiskalt.": "Tenho os pés gelados.",
+  "Streck dich mal richtig durch.": "Espreguiça-te bem.",
+  "Das verheilt von allein.": "Isso sara sozinho.",
+  "Ich bin einfach kaputt.": "Estou simplesmente estoirada.",
+  "Schon besser, danke.": "Já melhor, obrigada.",
+  "Mein Kopf tut weh.": "Dói-me a cabeça.",
+  "Ich habe kalte Hände.": "Tenho as mãos frias.",
+  "Ihre Augen sind grün, seine blau.": "Os olhos dela são verdes, os dele azuis.",
+  "Der Zahn wackelt schon.": "O dente já abana.",
+  "Streck mal die Arme aus.": "Estica lá os braços.",
+  "Ich stehe den ganzen Tag auf den Beinen.": "Passo o dia todo em pé.",
+  "Wasch dir bitte die Hände.": "Lava as mãos, se faz favor.",
+  "Mein rechtes Knie zwickt beim Treppensteigen.": "O joelho direito dá-me pontadas a subir escadas.",
+
+  // ── The garden, the ladder and the wet paint (part138) ──────────────────
+  //
+  // Die Leiter here is o escadote, the folding one you hold for somebody,
+  // rather than a escada. Sieht doch gut aus, oder is está bom, não está —
+  // the doch and the oder both land in the Portuguese tag.
+  "Ich muss den Rasen mähen.": "Tenho de cortar a relva.",
+  "Im Beet wächst nur noch Unkraut.": "No canteiro já só cresce erva daninha.",
+  "Wir wollen das Zimmer streichen.": "Queremos pintar o quarto.",
+  "Hast du mal die Bohrmaschine?": "Emprestas-me o berbequim?",
+  "Kannst du die Leiter festhalten?": "Podes segurar o escadote?",
+  "Ich messe das nochmal nach.": "Vou medir isso outra vez.",
+  "Das sind ungefähr zwei Zentimeter zu breit.": "Isso está uns dois centímetros largo de mais.",
+  "Passt haargenau.": "Encaixa certinho.",
+  "Wir gießen die Blumen abends.": "Regamos as flores à noite.",
+  "Der Baum muss geschnitten werden.": "A árvore tem de ser podada.",
+  "Bei den Nachbarn wurde eingebrochen.": "Assaltaram a casa dos vizinhos.",
+  "Schließt du bitte ab?": "Trancas a porta, se faz favor?",
+  "Das Licht lassen wir an.": "A luz deixamos acesa.",
+  "Ich räume das Werkzeug weg.": "Vou arrumar as ferramentas.",
+  "Das hält nicht lange.": "Isso não dura muito.",
+  "Wir machen das später fertig.": "Acabamos isso mais tarde.",
+  "Vorsicht, das ist frisch gestrichen!": "Cuidado, isso está pintado de fresco!",
+  "Sieht doch gut aus, oder?": "Está bom, não está?",
+
+  // ── Viewing a flat and moving into it (part139) ─────────────────────────
+  //
+  // Zwei Zimmer is duas assoalhadas. Portugal counts rooms the German way when
+  // it says assoalhada, and only switches to the T-number on a listing, so the
+  // card keeps the count the viewing actually uses.
+  //
+  // Der Nachmieter has no Portuguese noun — the market does not work that way
+  // — so the card asks the question instead: alguém que te fique com a casa.
+  "Wir würden die Wohnung gern besichtigen.": "Gostávamos de ver a casa.",
+  "Läuft das über einen Makler?": "Isso é através de uma imobiliária?",
+  "Wann können wir den Vertrag unterschreiben?": "Quando é que podemos assinar o contrato?",
+  "Wann bekommen wir die Schlüssel?": "Quando é que nos dão as chaves?",
+  "Der Umzug ist am Samstag.": "A mudança é no sábado.",
+  "Suchst du noch einen Nachmieter?": "Ainda procuras alguém que te fique com a casa?",
+  "Wie viele Quadratmeter hat sie?": "Tem quantos metros quadrados?",
+  "Zwei Zimmer, Küche, Bad.": "Duas assoalhadas, cozinha e casa de banho.",
+  "Ist eine Einbauküche drin?": "A cozinha está equipada?",
+  "Ab wann ist sie frei?": "A partir de quando é que fica livre?",
+  "Wir haben eine Zusage bekommen!": "Disseram-nos que sim!",
+  "Ich kündige zum Ende des Monats.": "Rescindo o contrato no fim do mês.",
+  "Die Kaution kommt später zurück.": "A caução é devolvida mais tarde.",
+  "Wir müssen noch renovieren.": "Ainda temos de fazer obras.",
+  "Kannst du beim Umzug helfen?": "Podes ajudar na mudança?",
+  "Alles passt in einen Transporter.": "Cabe tudo numa carrinha.",
+  "Wir sind endlich angekommen.": "Finalmente chegámos.",
+  "Kommt doch mal vorbei!": "Apareçam por cá!",
+  "Schön, dass Sie da sind. Kommen Sie rein.": "Ainda bem que veio. Faça favor de entrar.",
+  "Danke. Wie viele Quadratmeter hat die Wohnung?": "Obrigada. A casa tem quantos metros quadrados?",
+  "Zweiundsechzig, zwei Zimmer, Küche, Bad.": "Sessenta e dois, duas assoalhadas, cozinha e casa de banho.",
+  "Ja, die bleibt drin.": "Sim, essa fica.",
+  "Und ab wann wäre sie frei?": "E a partir de quando é que ficava livre?",
+
+  // ── The platform, the tent and the sea (part140) ────────────────────────
+  //
+  // Einmal umsteigen is um transbordo, a noun where German uses a verb, and
+  // das Gleis is a linha. Ich gehe kurz ins Wasser is vou dar um mergulho:
+  // Portuguese takes a dip rather than going in.
+  "Der Zug fährt von Gleis drei.": "O comboio sai da linha três.",
+  "Einmal umsteigen, dann sind wir da.": "Um transbordo e estamos lá.",
+  "Ist dieses Abteil frei?": "Este compartimento está livre?",
+  "Ist der Platz noch frei?": "Este lugar ainda está livre?",
+  "Der Anschlusszug wartet.": "O comboio de ligação espera.",
+  "Die Wellen sind heute ziemlich hoch.": "Hoje as ondas estão bastante altas.",
+  "Hast du Sonnencreme dabei?": "Trouxeste protetor solar?",
+  "Wir bauen das Zelt hier auf.": "Montamos a tenda aqui.",
+  "Der Schlafsack ist mir zu dünn.": "O saco-cama é fino de mais para mim.",
+  "Wollen wir grillen?": "Vamos fazer um churrasco?",
+  "Das Lagerfeuer geht schon wieder aus.": "A fogueira está outra vez a apagar-se.",
+  "Ich gehe kurz ins Wasser.": "Vou dar um mergulho.",
+  "Der Sand ist wahnsinnig heiß.": "A areia está escaldante.",
+  "Wir sollten langsam zurück.": "Já devíamos ir andando de volta.",
+  "Der Zug hat leider Verspätung.": "Infelizmente o comboio traz atraso.",
+  "Ich habe die Fahrkarte auf dem Handy.": "Tenho o bilhete no telemóvel.",
+  "Wo kommen wir denn hier raus?": "Por onde é que se sai daqui?",
+  "Das war ein guter Tag.": "Foi um bom dia.",
+
+  // ── Adjectives for weighing things up (part411) ─────────────────────────
+  //
+  // A pack of judgement words, where the trap is that the Latin-looking one is
+  // usually right and occasionally a false friend. Vage is vago, präzise is
+  // preciso, inhärent is inerente — but zwingend is irrefutável rather than
+  // anything about force, zweckmäßig is funcional, and naheliegend is simply
+  // óbvio.
+  //
+  // Beträchtlich takes substancial because erheblich already holds
+  // considerável in this table, and a course that answers two different German
+  // words with one Portuguese word teaches neither.
+  //
+  // Der Pendler has no Portuguese noun. The sentence names what the person
+  // does instead: quem viaja todos os dias para o trabalho.
+  "subtil": "subtil",
+  "vage": "vago",
+  "unkompliziert": "descomplicado",
+  "überwältigend": "esmagador",
+  "widerwillig": "relutante",
+  "eifrig": "empenhado",
+  "vernünftig": "sensato",
+  "unvernünftig": "insensato",
+  "irreführend": "enganador",
+  "voreingenommen": "tendencioso",
+  "zerbrechlich": "frágil",
+  "langlebig": "duradouro",
+  "reichlich": "abundante",
+  "präzise": "preciso",
+  "absichtlich": "intencional",
+  "unangebracht": "despropositado",
+  "überzeugend": "convincente",
+  "vernachlässigbar": "negligenciável",
+  "beträchtlich": "substancial",
+  "einheitlich": "uniforme",
+  "willkürlich": "arbitrário",
+  "inhärent": "inerente",
+  "beispiellos": "sem precedentes",
+  "nachteilig": "desvantajoso",
+  "vorteilhaft": "vantajoso",
+  "außergewöhnlich": "excecional",
+  "übermäßig": "excessivo",
+  "mäßig": "moderado",
+  "aufeinanderfolgend": "consecutivo",
+  "gleichzeitig": "simultâneo",
+  "naheliegend": "óbvio",
+  "praktisch": "prático",
+  "unverkennbar": "inconfundível",
+  "unauffällig": "discreto",
+  "zwingend": "irrefutável",
+  "maßgeblich": "determinante",
+  "zweckmäßig": "funcional",
+  "unbestreitbar": "inegável",
+  "vorwiegend": "predominantemente",
+  "unmissverständlich": "categórico",
+  "Der Unterschied ist subtil, aber entscheidend.": "A diferença é subtil, mas decisiva.",
+  "Ihre Antwort blieb vage, was das Misstrauen nur verstärkte.": "A resposta dela ficou-se pelo vago, o que só aumentou a desconfiança.",
+  "Die Bedienung ist erfreulich unkompliziert.": "Os comandos são agradavelmente descomplicados.",
+  "Die Resonanz war überwältigend: dreitausend Bewerbungen in einer Woche.": "A adesão foi esmagadora: três mil candidaturas numa semana.",
+  "Nur widerwillig stimmte der Aufsichtsrat zu.": "O conselho fiscal só concordou a contragosto.",
+  "Je eifriger er half, desto misstrauischer wurde sie.": "Quanto mais empenhado ele era a ajudar, mais desconfiada ela ficava.",
+  "Der Vorschlag klingt vernünftig, die Umsetzung wäre unvernünftig teuer.": "A proposta parece sensata, mas pô-la em prática sairia insensatamente caro.",
+  "Die Überschrift ist nicht falsch, aber bewusst irreführend.": "O título não é falso, mas é deliberadamente enganador.",
+  "Wer voreingenommen liest, findet nur, was er sucht.": "Quem lê com a ideia já feita só encontra o que anda à procura.",
+  "Das Material ist langlebig, aber die Verpackung zerbrechlich.": "O material é duradouro, mas a embalagem é frágil.",
+  "Belege gibt es reichlich, nur zitiert sie niemand.": "Provas há em abundância, só que ninguém as cita.",
+  "Drücken Sie sich bitte präziser aus: Wen genau meinen Sie?": "Seja mais preciso, se faz favor: a quem é que se refere ao certo?",
+  "Ob absichtlich oder nicht: Die Wirkung bleibt dieselbe.": "Intencional ou não, o efeito é o mesmo.",
+  "Die Bemerkung war unangebracht, der Zeitpunkt noch mehr.": "O comentário foi despropositado, e a altura ainda mais.",
+  "Das Risiko ist vernachlässigbar, der Nutzen beträchtlich.": "O risco é negligenciável e o benefício substancial.",
+  "Ein einheitliches Vorgehen wäre effizienter als dreißig Einzellösungen.": "Um procedimento uniforme seria mais eficiente do que trinta soluções avulsas.",
+  "Die Auswahl wirkt willkürlich, folgt aber einem klaren Kriterium.": "A seleção parece arbitrária, mas obedece a um critério claro.",
+  "Dem System inhärent ist ein Zielkonflikt, den keine Reform auflöst.": "É inerente ao sistema um conflito de objetivos que nenhuma reforma resolve.",
+  "Der Andrang war beispiellos, die Organisation ihm nicht gewachsen.": "A afluência foi sem precedentes e a organização não esteve à altura.",
+  "Für Pendler ist die neue Regelung eher nachteilig, für Familien vorteilhaft.": "Para quem viaja todos os dias para o trabalho a nova regra é antes desvantajosa; para as famílias é vantajosa.",
+  "Mäßig begabt, aber außergewöhnlich fleißig: So beschrieb ihn sein Lehrer.": "Moderadamente dotado, mas excecionalmente trabalhador: era assim que o professor o descrevia.",
+
+  // ── The words a privacy notice uses (part418) ───────────────────────────
+  //
+  // Technical Portuguese splits from Brazil almost word for word here, and
+  // this table follows Portugal throughout: o utilizador, a ligação, a base de
+  // dados, o motor de busca, a partilha de ecrã, os direitos de autor. And a
+  // ficheiro, as everywhere else.
+  //
+  // Der Serverausfall is a queda do servidor — the server falls rather than
+  // fails, which is also how the sentence about it has to be built.
+  "der Datenschutz": "a proteção de dados",
+  "die Einwilligung": "o consentimento",
+  "die Verschlüsselung": "a encriptação",
+  "die Benutzeroberfläche": "a interface do utilizador",
+  "die Aktualisierung": "a atualização",
+  "der Speicherplatz": "o espaço de armazenamento",
+  "die Bandbreite": "a largura de banda",
+  "die Verzögerung": "o atraso",
+  "der Serverausfall": "a queda do servidor",
+  "die Schadsoftware": "o software malicioso",
+  "die Zugangsdaten": "os dados de acesso",
+  "die Berechtigung": "a permissão",
+  "die Benachrichtigung": "a notificação",
+  "der Anhang": "o anexo",
+  "der Suchverlauf": "o histórico de pesquisas",
+  "der Browserverlauf": "o histórico de navegação",
+  "der Zwischenspeicher": "a cache",
+  "die Datenbank": "a base de dados",
+  "der Quellcode": "o código-fonte",
+  "die Schnittstelle": "a interface",
+  "das Netzwerk": "a rede",
+  "die Verbindung": "a ligação",
+  "die Auflösung": "a resolução",
+  "die Bildfrequenz": "a taxa de fotogramas",
+  "die Ladezeit": "o tempo de carregamento",
+  "das Dateiformat": "o formato do ficheiro",
+  "die Kompatibilität": "a compatibilidade",
+  "die Barrierefreiheit": "a acessibilidade",
+  "die Nutzungsbedingungen": "os termos de utilização",
+  "das Urheberrecht": "os direitos de autor",
+  "die Fehlinformation": "a desinformação",
+  "die Suchmaschine": "o motor de busca",
+  "das Endgerät": "o dispositivo do utilizador",
+  "das Eingabefeld": "o campo de introdução",
+  "die Sicherheitslücke": "a falha de segurança",
+  "der Datenverkehr": "o tráfego de dados",
+  "die Voreinstellung": "a predefinição",
+  "die Bildschirmfreigabe": "a partilha de ecrã",
+  "die Spracherkennung": "o reconhecimento de voz",
+  "die Datenverarbeitung": "o tratamento de dados",
+  "Ohne Ihre ausdrückliche Einwilligung werden keine Daten weitergegeben.": "Sem o seu consentimento expresso não são transmitidos quaisquer dados.",
+  "Die Verschlüsselung schützt die Daten nur auf dem Weg, nicht auf dem Server.": "A encriptação protege os dados apenas em trânsito, não no servidor.",
+  "Nach der Aktualisierung war die Benutzeroberfläche kaum wiederzuerkennen.": "Depois da atualização a interface estava irreconhecível.",
+  "Wenn der Speicherplatz knapp wird, leeren Sie zuerst den Zwischenspeicher.": "Quando o espaço de armazenamento ficar escasso, limpe primeiro a cache.",
+  "Je geringer die Bandbreite, desto länger die Ladezeit.": "Quanto menor a largura de banda, maior o tempo de carregamento.",
+  "Der Serverausfall ließ sich auf eine einzige Sicherheitslücke zurückführen.": "A queda do servidor ficou a dever-se a uma única falha de segurança.",
+  "Öffnen Sie keinen Anhang, dessen Absender Sie nicht kennen.": "Não abra nenhum anexo cujo remetente não conheça.",
+  "Die Schadsoftware kam über ein harmlos wirkendes Eingabefeld ins Netzwerk.": "O software malicioso entrou na rede por um campo de introdução de aspeto inofensivo.",
+  "Geben Sie Ihre Zugangsdaten niemals telefonisch weiter.": "Nunca dê os seus dados de acesso pelo telefone.",
+  "Ihnen fehlt die Berechtigung, diese Datei zu ändern.": "Não tem permissão para alterar este ficheiro.",
+  "Ich habe die Benachrichtigungen abgestellt, um mich besser konzentrieren zu können.": "Desliguei as notificações para me conseguir concentrar melhor.",
+  "Der Browserverlauf verrät mehr über einen Menschen, als ihm lieb ist.": "O histórico de navegação revela sobre uma pessoa mais do que ela gostaria.",
+  "Die Schnittstelle ist gut dokumentiert, der Quellcode leider nicht.": "A interface está bem documentada; o código-fonte, infelizmente, não.",
+  "Bei schwacher Verbindung sinkt zuerst die Auflösung, dann die Bildfrequenz.": "Com uma ligação fraca desce primeiro a resolução e depois a taxa de fotogramas.",
+  "Prüfen Sie vor dem Kauf die Kompatibilität mit Ihrem Endgerät.": "Antes de comprar, verifique a compatibilidade com o seu dispositivo.",
+  "Barrierefreiheit ist kein Extra, sondern eine Voraussetzung.": "A acessibilidade não é um extra, é um requisito.",
+  "Die Nutzungsbedingungen akzeptiert man meist, ohne sie gelesen zu haben.": "Os termos de utilização aceitam-se quase sempre sem os ter lido.",
+  "Auch im Internet gilt das Urheberrecht.": "Também na internet valem os direitos de autor.",
+  "Fehlinformationen verbreiten sich schneller, als sie sich richtigstellen lassen.": "A desinformação espalha-se mais depressa do que se consegue desmenti-la.",
+  "Die Suchmaschine bewertet nicht, was wahr ist, sondern was angeklickt wird.": "O motor de busca não avalia o que é verdade, avalia aquilo em que se clica.",
+  "Die Voreinstellung ist bequem, aber selten die sicherste Wahl.": "A predefinição é cómoda, mas raramente é a opção mais segura.",
+  "Ohne Bildschirmfreigabe kann der Support nur raten.": "Sem partilha de ecrã, o apoio técnico só pode adivinhar.",
+
+  // ── Symptoms, and the words a doctor writes down (part419) ──────────────
+  //
+  // Die Übelkeit is o enjoo rather than a náusea: the clinical word exists in
+  // Portuguese, but nobody uses it in a waiting room. Der Schwindel is as
+  // tonturas, plural, and das Sodbrennen is a azia — one word where German
+  // needs two.
+  //
+  // European spellings throughout: a infeção, crónico, a cãibra.
+  "die Behandlung": "o tratamento",
+  "die Erkrankung": "a doença",
+  "der Ausbruch": "o surto",
+  "die Infektion": "a infeção",
+  "die Immunität": "a imunidade",
+  "die Mangelerscheinung": "a carência",
+  "die Entzündung": "a inflamação",
+  "die Verletzung": "a lesão",
+  "die Schwellung": "o inchaço",
+  "die Prellung": "a contusão",
+  "die Verstauchung": "a entorse",
+  "der Schwindel": "as tonturas",
+  "die Übelkeit": "o enjoo",
+  "die Erschöpfung": "a exaustão",
+  "fiebrig": "febril",
+  "chronisch": "crónico",
+  "harmlos": "inofensivo",
+  "lebensbedrohlich": "potencialmente fatal",
+  "behandeln": "tratar",
+  "therapieren": "tratar com terapia",
+  "vorbeugen": "prevenir",
+  "benommen": "atordoado",
+  "entzündet": "inflamado",
+  "geschwollen": "inchado",
+  "steif": "rígido",
+  "pochen": "latejar",
+  "zerrissen": "rompido",
+  "heilbar": "curável",
+  "die Müdigkeit": "o cansaço",
+  "die Anspannung": "a tensão",
+  "das Wohlbefinden": "o bem-estar",
+  "die Migräne": "a enxaqueca",
+  "die Dehydrierung": "a desidratação",
+  "die Narbe": "a cicatriz",
+  "der Bluterguss": "o hematoma",
+  "der Krampf": "a cãibra",
+  "das Sodbrennen": "a azia",
+  "die Verdauung": "a digestão",
+  "die Atemnot": "a falta de ar",
+  "die Heiserkeit": "a rouquidão",
+  "Die Behandlung schlägt an, die Werte verbessern sich.": "O tratamento está a resultar e os valores estão a melhorar.",
+  "Die Erkrankung verläuft in Schüben.": "A doença evolui por surtos.",
+  "Beim ersten Ausbruch wusste niemand, wie ansteckend das Virus war.": "No primeiro surto ninguém sabia até que ponto o vírus era contagioso.",
+  "Nach der Impfung baut der Körper Immunität auf.": "Depois da vacina o corpo cria imunidade.",
+  "Müdigkeit und blasse Haut können auf eine Mangelerscheinung hindeuten.": "Cansaço e pele pálida podem indicar uma carência.",
+  "Die Entzündung ist zurückgegangen, die Schwellung noch nicht.": "A inflamação baixou, o inchaço ainda não.",
+  "Der Arzt konnte einen Bruch ausschließen, es blieb bei einer Prellung.": "O médico conseguiu excluir uma fratura, ficou-se por uma contusão.",
+  "Beim Aufstehen überkam sie ein plötzlicher Schwindel.": "Ao levantar-se, deu-lhe uma tontura súbita.",
+  "Gegen die Übelkeit half nur frische Luft.": "Contra o enjoo só ajudava o ar fresco.",
+  "Erschöpfung kündigt sich an, man muss nur hinhören.": "A exaustão avisa, basta estar com atenção.",
+  "Die Infektion ist unangenehm, aber gut heilbar.": "A infeção é desagradável, mas cura-se bem.",
+  "Aus der akuten Entzündung ist eine chronische geworden.": "A inflamação aguda passou a crónica.",
+  "Die Zyste ist harmlos, sollte aber beobachtet werden.": "O quisto é inofensivo, mas deve ser vigiado.",
+  "Unbehandelt kann die Krankheit lebensbedrohlich werden.": "Sem tratamento, a doença pode pôr a vida em risco.",
+  "Wer früh vorbeugt, muss später weniger behandeln.": "Quem previne cedo tem menos que tratar depois.",
+  "Nach der Narkose war er noch Stunden benommen.": "Depois da anestesia ficou ainda horas atordoado.",
+  "Der Knöchel ist geschwollen und heiß, vermutlich entzündet.": "O tornozelo está inchado e quente, provavelmente inflamado.",
+  "Morgens ist das Gelenk steif, nach ein paar Schritten wird es besser.": "De manhã a articulação está rígida; ao fim de uns passos melhora.",
+  "Die Wunde pocht, sobald er den Arm hängen lässt.": "A ferida lateja assim que ele deixa o braço pendurado.",
+  "Die Röntgenaufnahme zeigt: nichts gebrochen, nichts zerrissen.": "A radiografia mostra: nada partido, nada rompido.",
+  "Trink genug, sonst droht bei dieser Hitze Dehydrierung.": "Bebe água que chegue, senão com este calor arriscas a desidratação.",
+
+  // ── Climate, and the measurements behind it (part420) ───────────────────
+  //
+  // Die Überschwemmung is a cheia, the word Portugal uses when a river comes
+  // over its banks, and die Abholzung is a desflorestação, never o
+  // desmatamento. Das Treibhausgas keeps the full Portuguese name it has on
+  // every official document: o gás com efeito de estufa.
+  //
+  // Ein Ökosystem kippt is um ecossistema desaba — Portuguese has it collapse
+  // rather than tip, and the sentence needs the verb twice for the contrast
+  // between slowly and all at once to land.
+  "die Verschmutzung": "a poluição",
+  "der Abfall": "os resíduos",
+  "der Rohstoff": "a matéria-prima",
+  "der Lebensraum": "o habitat",
+  "die Tierart": "a espécie animal",
+  "die Dürre": "a seca",
+  "die Überschwemmung": "a cheia",
+  "der Waldbrand": "o incêndio florestal",
+  "erneuerbar": "renovável",
+  "die Artenvielfalt": "a biodiversidade",
+  "das Treibhausgas": "o gás com efeito de estufa",
+  "der Meeresspiegel": "o nível do mar",
+  "der Energieverbrauch": "o consumo de energia",
+  "das Stromnetz": "a rede elétrica",
+  "der Wassermangel": "a escassez de água",
+  "die Bodenerosion": "a erosão do solo",
+  "die Abholzung": "a desflorestação",
+  "die Wiederaufforstung": "a reflorestação",
+  "die Kreislaufwirtschaft": "a economia circular",
+  "die Recyclinganlage": "a unidade de reciclagem",
+  "der Messwert": "o valor medido",
+  "der Datensatz": "o conjunto de dados",
+  "der Durchschnitt": "a média",
+  "die Abweichung": "o desvio",
+  "die Theorie": "a teoria",
+  "die Entdeckung": "a descoberta",
+  "der Bestandteil": "o componente",
+  "das Teilchen": "a partícula",
+  "die Strahlung": "a radiação",
+  "die Schwerkraft": "a gravidade",
+  "der Temperaturanstieg": "a subida da temperatura",
+  "das Ökosystem": "o ecossistema",
+  "das Grundwasser": "as águas subterrâneas",
+  "die Luftqualität": "a qualidade do ar",
+  "die Messung": "a medição",
+  "die Erwärmung": "o aquecimento",
+  "der Ausstoß": "as emissões",
+  "das Vorkommen": "a ocorrência",
+  "die Energiequelle": "a fonte de energia",
+  "die Naturkatastrophe": "a catástrofe natural",
+  "Die Verschmutzung des Grundwassers bleibt jahrzehntelang messbar.": "A poluição das águas subterrâneas continua mensurável durante décadas.",
+  "Aus Abfall wird Rohstoff: Genau das meint Kreislaufwirtschaft.": "Os resíduos passam a matéria-prima: é exatamente isso a economia circular.",
+  "Mit jedem verlorenen Lebensraum verschwinden auch Tierarten, die niemand je gezählt hat.": "Com cada habitat perdido desaparecem também espécies animais que nunca ninguém contou.",
+  "Auf die Dürre folgte die Überschwemmung, und beides in einem einzigen Sommer.": "À seca seguiu-se a cheia, e as duas coisas num único verão.",
+  "Der Waldbrand hat mehr Treibhausgase freigesetzt als der gesamte Autoverkehr der Region in einem Jahr.": "O incêndio florestal libertou mais gases com efeito de estufa do que todo o trânsito da região num ano.",
+  "Erneuerbare Energiequellen decken inzwischen die Hälfte des Energieverbrauchs.": "As fontes de energia renovável cobrem entretanto metade do consumo de energia.",
+  "Steigt der Meeresspiegel weiter, sind die ersten Inseln nicht mehr zu retten.": "Se o nível do mar continuar a subir, as primeiras ilhas já não têm salvação.",
+  "Ohne ein stabiles Stromnetz nützt der beste Solarpark wenig.": "Sem uma rede elétrica estável, de pouco serve o melhor parque solar.",
+  "Wassermangel und Bodenerosion treiben die Landflucht voran.": "A escassez de água e a erosão do solo empurram as pessoas para fora do campo.",
+  "Der Abholzung folgt die Erosion, der Erosion folgt die Aufgabe der Felder.": "À desflorestação segue-se a erosão, e à erosão o abandono dos campos.",
+  "Die Wiederaufforstung wird Jahrzehnte brauchen, die Abholzung brauchte drei Wochen.": "A reflorestação vai levar décadas; o corte levou três semanas.",
+  "Einzelne Messwerte weichen immer ab, entscheidend ist der Durchschnitt.": "Os valores isolados desviam-se sempre; o que conta é a média.",
+  "Ein einziger Datensatz macht noch keine Theorie.": "Um único conjunto de dados ainda não faz uma teoria.",
+  "Die Entdeckung gelang durch Zufall, ihre Bestätigung durch Messung.": "A descoberta deu-se por acaso; a confirmação, por medição.",
+  "Die Schwerkraft wirkt auf jedes Teilchen, ob wir sie messen oder nicht.": "A gravidade atua sobre todas as partículas, quer a meçamos quer não.",
+  "Ein Temperaturanstieg von zwei Grad klingt harmlos und ist es nicht.": "Uma subida de dois graus soa inofensiva e não é.",
+  "Ein Ökosystem kippt nicht langsam, sondern plötzlich.": "Um ecossistema não desaba devagar, desaba de repente.",
+  "Die Luftqualität hat sich verbessert, seit die Innenstadt autofrei ist.": "A qualidade do ar melhorou desde que o centro ficou sem carros.",
+  "Jede Messung verändert das, was sie misst, zumindest ein wenig.": "Toda a medição altera aquilo que mede, pelo menos um pouco.",
+  "Die Erwärmung der Meere verläuft schneller, als jede bisherige Prognose annahm.": "O aquecimento dos mares está a ser mais rápido do que qualquer previsão até agora supunha.",
+  "Der Ausstoß pro Kopf sagt mehr als die Gesamtzahl.": "As emissões por pessoa dizem mais do que o total.",
+  "Naturkatastrophen treffen selten die, die sie verursacht haben.": "As catástrofes naturais raramente atingem quem as causou.",
+
+  // ── Finding the fault and fixing it (part432) ───────────────────────────
+  //
+  // The idioms carry over as idioms. Auf den Grund gehen is ir ao fundo da
+  // questão, in Angriff nehmen is deitar mãos a, auf die Spur kommen is
+  // apanhar o rasto a, and ausfindig machen is dar com — Portuguese finds a
+  // thing by coming upon it.
+  //
+  // Der Defekt is o defeito, not uma avaria: this table already gives avaria
+  // to die Panne, and a course that answers two German words with one
+  // Portuguese word teaches neither.
+  "die Fehlerquelle": "a origem do erro",
+  "der Lösungsansatz": "a abordagem",
+  "die Schwachstelle": "o ponto fraco",
+  "die Übergangslösung": "a solução provisória",
+  "der Defekt": "o defeito",
+  "feststellen": "apurar",
+  "ermitteln": "averiguar",
+  "beseitigen": "eliminar",
+  "diagnostizieren": "diagnosticar",
+  "fehlerhaft": "defeituoso",
+  "unzureichend": "insuficiente",
+  "provisorisch": "provisório",
+  "funktionsfähig": "operacional",
+  "vergeblich": "em vão",
+  "zwangsläufig": "forçosamente",
+  "notdürftig": "com um remendo",
+  "gezielt": "de forma dirigida",
+  "auf den Grund gehen": "ir ao fundo da questão",
+  "in Angriff nehmen": "deitar mãos a",
+  "Abhilfe schaffen": "remediar a situação",
+  "ausfindig machen": "dar com",
+  "sich einen Überblick verschaffen": "ficar com uma visão de conjunto",
+  "zurückführen auf": "atribuir a",
+  "sich erweisen als": "revelar-se",
+  "instand setzen": "pôr em condições",
+  "systematisch vorgehen": "proceder com método",
+  "auf die Spur kommen": "apanhar o rasto a",
+
+  // ── The diary, the deadline and the dawdling (part433) ──────────────────
+  //
+  // Der Zeitfresser is um sorvedouro de tempo, trödeln is remanchar, and den
+  // Überblick behalten is não perder o fio à meada. All three exist in
+  // Portuguese already; none of them needed inventing.
+  //
+  // Aufschieben and vertagen split: adiar for the task you push to tomorrow,
+  // protelar for the decision somebody keeps pushing away.
+  "der Zeitplan": "o cronograma",
+  "die Nebensache": "uma questão secundária",
+  "die Priorität": "a prioridade",
+  "der Zeitrahmen": "o prazo previsto",
+  "der Terminkalender": "a agenda",
+  "der Puffer": "a folga",
+  "die Dringlichkeit": "a urgência",
+  "der Stichtag": "a data-limite",
+  "der Zeitfresser": "um sorvedouro de tempo",
+  "der Rückstand": "o atraso acumulado",
+  "zeitaufwendig": "moroso",
+  "überfällig": "fora de prazo",
+  "vorrangig": "prioritário",
+  "termingerecht": "dentro do prazo",
+  "vollgepackt": "a abarrotar",
+  "zeitkritisch": "de prazo crítico",
+  "vorab": "de antemão",
+  "kurzerhand": "sem mais nem menos",
+  "zwischenzeitlich": "entretanto",
+  "planmäßig": "conforme previsto",
+  "aufschieben": "adiar",
+  "sich vornehmen": "propor-se a",
+  "straffen": "apertar",
+  "sich verzetteln": "perder-se em pormenores",
+  "trödeln": "remanchar",
+  "vertagen": "protelar",
+  "eine Frist einhalten": "cumprir um prazo",
+  "Zeit totschlagen": "matar o tempo",
+  "unter Zeitdruck stehen": "estar com o tempo em cima",
+  "Zeit für etwas einplanen": "contar com tempo para uma coisa",
+  "den Überblick behalten": "não perder o fio à meada",
+
+  // ── Weighing two options against each other (part434) ───────────────────
+  //
+  // Das Manko is o senão — the small catch a Portuguese sentence hangs on the
+  // end of a compliment. Den Ausschlag geben is fazer pender a balança, and
+  // gut abschneiden is sair-se bem.
+  "die Bewertung": "a avaliação",
+  "der Vorzug": "a vantagem",
+  "der Pluspunkt": "o ponto a favor",
+  "das Manko": "o senão",
+  "die Alternative": "a alternativa",
+  "der Favorit": "o favorito",
+  "der Maßstab": "o padrão de referência",
+  "die Rangfolge": "a ordem de precedência",
+  "die Gewichtung": "a ponderação",
+  "der Gesichtspunkt": "o aspeto",
+  "unterlegen": "inferior",
+  "gleichwertig": "equivalente",
+  "vergleichbar": "comparável",
+  "ausschlaggebend": "decisivo",
+  "empfehlenswert": "aconselhável",
+  "zweitrangig": "secundário",
+  "vielmehr": "antes pelo contrário",
+  "tendenziell": "tendencialmente",
+  "bevorzugen": "preferir",
+  "übertreffen": "superar",
+  "überwiegen": "prevalecer",
+  "differenzieren": "distinguir",
+  "in Betracht ziehen": "ter em consideração",
+  "in die engere Wahl kommen": "ficar entre os selecionados",
+  "den Ausschlag geben": "fazer pender a balança",
+  "sich entscheiden für": "decidir-se por",
+  "gut abschneiden": "sair-se bem",
+
+  // ── Risk, and the sentence you say before taking one (part435) ──────────
+  //
+  // Vorsichtshalber is por via das dúvidas and auf Nummer sicher gehen is
+  // jogar pelo seguro — two fixed Portuguese expressions for two fixed German
+  // ones, neither of them assembled word by word.
+  //
+  // Trügerisch is ilusório rather than enganador, which this table already
+  // gives to irreführend. Die Notlage is o aperto, and der Ernstfall keeps a
+  // emergência, so the two do not collapse into one.
+  "die Vorsichtsmaßnahme": "a medida de precaução",
+  "die Gefahrenquelle": "a fonte de perigo",
+  "der Leichtsinn": "a leviandade",
+  "das Wagnis": "uma aposta arriscada",
+  "die Umsicht": "a prudência",
+  "der Warnhinweis": "o aviso",
+  "die Notlage": "o aperto",
+  "der Ernstfall": "a emergência",
+  "das Bedenken": "a reserva",
+  "die Schutzmaßnahme": "a medida de proteção",
+  "die Absicherung": "a salvaguarda",
+  "riskant": "arriscado",
+  "achtsam": "atento",
+  "unbedacht": "irrefletido",
+  "trügerisch": "ilusório",
+  "brenzlig": "melindroso",
+  "absehbar": "previsível",
+  "unabsehbar": "imprevisível",
+  "vermeidbar": "evitável",
+  "sicherheitshalber": "por precaução",
+  "vorsichtshalber": "por via das dúvidas",
+  "notfalls": "em último caso",
+  "höchstwahrscheinlich": "muito provavelmente",
+  "keinesfalls": "de maneira nenhuma",
+  "im schlimmsten Fall": "na pior das hipóteses",
+  "riskieren": "arriscar",
+  "abschätzen": "avaliar",
+  "Vorkehrungen treffen": "tomar providências",
+  "auf Nummer sicher gehen": "jogar pelo seguro",
+  "sich in Acht nehmen vor": "acautelar-se com",
+  "rechnen mit": "contar com",
+
+  // ── Weather, tides and the shape of the land (part436) ──────────────────
+  //
+  // Der Wolkenbruch is uma bátega de água and die Dämmerung is o lusco-fusco:
+  // Portuguese has its own word for both, and neither is a description of the
+  // German one.
+  //
+  // The verbs a forecast uses are already fixed in Portuguese too — o vento
+  // refresca, o vento amaina, o céu encobre-se, o tempo virou — so each takes
+  // the verb the forecast would.
+  "der Niederschlag": "a precipitação",
+  "die Feuchtigkeit": "a humidade",
+  "schwül": "abafado",
+  "der Wolkenbruch": "uma bátega de água",
+  "stürmisch": "tempestuoso",
+  "die Sichtweite": "a visibilidade",
+  "frostig": "gélido",
+  "das Tauwetter": "o degelo",
+  "verdunsten": "evaporar-se",
+  "nieseln": "chuviscar",
+  "die Windböe": "a rajada de vento",
+  "auffrischen": "refrescar",
+  "abflauen": "amainar",
+  "sich zuziehen": "encobrir-se",
+  "umschlagen": "virar",
+  "der Wetterumschwung": "a mudança de tempo",
+  "unbeständig": "instável",
+  "Wurzeln schlagen": "criar raízes",
+  "die Dämmerung": "o lusco-fusco",
+  "die Anhöhe": "uma elevação",
+  "der Abhang": "a encosta",
+  "das Ufer": "a margem",
+  "die Ebbe": "a maré baixa",
+  "die Flut": "a maré alta",
+  "das Dickicht": "o matagal",
+  "die Lichtung": "a clareira",
+  "fruchtbar": "fértil",
+  "karg": "árido",
+  "aussterben": "extinguir-se",
+  "verwildern": "ficar ao abandono",
+  "der Feinstaub": "as partículas finas",
+  "vereinzelt": "disperso",
+
+  // ── Numbers, limits and rough arithmetic (part437) ──────────────────────
+  //
+  // Überschlagen is fazer as contas por alto, sich belaufen auf is cifrar-se
+  // em, and ins Gewicht fallen is pesar na balança — the German figure of
+  // speech becomes the Portuguese one rather than its parts.
+  "der Anteil": "a parcela",
+  "die Spanne": "a amplitude",
+  "der Richtwert": "o valor de referência",
+  "die Obergrenze": "o limite máximo",
+  "der Grenzwert": "o valor-limite",
+  "die Toleranz": "a margem de tolerância",
+  "die Größenordnung": "a ordem de grandeza",
+  "der Bruchteil": "uma fração",
+  "annähernd": "aproximadamente",
+  "exakt": "exato",
+  "spürbar": "sensível",
+  "zahlreich": "numeroso",
+  "unzählig": "incontável",
+  "mindestens": "pelo menos",
+  "höchstens": "no máximo",
+  "vergleichsweise": "comparativamente",
+  "überschlagen": "fazer as contas por alto",
+  "veranschlagen": "orçamentar",
+  "beziffern": "quantificar",
+  "überschreiten": "ultrapassar",
+  "unterschreiten": "ficar abaixo de",
+  "sich auf etwas belaufen": "cifrar-se em",
+  "ins Gewicht fallen": "pesar na balança",
+
+  // ── Habits, and the effort of changing one (part438) ────────────────────
+  //
+  // Der innere Schweinehund has no animal in Portuguese: den inneren
+  // Schweinehund überwinden is dar a volta à preguiça, which is the same fight
+  // without the pig. Maß halten is ter conta e medida, an old expression that
+  // still says exactly this. Am Ball bleiben is não baixar os braços.
+  "die Angewohnheit": "o hábito",
+  "die Regelmäßigkeit": "a regularidade",
+  "die Willenskraft": "a força de vontade",
+  "die Mäßigung": "a moderação",
+  "die Selbstdisziplin": "a autodisciplina",
+  "die Umstellung": "a adaptação",
+  "die Beständigkeit": "a constância",
+  "die Selbstbeherrschung": "o autodomínio",
+  "der Ansporn": "o estímulo",
+  "die Achtsamkeit": "a atenção plena",
+  "diszipliniert": "disciplinado",
+  "maßvoll": "comedido",
+  "exzessiv": "desmedido",
+  "eingefahren": "enraizado",
+  "zwanghaft": "obsessivo",
+  "willensstark": "de vontade firme",
+  "schrittweise": "passo a passo",
+  "bewusst": "conscientemente",
+  "unbewusst": "inconscientemente",
+  "sich abgewöhnen": "desabituar-se de",
+  "sich angewöhnen": "habituar-se a",
+  "einschränken": "reduzir",
+  "sich verkneifen": "privar-se de",
+  "Maß halten": "ter conta e medida",
+  "in den Griff bekommen": "pôr sob controlo",
+  "am Ball bleiben": "não baixar os braços",
+  "den inneren Schweinehund überwinden": "dar a volta à preguiça",
+  "klein anfangen": "começar por pouco",
+
+  // ── Criticism, given and taken (part439) ────────────────────────────────
+  //
+  // Der Kritikpunkt is o reparo, the exact Portuguese word for one thing
+  // somebody objects to. Kritik einstecken is encaixar as críticas, sich zu
+  // Herzen nehmen is levar a peito, and gut ankommen is cair bem.
+  //
+  // Feedback geben stays dar feedback. The word is borrowed in Portugal too,
+  // and in an office nobody says anything else.
+  "die Kritik": "a crítica",
+  "der Verbesserungsvorschlag": "a sugestão de melhoria",
+  "der Tadel": "a repreensão",
+  "der Kritikpunkt": "o reparo",
+  "die Anmerkung": "a nota",
+  "die Selbstkritik": "a autocrítica",
+  "der Ratschlag": "o conselho",
+  "die Anregung": "a sugestão",
+  "konstruktiv": "construtivo",
+  "berechtigt": "justificado",
+  "überzogen": "exagerado",
+  "kritikfähig": "aberto à crítica",
+  "ungefragt": "sem que ninguém peça",
+  "ehrlich gesagt": "para ser franca",
+  "bemängeln": "apontar defeitos a",
+  "würdigen": "reconhecer o mérito de",
+  "tadeln": "repreender",
+  "beanstanden": "reclamar de",
+  "Kritik einstecken": "encaixar as críticas",
+  "sich zu Herzen nehmen": "levar a peito",
+  "Stellung nehmen zu": "pronunciar-se sobre",
+  "sich rechtfertigen": "justificar-se",
+  "gut ankommen": "cair bem",
+  "Feedback geben": "dar feedback",
+
+  // ── Screens, feeds and the words that came with them (part440) ──────────
+  //
+  // Live is em direto, never ao vivo, and die Timeline is a cronologia — the
+  // name the Portuguese interface itself uses. Drücken, of a button, is
+  // carregar, as everywhere else in this table.
+  "das Englisch": "o inglês",
+  "die Originalsprache": "a língua original",
+  "der Trend": "a tendência",
+  "das Königreich": "o reino",
+  "vereinigen": "unificar",
+  "anzeigen": "exibir",
+  "der Bot": "o bot",
+  "das Tool": "a ferramenta",
+  "klicken": "clicar",
+  "zurück": "para trás",
+  "verwenden": "utilizar",
+  "live": "em direto",
+  "der Kurzbefehl": "o atalho de teclado",
+  "boosten": "impulsionar",
+  "die Funktion": "a funcionalidade",
+  "die Statistik": "a estatística",
+  "die Timeline": "a cronologia",
+  "die Aufmerksamkeit": "a atenção",
+  "automatisch": "automático",
+  "der Agent": "o agente",
+  "bereits": "já",
+  "der Desktop": "o computador de secretária",
+  "grundlegend": "fundamental",
+  "hilfreich": "útil",
+  "drücken": "carregar",
+  "das Fragezeichen": "o ponto de interrogação",
+  "daran": "nisso",
+  "super": "ótimo",
+  "aktiv": "ativo",
+
+  // ── Enthusiasm, and the verbs under it (part441) ────────────────────────
+  //
+  // Atemberaubend is de cortar a respiração: Portuguese cuts the breath where
+  // German takes it away, and the card would lose the whole picture if it
+  // borrowed a plain adjective instead.
+  "entfolgen": "deixar de seguir",
+  "die Person": "a pessoa",
+  "benötigen": "necessitar de",
+  "der Spaß": "a diversão",
+  "absolut": "absoluto",
+  "großartig": "magnífico",
+  "die Pracht": "o esplendor",
+  "sogar": "até mesmo",
+  "unglaublich": "inacreditável",
+  "verbessern": "melhorar",
+  "atemberaubend": "de cortar a respiração",
+  "dabei": "ao mesmo tempo",
+  "dazu": "para além disso",
+  "der Gott": "o deus",
+  "können": "poder",
+  "nun": "agora",
+  "okay": "está bem",
+  "analysieren": "analisar",
+  "animieren": "animar",
+  "beisammen": "juntos",
+  "bekommen": "receber",
+  "bieten": "oferecer",
+  "eigen": "próprio",
+  "entwickeln": "desenvolver",
+  "erhöhen": "aumentar",
+  "erstellen": "elaborar",
+  "extrem": "extremo",
+
+  // ── Sound, products and the words a release note uses (part442) ─────────
+  //
+  // Knackig is estaladiço, the Portuguese word for a crust or a biscuit that
+  // gives way under the tooth. Der Blitzschlag is a queda de um raio —
+  // Portuguese has the lightning fall rather than strike.
+  //
+  // European spelling for a controlo, and o utilizador for der Benutzer.
+  "bitten": "pedir",
+  "komplett": "completo",
+  "die Kompression": "a compressão",
+  "die Kontrolle": "o controlo",
+  "kürzlich": "recentemente",
+  "die Lautstärke": "o volume do som",
+  "neugierig": "curioso",
+  "das Produkt": "o produto",
+  "sanft": "suave",
+  "sodass": "de modo que",
+  "synchronisieren": "sincronizar",
+  "der Ton": "o som",
+  "weich": "macio",
+  "der Zugang": "o acesso",
+  "amerikanisch": "americano",
+  "befriedigend": "satisfatório",
+  "der Benutzer": "o utilizador",
+  "beängstigend": "assustador",
+  "der Blitzschlag": "a queda de um raio",
+  "buchstäblich": "literalmente",
+  "debuggen": "depurar",
+  "erhalten": "obter",
+  "erreichen": "alcançar",
+  "launchen": "lançar",
+  "ändern": "alterar",
+  "haptisch": "tátil",
+  "hinweg": "ao longo de",
+  "die Innovation": "a inovação",
+  "intelligent": "inteligente",
+  "knackig": "estaladiço",
+
+  // ── The long run, the sliders and who wrote it (part443) ────────────────
+  //
+  // Der Nutzer and der Benutzer both mean user, and Portuguese would answer
+  // both with utilizador if left alone. It has a second word that fits the
+  // broader one exactly: o utente, the person who uses a service. So der
+  // Benutzer keeps o utilizador and der Nutzer takes o utente.
+  //
+  // Der Drehbuchautor is o argumentista, which is the only word Portugal uses
+  // for the person who writes the script.
+  "langfristig": "a longo prazo",
+  "liefern": "entregar",
+  "lokal": "local",
+  "lächerlich": "ridículo",
+  "mithören": "escutar às escondidas",
+  "das Modell": "o modelo",
+  "mächtig": "poderoso",
+  "der Nutzer": "o utente",
+  "der Parameter": "o parâmetro",
+  "die Produktlinie": "a linha de produtos",
+  "reaktionsschnell": "de resposta rápida",
+  "riesig": "enorme",
+  "der Schieberegler": "a barra deslizante",
+  "sicherstellen": "assegurar",
+  "sich spezialisieren": "especializar-se",
+  "die Synchronisierung": "a sincronização",
+  "verschieden": "diferente",
+  "visuell": "visual",
+  "das Volumen": "o volume",
+  "weiterentwickeln": "aperfeiçoar",
+  "die Zukunft": "o futuro",
+  "zusätzlich": "adicional",
+  "zuvor": "anteriormente",
+  "anstatt": "em vez de",
+  "aufgebracht": "indignado",
+  "der Autor": "o autor",
+  "außerhalb": "fora de",
+  "der Blog": "o blogue",
+  "britisch": "britânico",
+  "die Chancengleichheit": "a igualdade de oportunidades",
+  "der Drehbuchautor": "o argumentista",
+  "der Ersteller": "o criador",
+  "der Gesprächsverlauf": "o histórico da conversa",
+
+  // ── Websites, sleep and the value of things (part444) ───────────────────
+  //
+  // Anstatt and anstelle both mean instead of, so they take em vez de and em
+  // lugar de rather than one answer twice. Standardmäßig is por predefinição,
+  // matching a predefinição elsewhere in this table.
+  "innerhalb": "dentro de",
+  "international": "internacional",
+  "das Investment": "o investimento",
+  "der Newsletter": "a newsletter",
+  "quantisieren": "quantizar",
+  "die Redefreiheit": "a liberdade de expressão",
+  "scheinen": "parecer",
+  "der Schlaf": "o sono",
+  "der Schritt": "o passo",
+  "die Sensation": "o furor",
+  "standardmäßig": "por predefinição",
+  "der Trick": "o truque",
+  "wachsen": "crescer",
+  "der Webdesigner": "o web designer",
+  "die Website": "o site",
+  "wecken": "acordar",
+  "weiter": "mais",
+  "der Wert": "o valor",
+  "willkommen": "bem-vindo",
+  "zurückbringen": "levar de volta",
+
+  // ── Small words, and one insult (part445) ───────────────────────────────
+  //
+  // Dumm is parvo. Estúpido exists in Portuguese and is a good deal ruder than
+  // the German, so the card would have raised the register on its own.
+  "reposten": "voltar a publicar",
+  "möchten": "gostaria de",
+  "danke": "obrigada",
+  "dann": "então",
+  "still": "silencioso",
+  "derzeit": "atualmente",
+  "anstelle": "em lugar de",
+  "darüber": "sobre isso",
+  "ein bisschen": "um bocadinho",
+  "dumm": "parvo",
+  "die Hitze": "o calor",
+  "irgendwie": "de alguma maneira",
+  "schlau": "esperto",
+  "arm": "pobre",
+
+  // ── Bans, cracks and the press office (part446) ─────────────────────────
+  //
+  // Weiterhin is como até agora. Portuguese normally lets the verb carry it —
+  // continua válido — so the card gives the adverbial phrase that survives on
+  // its own.
+  "bitte": "por favor",
+  "entkommen": "escapar",
+  "ernsthaft": "a sério",
+  "explizit": "explícito",
+  "die Konversation": "a conversa",
+  "mitten": "mesmo no meio",
+  "verfassen": "redigir",
+  "verfügen": "dispor de",
+  "verärgern": "irritar",
+  "das Verbot": "a proibição",
+  "die Abschreckung": "a dissuasão",
+  "die Pressestelle": "a assessoria de imprensa",
+  "der Riss": "a fenda",
+  "weiterhin": "como até agora",
+  "wohlhabend": "abastado",
+  "worum": "acerca de quê",
+
+  // ── Losing patience, online and off (part447) ───────────────────────────
+  //
+  // Durchdrehen is passar-se and ackern is mourejar — both fixed, both
+  // Portuguese, neither assembled out of parts. Sich auf etwas freuen has no
+  // verb of its own: estar ansiosa por isso is what somebody actually says.
+  "posten": "publicar",
+  "jemals": "alguma vez",
+  "dasselbe": "a mesma coisa",
+  "meist": "na maioria das vezes",
+  "drin": "lá dentro",
+  "wütend": "furioso",
+  "durchdrehen": "passar-se",
+  "ertragen": "aguentar",
+  "das Chaos": "a confusão",
+  "zweifeln": "duvidar",
+  "angewidert": "enojado",
+  "entsetzlich": "medonho",
+  "ackern": "mourejar",
+  "zutiefst": "profundamente",
+  "zusammentragen": "reunir",
+  "Hast du das schon gepostet?": "Já publicaste isso?",
+  "Ist da jemand drin?": "Está aí alguém lá dentro?",
+  "Hast du das jemals ausprobiert?": "Alguma vez experimentaste isso?",
+  "Ich hab dieselbe Frage.": "Tenho a mesma pergunta.",
+  "Das ist meistens so.": "Na maioria das vezes é assim.",
+  "Ich freu mich drauf.": "Estou ansiosa por isso.",
+  "Das macht mich echt wütend.": "Isso põe-me mesmo furiosa.",
+  "Ich dreh gleich durch.": "Estou quase a passar-me.",
+  "Ich kann das nicht mehr ertragen.": "Já não aguento isto.",
+  "Hier ist echt Chaos.": "Isto aqui está mesmo uma confusão.",
+  "Ich hab echt an mir gezweifelt.": "Cheguei mesmo a duvidar de mim.",
+  "Das ist ja entsetzlich.": "Mas isso é medonho.",
+  "Ich musste heute echt ackern.": "Hoje tive mesmo de mourejar.",
+  "Das hat sich echt gelohnt.": "Aquilo valeu mesmo a pena.",
+  "Das Video hört einfach mittendrin auf.": "O vídeo interrompe-se a meio, sem mais nem menos.",
+  "Der Ton ist plötzlich weg.": "O som desapareceu de repente.",
+  "Ich lade die Seite einfach neu.": "Recarrego a página e pronto.",
+  "Dieser Artikel ist hinter einer Bezahlschranke.": "Este artigo está atrás de uma barreira paga.",
+  "Den Newsletter bestelle ich wieder ab.": "Vou cancelar a subscrição dessa newsletter.",
+  "Ohne Anmeldung geht hier gar nichts.": "Sem iniciar sessão aqui não se faz nada.",
+  "Die Werbung ist länger als das Video.": "A publicidade é mais comprida do que o vídeo.",
+  "Diesen Kommentar melde ich.": "Este comentário vou denunciá-lo.",
+  "Endlich lädt die Seite wieder schnell.": "Finalmente a página volta a carregar depressa.",
+
+  // ── Use cases, threats and a garden hose (part448) ──────────────────────
+  //
+  // Der Hacker is o pirata informático, which is the term Portuguese law and
+  // Portuguese newspapers both use.
+  "der Anwendungsfall": "o caso de utilização",
+  "nativ": "nativo",
+  "die Internetgeschwindigkeit": "a velocidade da internet",
+  "der Stellenabbau": "o corte de postos de trabalho",
+  "der Hacker": "o pirata informático",
+  "die Bedrohung": "a ameaça",
+  "die Epidemie": "a epidemia",
+  "bewässern": "regar",
+  "der Gartenschlauch": "a mangueira do jardim",
+  "die Raumzeit": "o espaço-tempo",
+  "Das ist ein typischer Anwendungsfall.": "Esse é um caso de utilização típico.",
+  "Das läuft nativ.": "Isso corre de forma nativa.",
+  "Mein Internet ist heute echt langsam.": "Hoje a minha internet está mesmo lenta.",
+  "Es droht ein weiterer Stellenabbau.": "Ameaça haver mais um corte de postos de trabalho.",
+  "Das klingt nach einer echten Bedrohung.": "Isso soa a uma ameaça a sério.",
+  "Kannst du den Gartenschlauch holen?": "Podes ir buscar a mangueira?",
+  "Ich muss noch die Pflanzen gießen.": "Ainda tenho de regar as plantas.",
+
+  // ── Notifications, bad signal and a flat battery (part449) ──────────────
+  //
+  // Der Link stays o link. A ligação is already this table's word for die
+  // Verbindung, and in Portugal nobody clicks a ligação anyway.
+  //
+  // Ich gehe nicht ran is não atendo — one verb, and the phone is understood.
+  "die Startseite": "a página inicial",
+  "das Premium-Abo": "a subscrição premium",
+  "kollektiv": "coletivo",
+  "erbärmlich": "lastimável",
+  "verabscheuen": "detestar",
+  "Großbritannien": "a Grã-Bretanha",
+  "Ich hab eine neue Benachrichtigung bekommen.": "Recebi uma notificação nova.",
+  "Ich hab die Mitteilung erst jetzt gesehen.": "Só agora é que vi a mensagem.",
+  "Lösch mal den Verlauf im Browser.": "Apaga lá o histórico do browser.",
+  "Hast du meine Nachricht gesehen?": "Viste a minha mensagem?",
+  "Geh zurück zur Startseite.": "Volta à página inicial.",
+  "Ich hab kein Premium-Abo.": "Não tenho subscrição premium.",
+  "Das ist einfach erbärmlich.": "Isso é simplesmente lastimável.",
+  "Ich kann dieses Verhalten echt nicht ausstehen.": "Não suporto mesmo este comportamento.",
+  "Ich war noch nie in Großbritannien.": "Nunca estive na Grã-Bretanha.",
+  "Das war eine kollektive Entscheidung.": "Foi uma decisão coletiva.",
+  "Deine Nachricht kommt bei mir doppelt an.": "A tua mensagem chega-me a dobrar.",
+  "Mein Akku ist gleich leer, ich rufe später an.": "A minha bateria está quase a acabar, ligo mais tarde.",
+  "Schick mir den Link einfach per Nachricht.": "Manda-me o link por mensagem e pronto.",
+  "Ich bin im Zug, das Netz ist schlecht.": "Vou no comboio, a rede está má.",
+  "Sprich mir einfach auf die Mailbox.": "Deixa-me mensagem no correio de voz.",
+  "Die Nummer kenne ich nicht, ich gehe nicht ran.": "Não conheço o número, não atendo.",
+  "Mein Bildschirm ist mitten im Gespräch schwarz.": "O meu ecrã fica preto a meio da chamada.",
+  "Schreib mir kurz, ob du das liest.": "Manda-me uma linha a dizer se estás a ler isto.",
+
+  // ── Sweden, a death and what a headline promises (part450) ──────────────
+  //
+  // Das Geschenk is uma prenda, never um presente. And er ist gestorben is
+  // faleceu: Portuguese has the gentler verb ready, and the German sentence
+  // with leider in it is already reaching for one.
+  "Schweden": "a Suécia",
+  "schwedisch": "sueco",
+  "tot": "morto",
+  "Willst du noch mehr?": "Queres mais?",
+  "Ich hab's dir versprochen.": "Eu prometi-te.",
+  "Wir sammeln Geld für ein Geschenk.": "Estamos a juntar dinheiro para uma prenda.",
+  "Kommst du aus Schweden?": "És da Suécia?",
+  "Das ist eine schwedische Firma.": "É uma empresa sueca.",
+  "Ist er wirklich tot?": "Ele morreu mesmo?",
+  "Er ist leider gestorben.": "Infelizmente faleceu.",
+  "Dieses Wort sehe ich heute zum dritten Mal.": "É a terceira vez que vejo esta palavra hoje.",
+  "Die Überschrift verspricht mal wieder zu viel.": "O título promete outra vez mais do que cumpre.",
+  "Diese Seite gibt es auch auf Deutsch.": "Esta página também existe em alemão.",
+  "Den Begriff schlage ich schnell nach.": "Vou procurar já o significado do termo.",
+  "Der halbe Text ist reine Werbung.": "Metade do texto é publicidade pura.",
+  "Das Wort klingt deutsch, ist es aber nicht.": "A palavra soa a alemão, mas não é.",
+  "Unten auf der Seite steht die Quelle.": "Ao fundo da página está a fonte.",
+  "Diesen Ausdruck höre ich zum ersten Mal.": "É a primeira vez que ouço esta expressão.",
+
+  // ── Small words, and a browser misbehaving (part451) ────────────────────
+  //
+  // Auf Augenhöhe reden is falar de igual para igual, and die Augenhöhe itself
+  // is o pé de igualdade. Portuguese measures the equality by where the feet
+  // are standing rather than where the eyes are.
+  //
+  // The browser is European throughout: der Tab is o separador, der Download
+  // is a transferência, der Laptop is o portátil.
+  "gegenüber": "em frente de",
+  "raus": "para fora",
+  "verrückt": "doido",
+  "dafür": "a favor disso",
+  "daher": "por isso",
+  "darauf": "a isso",
+  "mehrere": "vários",
+  "verdoppeln": "duplicar",
+  "drängen": "pressionar",
+  "der Sprung": "o salto",
+  "die Augenhöhe": "o pé de igualdade",
+  "nahtlos": "sem emendas",
+  "landesweit": "à escala nacional",
+  "der Teamkollege": "o colega de equipa",
+  "das Zutun": "a intervenção",
+  "Ich bin gleich draußen.": "Estou já lá fora.",
+  "Kommst du kurz raus?": "Chegas cá fora um bocadinho?",
+  "Das ist doch verrückt.": "Isso é uma loucura.",
+  "Das hab ich noch nie gesehen.": "Nunca vi tal coisa.",
+  "Ich hab nichts gehört.": "Eu não ouvi nada.",
+  "Hast du was gehört?": "Ouviste alguma coisa?",
+  "Ich bin dafür.": "Eu sou a favor.",
+  "Darauf hab ich keine Lust.": "Não me apetece nada isso.",
+  "Wir brauchen weniger davon.": "Precisamos de menos disso.",
+  "Sei bitte etwas leiser.": "Faz menos barulho, se faz favor.",
+  "Wir reden auf Augenhöhe.": "Falamos de igual para igual.",
+  "Der Tab hängt, ich schließe ihn.": "O separador bloqueou, vou fechá-lo.",
+  "Zu viele Fenster sind offen, mein Laptop wird laut.": "Tenho janelas a mais abertas e o portátil começa a fazer barulho.",
+  "Diese Seite merkt sich mein Passwort nicht.": "Este site não guarda a minha palavra-passe.",
+  "Ich mache den Vollbildmodus an.": "Vou pôr em ecrã inteiro.",
+  "Der Download hängt bei neunzig Prozent.": "A transferência ficou presa nos noventa por cento.",
+  "Diesen Hinweis klicke ich immer sofort weg.": "Este aviso fecho-o sempre logo.",
+  "Im Lesemodus ist der Artikel viel angenehmer.": "No modo de leitura o artigo fica muito mais agradável.",
+  "Oben rechts ist das kleine Kreuz.": "No canto superior direito está a cruzinha.",
+
+  // ── Benchmarks, borders and resignations (part452) ──────────────────────
+  //
+  // Der Beamte is o funcionário público, and abschieben is expulsar do país —
+  // Portuguese names the country the person is put out of, because there is no
+  // one-word verb for it.
+  //
+  // Überfüllt takes superlotado, since a abarrotar already belongs to
+  // vollgepackt, and verkleinern takes diminuir, since reduzir belongs to
+  // einschränken.
+  "der Benchmark": "o teste de referência",
+  "die Punktzahl": "a pontuação",
+  "die Beschleunigung": "a aceleração",
+  "die Benutzung": "a utilização",
+  "die Beobachtung": "a observação",
+  "die Bildschirmgröße": "o tamanho do ecrã",
+  "die Rechenleistung": "a capacidade de cálculo",
+  "das Sicherheitsproblem": "o problema de segurança",
+  "die Einwanderung": "a imigração",
+  "der Einwanderer": "o imigrante",
+  "der Migrant": "o migrante",
+  "afghanisch": "afegão",
+  "der Beamte": "o funcionário público",
+  "der Kritiker": "o crítico",
+  "die Moderatorin": "a apresentadora",
+  "die Pressesprecherin": "a porta-voz",
+  "das Satellitenbild": "a imagem de satélite",
+  "der Tumor": "o tumor",
+  "die Umwandlung": "a conversão",
+  "die Unterbringung": "o alojamento",
+  "die Zeichnung": "o desenho",
+  "abschieben": "expulsar do país",
+  "abstoßen": "repelir",
+  "anziehen": "atrair",
+  "ausrollen": "implantar",
+  "hassen": "odiar",
+  "mithalten": "acompanhar o ritmo",
+  "überfüllt": "superlotado",
+  "unvollständig": "incompleto",
+  "verbleiben": "permanecer",
+  "verkabeln": "cablar",
+  "verkleinern": "diminuir",
+  "verzögern": "atrasar",
+  "zurückbleiben": "ficar para trás",
+  "zurücktreten": "demitir-se",
+  "zusammentreiben": "juntar à força",
+  "enttäuschend": "dececionante",
+  "naiv": "ingénuo",
+  "sonnig": "solarengo",
+  "Spanien": "a Espanha",
+  "initial": "inicial",
+  "einschließlich": "incluindo",
+  "mehrstufig": "faseado",
+  "selektiv": "seletivo",
+  "verbal": "verbal",
+  "Kannst du da mithalten?": "Consegues acompanhar o ritmo?",
+  "Das Update verzögert sich.": "A atualização está atrasada.",
+  "Der Zug ist völlig überfüllt.": "O comboio vai completamente cheio.",
+  "Die Angaben sind unvollständig.": "Os dados estão incompletos.",
+  "Er ist von seinem Amt zurückgetreten.": "Demitiu-se do cargo.",
+  "Das Ergebnis ist enttäuschend.": "O resultado é dececionante.",
+
+  // ── The words a court report uses (part453) ─────────────────────────────
+  //
+  // Das Innenministerium is o Ministério da Administração Interna, which is
+  // the actual name of the Portuguese one — a card that invented a literal
+  // rendering would teach a ministry that does not exist.
+  //
+  // Die Vergewaltigung is a violação, the term Portuguese law uses, and der
+  // Asylsuchende is o requerente de asilo.
+  "das Asylhotel": "o hotel para requerentes de asilo",
+  "der Islam": "o islão",
+  "verurteilen": "condenar",
+  "das Innenministerium": "o Ministério da Administração Interna",
+  "die Vergewaltigung": "a violação",
+  "der Doppelmord": "o duplo homicídio",
+  "lebenslang": "perpétuo",
+  "der Massenzustrom": "o afluxo maciço",
+  "abhalten": "realizar",
+  "der Asylsuchende": "o requerente de asilo",
+  "die Atempause": "um respiro",
+  "die Invasion": "a invasão",
+  "der Sexualstraftäter": "o agressor sexual",
+  "die Strafe": "a pena",
+  "vergewaltigen": "violar",
+
+  // ── Eighty words from the newsfeed (part454) ────────────────────────────
+  //
+  // Das Steuergeld is o dinheiro dos contribuintes: Portuguese names the
+  // people whose money it is, which is also the point the word is usually
+  // making. Das Establishment is o poder instalado.
+  //
+  // Wissentlich takes com pleno conhecimento, because bewusst already holds
+  // conscientemente here, and dämlich takes burro, a step down from parvo.
+  "agentisch": "agêntico",
+  "rekursiv": "recursivo",
+  "die Selbstverbesserung": "o autoaperfeiçoamento",
+  "der Bauernhof": "a quinta",
+  "die Brauerei": "a fábrica de cerveja",
+  "die Iteration": "a iteração",
+  "das Token": "o token",
+  "vermieten": "arrendar",
+  "die Leichtigkeit": "a leveza",
+  "die Argumentation": "o raciocínio",
+  "die Auffindung": "a localização",
+  "bullisch": "otimista quanto ao mercado",
+  "der Codename": "o nome de código",
+  "die Eingabe": "a introdução de dados",
+  "einsatzbereit": "pronto a entrar em ação",
+  "das Flaggschiff": "o produto emblemático",
+  "die Flotte": "a frota",
+  "Frankreich": "a França",
+  "gedeihen": "prosperar",
+  "infrage": "em causa",
+  "kurzlebig": "efémero",
+  "Marokko": "Marrocos",
+  "mikroskopisch": "microscópico",
+  "die Nutzungsdauer": "a vida útil",
+  "der Organismus": "o organismo",
+  "das Vorrecht": "a prerrogativa",
+  "wetten": "apostar",
+  "die Amtszeit": "o mandato",
+  "angesichts": "perante",
+  "arbeitsbezogen": "relacionado com o trabalho",
+  "arbeitslos": "desempregado",
+  "aufgrund": "em virtude de",
+  "bedeutungsvoll": "significativo",
+  "der Blankoscheck": "o cheque em branco",
+  "blind": "cego",
+  "davor": "antes disso",
+  "dämlich": "burro",
+  "der Einweggrill": "o grelhador descartável",
+  "die Ernennung": "a nomeação",
+  "das Establishment": "o poder instalado",
+  "fehlschlagen": "falhar",
+  "ehren": "honrar",
+  "stehlen": "roubar",
+  "das Halbjahr": "o semestre",
+  "das Individuum": "o indivíduo",
+  "inszenieren": "encenar",
+  "das Juwel": "a joia",
+  "kampffähig": "apto para o combate",
+  "kandidieren": "candidatar-se",
+  "konkurrieren": "concorrer",
+  "konservativ": "conservador",
+  "die Logik": "a lógica",
+  "die Mitternacht": "a meia-noite",
+  "die Niederlassung": "a sucursal",
+  "das Paar": "o par",
+  "die Pedalverlängerung": "a extensão de pedais",
+  "die Petition": "a petição",
+  "die Pfeiltaste": "a tecla de seta",
+  "rauskommen": "sair",
+  "das Sommerwetter": "tempo de verão",
+  "die Steuererhöhung": "o aumento de impostos",
+  "das Steuergeld": "o dinheiro dos contribuintes",
+  "der Stinkefinger": "o dedo do meio",
+  "die Südküste": "a costa sul",
+  "umsiedeln": "realojar",
+  "ununterbrochen": "ininterrupto",
+  "verräterisch": "traiçoeiro",
+  "die Widerstandsfähigkeit": "a resiliência",
+  "wissentlich": "com pleno conhecimento",
+  "überhaupt": "sequer",
+
+  // ── Ordering, instalments and the right to change your mind (part455) ───
+  //
+  // The consumer-law words take the names Portuguese law gives them: das
+  // Widerrufsrecht is o direito de livre resolução, der Kreditrahmen is o
+  // plafond de crédito, and die Versandkosten are os portes, as elsewhere in
+  // this table.
+  //
+  // Online is na internet. Portugal says online too, but a card whose answer
+  // is the same word teaches nothing, and pela internet is what somebody says
+  // when they tell you where they bought it.
+  "Deutschland": "a Alemanha",
+  "Österreich": "a Áustria",
+  "die Schweiz": "a Suíça",
+  "online": "na internet",
+  "jederzeit": "a qualquer momento",
+  "erfolgen": "ter lugar",
+  "weiterempfehlen": "recomendar a outros",
+  "kontaktieren": "contactar",
+  "die Versandkosten": "os portes de envio",
+  "der Lieferumfang": "o conteúdo da embalagem",
+  "die Vorbestellung": "a pré-encomenda",
+  "der Sofortversand": "o envio imediato",
+  "die Marktabholung": "o levantamento na loja",
+  "der Kaufpreis": "o preço de compra",
+  "der Ratenkauf": "a compra a prestações",
+  "die Teilzahlung": "o pagamento parcial",
+  "die Einmalzahlung": "o pagamento único",
+  "die Mindestrate": "a prestação mínima",
+  "die Schlussrate": "a prestação final",
+  "der Kreditrahmen": "o plafond de crédito",
+  "der Jahreszins": "a taxa anual de juro",
+  "der Sollzinssatz": "a taxa de juro devedora",
+  "die Widerrufsfrist": "o prazo de livre resolução",
+  "das Widerrufsrecht": "o direito de livre resolução",
+  "der Wohnsitz": "o domicílio",
+  "volljährig": "maior de idade",
+  "kündbar": "rescindível",
+  "zuzüglich": "acrescido de",
+  "der Drittanbieter": "o vendedor terceiro",
+  "kostenpflichtig": "sujeito a pagamento",
+  "befristet": "por tempo determinado",
+  "einlösbar": "resgatável",
+  "die Teilnahmebedingung": "a condição de participação",
+  "die Zahlungsoption": "a opção de pagamento",
+  "Ist das noch auf Lager?": "Isso ainda está em stock?",
+  "Wie viel kostet der Versand?": "Quanto custam os portes?",
+  "Was ist alles dabei?": "O que é que vem incluído?",
+  "Kann ich auch in Raten zahlen?": "Também posso pagar a prestações?",
+  "Ich hab’s online bestellt.": "Encomendei pela internet.",
+  "Wann kommt die Lieferung?": "Quando é que chega a entrega?",
+  "Kann ich das jederzeit kündigen?": "Posso cancelar isso a qualquer momento?",
+  "Ist der Versand kostenlos?": "Os portes são grátis?",
+  "Ist das im Preis mit drin?": "Isso está incluído no preço?",
+  "Ich hole es im Laden ab.": "Vou levantá-lo à loja.",
+  "Ich kann es auf jeden Fall weiterempfehlen.": "Recomendo, sem dúvida nenhuma.",
+
+  // ── Keyboards, latency and how a thing feels in the hand (part456) ──────
+  //
+  // Die Latenz takes a latência, the technical word, so die Verzögerung goes
+  // back to o atraso just above — it had borrowed the technical one while this
+  // pack was still unwritten.
+  //
+  // Der Klang is a sonoridade, not o som: der Ton already holds o som, and a
+  // sonoridade is what somebody praises in a keyboard anyway. Satt, of a
+  // sound, is encorpado, the word Portuguese uses for a full-bodied wine.
+  "das Layout": "a disposição",
+  "das Gaming": "os videojogos",
+  "die Performance": "o desempenho",
+  "kabelgebunden": "com fios",
+  "kabellos": "sem fios",
+  "mechanisch": "mecânico",
+  "der Schalter": "o interruptor",
+  "der Switch": "o switch",
+  "der Trigger": "o gatilho",
+  "die Beleuchtung": "a iluminação",
+  "das Gehäuse": "a caixa",
+  "die Helligkeit": "o brilho",
+  "die Stabilität": "a estabilidade",
+  "die Robustheit": "a robustez",
+  "das Zubehör": "os acessórios",
+  "abnehmbar": "amovível",
+  "der Auslösepunkt": "o ponto de acionamento",
+  "die Latenz": "a latência",
+  "die Präzision": "a precisão",
+  "der Komfort": "o conforto",
+  "die Elektronik": "a eletrónica",
+  "die Akustik": "a acústica",
+  "der Klang": "a sonoridade",
+  "satt": "encorpado",
+  "die Vibration": "a vibração",
+  "die Abtastrate": "a taxa de sondagem",
+  "einstellbar": "regulável",
+  "anpassbar": "personalizável",
+  "reibungslos": "sem percalços",
+  "die Tastenkappe": "a tampa da tecla",
+  "der Tastendruck": "o toque na tecla",
+  "die Handballenauflage": "o apoio para os pulsos",
+  "der Richtungswechsel": "a mudança de direção",
+  "die Reaktionsgeschwindigkeit": "a velocidade de resposta",
+  "die Eingabeverzögerung": "o atraso de entrada",
+  "plattformübergreifend": "multiplataforma",
+  "leichtgängig": "de movimento suave",
+  "griffig": "com boa aderência",
+  "erstklassig": "de primeira",
+  "die Dämpfung": "o amortecimento",
+  "die Erkennung": "a deteção",
+  "die Aktivierung": "a ativação",
+  "die Deaktivierung": "a desativação",
+  "magnetisch": "magnético",
+  "Das funktioniert leider nicht.": "Infelizmente isso não funciona.",
+  "Wo finde ich die Einstellungen?": "Onde é que encontro as definições?",
+  "Ist das mit meinem Handy kompatibel?": "Isso é compatível com o meu telemóvel?",
+  "Ist das kabelgebunden oder kabellos?": "Isso é com fios ou sem fios?",
+  "Wo finde ich das Zubehör?": "Onde é que encontro os acessórios?",
+  "Das Kabel ist abnehmbar.": "O cabo é amovível.",
+  "Die Helligkeit lässt sich einstellen.": "O brilho pode regular-se.",
+  "Das lässt sich leicht anpassen.": "Isso personaliza-se com facilidade.",
+  "Der Klang ist überraschend gut.": "A sonoridade é surpreendentemente boa.",
+  "Das fühlt sich stabil an.": "Isso dá sensação de solidez.",
+  "Liegt das gut in der Hand?": "Isso assenta bem na mão?",
+  "Ich merke kaum eine Verzögerung.": "Quase não noto atraso nenhum.",
+  "Wie stelle ich die Beleuchtung ein?": "Como é que regulo a iluminação?",
+  "Alles lief reibungslos.": "Correu tudo sem percalços.",
+
+  // ── Credit agreements and the small print (part457) ─────────────────────
+  //
+  // Verkaufsoffen has no Portuguese adjective, because Portugal never banned
+  // Sunday trading in the first place. The card says what the German word
+  // announces: com lojas abertas ao domingo.
+  //
+  // Moderat takes razoável, since comedido belongs to maßvoll here and
+  // moderado to mäßig.
+  "die Folgeverfügung": "a utilização subsequente do crédito",
+  "der Finanzierungspartner": "o parceiro de financiamento",
+  "die Zinsbindungsdauer": "o período de taxa fixa",
+  "ausgenommen": "com exceção de",
+  "die Finanzierungssumme": "o montante financiado",
+  "der Sollsaldo": "o saldo devedor",
+  "gewähren": "conceder",
+  "die Mitnahmegarantie": "a garantia de disponibilidade em loja",
+  "der Probemonat": "o mês de experiência",
+  "der Vertragsabschluss": "a celebração do contrato",
+  "die Wissensarbeit": "o trabalho intelectual",
+  "der Irrtum": "o engano",
+  "anrechnen": "descontar no preço",
+  "abziehen": "subtrair",
+  "der Abzug": "a dedução",
+  "der Dienstleistungsvertrag": "o contrato de prestação de serviços",
+  "die Erfolgsrate": "a taxa de sucesso",
+  "der Finanzierungsvertrag": "o contrato de financiamento",
+  "das Lieferland": "o país de entrega",
+  "moderat": "razoável",
+  "preisgünstig": "com bom preço",
+  "das Probeabo": "a subscrição de experiência",
+  "die Ratenfinanzierung": "o financiamento a prestações",
+  "die Speditionslieferung": "a entrega por transportadora",
+  "verkaufsoffen": "com lojas abertas ao domingo",
+  "der Verkaufspreis": "o preço de venda",
+  "wählbar": "à escolha",
+
+  // ── Nine countries and sixty odds and ends (part458) ────────────────────
+  //
+  // Das Festland is o continente. In Portugal that word does real work every
+  // day, because the Azores and Madeira are the other half of the country, and
+  // it is exactly the contrast the German word draws.
+  //
+  // Antreiben takes acionar, since impulsionar already belongs to boosten.
+  "Belgien": "a Bélgica",
+  "Italien": "a Itália",
+  "Bulgarien": "a Bulgária",
+  "Dänemark": "a Dinamarca",
+  "Estland": "a Estónia",
+  "Finnland": "a Finlândia",
+  "Griechenland": "a Grécia",
+  "Irland": "a Irlanda",
+  "Kroatien": "a Croácia",
+  "antreiben": "acionar",
+  "die Ankunft": "a chegada",
+  "der Nordpol": "o Polo Norte",
+  "vorbehalten": "reservar-se o direito",
+  "das Jahresende": "o fim do ano",
+  "sofortig": "imediato",
+  "die Softwareentwicklung": "o desenvolvimento de software",
+  "absenden": "submeter",
+  "die Abstammung": "a ascendência",
+  "der Aktionszeitraum": "o período da promoção",
+  "der Anschlag": "o atentado",
+  "anteilig": "proporcional",
+  "auszahlen": "desembolsar",
+  "authentisch": "autêntico",
+  "bar": "em dinheiro",
+  "das Beschwerdeverfahren": "o processo de reclamação",
+  "die Betätigung": "o acionamento",
+  "bezüglich": "relativamente a",
+  "die Bombe": "a bomba",
+  "dediziert": "dedicado",
+  "einstufen": "classificar",
+  "das Festland": "o continente",
+  "die Finsternis": "a escuridão",
+  "das Großgerät": "o eletrodoméstico grande",
+  "die Inanspruchnahme": "o recurso a um serviço",
+  "die Inbetriebnahme": "a entrada em funcionamento",
+  "kombinierbar": "combinável",
+  "kommerziell": "comercial",
+  "manipulieren": "manipular",
+  "der Marktplatz": "a praça do mercado",
+  "die Mehrkosten": "os custos acrescidos",
+  "der Modus": "o modo",
+  "der Neukunde": "o cliente novo",
+  "normalisieren": "normalizar",
+  "problemlos": "sem problemas",
+  "der Produktrückruf": "a recolha do produto",
+  "die Produktzugabe": "a oferta que vem com a compra",
+  "respektieren": "respeitar",
+  "die Sonderaktion": "a promoção especial",
+  "spätestens": "o mais tardar",
+  "starren": "fitar",
+  "stets": "sempre",
+  "der Umkreis": "o raio em redor",
+  "der Umweltschutz": "a proteção do ambiente",
+  "unberührt": "intocado",
+  "verpacken": "embalar",
+  "der Werktag": "o dia útil",
+  "der Zoll": "a alfândega",
+  "zufällig": "por acaso",
+  "die Zusatzleistung": "o serviço adicional",
+  "die Ästhetik": "a estética",
+
+  // ── Security, borders and the news bulletin (part459) ───────────────────
+  //
+  // Portuguese has one word where German has a noun and an adjective: o
+  // muçulmano is both. So der Muslim keeps o muçulmano and muslimisch becomes
+  // de fé muçulmana, which is how the adjective is actually used.
+  //
+  // Der Asylsuchende is o requerente de asilo elsewhere in this table, so der
+  // Asylbewerber takes o candidato a asilo.
+  "die Cybersicherheit": "a cibersegurança",
+  "die Cyberverteidigung": "a ciberdefesa",
+  "der Asylbewerber": "o candidato a asilo",
+  "die Deportation": "a deportação",
+  "dominieren": "dominar",
+  "der Innenminister": "o ministro da Administração Interna",
+  "das Militär": "as forças armadas",
+  "der Muslim": "o muçulmano",
+  "muslimisch": "de fé muçulmana",
+  "die Nachwahl": "a eleição intercalar",
+  "angreifen": "atacar",
+  "die Bekämpfung": "o combate a",
+  "islamisch": "islâmico",
+  "die Menschheit": "a humanidade",
+  "die Zivilisation": "a civilização",
+  "beherbergen": "albergar",
+  "deportieren": "deportar",
+
+  // ── Releases, layoffs and eighty words around them (part460) ────────────
+  //
+  // Kompilieren takes compilar, so zusammentragen goes back to reunir, and
+  // implementieren takes implementar, so ausrollen becomes implantar. Both are
+  // pairs German keeps apart and Portuguese would happily collapse.
+  //
+  // Die Spitzenzeit is a hora de ponta, and die Entlassungswelle is a vaga de
+  // despedimentos — a wave in Portuguese, same as in German, but the word for
+  // it is the one the newspapers print.
+  "algorithmisch": "algorítmico",
+  "die Erstveröffentlichung": "a primeira publicação",
+  "hinsichtlich": "no que respeita a",
+  "die Interaktion": "a interação",
+  "die Nutzungsbeschränkung": "o limite de utilização",
+  "obskur": "obscuro",
+  "realistisch": "realista",
+  "seltsam": "esquisito",
+  "die Welle": "a onda",
+  "der Follower": "o seguidor",
+  "insbesondere": "em especial",
+  "unzufrieden": "insatisfeito",
+  "darin": "aí dentro",
+  "debütieren": "estrear-se",
+  "dreifach": "triplo",
+  "hinzuziehen": "chamar um especialista",
+  "die Mission": "a missão",
+  "die Normalität": "a normalidade",
+  "das Wasserzeichen": "a marca de água",
+  "ambitioniert": "ambicioso",
+  "der Analyst": "o analista",
+  "sich anfühlen": "dar a sensação de",
+  "anhand": "com base em",
+  "ausdehnen": "alargar",
+  "die Auszählung": "a contagem dos votos",
+  "beiwohnen": "assistir a",
+  "der Belegdrucker": "a impressora de talões",
+  "brechen": "partir",
+  "definitiv": "definitivamente",
+  "das Dutzend": "a dúzia",
+  "egal": "tanto faz",
+  "einfangen": "captar",
+  "einbrechen": "arrombar",
+  "der Einklang": "a harmonia",
+  "die Entlassungswelle": "a vaga de despedimentos",
+  "die Entwicklervorschau": "a pré-visualização para programadores",
+  "erleiden": "sofrer",
+  "evaluieren": "aferir",
+  "die Fehlgeburt": "o aborto espontâneo",
+  "flauschig": "fofo",
+  "die Genauigkeit": "a exatidão",
+  "glänzen": "brilhar",
+  "heimlich": "às escondidas",
+  "ignorieren": "ignorar",
+  "implementieren": "implementar",
+  "inmitten": "no meio de",
+  "kompilieren": "compilar",
+  "konsistent": "coerente",
+  "die Leistungsverbesserung": "a melhoria de desempenho",
+  "das Limit": "o limite",
+  "die Modellentwicklung": "o desenvolvimento de modelos",
+  "multimodal": "multimodal",
+  "die Notfallwarnung": "o alerta de emergência",
+  "optieren": "optar por",
+  "parlamentarisch": "parlamentar",
+  "reichhaltig": "farto",
+  "die Spezifikation": "a especificação",
+  "die Spitzenzeit": "a hora de ponta",
+  "der Standardmodus": "o modo predefinido",
+  "die Standardversion": "a versão padrão",
+  "unbegrenzt": "ilimitado",
+  "upgraden": "atualizar para uma versão melhor",
+  "vorankommen": "avançar",
+  "vorhersehbar": "antecipável",
+  "der Winkel": "o ângulo",
+  "zahnärztlich": "dentário",
+  "zusenden": "remeter",
+  "der Zwerg": "o anão",
+  "Indien": "a Índia",
+
+  // ── Dates, times and how many of you there are (part542) ────────────────
+  //
+  // Der wievielte ist heute is hoje é dia quantos, which is the question a
+  // Portuguese person actually asks. Jeder zweite Satz is uma em cada duas
+  // frases: Portuguese counts out of two rather than naming the second one.
+  "Ein Bier und zwei Wasser, bitte.": "Uma cerveja e duas águas, se faz favor.",
+  "Wir sind zu viert.": "Somos quatro.",
+  "Das macht zwölf Euro fünfzig.": "São doze euros e cinquenta.",
+  "Mein Zug fährt um zehn nach sieben.": "O meu comboio sai às sete e dez.",
+  "Im April war es noch kalt.": "Em abril ainda estava frio.",
+  "Wir fahren im August ans Meer.": "Em agosto vamos para a beira-mar.",
+  "Der Kurs beginnt im September.": "O curso começa em setembro.",
+  "Im November wird es früh dunkel.": "Em novembro escurece cedo.",
+  "Im Winter fahren wir zu meinen Eltern.": "No inverno vamos a casa dos meus pais.",
+  "Meine Oma wird im Mai neunzig.": "A minha avó faz noventa anos em maio.",
+  "Mein Onkel und meine Tante wohnen in Hamburg.": "O meu tio e a minha tia moram em Hamburgo.",
+  "Ich hab die braune Jacke genommen.": "Levei o casaco castanho.",
+  "Der Himmel ist heute ganz grau.": "Hoje o céu está todo cinzento.",
+  "Sie hat sich die Haare lila gefärbt.": "Ela pintou o cabelo de roxo.",
+  "Der wievielte ist heute eigentlich?": "Afinal hoje é dia quantos?",
+  "Heute ist der einunddreißigste Mai.": "Hoje é trinta e um de maio.",
+  "Mein Termin ist am siebzehnten um halb zehn.": "A minha marcação é no dia dezassete às nove e meia.",
+  "Es ist jetzt Viertel nach acht.": "Agora são oito e um quarto.",
+  "Der Zug fährt um dreizehn Uhr vierzig.": "O comboio sai às treze e quarenta.",
+  "Wir sind zu sechst, ein Tisch am Fenster wäre schön.": "Somos seis, uma mesa à janela era bom.",
+  "Jeder zweite Satz ist eine Frage.": "Uma em cada duas frases é uma pergunta.",
+  "Das Dreifache ist mir zu viel.": "O triplo é de mais para mim.",
+  "Zwei Drittel sind schon fertig.": "Dois terços já estão prontos.",
+  "Ich bin am Übermorgen nicht in der Stadt.": "Depois de amanhã não estou na cidade.",
+  "Um Mitternacht fährt keine Bahn mehr.": "À meia-noite já não há comboios.",
+
+  // ── Somewhere, sometime, and forty adjectives (part543) ─────────────────
+  //
+  // Irgendwo is algures, one word, which Portuguese has and English does not
+  // bother with. Inoffiziell is oficioso — a word that looks like official and
+  // means the opposite of it, which is exactly what the German says.
+  //
+  // Kohärent takes coeso, because konsistent already holds coerente.
+  "irgendwann": "a certa altura",
+  "irgendwo": "algures",
+  "irgendetwas": "qualquer coisa",
+  "erstens": "em primeiro lugar",
+  "zweitens": "em segundo lugar",
+  "drittens": "em terceiro lugar",
+  "ferner": "além disso",
+  "quasi": "praticamente",
+  "soeben": "agora mesmo",
+  "stattdessen": "em vez disso",
+  "namens": "de nome",
+  "vorbei": "acabado",
+  "herunter": "para baixo",
+  "derselbe": "o mesmo",
+  "wahnsinnig": "louco",
+  "geheim": "secreto",
+  "optional": "facultativo",
+  "autonom": "autónomo",
+  "fortgeschritten": "avançado",
+  "legendär": "lendário",
+  "bevorstehend": "iminente",
+  "anonym": "anónimo",
+  "experimentell": "experimental",
+  "verflucht": "amaldiçoado",
+  "widerlich": "repugnante",
+  "edel": "nobre",
+  "mysteriös": "misterioso",
+  "universell": "universal",
+  "persistent": "persistente",
+  "redundant": "redundante",
+  "saisonal": "sazonal",
+  "synchron": "sincronizado",
+  "kohärent": "coeso",
+  "inoffiziell": "oficioso",
+  "explosiv": "explosivo",
+  "unfertig": "por acabar",
+  "ungläubig": "incrédulo",
+  "unlimitiert": "sem limite",
+  "vorgefertigt": "pré-fabricado",
+  "abnormal": "anómalo",
+  "regulatorisch": "regulamentar",
+
+  // ── Fifty nouns and verbs from the wider world (part544) ────────────────
+  //
+  // Erschaffen takes criar, so erstellen becomes elaborar — German keeps the
+  // two apart and Portuguese would gladly answer both with one word.
+  //
+  // Der Unfug is a asneira, das Zeug is a tralha, and der Staatsanwalt is o
+  // procurador, which is what the office is called in Portugal.
+  "die Erlaubnis": "a autorização",
+  "das Rätsel": "o enigma",
+  "das Zeug": "a tralha",
+  "die Übertreibung": "o exagero",
+  "die Anweisung": "a instrução",
+  "der Schuss": "o tiro",
+  "die Belohnung": "a recompensa",
+  "der Unfug": "a asneira",
+  "die Aufzeichnung": "a gravação",
+  "die Ähnlichkeit": "a semelhança",
+  "die Bestätigung": "a confirmação",
+  "die Fabrik": "a fábrica",
+  "das Loch": "o buraco",
+  "das Meisterwerk": "a obra-prima",
+  "die Programmierung": "a programação",
+  "die Rückkehr": "o regresso",
+  "der Satellit": "o satélite",
+  "der Teufel": "o diabo",
+  "die Truppe": "a tropa",
+  "die Unruhe": "a inquietação",
+  "die Ära": "a era",
+  "der Staatsanwalt": "o procurador",
+  "das Tempo": "o ritmo",
+  "die Umlaufbahn": "a órbita",
+  "die Sonde": "a sonda",
+  "die Reduzierung": "a redução",
+  "das Bundesgericht": "o tribunal federal",
+  "deuten": "apontar",
+  "aufsteigen": "subir",
+  "entfalten": "desdobrar",
+  "kommentieren": "comentar",
+  "erziehen": "educar",
+  "sprinten": "correr a toda a velocidade",
+  "versetzen": "transferir",
+  "validieren": "validar",
+  "befürchten": "recear",
+  "auslöschen": "aniquilar",
+  "erschaffen": "criar",
+  "interpretieren": "interpretar",
+  "konvertieren": "converter",
+  "schiefgehen": "correr mal",
+  "umbringen": "matar",
+  "unterzeichnen": "assinar",
+  "einlegen": "inserir",
+  "anführen": "encabeçar",
+  "feststecken": "estar encravado",
+  "befehlen": "ordenar",
+  "fliehen": "fugir",
+  "geschehen": "suceder",
+  "stechen": "picar",
 };

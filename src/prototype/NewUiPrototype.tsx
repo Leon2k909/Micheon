@@ -189,10 +189,11 @@ import { getLessonContent, setLessonContent, type LessonContent } from "@/lib/le
  * lernen?".
  */
 import homeBannerImage from "./assets/home-banner-sunrise-v1.webp";
-import scenerySpeechBubbles from "./assets/guided-speech-bubbles-v1.webp";
+import scenerySpeechBubbles from "./assets/guided-speech-bubbles-v2.webp";
 import sceneryFlightPath from "./assets/guided-flight-path-v1.webp";
 import sceneryFlowerGarden from "./assets/guided-flower-garden-v1.webp";
 import scenerySoftDawn from "./assets/guided-soft-dawn-v1.webp";
+import sceneryMonkeyWorld from "./assets/guided-monkey-world-v2.webp";
 import homeLanguagesImage from "./assets/home-languages-de-v2.webp";
 import homeLanguagesGermanImage from "./assets/home-languages-german-v1.webp";
 import homeLanguagesUkImage from "./assets/home-languages-uk-v1.webp";
@@ -2143,7 +2144,11 @@ const BANNER_SCENERY: Partial<Record<GuidedBackground, { src: string; frame: str
   // arrived with black bars baked in and at ratios from 2:1 to 3:1: trimmed to
   // their real edges, then to 5.5 to 1, which sits between the widths this box
   // takes. There is no band left to place.
-  bubbles: { src: scenerySpeechBubbles, frame: "center" },
+  // Right, and a band through the middle. The bubbles float in the right
+  // half of this picture and the left is an empty wash, so a narrow window
+  // should trim the wash — and the banner keeps the row of them rather than
+  // the sky above or the ground below.
+  bubbles: { src: scenerySpeechBubbles, frame: "right 52%" },
   // Right, not centre. In a narrow window the banner stops being a strip and
   // starts trimming the SIDES — at 900px only 43% of the width survives, 29%
   // off each end. This picture keeps its aeroplane and its globe in the right
@@ -2153,6 +2158,15 @@ const BANNER_SCENERY: Partial<Record<GuidedBackground, { src: string; frame: str
   atlas: { src: sceneryFlightPath, frame: "right center" },
   garden: { src: sceneryFlowerGarden, frame: "center" },
   dawn: { src: scenerySoftDawn, frame: "center" },
+  // Right, like the globe: the monkeys hang from a branch on the right of this
+  // picture and the left is open sky over the valley, so a narrow window
+  // should trim the sky rather than them.
+  //
+  // This scene used to be left out on purpose, because the artwork it had was
+  // the app's own mascot and she had asked for him to come off this banner.
+  // The picture is hers now and named for the banner, so the exception has no
+  // reason left.
+  monkey: { src: sceneryMonkeyWorld, frame: "right 38%" },
 };
 
 /**

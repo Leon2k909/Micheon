@@ -83,6 +83,11 @@ for (const [scene, binding] of [
   ["atlas", "sceneryFlightPath"],
   ["garden", "sceneryFlowerGarden"],
   ["dawn", "scenerySoftDawn"],
+  // Monkey world was the one scene held back, because its artwork was the
+  // app's own mascot and she had had him taken off this banner. She has
+  // supplied a jungle of her own for the scene and named the file for the
+  // banner, so it lends its picture like the rest.
+  ["monkey", "sceneryMonkeyWorld"],
 ]) {
   assert.ok(
     new RegExp(`^  ${scene}: \\{ src: ${binding}, frame: "[^"]+" \\},$`, "m").test(shell),
@@ -126,25 +131,33 @@ assert.ok(
     + "and on a wide screen it made the banner over 500px tall. The pictures carry the banner's shape "
     + "instead, so the box can stay the height it has always been"
 );
-// Each file has the banner's proportions, so cover has almost nothing to throw
-// away. A 2:1 illustration in a strip this wide comes out as a band of empty
-// sky; contained instead, it shrinks into a corner and leaves the rest flat.
-for (const scenery of [
-  "guided-speech-bubbles-v1",
-  "guided-flight-path-v1",
-  "guided-flower-garden-v1",
-  "guided-soft-dawn-v1",
-]) {
-  const full = path.join(root, "src/prototype/assets", scenery + ".webp");
-  assert.ok(fs.existsSync(full), scenery + " is missing, so a scene has no picture to lend the banner");
+/**
+ * Every picture a scene lends the banner is in the tree.
+ *
+ * Read out of the imports rather than listed here. Listed, the names have to
+ * be retyped whenever a picture is replaced — and a picture is replaced by
+ * dropping in a new file and bumping its version, so the list goes stale on
+ * exactly the change it exists to guard. That is the same shape of mistake as
+ * naming the languages whose flags sit at the edge.
+ */
+const sceneryFiles = [...shell.matchAll(/import scenery\w+ from "\.\/assets\/([^"]+)"/g)].map((m) => m[1]);
+assert.ok(
+  sceneryFiles.length >= 4,
+  `only ${sceneryFiles.length} scene pictures are imported; the banner draws one per scene`
+);
+for (const file of sceneryFiles) {
+  assert.ok(
+    fs.existsSync(path.join(root, "src/prototype/assets", file)),
+    file + " is imported for a scene but is not in the tree"
+  );
 }
 assert.ok(
   /style=\{scenery\.frame/.test(shell),
   "the banner ignores each picture's framing, so cover falls back to one placement for all of them"
 );
 assert.ok(
-  !/^  (?:monkey|plain):/m.test(/const BANNER_SCENERY[^}]*\}/.exec(shell)?.[0] ?? ""),
-  "monkey world is lending the banner its picture, which is the mascot she had taken off it"
+  !/^  plain:/m.test(/const BANNER_SCENERY[^}]*\}/.exec(shell)?.[0] ?? ""),
+  "plain canvas is lending the banner a picture, which is the one thing that option promises not to do"
 );
 assert.ok(
   shell.includes("window.addEventListener(GUIDED_BACKGROUND_EVENT, refresh)"),
