@@ -49,7 +49,7 @@ const MASCULINE_PAST = [
   "ответил", "решил", "начал", "закончил", "успел", "устал", "проспал",
   // Added after block 65 wrote cards the list could not see: both are always
   // a person speaking, so neither can be a noun agreeing with something else.
-  "договорил", "старался",
+  "договорил", "старался", "стал", "смотрел", "ходил", "остался",
 ];
 
 const FEMININE_PAST = MASCULINE_PAST

@@ -5121,7 +5121,7 @@ export const RUSSIAN_BY_GERMAN: Record<string, string> = {
   "Passt schon. Mittag in der Kantine?": "Да ничего. Обед в столовой?",
   "geknockt": "выбитый из колеи",
   "Wir haben bei den Nachbarn einen Ersatzschlüssel hinterlegt.": "Запасной ключ мы оставили у соседей.",
-  "Moment, ich schau nach... In L hätten wir ihn nur noch in Grau.": "Минуту, я посмотрю... В размере L у нас остался только серый.",
+  "Moment, ich schau nach... In L hätten wir ihn nur noch in Grau.": "Минуту, я посмотрю... В размере L есть только серый.",
   "Das machen sogar Muttersprachler manchmal.": "Так иногда делают даже носители языка.",
   "Stimmt die Rechnung? Wir hatten nur zwei Schorlen.": "Счёт правильный? У нас было только два сока с газировкой.",
   "Hast du kurz zwei Minuten? — Klar, was gibt's?": "Есть пара минут? — Конечно, что случилось?",
