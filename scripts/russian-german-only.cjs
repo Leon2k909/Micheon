@@ -46,6 +46,9 @@ const INSTITUTIONS = [
   // German paediatric check-ups are numbered U1 to U9; nothing is called that
   // in Russia. And VB in a small ad is Verhandlungsbasis, a German shorthand.
   "der U7", "Euro VB",
+  // A Sunday-night television institution. Naming it teaches nothing to
+  // somebody who will never be in the room where it is on.
+  "Tatort",
 ];
 
 /**
