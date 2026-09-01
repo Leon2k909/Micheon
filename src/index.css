@@ -2526,10 +2526,25 @@ a { color: inherit; text-decoration: none; }
 }
 .fs-flashcard-topline { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 5px; }
 .fs-flashcard-content { min-height: 0; display: grid; align-content: center; }
+.fs-flashcard-badges { display: flex; align-items: center; gap: 7px; min-width: 0; }
 .fs-flashcard-badge {
   justify-self: start; padding: 5px 9px; border-radius: 999px;
   background: rgba(139,76,255,0.13); color: #cbb5ff; font-size: 10px; font-weight: 850;
   letter-spacing: 0.08em; text-transform: uppercase;
+}
+/* What level the lesson this came from is written at.
+   Outlined rather than filled, and in the muted ink, because it sits beside
+   badges that say what is HAPPENING — new phrase, review phrase — and this
+   one only says where the material sits. Same treatment in both places it
+   appears, so it reads as one thing wherever it is met. The colours come from
+   the theme variables, which every guided theme redefines, so it follows the
+   session's own palette instead of needing a copy per theme. */
+.fs-level-badge {
+  display: inline-flex; align-items: center; flex: 0 0 auto;
+  border: 1px solid var(--fs-line-strong); border-radius: 999px;
+  padding: 3px 8px;
+  color: var(--fs-muted); font-size: 10px; font-weight: 850;
+  letter-spacing: 0.06em; text-transform: uppercase;
 }
 .guided-session .fs-flashcard-known {
   min-height: 34px; display: inline-flex; align-items: center; justify-content: center; gap: 7px;

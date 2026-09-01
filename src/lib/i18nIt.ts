@@ -1322,6 +1322,7 @@ export const IT: Record<string, string> = {
   "That's the": "Quello è il",
   "this one wants the": "questa vuole il",
   "Sentence practice": "Esercizio sulle frasi",
+  "The level of the lesson this comes from": "Il livello della lezione da cui viene",
   "Use the meaning cue to recall the full target sentence.": "Usa l'indizio del significato per ricordare tutta la frase da imparare.",
   "Use the target sentence to recall its full meaning.": "Usa la frase da imparare per ricordare tutto il suo significato.",
   "No answers are shown now. Type both sides from memory.": "Adesso non si mostra nessuna risposta. Scrivi tutti e due i lati a memoria.",

@@ -65,6 +65,7 @@ export const FR: Record<string, string> = {
   "Recognise the most useful regional forms while keeping Standard English as an accepted answer.": "Reconnais les formes régionales les plus utiles ; l'anglais standard reste toujours une réponse acceptée.",
   "Geordie / Newcastle English — regional and informal": "Geordie / anglais de Newcastle — régional et familier",
   "Sentence practice": "Entraînement aux phrases",
+  "The level of the lesson this comes from": "Le niveau de la leçon d'où cela vient",
   "Read, listen, choose, type, translate, then recall.": "Lire, écouter, choisir, taper, traduire, puis se rappeler.",
   "Read, choose, type, translate, then recall.": "Lire, choisir, taper, traduire, puis se rappeler.",
   "Read, listen, choose, then type it in German and French.": "Lire, écouter, choisir, puis taper en allemand et en français.",

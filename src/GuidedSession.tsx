@@ -123,6 +123,7 @@ function lessonSpeak(text: string, rate: number, lang: string): Promise<void> {
   return tts(text, rate, lang);
 }
 import { ui, uiOr, uiFmt, uiNumber } from "@/lib/i18n";
+import { cefrBadgeLabel } from "@/lib/cefr";
 import {
   Volume2, Mic2, ChevronLeft, ChevronRight, ChevronDown, CheckCircle2, X,
   BookOpen, ArrowRight,
@@ -1712,6 +1713,27 @@ function ManualReviewNote({ grade, notice, onUndo, onDismiss, onHold, onRelease 
     </span>
   );
 }
+
+/**
+ * The CEFR level of what is on screen, when the catalogue knows one.
+ *
+ * The level belongs to the PACK, and every item in a pack carries its pack's
+ * label — so this says "the lesson this came from is A2", not "this word is
+ * A2". That is the claim the data can actually support, and the tooltip says
+ * so rather than letting a bare badge overstate it. A per-word difficulty
+ * would have to be invented, and inventing one is how a beginner ends up
+ * being told a rare compound noun is A1.
+ */
+function CefrBadge({ level }: { level: unknown }) {
+  const label = cefrBadgeLabel(level);
+  if (!label) return null;
+  return (
+    <span className="fs-level-badge" title={ui("The level of the lesson this comes from")}>
+      {label}
+    </span>
+  );
+}
+
 function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [], onNext, onSkip, onGradeItem, onReviewLevel, onSnooze, onAnswer, manualReviewNotice, onUndoManualReview, onDismissManualReview, onHoldManualReview, onReleaseManualReview, markedLevel = null, onClearMark }: {
   item: any;
   listeningChoicePool: string[];
@@ -3233,7 +3255,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
         {/* Heading: eyebrow + stage title + Hear it / grade pills */}
         <div className="fs-heading">
           <div>
-            <span className="fs-eyebrow"><i /> {ui("Sentence practice")}</span>
+            <span className="fs-eyebrow"><i /> {ui("Sentence practice")}<CefrBadge level={item?.level} /></span>
             <h1 className="fs-h1">
               {ui(
                 phase === "Translate"
@@ -5683,6 +5705,8 @@ type SessionPreviewCard = {
   meaning: string;
   use?: string;
   review: boolean;
+  /** The pack's CEFR label, carried so the card can show what level this is. */
+  level?: string;
 };
 
 function buildSessionPreviewCards(steps: any[]): SessionPreviewCard[] {
@@ -5711,6 +5735,7 @@ function buildSessionPreviewCards(steps: any[]): SessionPreviewCard[] {
       meaning,
       use: step.item.use ? formatEnglishText(step.item.use, englishVariant) : step.item.use,
       review: Boolean(step.review),
+      level: step.item.level,
     });
     if (cards.length === 6) break;
   }
@@ -5976,8 +6001,11 @@ function SessionFlashcardPreview({
           title={mode === "flip" ? ui("Click or press space to flip") : undefined}
         >
           <div className="fs-flashcard-topline">
-            <div className="fs-flashcard-badge">
-              {ui(card.review ? "Review phrase" : "New phrase")}
+            <div className="fs-flashcard-badges">
+              <div className="fs-flashcard-badge">
+                {ui(card.review ? "Review phrase" : "New phrase")}
+              </div>
+              <CefrBadge level={card.level} />
             </div>
             {/* Both of these stop the click reaching the card, which would
                 otherwise flip it while you were choosing. */}

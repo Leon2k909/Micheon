@@ -147,3 +147,22 @@ export function cefrOrder(level: string | undefined): number {
   // "B1+" is a shade above plain B1 and a shade below B1-B2.
   return low * 10 + high + (String(level).includes("+") ? 0.5 : 0);
 }
+
+/**
+ * The level to print on a badge, or nothing at all.
+ *
+ * Shows the label the catalogue actually wrote, ranges included: a pack that
+ * says A1-A2 covers both, and rounding it to one step would answer a question
+ * the pack did not ask. That is the difference between this and cefrStep,
+ * which exists to FILE a pack at one level for ordering — a judgement worth
+ * making for a queue and not worth showing to a learner as fact.
+ *
+ * Anything naming no CEFR step comes back null so the caller can draw nothing.
+ * Some packs are levelless on purpose — they apply everywhere — and a badge
+ * that guessed A1 for them would be inventing the one thing it claims to know.
+ */
+export function cefrBadgeLabel(level: unknown): string | null {
+  const text = String(level ?? "").trim();
+  if (!text || !/[ABC][12]/iu.test(text)) return null;
+  return text.toUpperCase();
+}

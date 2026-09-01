@@ -590,6 +590,7 @@ export const ES: Record<string, string> = {
   "That's the": "Ese es el",
   "this one wants the": "este quiere el",
   "Sentence practice": "Práctica de frases",
+  "The level of the lesson this comes from": "El nivel de la lección de la que viene",
   "Use the meaning cue to recall the full target sentence.": "Usa la pista del significado para recordar la frase completa.",
   "Use the target sentence to recall its full meaning.": "Usa la frase para recordar su significado completo.",
   "No answers are shown now. Type both sides from memory.": "Ahora no se muestra ninguna respuesta. Escribe los dos lados de memoria.",
