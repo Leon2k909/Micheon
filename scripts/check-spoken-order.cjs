@@ -28,8 +28,9 @@ const built = esbuild.buildSync({
       'export { allPartBlueprints } from "./src/lib/data.ts";',
       'export { buildApiPartFromResolved } from "./src/lib/api.ts";',
       'export { buildWordCatalog, rankWordCatalog } from "./src/lib/wordSession.ts";',
-      'export { buildCorpusIndex, corpusUses, corpusIgnores } from "./src/lib/corpusFrequency.ts";',
+      'export { buildCorpusIndex, corpusUses, corpusReach, corpusIgnores } from "./src/lib/corpusFrequency.ts";',
       'export { frequencyRank } from "./src/lib/wordFrequency.ts";',
+      'export { spokenFrequencyRank } from "./src/lib/spokenFrequency.ts";',
       'export { germanVerbLemma, GERMAN_VERB_FORM_COUNT, GERMAN_VERB_FORMS } from "./src/lib/germanVerbForms.ts";',
     ].join("\n"),
     resolveDir: root,
@@ -56,7 +57,7 @@ compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(built.outputFiles[0].text, compiled.filename);
 const {
   allPartBlueprints, buildApiPartFromResolved, buildWordCatalog, rankWordCatalog,
-  buildCorpusIndex, corpusUses, corpusIgnores, frequencyRank,
+  buildCorpusIndex, corpusUses, corpusReach, corpusIgnores, frequencyRank, spokenFrequencyRank,
   germanVerbLemma, GERMAN_VERB_FORM_COUNT,
 } = compiled.exports;
 
@@ -183,6 +184,37 @@ for (const [narrow, broad] of [["die Fähigkeit", "die Ausbildung"], ["die Fähi
     `${narrow} sits at ${a} and ${broad} at ${b}. ${narrow} is written more often but only ever `
     + `inside one pack, so ${broad} is the one a learner is more likely to need.`);
 }
+// ── nothing gets to the front on its own pack's say-so ──────────────────────
+// A pack's sentences say its own seeds — that is what example sentences are —
+// so "said three times in two packs" is a topic and its neighbour, not the
+// language. Measured before the reach floor: positions 1,470–1,760 were der
+// Rollator, der Abspann, der Rosenmontag, der Ersatzschlüssel and die Noten
+// (sheet music), each said exactly three times in two packs and in no
+// frequency list, every one ahead of every word the sentences skip. The rule:
+// a word in the first 1,500 is there because the course says it in at least
+// three packs, or because a frequency list — written bank or spoken list —
+// ranks it. Not because two packs mention it.
+const SAY_SO = 1500;
+const vouched = (word) => {
+  const name = word.lookup || word.de;
+  if (corpusIgnores(name)) return true;
+  if (Number.isFinite(frequencyRank(name))) return true;
+  if (Number.isFinite(spokenFrequencyRank(name))) return true;
+  return corpusReach(name, index) >= 3;
+};
+const saySo = conversation.slice(0, SAY_SO).filter((word) => !vouched(word));
+assert.ok(saySo.length === 0,
+  `${saySo.length} word(s) in the first ${SAY_SO} are there on fewer than three packs and no frequency list, e.g. `
+  + saySo.slice(0, 6).map((w) => `${w.de} (${corpusUses(w.lookup || w.de, index)}× in ${corpusReach(w.lookup || w.de, index)} pack(s))`).join(", "));
+// The learner's own case: sheet music is not the 900th thing to learn.
+{
+  const sheetMusic = conversation.findIndex((word) => word.de === "die Noten" && /sheet music/u.test(String(word.en)));
+  if (sheetMusic >= 0) {
+    assert.ok(sheetMusic + 1 > 2000,
+      `die Noten (sheet music) sits at ${sheetMusic + 1}: three mentions in two packs are carrying it past thousands of words people say`);
+  }
+}
+
 // ── and words people say must come forward ──────────────────────────────────
 for (const de of ["morgen", "echt", "gleich", "kurz", "einfach", "die Minute"]) {
   const before = write.get(de);

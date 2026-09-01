@@ -48,7 +48,7 @@ const built = esbuild.buildSync({
   stdin: {
     contents: [
       'export { buildWordCatalog, rankWordCatalog } from "./src/lib/wordSession.ts";',
-      'export { buildCorpusIndex, corpusUses, corpusIgnores } from "./src/lib/corpusFrequency.ts";',
+      'export { buildCorpusIndex, corpusUses, corpusReach, corpusIgnores } from "./src/lib/corpusFrequency.ts";',
       'export { frequencyRank } from "./src/lib/wordFrequency.ts";',
       'export { allPartBlueprints } from "./src/lib/data.ts";',
       'export { buildApiPartFromResolved } from "./src/lib/api.ts";',
@@ -84,10 +84,10 @@ check(`the catalogue ranks (${ranked.length.toLocaleString("en-GB")} words)`, ra
 
 // ── the bar the ordering is allowed to call evidence ────────────────────
 const source = fs.readFileSync(path.join(root, "src/lib/wordSession.ts"), "utf8");
-check("the spoken-evidence bar is still two mentions",
-  /const SPOKEN_EVIDENCE = 2;/.test(source));
-check("and the attested list is still the thing that reads it",
-  /\.filter\(\(entry\) => entry\.uses >= SPOKEN_EVIDENCE\)/.test(source));
+check("the spoken-evidence bar is still two mentions in three packs",
+  /const SPOKEN_EVIDENCE = 2;/.test(source) && /const SPOKEN_REACH = 3;/.test(source));
+check("and the attested list is still the thing that reads both",
+  /\.filter\(\(entry\) => entry\.uses >= SPOKEN_EVIDENCE && entry\.reach >= SPOKEN_REACH\)/.test(source));
 
 /**
  * The words the bank cannot speak for, split by whether the course says them.
@@ -100,10 +100,14 @@ const unbanked = ranked.filter((word) => {
   return !Number.isFinite(M.frequencyRank(name)) && !M.corpusIgnores(name);
 });
 const usesOf = (word) => M.corpusUses(word.lookup || word.de, corpus);
-const attested = unbanked.filter((word) => usesOf(word) >= 2);
-const thin = unbanked.filter((word) => usesOf(word) <= 1);
+const reachOf = (word) => M.corpusReach(word.lookup || word.de, corpus);
+// Attested is what the code calls attested: said at least twice, by at least
+// three packs. A word said three times by two packs is a topic and its
+// neighbour, and sorts with the thin ones — see SPOKEN_REACH in wordSession.
+const attested = unbanked.filter((word) => usesOf(word) >= 2 && reachOf(word) >= 3);
+const thin = unbanked.filter((word) => usesOf(word) <= 1 || reachOf(word) <= 2);
 
-check(`both groups are populated (${attested.length} said twice or more, ${thin.length} said once or never)`,
+check(`both groups are populated (${attested.length} said twice or more by three packs, ${thin.length} said once, never, or by fewer packs)`,
   attested.length > 100 && thin.length > 100);
 
 const lastAttested = Math.max(...attested.map((word) => positionOf.get(word.id)));
@@ -112,7 +116,7 @@ const jumpers = thin
   .filter((word) => positionOf.get(word.id) < lastAttested)
   .map((word) => `${word.de} (said ${usesOf(word)}, at ${positionOf.get(word.id)})`);
 
-check("no word said once outranks every word the course says twice or more"
+check("no word said once, or by fewer than three packs, outranks every word the course says twice or more across three packs"
   + (jumpers.length ? ` — ${jumpers.slice(0, 3).join("; ")}` : ""),
   firstThin > lastAttested);
 

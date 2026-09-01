@@ -517,6 +517,26 @@ const SPOKEN_WEIGHT = 1;
 const SPOKEN_EVIDENCE = 2;
 
 /**
+ * How many packs have to say a word before the count is about the word.
+ *
+ * A pack's own sentences say its own seeds — that is what example sentences
+ * are — so a count of two or three is usually one topic talking to itself,
+ * plus a neighbour. Measured: the words at positions 1,470–1,760 of the
+ * ranking were der Rollator, der Abspann, der Rosenmontag, der Ersatzschlüssel,
+ * die Noten (sheet music) — every one said exactly three times in two packs,
+ * none in the frequency bank — and every one of them sat ahead of every word
+ * the sentences happen not to say, however high the fifty-thousand-word
+ * spoken list ranks it, because attestation decided outright and a setback
+ * put the rest behind the whole attested list.
+ *
+ * Three packs is where a count stops being a topic: no single pack and its
+ * neighbour can reach it. A word below it is not pushed to the back — like a
+ * word said once, it falls through to the spoken list and the bank, which is
+ * where "sheet music" belongs and where wheeled walkers belong.
+ */
+const SPOKEN_REACH = 3;
+
+/**
  * How far the subtitle list reaches, and therefore where everything else starts.
  *
  * The list holds the fifty thousand commonest words of spoken German, which is
@@ -580,9 +600,9 @@ export function rankWordCatalog(
         // evidence, and without the cap a word used once was pulled from
         // 3,000th to 660th on it.
         const weight = Math.sqrt(uses * Math.max(1, Math.min(reach, uses)));
-        return { id: word.id, uses, weight };
+        return { id: word.id, uses, reach, weight };
       })
-      .filter((entry) => entry.uses >= SPOKEN_EVIDENCE)
+      .filter((entry) => entry.uses >= SPOKEN_EVIDENCE && entry.reach >= SPOKEN_REACH)
       .sort((a, b) => b.weight - a.weight);
     return new Map(attested.map((entry, index) => [entry.id, index + 1]));
   })();
