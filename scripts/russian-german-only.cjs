@@ -81,7 +81,10 @@ const LANGUAGE = [
   "Dialekt", "Tastatur fehlt das ü",
   "Alt plus", /der, die oder das/i, "Der, nicht das", "Der Kühlschrank.",
   "Zertifikat B1", "Kurs, B2", "bei A2",
+  // Russian has no articles at all, so any card teaching der/die/das is
+  // teaching a category the learner's target language does not contain.
   /\bArtikel\b.{0,30}(verwechsle|durcheinander)/, /(verwechsle|durcheinander).{0,30}\bArtikel\b/,
+  "verrät oft den Artikel",
   "mit e-y oder mit a-i", "mit ha oder ohne", "ae, oe, ue und ss",
   "schreib ich einfach ue", "Punkt de", "gemütlich auf Englisch",
   "heißt wörtlich", "heißt übersetzt", "unübersetzbares Wort",
