@@ -83,6 +83,11 @@ for (const [scene, binding] of [
   ["atlas", "sceneryFlightPath"],
   ["garden", "sceneryFlowerGarden"],
   ["dawn", "scenerySoftDawn"],
+  // Monkey world was the one scene held back, because its artwork was the
+  // app's own mascot and she had had him taken off this banner. She has
+  // supplied a jungle of her own for the scene and named the file for the
+  // banner, so it lends its picture like the rest.
+  ["monkey", "sceneryMonkeyWorld"],
 ]) {
   assert.ok(
     new RegExp(`^  ${scene}: \\{ src: ${binding}, frame: "[^"]+" \\},$`, "m").test(shell),
@@ -143,8 +148,8 @@ assert.ok(
   "the banner ignores each picture's framing, so cover falls back to one placement for all of them"
 );
 assert.ok(
-  !/^  (?:monkey|plain):/m.test(/const BANNER_SCENERY[^}]*\}/.exec(shell)?.[0] ?? ""),
-  "monkey world is lending the banner its picture, which is the mascot she had taken off it"
+  !/^  plain:/m.test(/const BANNER_SCENERY[^}]*\}/.exec(shell)?.[0] ?? ""),
+  "plain canvas is lending the banner a picture, which is the one thing that option promises not to do"
 );
 assert.ok(
   shell.includes("window.addEventListener(GUIDED_BACKGROUND_EVENT, refresh)"),

@@ -193,6 +193,7 @@ import scenerySpeechBubbles from "./assets/guided-speech-bubbles-v1.webp";
 import sceneryFlightPath from "./assets/guided-flight-path-v1.webp";
 import sceneryFlowerGarden from "./assets/guided-flower-garden-v1.webp";
 import scenerySoftDawn from "./assets/guided-soft-dawn-v1.webp";
+import sceneryMonkeyWorld from "./assets/guided-monkey-world-v2.webp";
 import homeLanguagesImage from "./assets/home-languages-de-v2.webp";
 import homeLanguagesGermanImage from "./assets/home-languages-german-v1.webp";
 import homeLanguagesUkImage from "./assets/home-languages-uk-v1.webp";
@@ -2153,6 +2154,15 @@ const BANNER_SCENERY: Partial<Record<GuidedBackground, { src: string; frame: str
   atlas: { src: sceneryFlightPath, frame: "right center" },
   garden: { src: sceneryFlowerGarden, frame: "center" },
   dawn: { src: scenerySoftDawn, frame: "center" },
+  // Right, like the globe: the monkeys hang from a branch on the right of this
+  // picture and the left is open sky over the valley, so a narrow window
+  // should trim the sky rather than them.
+  //
+  // This scene used to be left out on purpose, because the artwork it had was
+  // the app's own mascot and she had asked for him to come off this banner.
+  // The picture is hers now and named for the banner, so the exception has no
+  // reason left.
+  monkey: { src: sceneryMonkeyWorld, frame: "right 38%" },
 };
 
 /**
