@@ -25,6 +25,9 @@ const MASCULINE_SHORT = [
   "болен", "голоден", "прав", "доволен", "женат", "здоров", "виноват",
   // Found by a card in block 58: "если ты заразен" decides it just as surely.
   "заразен", "простужен", "занят", "уверен",
+  // Not a short adjective but agrees exactly like one, and just as invisible:
+  // "срок ты выбираешь сам" picks a gender for whoever is reading.
+  "сам",
 ];
 
 /**
@@ -35,6 +38,7 @@ const FEMININE_SHORT = [
   "свободна", "занята", "готова", "уверена", "рада", "должна", "согласна",
   "больна", "голодна", "права", "довольна", "замужем", "здорова", "виновата",
   "заразна", "простужена",
+  "сама",
 ];
 
 /** Masculine past tense. Listed, not matched on -л, because стол is a table. */
