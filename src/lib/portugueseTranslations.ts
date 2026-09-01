@@ -21506,4 +21506,72 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "unterschreiten": "ficar abaixo de",
   "sich auf etwas belaufen": "cifrar-se em",
   "ins Gewicht fallen": "pesar na balança",
+
+  // ── Habits, and the effort of changing one (part438) ────────────────────
+  //
+  // Der innere Schweinehund has no animal in Portuguese: den inneren
+  // Schweinehund überwinden is dar a volta à preguiça, which is the same fight
+  // without the pig. Maß halten is ter conta e medida, an old expression that
+  // still says exactly this. Am Ball bleiben is não baixar os braços.
+  "die Angewohnheit": "o hábito",
+  "die Regelmäßigkeit": "a regularidade",
+  "die Willenskraft": "a força de vontade",
+  "die Mäßigung": "a moderação",
+  "die Selbstdisziplin": "a autodisciplina",
+  "die Umstellung": "a adaptação",
+  "die Beständigkeit": "a constância",
+  "die Selbstbeherrschung": "o autodomínio",
+  "der Ansporn": "o estímulo",
+  "die Achtsamkeit": "a atenção plena",
+  "diszipliniert": "disciplinado",
+  "maßvoll": "comedido",
+  "exzessiv": "desmedido",
+  "eingefahren": "enraizado",
+  "zwanghaft": "obsessivo",
+  "willensstark": "de vontade firme",
+  "schrittweise": "passo a passo",
+  "bewusst": "conscientemente",
+  "unbewusst": "inconscientemente",
+  "sich abgewöhnen": "desabituar-se de",
+  "sich angewöhnen": "habituar-se a",
+  "einschränken": "reduzir",
+  "sich verkneifen": "privar-se de",
+  "Maß halten": "ter conta e medida",
+  "in den Griff bekommen": "pôr sob controlo",
+  "am Ball bleiben": "não baixar os braços",
+  "den inneren Schweinehund überwinden": "dar a volta à preguiça",
+  "klein anfangen": "começar por pouco",
+
+  // ── Criticism, given and taken (part439) ────────────────────────────────
+  //
+  // Der Kritikpunkt is o reparo, the exact Portuguese word for one thing
+  // somebody objects to. Kritik einstecken is encaixar as críticas, sich zu
+  // Herzen nehmen is levar a peito, and gut ankommen is cair bem.
+  //
+  // Feedback geben stays dar feedback. The word is borrowed in Portugal too,
+  // and in an office nobody says anything else.
+  "die Kritik": "a crítica",
+  "der Verbesserungsvorschlag": "a sugestão de melhoria",
+  "der Tadel": "a repreensão",
+  "der Kritikpunkt": "o reparo",
+  "die Anmerkung": "a nota",
+  "die Selbstkritik": "a autocrítica",
+  "der Ratschlag": "o conselho",
+  "die Anregung": "a sugestão",
+  "konstruktiv": "construtivo",
+  "berechtigt": "justificado",
+  "überzogen": "exagerado",
+  "kritikfähig": "aberto à crítica",
+  "ungefragt": "sem que ninguém peça",
+  "ehrlich gesagt": "para ser franca",
+  "bemängeln": "apontar defeitos a",
+  "würdigen": "reconhecer o mérito de",
+  "tadeln": "repreender",
+  "beanstanden": "reclamar de",
+  "Kritik einstecken": "encaixar as críticas",
+  "sich zu Herzen nehmen": "levar a peito",
+  "Stellung nehmen zu": "pronunciar-se sobre",
+  "sich rechtfertigen": "justificar-se",
+  "gut ankommen": "cair bem",
+  "Feedback geben": "dar feedback",
 };
