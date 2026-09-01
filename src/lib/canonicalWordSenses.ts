@@ -1171,7 +1171,7 @@ const REVIEWED_WORD_SENSES: Record<string, CanonicalWordSense> = {
   },
   nacken: {
     de: "der Nacken",
-    en: "nape of the neck",
+    en: "back of the neck",
     use: "The back of the neck: ein steifer Nacken = a stiff neck.",
     pos: "noun",
   },

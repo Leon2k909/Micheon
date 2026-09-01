@@ -2934,7 +2934,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "die Dauerwelle", lookup: "Dauerwelle", fallbackEn: "perm", tip: "noun", article: "die" },
       { de: "glätten", lookup: "glätten", fallbackEn: "to straighten", tip: "verb" },
       { de: "die Locken", lookup: "Locken", fallbackEn: "curls", tip: "noun", article: "die" },
-      { de: "der Nacken", lookup: "Nacken", fallbackEn: "nape of the neck", tip: "noun", article: "der" },
+      { de: "der Nacken", lookup: "Nacken", fallbackEn: "back of the neck", tip: "noun", article: "der" },
       { de: "nachschneiden", lookup: "nachschneiden", fallbackEn: "to trim, to re-cut", tip: "verb" },
     ],
     phrases: [
@@ -6061,7 +6061,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "die Blase", lookup: "Blase", fallbackEn: "blister", tip: "noun", article: "die" },
       { de: "die Rast", lookup: "Rast", fallbackEn: "rest stop", tip: "noun", article: "die" },
       { de: "der Höhenmeter", lookup: "Höhenmeter", fallbackEn: "metre of altitude", tip: "noun", article: "der" },
-      { de: "die Markierung", lookup: "Markierung", fallbackEn: "trail marker", tip: "noun", article: "die" },
+      { de: "die Markierung", lookup: "Markierung", fallbackEn: "marking, marker", tip: "noun", article: "die" },
       { de: "die Abkürzung", lookup: "Abkürzung", fallbackEn: "shortcut", tip: "noun", article: "die" },
       { de: "die Etappe", lookup: "Etappe", fallbackEn: "stage, leg", tip: "noun", article: "die" },
       { de: "das Tal", lookup: "Tal", fallbackEn: "valley", tip: "noun", article: "das" },

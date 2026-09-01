@@ -185,7 +185,7 @@ const WORD_SENSE_TAGS: Record<string, string> = {
   azubi: "in an apprenticeship",
   abkürzung: "a shorter route",
   ansatz: "how you start",
-  nacken: "back of neck",
+  nacken: "where it aches",
   aufklaren: "the weather only",
   beitrag: "a membership fee",
   durchhalten: "hang in there",
