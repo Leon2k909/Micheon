@@ -60,16 +60,14 @@ function rules(css) {
 const DELIBERATELY_LIGHT = [
   // Artwork and identity marks, not surfaces: a flag stripe is the flag's
   // colour in any theme, and the gold tiers are gold.
-  [".np-language-badge", "flag stripe"],
   [".np-social-avatar--gold", "gold tier identity"],
   [".np-social-side-icon--gold", "gold tier identity"],
   [".np-premium-mark", "gold premium badge"],
   [".np-podium-rank", "gold first-place mark"],
   [".fs-german-flag", "flag artwork"],
   [".fs-english-flag", "flag artwork"],
-  // These sit ON the course hero, which is green in both themes, so they are
-  // light against green rather than light against the page.
-  [".np-progress-track--hero", "fill on the always-green hero"],
+  // These sit on their own coloured surface, so they are light against it
+  // rather than light against the page.
   [".np-premium-action", "button on the premium card's own coloured surface"],
   [".course-feature-pill", "white on the green course hero"],
   [".course-feature-pill-success", "white on the green course hero"],

@@ -15,7 +15,9 @@ const checks = [
   ["guided exercises offer the complete review-level picker", guided.includes("function ReviewLevelPicker") && (guided.match(/onReviewLevel=\{\([^)]*\) => applyReviewLevelFromPicker\(/gu) ?? []).length === 2],
   ["direct guided review changes save through the shared strength store", guided.includes("onSetItemStrength?.(itemId") && guided.includes("onSetItemPermanent?.(itemId)")],
   ["the latest guided grade can be undone", guided.includes("undoLastManualReviewChange") && guided.includes("onUndoGradeItem?.(itemId)")],
-  ["review controls use the Micheon tactile theme", styles.includes(".grade-btn-level") && styles.includes(".fs-review-level-menu") && styles.includes(".fs-grade-undo")],
+  // The grade buttons the session renders are grade-btn-known / -struggle;
+  // .grade-btn-level was a rule with no button and went in the dead-CSS pass.
+  ["review controls use the Micheon tactile theme", styles.includes(".grade-btn-known") && styles.includes(".grade-btn-struggle") && styles.includes(".fs-review-level-menu") && styles.includes(".fs-grade-undo")],
   ["completed lesson numbers receive their own state", guided.includes('isCompleted && "is-complete"') && styles.includes(".fs-lesson-number.is-complete:not(.is-current)")],
   ["the navigator uses the light Micheon guided-session theme", styles.includes(".prototype-guided-session .fs-lesson-navigator") && styles.includes(".prototype-guided-session .fs-lesson-number.is-current")],
 ];

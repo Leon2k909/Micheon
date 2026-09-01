@@ -136,7 +136,9 @@ check("installs that never picked a theme migrate once to dark, after hydration"
 const GUIDED_BACKDROPS = ["monkey", "garden", "bubbles", "atlas", "dawn", "plain", "custom"];
 check("the prototype guided lesson defaults to its dedicated monkey scene and retains personal backdrop choices", guidedCanvas.includes("--fs-bg: #fffaf1;") && guidedBackground.includes(`export type GuidedBackground = ${GUIDED_BACKDROPS.map((name) => `"${name}"`).join(" | ")};`) && guidedBackground.includes("saveGuidedCustomBackground") && GUIDED_BACKDROPS.every((name) => appStyles.includes(`guided-background-${name}`)) && appStyles.includes('url("./prototype/assets/guided-monkey-world-v2.webp")') && appStyles.includes('url("./prototype/assets/guided-flower-garden-v1.webp")') && !appStyles.includes(".prototype-guided-session::before"));
 check("light lesson grading controls keep readable hover colours", /prototype-guided-session \.grade-btn-known:hover:not\(:disabled\)[\s\S]*?color:\s*#195f27;/s.test(appStyles) && /prototype-guided-session \.grade-btn-struggle:hover:not\(:disabled\)[\s\S]*?color:\s*#363530;/s.test(appStyles));
-check("the guided replay control matches the other 52px lesson controls", /prototype-guided-session \.fs-listen\s*\{[^}]*min-height:\s*52px;[^}]*padding:\s*6px 13px 6px 6px;/s.test(appStyles) && /prototype-guided-session \.grade-btn,[\s\S]*?\.fs-listen\s*\{[^}]*min-height:\s*52px;/s.test(appStyles) && /prototype-guided-session \.fs-listen \.fs-listen-icon\s*\{[^}]*width:\s*36px;[^}]*height:\s*36px;[^}]*border-radius:\s*11px;/s.test(appStyles) && /prototype-guided-session :is\([\s\S]*?\.fs-listen \.fs-listen-icon,[\s\S]*?box-shadow:[\s\S]*?0 3px 0 #248831,[\s\S]*?0 9px 18px rgba\(42, 137, 53, 0\.16\);/s.test(appStyles));
+// The 52px replay pill (.fs-listen) was replaced by the listening prompt
+// (.fs-listening-prompt, pinned in check-listening-dictation); its rule went
+// in the dead-CSS pass, and an assertion on it had been passing on nothing.
 check("the prototype guided lesson gets a wider learning canvas", /\.guided-session\.fs-app\.prototype-guided-session main > div\s*\{[^}]*max-width:\s*88rem;/s.test(appStyles));
 check("word-order lessons compact at desktop heights instead of forcing a page scroll", guidedSession.includes('className="fs-order-phase space-y-4"') && /@media \(min-width: 900px\) and \(max-height: 1040px\)[\s\S]*?\.fs-card:has\(\.fs-order-phase\) \.fs-order-panel\s*\{[^}]*min-height:\s*144px;/s.test(appStyles) && /\.fs-card:has\(\.fs-order-phase\) \.fs-order-feedback\s*\{[^}]*min-height:\s*94px;/s.test(appStyles));
 check("dark guided reorder prompts stay on a dark high-contrast surface", /html\[data-theme="dark"\] \.guided-session\.fs-app\.prototype-guided-session \.fs-reorder-prompt\s*\{[^}]*background:\s*#161b23;/s.test(appStyles));
@@ -209,26 +211,9 @@ check(
 const tightStyles = styles.replace(/\s+/g, " ");
 const styleHas = (snippet) => tightStyles.includes(snippet.replace(/\s+/g, " ").trim());
 
-check(
-  "hovering the lesson-content chip lifts the Continue learning button too",
-  styleHas(".np-mobile-course-button:hover, .np-course-launch:hover .np-mobile-course-button { transform: translateY(-3px); }")
-);
-check(
-  "the chip rides that lift with the button",
-  styleHas(".np-course-launch:hover .np-lesson-content-picker { transform: translateY(calc(-50% - 3px)); }")
-);
-check(
-  "the chip follows the button back down on press instead of hanging above it",
-  styleHas(".np-course-launch:has(.np-mobile-course-button:active) .np-lesson-content-picker")
-);
-check(
-  "the button's press still out-specifies the shared hover lift",
-  styleHas(".np-course-launch .np-mobile-course-button:active { transform: translateY(3px); }")
-);
-check(
-  "the chip eases on the same curve as the button rather than jumping to it",
-  styleHas(".np-lesson-content-picker { transition: transform var(--np-motion-base) var(--np-ease-out); }")
-);
+// The course-launch chip (.np-course-launch / .np-lesson-content-picker)
+// belonged to the CourseHero, replaced by the LanguageCard in v1.2.438;
+// its five lift/press rules went in the dead-CSS pass.
 
 const socialPreview = pngSize("docs/micheon-social-preview.png");
 check("the GitHub social preview uses the recommended 1280x640 canvas", socialPreview?.width === 1280 && socialPreview?.height === 640);

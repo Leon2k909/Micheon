@@ -11350,7 +11350,13 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "der Discofox", lookup: "Discofox", fallbackEn: "discofox (partner dance)", tip: "noun", article: "der" },
       { de: "der Abschlussball", lookup: "Abschlussball", fallbackEn: "final ball", tip: "noun", article: "der" },
       { de: "die Tanzfläche", lookup: "Tanzfläche", fallbackEn: "dance floor", tip: "noun", article: "die" },
-      { de: "führen", lookup: "führen", fallbackEn: "to lead (in dancing)", tip: "verb" },
+      // The general verb, with the dance sense as one of its uses. This pack
+      // is the only place führen is taught, so a gloss that said only "in
+      // dancing" was the app's whole definition of a core verb — one that
+      // also runs a shop and holds a conversation. No commas: the gloss is
+      // split on them into accepted typed answers (toAnswerAlternates), and
+      // "a shop" is not a translation of führen.
+      { de: "führen", lookup: "führen", fallbackEn: "to lead (a partner or a team); to guide; to run a shop", tip: "verb" },
       { de: "die Haltung", lookup: "Haltung", fallbackEn: "posture, frame", tip: "noun", article: "die" },
       { de: "der Anfängerkurs", lookup: "Anfängerkurs", fallbackEn: "beginners' course", tip: "noun", article: "der" },
       { de: "die Schrittfolge", lookup: "Schrittfolge", fallbackEn: "step sequence", tip: "noun", article: "die" },

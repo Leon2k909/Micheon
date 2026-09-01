@@ -111,10 +111,15 @@ for (const rel of ["src/index.css", "src/prototype/new-ui-prototype.css"]) {
   }
 }
 
-// The one the learner actually asked about, pinned by name.
+// A translucent wash has to be built from bare accent channels, or a custom
+// accent leaves it the brand green. Pinned on a live rule: the sidebar's
+// slide-target highlight. (It used to be pinned on the course hero's shade,
+// which was replaced by the LanguageCard in v1.2.438 and whose rule went in
+// the dead-CSS pass — the assertion had been passing on a surface nobody
+// could reach.)
 const proto = fs.readFileSync(path.join(root, "src/prototype/new-ui-prototype.css"), "utf8");
-if (!/html[^{,]*\[data-accent="custom"\][^{]*\.np-course-shade\s*\{[^}]*--accent(-hover)?-rgb/.test(proto)) {
-  failures.push("the course hero's gradient wash does not follow a custom accent");
+if (!/\.np-side-nav button\.is-slide-target\s*\{[^}]*--accent(-hover)?-rgb/.test(proto)) {
+  failures.push("the sidebar's slide-target wash does not follow a custom accent");
 }
 const accent = fs.readFileSync(path.join(root, "src/lib/accentColour.ts"), "utf8");
 if (!/"--accent-rgb"/.test(accent) || !/function accentChannels/.test(accent)) {

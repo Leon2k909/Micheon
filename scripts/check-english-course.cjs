@@ -60,8 +60,12 @@ if (!/<strong>\{ui\(sides\.target\.label\)\}<\/strong>/.test(shell)) {
 // again; it went in the dead-code pass, and this had been asserting a line on
 // a screen nobody could reach. The rule — the course you are on is named,
 // not hard-coded as German — is the chip assertion above, which is live.
-if (!/\.np-language-badge\.is-english/.test(css)) {
-  failures.push("there is no English flag, so the chip would show German stripes beside the word English");
+// The English flag the app actually draws is the guided session's
+// `.fs-english-flag` (British or American stripes); the old hero's
+// `.np-language-badge.is-english` went with the hero in the dead-CSS pass.
+const sessionCss = fs.readFileSync(path.join(root, "src/index.css"), "utf8");
+if (!/\.fs-english-flag\.is-british/.test(sessionCss) || !/\.fs-english-flag\.is-american/.test(sessionCss)) {
+  failures.push("there is no English flag, so the prompt would show German stripes beside the word English");
 }
 
 if (failures.length) {

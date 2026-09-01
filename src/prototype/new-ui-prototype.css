@@ -89,52 +89,6 @@
   cursor: pointer;
 }
 
-/* Honest label on unfinished territory: Games, Friends and Shop sit under
-   this divider, on the one account that sees them at all. */
-/* The lesson path while the catalogue loads: real rows are a moment away,
-   so the space holds its shape instead of collapsing or claiming the course
-   is finished. */
-.np-lesson-row--loading {
-  pointer-events: none;
-}
-
-.np-lesson-skeleton-line {
-  display: block;
-  height: 11px;
-  border-radius: 999px;
-}
-
-.np-lesson-skeleton-line + .np-lesson-skeleton-line {
-  width: 55%;
-  margin-top: 7px;
-  height: 9px;
-}
-
-.np-lesson-empty {
-  margin: 0;
-  padding: 18px 4px;
-  color: var(--np-muted);
-  font-size: var(--np-type-caption);
-  font-weight: 650;
-  text-align: center;
-}
-
-.np-nav-section {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin: 14px 12px 4px;
-  padding-top: 10px;
-  border-top: 1px solid var(--np-line);
-  color: var(--np-violet);
-  font-family: var(--np-font-display);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
 .new-ui-prototype button:focus-visible,
 .new-ui-prototype input:focus-visible,
 .new-ui-prototype textarea:focus-visible,
@@ -890,14 +844,6 @@
   font-size: 11px;
   font-weight: 900;
   text-align: center;
-}
-
-.np-nav-hidden-empty {
-  margin: 0;
-  padding: 6px 9px;
-  color: var(--text-3);
-  font-size: 12px;
-  font-weight: 700;
 }
 
 .np-side-nav .np-nav-hidden-toggle {
@@ -2001,7 +1947,6 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   padding: 32px 30px;
 }
 
-
 .np-home-banner-copy p {
   margin: 0;
   color: #fff;
@@ -2018,8 +1963,6 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
     0 2px 10px rgba(10, 8, 16, 0.75),
     0 0 26px rgba(10, 8, 16, 0.55);
 }
-
-
 
 /* ── The question, and the two cards that answer it ──────────────────────── */
 .np-home-question {
@@ -2508,95 +2451,11 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   height: 18px;
 }
 
-/* The language card wears the same picture treatment; its contents are the
-   course hero, which already knows how to count the pack down. */
-.np-home-choice--language .np-course-hero-frame {
-  position: relative;
-  z-index: 2;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-.np-home-choice--language .np-course-hero {
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-}
-
-/* ── The figures under the cards ─────────────────────────────────────────── */
-.np-home-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 14px;
-  padding: 16px;
-  border: 1px solid var(--np-line);
-  border-radius: 22px;
-  background: var(--surface);
-}
-
-.np-home-stat {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.np-home-stat .np-reward-icon {
-  width: 46px;
-  height: 46px;
-  flex: 0 0 auto;
-}
-
-.np-home-stat > div {
-  display: grid;
-  min-width: 0;
-}
-
-.np-home-stat small {
-  color: var(--text-3);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.np-home-stat strong {
-  color: var(--accent-ink, var(--text-1));
-  font-family: var(--np-font-display);
-  font-size: 23px;
-  font-weight: 950;
-  line-height: 1.1;
-}
-
-.np-home-stat span {
-  color: var(--text-3);
-  font-size: 11px;
-  font-weight: 700;
-}
-
 @media (max-width: 900px) {
   .np-home-banner-copy {
     max-width: 68%;
     padding: 22px 20px;
   }
-}
-
-.np-course-hero-frame {
-  border-radius: 27px;
-  box-shadow:
-    0 5px 0 rgba(41, 133, 53, 0.3),
-    0 17px 30px rgba(49, 131, 54, 0.19);
-}
-
-.np-course-hero {
-  position: relative;
-  isolation: isolate;
-  min-height: 330px;
-  overflow: hidden;
-  border: 1px solid rgba(43, 128, 57, 0.16);
-  border-radius: 27px;
-  background: #5ec760;
-  background-clip: padding-box;
-  backface-visibility: hidden;
 }
 
 .np-course-art,
@@ -2637,203 +2496,6 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   object-position: 100% 58%;
 }
 
-
-.np-course-shade {
-  z-index: 1;
-  background: linear-gradient(90deg, rgba(30, 145, 50, 0.95) 0%, rgba(43, 160, 58, 0.88) 31%, rgba(52, 171, 65, 0.62) 46%, rgba(58, 176, 71, 0.2) 62%, rgba(58, 176, 71, 0) 74%);
-}
-
-.np-course-copy {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  width: 58%;
-  min-height: 330px;
-  flex-direction: column;
-  justify-content: center;
-  padding: 27px 31px 25px;
-  color: #fffef8;
-  text-shadow: 0 2px 3px rgba(22, 98, 37, 0.16);
-}
-
-.np-course-meta-row {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 12px;
-  width: auto;
-  margin-bottom: 13px;
-}
-
-.np-course-kicker {
-  font-size: 12px;
-  font-weight: 950;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.np-course-language-chip {
-  display: inline-flex;
-  min-height: 36px;
-  align-items: center;
-  gap: 7px;
-  padding: 4px 10px 4px 5px;
-  border: 1px solid rgba(255, 255, 255, 0.32);
-  border-radius: 13px;
-  background: rgba(24, 116, 43, 0.28);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
-  font-size: 12px;
-  color: inherit;
-  text-shadow: none;
-  transition:
-    background var(--np-motion-fast) ease,
-    border-color var(--np-motion-fast) ease,
-    box-shadow var(--np-motion-base) var(--np-ease-out);
-}
-
-.np-course-language-chip:hover {
-  border-color: rgba(255, 255, 255, 0.58);
-  background: rgba(18, 105, 36, 0.44);
-  box-shadow: 0 7px 16px rgba(21, 105, 39, 0.18);
-}
-
-.np-course-language-chip > strong {
-  font-weight: 900;
-}
-
-.np-course-language-chip > svg {
-  width: 14px;
-  height: 14px;
-  margin-left: 1px;
-  stroke-width: 3;
-  transition: opacity var(--np-motion-fast) ease;
-}
-
-.np-course-title-row {
-  display: block;
-}
-
-.np-course-title-row h1 {
-  max-width: 13ch;
-  margin: 0;
-  font-size: clamp(31px, 2.7vw, 42px);
-  font-weight: 950;
-  letter-spacing: -0.045em;
-  line-height: 1.02;
-}
-
-/* A round crop of a three-stripe flag eats the top and bottom bands, and a
-   3px ring on a 27px badge left only 21px for them — enough that the black
-   stripe read as a sliver and the whole thing looked cut off. Bigger badge,
-   thinner ring: 26px of flag instead of 21. */
-.np-language-badge {
-  display: grid;
-  width: 30px;
-  height: 30px;
-  flex: 0 0 30px;
-  overflow: hidden;
-  border: 2px solid rgba(255, 255, 255, 0.94);
-  /* Squared off to match the session badge: a circle crops the outer two
-     stripes of a three-stripe flag and leaves the middle one full width. */
-  border-radius: 50%;
-  box-shadow: 0 3px 7px rgba(30, 94, 35, 0.18);
-}
-
-/* Learning English gets the English flag. Same simplified Union Jack the
-   lesson badge uses, drawn with gradients so it stays legible at 30px. */
-.np-language-badge.is-english {
-  background:
-    linear-gradient(90deg, transparent calc(50% - 3px), #cf142b calc(50% - 3px) calc(50% + 3px), transparent calc(50% + 3px)),
-    linear-gradient(0deg, transparent calc(50% - 3px), #cf142b calc(50% - 3px) calc(50% + 3px), transparent calc(50% + 3px)),
-    linear-gradient(90deg, transparent calc(50% - 5px), #fff calc(50% - 5px) calc(50% + 5px), transparent calc(50% + 5px)),
-    linear-gradient(0deg, transparent calc(50% - 5px), #fff calc(50% - 5px) calc(50% + 5px), transparent calc(50% + 5px)),
-    #00247d;
-}
-
-/* English (US) wears the stars and stripes instead — the variant the learner
-   picked decides the flag, exactly like the in-lesson prompt badge. */
-.np-language-badge.is-american {
-  position: relative;
-  background: repeating-linear-gradient(180deg, #b22234 0 4.4px, #fff 4.4px 8.8px);
-}
-.np-language-badge.is-american::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 55%;
-  height: 46%;
-  background: #3c3b6e;
-}
-/* French is a vertical tricolore, so it is drawn as a gradient like the two
-   English flags rather than as the three horizontal bands German uses. */
-.np-language-badge.is-french {
-  background: linear-gradient(90deg, #0055a4 0 33.333%, #ffffff 33.333% 66.666%, #ef4135 66.666% 100%);
-}
-
-/* Polish is two horizontal halves, white over red — a gradient again rather
-   than the three <i> bands, since there are only two of them. */
-.np-language-badge.is-polish {
-  background: linear-gradient(180deg, #ffffff 0 50%, #dc143c 50% 100%);
-}
-
-/* Spain is red, yellow, red \u2014 and the yellow band is twice the depth of
-   either red one, which a three-equal-bands gradient would get wrong. */
-.np-language-badge.is-spanish {
-  background: linear-gradient(180deg, #aa151b 0 25%, #f1bf00 25% 75%, #aa151b 75% 100%);
-}
-
-.np-language-badge i:nth-child(1) { background: #292725; }
-.np-language-badge i:nth-child(2) { background: #df3941; }
-.np-language-badge i:nth-child(3) { background: #f7c83a; }
-
-.np-level-line {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 18px;
-  font-size: 16px;
-}
-
-.np-level-line strong {
-  font-weight: 950;
-}
-
-.np-level-line span {
-  font-weight: 720;
-  opacity: 0.9;
-}
-
-.np-course-progress-row {
-  display: grid;
-  width: min(430px, 100%);
-  gap: 7px;
-  margin-top: 14px;
-}
-
-.np-course-progress-label {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 18px;
-  padding-inline: 2px;
-}
-
-.np-course-progress-label > span {
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.055em;
-  text-transform: uppercase;
-  opacity: 0.82;
-}
-
-.np-course-progress-label small {
-  font-size: 12px;
-  font-weight: 820;
-  letter-spacing: -0.01em;
-  white-space: nowrap;
-}
-
 .np-progress-track {
   height: 10px;
   overflow: hidden;
@@ -2848,134 +2510,6 @@ html.is-resizing-prototype-sidebar .new-ui-prototype * {
   border-radius: inherit;
   background: linear-gradient(180deg, #ffd857, var(--np-yellow));
   box-shadow: inset 0 -2px 1px rgba(191, 122, 0, 0.2);
-}
-
-.np-progress-track--hero {
-  position: relative;
-  height: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.26);
-  background: rgba(13, 74, 29, 0.32);
-  box-shadow:
-    inset 0 3px 5px rgba(8, 59, 22, 0.24),
-    0 1px 0 rgba(255, 255, 255, 0.22);
-}
-
-.np-progress-track--hero > span {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.58);
-  background: linear-gradient(180deg, #f5fff6 0%, #dff8e4 100%);
-  box-shadow:
-    inset 0 2px 0 rgba(255, 255, 255, 0.7),
-    inset 0 -2px 1px rgba(41, 133, 62, 0.12),
-    2px 0 8px rgba(224, 255, 231, 0.26);
-}
-
-/* The filled part of the hero bar is INK on the accent, not a tint of it.
-   It was a near-white gradient with a green cast; re-pointed at a cool accent
-   that became a muted blue-grey and read as silver. --accent-text is picked by
-   contrast, so it is white on a dark accent and near-black on a light one —
-   never a shade of the bar it sits in. Scoped through .np-course-hero so it
-   outranks the generated accent rules that sit at the end of this file. */
-html[data-accent="custom"] .np-course-hero .np-progress-track--hero > span,
-html[data-accent="custom"] .np-course-hero-frame .np-progress-track--hero > span {
-  border-color: color-mix(in srgb, var(--accent-text) 45%, transparent);
-  background: var(--accent-text);
-}
-
-html[data-accent="custom"] .np-course-hero .np-progress-track--hero > span::after,
-html[data-accent="custom"] .np-course-hero-frame .np-progress-track--hero > span::after {
-  background: transparent;
-}
-
-.np-progress-track--hero > span::after {
-  position: absolute;
-  top: 2px;
-  right: 4px;
-  left: 4px;
-  height: 34%;
-  border-radius: inherit;
-  background: rgba(255, 255, 255, 0.64);
-  content: "";
-}
-
-.np-mobile-course-button {
-  position: relative;
-  isolation: isolate;
-  display: grid;
-  min-height: 96px;
-  grid-template-columns: 54px minmax(0, 1fr) 52px;
-  align-items: center;
-  gap: 15px;
-  overflow: hidden;
-  padding: 13px 16px 13px 18px;
-  border-radius: 26px;
-  text-align: left;
-}
-
-.np-mobile-course-button > svg:first-child {
-  width: 50px;
-  height: 50px;
-  margin: 0 auto;
-  padding: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  border-radius: 16px;
-  fill: rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
-}
-
-.np-course-button-copy {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-}
-
-.np-course-button-kicker {
-  margin-bottom: 3px;
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 11px;
-  font-weight: 750;
-  letter-spacing: 0.095em;
-  line-height: 1.1;
-  text-transform: uppercase;
-}
-
-.np-mobile-course-button strong {
-  font-size: 24px;
-  font-weight: 950;
-  letter-spacing: -0.025em;
-  line-height: 1.08;
-}
-
-.np-mobile-course-button small {
-  overflow: hidden;
-  margin-top: 5px;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: 13px;
-  font-weight: 760;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.np-mobile-course-button > svg:last-child {
-  width: 48px;
-  height: 48px;
-  padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 16px;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.14);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
-}
-
-.np-mobile-course-button > svg {
-  transition:
-    transform var(--np-motion-base) var(--np-ease-out),
-    border-color var(--np-motion-fast) ease,
-    background var(--np-motion-fast) ease,
-    box-shadow var(--np-motion-base) var(--np-ease-out);
 }
 
 .np-practice-card,
@@ -3200,8 +2734,6 @@ button.np-progress-title:focus-visible,
   transform: rotate(0deg);
   transition: transform var(--np-motion-fast) ease;
 }
-
-
 
 .np-section-heading h2,
 .np-list-heading h2,
@@ -3514,47 +3046,6 @@ button.np-progress-title:focus-visible,
     box-shadow var(--np-motion-base) var(--np-ease-out);
 }
 
-.np-mobile-course-button {
-  box-shadow:
-    0 7px 0 #258f35,
-    0 16px 26px rgba(41, 144, 53, 0.28);
-}
-
-.np-mobile-course-button::before {
-  position: absolute;
-  z-index: 0;
-  inset: 0;
-  background: linear-gradient(104deg, transparent 30%, rgba(255, 255, 255, 0.34) 48%, transparent 66%);
-  content: "";
-  opacity: 0;
-  pointer-events: none;
-  transform: translateX(-112%);
-  transition: opacity var(--np-motion-fast) ease, transform var(--np-motion-slow) var(--np-ease-out);
-}
-
-.np-mobile-course-button::after {
-  position: absolute;
-  z-index: 0;
-  inset: 1px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 24px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
-  content: "";
-  pointer-events: none;
-}
-
-.np-mobile-course-button > * {
-  position: relative;
-  z-index: 1;
-}
-
-.np-mobile-course-button:hover {
-  background: linear-gradient(180deg, #6cdd70, #46bf50);
-  box-shadow:
-    0 8px 0 #258f35,
-    0 20px 32px rgba(41, 144, 53, 0.34);
-}
-
 .np-feedback-next:active,
 .np-primary-button:active,
 .np-mobile-course-button:active {
@@ -3579,10 +3070,6 @@ button.np-progress-title:focus-visible,
   width: 20px;
 }
 
-.np-lesson-path {
-  padding: 25px 27px 27px;
-}
-
 .np-list-heading button,
 .np-block-heading button {
   display: inline-flex;
@@ -3595,115 +3082,6 @@ button.np-progress-title:focus-visible,
   font-size: 12px;
   font-weight: 900;
   white-space: nowrap;
-  transition: color var(--np-motion-fast) ease, transform var(--np-motion-base) var(--np-ease-out);
-}
-
-.np-list-heading button svg {
-  width: 16px;
-  transition: transform var(--np-motion-base) var(--np-ease-out);
-}
-
-.np-lesson-list {
-  display: grid;
-  gap: 12px;
-  margin-top: 19px;
-}
-
-.np-lesson-row {
-  display: grid;
-  min-height: 76px;
-  grid-template-columns: 63px 43px 1fr 22px;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 14px 8px 8px;
-  border: 1px solid transparent;
-  border-radius: 20px;
-  box-shadow:
-    0 3px 0 rgba(76, 67, 57, 0.1),
-    0 9px 17px rgba(76, 67, 57, 0.07);
-  text-align: left;
-  transition:
-    transform var(--np-motion-base) var(--np-ease-out),
-    border-color var(--np-motion-fast) ease,
-    box-shadow var(--np-motion-base) var(--np-ease-out);
-}
-
-.np-lesson-row:hover {
-  box-shadow:
-    0 5px 0 rgba(51, 145, 62, 0.13),
-    0 14px 24px rgba(58, 131, 64, 0.12);
-}
-
-.np-lesson-row:active {
-  transform: translateY(2px);
-  box-shadow: 0 1px 0 rgba(76, 67, 57, 0.1);
-}
-
-.np-lesson-row--mint {
-  border-color: rgba(96, 184, 77, 0.3);
-  background: #e8f8d8;
-}
-
-.np-lesson-row--yellow {
-  border-color: rgba(220, 171, 44, 0.28);
-  background: #fff4ce;
-}
-
-.np-lesson-row--violet {
-  border-color: rgba(118, 84, 223, 0.24);
-  background: #eee7ff;
-}
-
-.np-lesson-illustration {
-  display: grid;
-  width: 63px;
-  height: 59px;
-  place-items: center;
-  background: transparent;
-}
-
-.np-lesson-illustration .np-reward-icon {
-  width: 58px;
-  height: 58px;
-}
-
-.np-lesson-number {
-  display: grid;
-  width: 41px;
-  height: 41px;
-  place-items: center;
-  border: 1px solid rgba(92, 78, 62, 0.09);
-  border-radius: 13px;
-  background: rgba(255, 255, 255, 0.72);
-  box-shadow: 0 3px 7px rgba(87, 74, 59, 0.08);
-  font-size: 15px;
-  font-weight: 950;
-}
-
-.np-lesson-copy {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-}
-
-.np-lesson-copy strong {
-  overflow: hidden;
-  font-size: 16px;
-  font-weight: 900;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.np-lesson-copy small {
-  margin-top: 4px;
-  color: var(--np-muted);
-  font-size: 12px;
-  font-weight: 720;
-}
-
-.np-lesson-chevron {
-  width: 20px;
-  color: #7f7a73;
   transition: color var(--np-motion-fast) ease, transform var(--np-motion-base) var(--np-ease-out);
 }
 
@@ -4336,283 +3714,6 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
 .np-page-icon svg {
   width: 36px;
   height: 36px;
-}
-
-.np-profile-avatar {
-  color: #fff;
-  background: linear-gradient(180deg, #8e71ea, #6d4ad7);
-  font-size: 30px;
-  font-weight: 950;
-}
-
-.np-page-search {
-  display: flex;
-  height: 58px;
-  align-items: center;
-  gap: 11px;
-  margin-top: 27px;
-  padding: 0 18px;
-  border: 2px solid rgba(102, 91, 78, 0.12);
-  border-radius: 18px;
-  background: #fff;
-  box-shadow: inset 0 2px 4px rgba(90, 77, 62, 0.06);
-}
-
-.np-page-search:focus-within {
-  border-color: rgba(118, 84, 223, 0.5);
-}
-
-.np-page-search svg {
-  width: 23px;
-  color: var(--np-violet);
-}
-
-.np-page-search input {
-  min-width: 0;
-  flex: 1;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.np-page-search input::placeholder {
-  color: #827d77;
-}
-
-.np-learning-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 18px;
-}
-
-.np-learning-pills button {
-  min-height: 43px;
-  padding: 0 17px;
-  border: 1px solid var(--np-line);
-  border-radius: 14px;
-  color: #65605b;
-  background: #fffdf9;
-  box-shadow: 0 3px 0 rgba(83, 71, 57, 0.07);
-  font-size: 14px;
-  font-weight: 850;
-}
-
-.np-learning-pills button.is-active {
-  border-color: rgba(79, 189, 81, 0.4);
-  color: var(--np-green-dark);
-  background: #eaf9df;
-  box-shadow: 0 3px 0 rgba(55, 145, 62, 0.18);
-}
-
-.np-curriculum-list {
-  display: grid;
-  gap: 13px;
-  margin-top: 23px;
-}
-
-.np-curriculum-row {
-  display: grid;
-  min-height: 92px;
-  grid-template-columns: 72px 1fr 45px;
-  align-items: center;
-  gap: 16px;
-  padding: 10px 15px 10px 10px;
-  border: 1px solid var(--np-line);
-  border-radius: 21px;
-  background: #fffdfa;
-  box-shadow:
-    0 3px 0 rgba(86, 73, 58, 0.08),
-    0 10px 18px rgba(86, 73, 58, 0.06);
-  text-align: left;
-  transition: transform 150ms ease, border-color 150ms ease;
-}
-
-.np-curriculum-row:hover {
-  border-color: rgba(79, 189, 81, 0.42);
-  transform: translateY(-2px);
-}
-
-.np-curriculum-row.is-locked {
-  cursor: not-allowed;
-  filter: grayscale(0.7);
-  opacity: 0.58;
-}
-
-.np-curriculum-icon {
-  display: grid;
-  width: 72px;
-  height: 72px;
-  place-items: center;
-  border-radius: 19px;
-}
-
-.np-curriculum-icon--mint { background: #e6f8d9; }
-.np-curriculum-icon--yellow { background: #fff3c7; }
-.np-curriculum-icon--violet { background: #eee7ff; }
-.np-curriculum-icon--blue { background: #def3ff; }
-
-.np-curriculum-icon .np-reward-icon {
-  width: 68px;
-  height: 68px;
-}
-
-.np-curriculum-copy {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-}
-
-.np-curriculum-copy > small {
-  color: var(--np-violet);
-  font-size: var(--np-type-caption);
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-.np-curriculum-copy strong {
-  margin-top: 3px;
-  font-size: 18px;
-  font-weight: 950;
-}
-
-.np-curriculum-copy p {
-  margin: 4px 0 0;
-  color: var(--np-muted);
-  font-size: 13px;
-  font-weight: 680;
-}
-
-.np-curriculum-action {
-  display: grid;
-  width: 43px;
-  height: 43px;
-  place-items: center;
-  border-radius: 14px;
-  color: var(--np-violet);
-  background: var(--np-violet-soft);
-}
-
-.np-curriculum-action svg {
-  width: 22px;
-}
-
-.np-empty-state {
-  display: grid;
-  min-height: 250px;
-  place-items: center;
-  align-content: center;
-  gap: 9px;
-  border: 2px dashed rgba(118, 84, 223, 0.2);
-  border-radius: 24px;
-  color: var(--np-muted);
-  text-align: center;
-}
-
-.np-empty-state svg {
-  width: 42px;
-  height: 42px;
-  color: var(--np-violet);
-}
-
-.np-empty-state strong {
-  color: var(--np-text);
-  font-size: 20px;
-}
-
-.np-empty-state p {
-  margin: 0;
-  font-size: 14px;
-}
-
-.np-profile-summary {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin-top: 28px;
-}
-
-.np-profile-summary > div {
-  display: flex;
-  min-height: 100px;
-  flex-direction: column;
-  justify-content: center;
-  padding: 16px;
-  border: 1px solid var(--np-line);
-  border-radius: 20px;
-  background: #fffdf9;
-  box-shadow: 0 4px 0 rgba(85, 72, 57, 0.07);
-}
-
-.np-profile-summary strong {
-  font-size: 25px;
-  font-weight: 950;
-}
-
-.np-profile-summary span {
-  margin-top: 5px;
-  color: var(--np-muted);
-  font-size: 13px;
-  font-weight: 750;
-}
-
-.np-settings-list {
-  display: grid;
-  gap: 12px;
-  margin-top: 24px;
-}
-
-.np-settings-list button {
-  display: grid;
-  min-height: 80px;
-  grid-template-columns: 54px 1fr 24px;
-  align-items: center;
-  gap: 14px;
-  padding: 10px 17px 10px 11px;
-  border: 1px solid var(--np-line);
-  border-radius: 19px;
-  background: #fffdf9;
-  box-shadow: 0 3px 0 rgba(85, 72, 57, 0.07);
-  text-align: left;
-}
-
-.np-settings-list button > span {
-  display: grid;
-  width: 52px;
-  height: 52px;
-  place-items: center;
-  border-radius: 16px;
-  color: var(--np-violet);
-  background: var(--np-violet-soft);
-}
-
-.np-settings-list button > span svg {
-  width: 25px;
-}
-
-.np-settings-list button > div {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-}
-
-.np-settings-list strong {
-  font-size: 16px;
-  font-weight: 900;
-}
-
-.np-settings-list small {
-  margin-top: 3px;
-  color: var(--np-muted);
-  font-size: 12px;
-  font-weight: 680;
-}
-
-.np-settings-list button > svg {
-  width: 21px;
-  color: var(--np-soft);
 }
 
 .np-reward-icon {
@@ -5948,7 +5049,6 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   background: #def4d2;
 }
 
-
 /* Somewhere to write, on the page that already lists everything else.
    It opens in place rather than as a dialog: there is nothing to confirm and
    nothing to lose track of behind it, and a box that appears where the card
@@ -6150,12 +5250,6 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   background: color-mix(in srgb, var(--tone-voice) 16%, #ffffff);
 }
 
-.new-ui-prototype .np-mobile-course-button,
-.new-ui-prototype .np-mobile-course-button > svg:first-child,
-.new-ui-prototype .np-mobile-course-button strong {
-  color: #fff;
-}
-
 .np-mobile-nav {
   display: none;
 }
@@ -6209,10 +5303,6 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
      a reader) a phantom empty 320px column at window widths ≤1280px. */
   .np-content-grid--wide {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  .np-course-copy {
-    width: 60%;
   }
 
   .np-course-art {
@@ -6280,10 +5370,6 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
 
   .np-right-rail {
     display: none;
-  }
-
-  .np-course-title-row h1 {
-    font-size: clamp(32px, 4vw, 43px);
   }
 
   .np-shop-grid {
@@ -6518,195 +5604,10 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
     gap: 21px;
   }
 
-  .np-course-hero-frame {
-    border-radius: 27px;
-    box-shadow:
-      0 5px 0 rgba(41, 133, 53, 0.3),
-      0 15px 26px rgba(49, 131, 54, 0.18);
-  }
-
-  .np-course-hero {
-    min-height: clamp(270px, 52vw, 320px);
-  }
-
   .np-course-art {
     left: 0;
     width: 100%;
     object-position: 85% 58%;
-  }
-
-  .np-course-shade {
-    background: linear-gradient(90deg, rgba(35, 151, 53, 0.97) 0%, rgba(48, 167, 62, 0.9) 42%, rgba(58, 177, 70, 0.52) 61%, rgba(70, 187, 82, 0.08) 83%, rgba(70, 187, 82, 0) 95%);
-  }
-
-  .np-course-copy {
-    width: 61%;
-    min-height: clamp(270px, 52vw, 320px);
-    justify-content: flex-start;
-    padding: 28px 18px 24px 24px;
-  }
-
-  .np-course-kicker {
-    display: none;
-  }
-
-  .np-course-meta-row {
-    width: auto;
-    justify-content: flex-start;
-    margin-bottom: 12px;
-  }
-
-  .np-course-language-chip {
-    min-height: 32px;
-    padding: 3px 9px 3px 4px;
-  }
-
-  .np-course-title-row {
-    display: block;
-    padding-right: 0;
-  }
-
-  .np-course-title-row h1 {
-    max-width: none;
-    font-size: clamp(28px, 7.2vw, 35px);
-    line-height: 1.03;
-  }
-
-  .np-level-line {
-    display: grid;
-    gap: 4px;
-    margin-top: 15px;
-    font-size: 16px;
-  }
-
-  .np-course-progress-row {
-    width: min(255px, 100%);
-    margin-top: 11px;
-  }
-
-  .np-course-progress-label {
-    gap: 10px;
-  }
-
-  .np-course-progress-label > span {
-    font-size: 9px;
-  }
-
-  .np-course-progress-label small {
-    font-size: 10px;
-  }
-
-  .np-mobile-course-button {
-    display: grid;
-    min-height: 92px;
-    grid-template-columns: 50px 1fr 49px;
-    align-items: center;
-    gap: 12px;
-    padding: 11px 13px 11px 15px;
-    border-radius: 24px;
-    text-align: left;
-  }
-
-  .np-mobile-course-button > svg:first-child {
-    width: 47px;
-    height: 47px;
-    margin: 0 auto;
-  }
-
-  .np-mobile-course-button > span {
-    display: flex;
-    min-width: 0;
-    flex-direction: column;
-  }
-
-  .np-mobile-course-button strong {
-    font-size: 22px;
-    font-weight: 950;
-  }
-
-  .np-course-button-kicker {
-    margin-bottom: 2px;
-    font-size: 9px;
-  }
-
-  .np-mobile-course-button small {
-    overflow: hidden;
-    margin-top: 3px;
-    color: rgba(255, 255, 255, 0.88);
-    font-size: 12.5px;
-    font-weight: 720;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .np-mobile-course-button > svg:last-child {
-    width: 47px;
-    height: 47px;
-    padding: 12px;
-    border-radius: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    color: #fff;
-    background: rgba(255, 255, 255, 0.14);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
-  }
-
-  .np-home-practice {
-    display: none;
-  }
-
-  .np-lesson-path {
-    padding: 3px 0 0;
-    border: 0;
-    background: transparent;
-    box-shadow: none;
-  }
-
-  .np-list-heading {
-    align-items: end;
-    padding: 0 4px;
-  }
-
-  .np-list-heading h2 {
-    font-size: 23px;
-  }
-
-  .np-list-heading p {
-    display: none;
-  }
-
-  .np-list-heading button {
-    font-size: 12px;
-  }
-
-  .np-lesson-list {
-    gap: 13px;
-    margin-top: 14px;
-  }
-
-  .np-lesson-row {
-    min-height: 86px;
-    grid-template-columns: 67px 44px minmax(0, 1fr) 22px;
-    gap: 9px;
-    padding: 9px 13px 9px 8px;
-    border-radius: 21px;
-  }
-
-  .np-lesson-illustration {
-    width: 67px;
-    height: 66px;
-  }
-
-  .np-lesson-illustration .np-reward-icon {
-    width: 64px;
-    height: 64px;
-  }
-
-  .np-lesson-copy strong {
-    font-size: 15px;
-  }
-
-  .np-lesson-copy small {
-    font-size: var(--np-type-caption);
   }
 
   .np-mobile-nav {
@@ -6870,50 +5771,6 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
     border-radius: 19px;
   }
 
-  .np-page-search {
-    height: 60px;
-    margin-top: 23px;
-  }
-
-  .np-learning-pills {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding-bottom: 6px;
-    scrollbar-width: none;
-  }
-
-  .np-learning-pills::-webkit-scrollbar {
-    display: none;
-  }
-
-  .np-learning-pills button {
-    flex: 0 0 auto;
-  }
-
-  .np-curriculum-row {
-    min-height: 94px;
-    grid-template-columns: 68px 1fr 40px;
-    gap: 12px;
-  }
-
-  .np-curriculum-icon {
-    width: 68px;
-    height: 68px;
-  }
-
-  .np-curriculum-icon .np-reward-icon {
-    width: 64px;
-    height: 64px;
-  }
-
-  .np-curriculum-copy strong {
-    font-size: 16px;
-  }
-
-  .np-curriculum-copy p {
-    display: none;
-  }
-
   .np-progress-panel--standalone .np-progress-title h2 {
     font-size: 31px;
   }
@@ -6967,13 +5824,6 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
     height: 108px;
   }
 
-  .np-profile-summary {
-    grid-template-columns: 1fr;
-  }
-
-  .np-profile-summary > div {
-    min-height: 82px;
-  }
 }
 
 @media (max-width: 430px) {
@@ -6983,43 +5833,6 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
 
   .np-content-grid {
     padding-inline: 14px;
-  }
-
-  .np-course-hero {
-    min-height: 250px;
-  }
-
-  .np-course-copy {
-    min-height: 250px;
-    padding: 20px 16px 18px 20px;
-  }
-
-  .np-course-title-row h1 {
-    font-size: clamp(27px, 7.6vw, 32px);
-  }
-
-  .np-lesson-row {
-    grid-template-columns: 60px 39px minmax(0, 1fr) 19px;
-    gap: 7px;
-  }
-
-  .np-lesson-illustration {
-    width: 60px;
-    height: 60px;
-  }
-
-  .np-lesson-illustration .np-reward-icon {
-    width: 57px;
-    height: 57px;
-  }
-
-  .np-lesson-number {
-    width: 38px;
-    height: 38px;
-  }
-
-  .np-lesson-copy strong {
-    font-size: 14px;
   }
 
   .np-progress-stats > div {
@@ -7167,61 +5980,6 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   .np-list-heading button:hover,
   .np-block-heading button:hover {
     transform: translateX(2px);
-  }
-
-  /* The chip is a sibling of the button and sits ON it, so pointing AT the
-     chip never reached the button's own :hover — the chip rose and the button
-     stayed put, which is the one thing that tells you they are two controls
-     rather than one. The wrapper drives the lift, so whichever half the
-     pointer is over, both halves move.
-
-     Only the lift is shared. The sheen, the scaling play icon and the sliding
-     chevron stay on direct button hover, because those say "press me" and the
-     chip is not the thing you would be pressing. */
-  .np-mobile-course-button:hover,
-  .np-course-launch:hover .np-mobile-course-button {
-    transform: translateY(-3px);
-  }
-
-  .np-course-launch:hover .np-lesson-content-picker {
-    transform: translateY(calc(-50% - 3px));
-  }
-
-  /* ...and down together. The wrapper cannot own :active — opening the menu
-     would depress a button nobody pressed — so the chip follows the button's
-     press instead of hanging in mid-air above it. This has to out-specify the
-     shared hover rule above, or the lift would win for the whole press. */
-  .np-course-launch .np-mobile-course-button:active {
-    transform: translateY(3px);
-  }
-
-  .np-course-launch:has(.np-mobile-course-button:active) .np-lesson-content-picker {
-    transform: translateY(calc(-50% + 3px));
-  }
-
-  .np-lesson-content-picker {
-    transition: transform var(--np-motion-base) var(--np-ease-out);
-  }
-
-  .np-mobile-course-button:hover::before {
-    opacity: 1;
-    transform: translateX(112%);
-  }
-
-  .np-mobile-course-button:hover > span {
-    transform: translateX(2px);
-  }
-
-  .np-mobile-course-button:hover > svg:first-child {
-    border-color: rgba(255, 255, 255, 0.38);
-    background: rgba(255, 255, 255, 0.16);
-    transform: scale(1.06) rotate(-2deg);
-  }
-
-  .np-mobile-course-button:hover > svg:last-child {
-    border-color: rgba(255, 255, 255, 0.4);
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateX(4px);
   }
 
   .np-icon-button:active,
@@ -7608,218 +6366,6 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   line-height: 1.42;
 }
 
-.np-fluency-status {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 14px;
-  margin-top: 17px;
-}
-
-.np-fluency-status > div {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  transition: transform var(--np-motion-base) var(--np-ease-out);
-}
-
-.np-fluency-status strong {
-  color: var(--np-text);
-  font-size: 15px;
-  font-weight: 950;
-}
-
-.np-fluency-status small,
-.np-fluency-status > span,
-.np-fluency-footnote {
-  color: var(--np-muted);
-  font-size: var(--np-type-caption);
-  font-weight: 650;
-  line-height: 1.35;
-}
-
-.np-fluency-status small {
-  margin-top: 2px;
-}
-
-.np-fluency-status > span {
-  flex: 0 0 auto;
-  color: var(--np-green-dark);
-  font-weight: 700;
-}
-
-/* The ladder as a stepper: a circle per stage, connecting bars that fill on
-   the way to the next circle. Replaces the single anonymous progress bar —
-   which hid the fact that the road has milestones. Labels ride under them and
-   disappear on narrow layouts rather than colliding. */
-.np-fluency-steps {
-  display: flex;
-  align-items: flex-start;
-  margin-top: 12px;
-  /* Flush with the text above and below: the ladder is part of the same
-     reading column, so an inset made it look nudged out of alignment. The
-     end labels handle their own edges below. */
-  padding: 0 0 24px;
-}
-
-.np-fluency-steps__stop {
-  position: relative;
-  display: flex;
-  flex: 0 0 auto;
-  flex-direction: column;
-  align-items: center;
-}
-
-.np-fluency-steps__stop i {
-  display: block;
-  width: 14px;
-  height: 14px;
-  border: 2px solid var(--np-line);
-  border-radius: 999px;
-  background: var(--np-surface-soft);
-  box-shadow: inset 0 2px 3px rgba(73, 62, 49, 0.09);
-}
-
-.np-fluency-steps__stop.is-reached i {
-  border-color: transparent;
-  background: linear-gradient(135deg, #38aa45, #69d265);
-  box-shadow: inset 0 -2px 1px rgba(29, 121, 42, 0.2);
-}
-
-.np-fluency-steps__stop.is-current i {
-  box-shadow: 0 0 0 4px rgba(56, 170, 69, 0.2), inset 0 -2px 1px rgba(29, 121, 42, 0.2);
-}
-
-/* Seven names do not fit under seven circles: at this card width the stops
-   sit ~55px apart and the labels measured 76px, so every neighbouring pair
-   overlapped by about 21px — invisible only because the collisions happened
-   to land in the gaps between words. The circles already carry the ladder,
-   so only the two that answer a question stay written: where you are, and
-   where the road ends. Every stop keeps its name in the title tooltip. */
-.np-fluency-steps__stop em {
-  position: absolute;
-  top: 18px;
-  left: 50%;
-  display: none;
-  transform: translateX(-50%);
-  color: var(--np-muted);
-  font-size: 10px;
-  font-style: normal;
-  font-weight: 750;
-  line-height: 1.15;
-  text-align: center;
-  white-space: nowrap;
-}
-
-.np-fluency-steps__stop.is-current em,
-.np-fluency-steps__stop:last-child em {
-  display: block;
-}
-
-/* The end labels anchor to their own edge rather than centring past it, so
-   the row can sit flush with the text columns without overhanging. */
-.np-fluency-steps__stop:first-child em {
-  left: 0;
-  transform: none;
-  text-align: left;
-}
-
-.np-fluency-steps__stop:last-child em {
-  left: auto;
-  right: 0;
-  transform: none;
-  text-align: right;
-}
-
-/* One stage from the end, "you are here" and "the end" would collide; the
-   one you are standing on wins. */
-.np-fluency-steps__stop.is-current + .np-fluency-steps__bar + .np-fluency-steps__stop:last-child em {
-  display: none;
-}
-
-.np-fluency-steps__stop.is-current em {
-  color: var(--np-green-dark);
-}
-
-.np-fluency-steps__bar {
-  flex: 1;
-  height: 6px;
-  margin: 4px 3px 0;
-  overflow: hidden;
-  border-radius: 999px;
-  background: var(--np-surface-soft);
-  box-shadow: inset 0 2px 3px rgba(73, 62, 49, 0.09);
-}
-
-.np-fluency-steps__bar > span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #38aa45, #69d265);
-  /* Width, deliberately: this 6px fill moves only when the learner's total
-     changes — not on scroll, hover or a loop — and scaleX/clip-path would
-     flatten the rounded cap that makes it read as a filling bar. */
-  transition: width var(--np-motion-slow) var(--np-ease-out);
-}
-
-@media (max-width: 760px) {
-  .np-fluency-steps { padding-bottom: 4px; }
-  .np-fluency-steps__stop em { display: none; }
-}
-
-.np-fluency-footnote {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 7px;
-}
-
-.np-fluency-hours {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  justify-content: center;
-  padding: 20px 21px;
-  border-left: 1px solid rgba(70, 166, 71, 0.2);
-  background:
-    radial-gradient(circle at 88% 12%, rgba(255, 215, 87, 0.24), transparent 35%),
-    linear-gradient(145deg, #e6f8d9, #d3f0c5);
-}
-
-.np-fluency-hours > span {
-  margin-bottom: 12px;
-  background: rgba(255, 253, 248, 0.72);
-}
-
-.np-fluency-hours > small {
-  display: inline-flex;
-  width: fit-content;
-  padding: 6px 9px;
-  border: 1px solid rgba(42, 125, 53, 0.16);
-  border-radius: 10px;
-  color: #376b40;
-  background: rgba(255, 255, 255, 0.5);
-  font-size: var(--np-type-caption);
-  font-weight: 700;
-  line-height: 1.1;
-}
-
-.np-fluency-hours > strong {
-  margin-top: 3px;
-  color: #225f2d;
-  font-size: 22px;
-  font-weight: 950;
-  letter-spacing: -0.02em;
-}
-
-.np-fluency-hours > p {
-  margin: 5px 0 0;
-  color: #57775c;
-  font-size: var(--np-type-caption);
-  font-weight: 650;
-  line-height: 1.4;
-}
-
 @media (max-width: 760px) {
   .np-fluency-outlook {
     grid-template-columns: 1fr;
@@ -7830,27 +6376,6 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
     padding: 20px;
   }
 
-  .np-fluency-hours {
-    display: grid;
-    grid-template-columns: 52px minmax(0, 1fr);
-    grid-template-rows: auto auto auto;
-    column-gap: 13px;
-    padding: 17px 20px;
-    border-top: 1px solid rgba(70, 166, 71, 0.2);
-    border-left: 0;
-  }
-
-  .np-fluency-hours > span {
-    grid-row: 1 / 4;
-    align-self: center;
-    margin: 0;
-  }
-
-  .np-fluency-hours > small,
-  .np-fluency-hours > strong,
-  .np-fluency-hours > p {
-    grid-column: 2;
-  }
 }
 
 @media (max-width: 430px) {
@@ -7860,12 +6385,6 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
 
   .np-fluency-heading h2 {
     font-size: 18px;
-  }
-
-  .np-fluency-footnote {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 2px;
   }
 
   .np-progress-stats .np-achievement-art--streak_3 {
@@ -8128,27 +6647,6 @@ html[data-theme="dark"] .np-answer--wrong {
   background: #3b2424;
 }
 
-html[data-theme="dark"] .np-lesson-row--mint {
-  border-color: rgba(88, 199, 95, 0.32);
-  background: #12301d;
-}
-
-html[data-theme="dark"] .np-lesson-row--yellow {
-  border-color: rgba(255, 200, 71, 0.3);
-  background: #3a321e;
-}
-
-html[data-theme="dark"] .np-lesson-row--violet {
-  border-color: rgba(184, 162, 255, 0.3);
-  background: #312946;
-}
-
-html[data-theme="dark"] .np-lesson-number {
-  border-color: var(--np-line);
-  color: var(--np-text);
-  background: rgba(16, 20, 27, 0.64);
-}
-
 /* No dark repaint of the level card: it is an accent wash over --surface,
    which is already the dark surface in this theme. The old rule painted it a
    fixed green whatever accent had been chosen. */
@@ -8210,15 +6708,6 @@ html[data-theme="dark"] .np-goal-card p {
 
 html[data-theme="dark"] .np-completed-row + .np-completed-row {
   border-color: var(--np-line);
-}
-
-html[data-theme="dark"] .np-page-search input::placeholder {
-  color: var(--np-soft);
-}
-
-html[data-theme="dark"] .np-learning-pills button.is-active {
-  color: var(--np-green-dark);
-  background: #12301d;
 }
 
 html[data-theme="dark"] .np-feature-host {
@@ -8472,31 +6961,6 @@ html[data-theme="dark"] .np-fluency-outlook {
     0 14px 28px rgba(0, 0, 0, 0.22);
 }
 
-html[data-theme="dark"] .np-fluency-hours {
-  border-color: rgba(88, 199, 95, 0.22);
-  background:
-    radial-gradient(circle at 88% 12%, rgba(255, 200, 71, 0.12), transparent 35%),
-    linear-gradient(145deg, #203b25, #1c3421);
-}
-
-html[data-theme="dark"] .np-fluency-hours > span {
-  background: rgba(16, 20, 27, 0.62);
-}
-
-html[data-theme="dark"] .np-fluency-hours > small,
-html[data-theme="dark"] .np-fluency-hours > p {
-  color: #b5cdb6;
-}
-
-html[data-theme="dark"] .np-fluency-hours > small {
-  border-color: rgba(143, 220, 150, 0.16);
-  background: rgba(12, 35, 18, 0.42);
-}
-
-html[data-theme="dark"] .np-fluency-hours > strong {
-  color: #a7e9aa;
-}
-
 html[data-theme="dark"] .np-icon-button:hover,
 html[data-theme="dark"] .np-profile-button:hover {
   border-color: rgba(96, 211, 107, 0.34);
@@ -8518,12 +6982,6 @@ html[data-theme="dark"] .np-answer:hover {
   box-shadow:
     0 4px 0 rgba(0, 0, 0, 0.26),
     0 12px 22px rgba(0, 0, 0, 0.24);
-}
-
-html[data-theme="dark"] .np-lesson-row:hover {
-  box-shadow:
-    0 5px 0 rgba(0, 0, 0, 0.25),
-    0 15px 26px rgba(0, 0, 0, 0.24);
 }
 
 @media (max-width: 760px) {
@@ -9668,12 +8126,6 @@ html[data-theme="dark"] .np-friend-request {
   box-shadow: 0 4px 0 #258b36;
 }
 
-.np-social-side-icon--blue {
-  border-color: rgba(47, 134, 174, 0.17);
-  background: linear-gradient(150deg, #69caec, #3d9ccc);
-  box-shadow: 0 4px 0 #307fa5;
-}
-
 .np-social-side-icon--gold {
   border-color: rgba(171, 118, 13, 0.18);
   background: linear-gradient(150deg, #ffd65a, #eba125);
@@ -10533,15 +8985,6 @@ html[data-accent="custom"] .np-mobile-nav button.is-active {
   color: var(--np-green-dark);
 }
 
-/* A falling number needs a reason attached to it, or it reads as a fault. */
-.np-fluency-fading {
-  margin-top: 8px;
-  font-size: var(--np-type-caption);
-  font-weight: 750;
-  color: var(--np-muted);
-}
-
-
 /* ── a custom accent reaches the hand-painted greens ─────────────────────
    These rules draw Micheon green as a literal rather than from a token,
    which is right for the default and wrong for anyone who picked another
@@ -10560,10 +9003,6 @@ html[data-accent="custom"] .np-profile-menu-summary > span {
   background: linear-gradient(145deg, var(--np-green-dark), var(--np-green));
 }
 
-html[data-accent="custom"] .np-course-hero {
-  background: var(--np-green-dark);
-}
-
 html[data-accent="custom"] .np-mini-progress i {
   background: linear-gradient(180deg, var(--np-green-dark), var(--np-green));
 }
@@ -10579,19 +9018,6 @@ html[data-accent="custom"] .np-mobile-course-button {
     box-shadow:
     0 5px 0 var(--np-green),
     0 12px 20px rgba(41, 144, 53, 0.24);
-}
-
-html[data-accent="custom"] .np-mobile-course-button {
-  box-shadow:
-    0 7px 0 var(--np-green),
-    0 16px 26px rgba(41, 144, 53, 0.28);
-}
-
-html[data-accent="custom"] .np-mobile-course-button:hover {
-  background: linear-gradient(180deg, var(--np-green-dark), var(--np-green));
-    box-shadow:
-    0 8px 0 var(--np-green),
-    0 20px 32px rgba(41, 144, 53, 0.34);
 }
 
 html[data-accent="custom"] .np-feedback-next:active,
@@ -10689,10 +9115,6 @@ html[data-accent="custom"] .np-feature-directory-icon--mint {
   color: var(--np-green);
 }
 
-html[data-accent="custom"] .np-fluency-track > span {
-  background: linear-gradient(90deg, var(--np-green), var(--np-green-dark));
-}
-
 html[data-accent="custom"] html[data-theme="dark"] .np-profile-button > span {
   color: var(--np-green-dark);
 }
@@ -10716,10 +9138,6 @@ html[data-accent="custom"] html[data-theme="dark"] .np-curriculum-icon--mint {
 }
 
 html[data-accent="custom"] html[data-theme="dark"] .np-shop-item.is-equipped .np-shop-item-footer > button:disabled {
-  color: var(--np-green-dark);
-}
-
-html[data-accent="custom"] html[data-theme="dark"] .np-fluency-hours > strong {
   color: var(--np-green-dark);
 }
 
@@ -10821,16 +9239,12 @@ html[data-accent="custom"] .np-notification-dot {
   background: var(--accent, var(--np-green));
 }
 
-
 /* ── text that forgot to turn light ──────────────────────────────────────
    A descendant's own colour beats the one it inherits, so repainting a
    panel never reached the heading inside it: "Set review level" was
    #273327 on #161b23, a 1.1:1 heading. Every rule below hardcoded a dark
    ink with no dark-mode twin and failed 4.5:1 against the dark surfaces.
    Generated by scratchpad/scan-dark-ink.py. */
-html[data-theme="dark"] .np-lesson-chevron {
-  color: #cdd5e1;
-}
 
 html[data-theme="dark"] .np-feature-host .mastery-card__milestone > p:first-child {
   color: #499b54;
@@ -10851,7 +9265,6 @@ html[data-theme="dark"] .np-social-presence--today {
 html[data-theme="dark"] .np-notification-filters-head button {
   color: #599a64;
 }
-
 
 /* ── the translucent greens follow the accent too ────────────────────────
    The earlier accent pass only re-pointed #hex greens, so every fade and
@@ -10984,86 +9397,6 @@ html:not([data-theme="dark"])[data-accent="custom"] .np-search-results > button:
   border-color: rgba(var(--accent-rgb), 0.42);
 }
 
-html:not([data-theme="dark"])[data-accent="custom"] .np-course-hero-frame {
-  box-shadow: 0 5px 0 rgba(var(--accent-hover-rgb), 0.3),
-    0 17px 30px rgba(var(--accent-hover-rgb), 0.19);
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-course-hero-frame {
-  box-shadow: 0 5px 0 rgba(var(--accent-hover-rgb), 0.3),
-    0 17px 30px rgba(var(--accent-hover-rgb), 0.19);
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .np-course-hero {
-  border: 1px solid rgba(var(--accent-hover-rgb), 0.16);
-  background: var(--np-green-soft, var(--accent-dim));
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-course-hero {
-  border: 1px solid rgba(var(--accent-hover-rgb), 0.16);
-  background: var(--np-green-soft, var(--accent-dim));
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .np-course-shade {
-  background: linear-gradient(90deg, rgba(var(--accent-hover-rgb), 0.95) 0%, rgba(var(--accent-rgb), 0.88) 31%, rgba(var(--accent-rgb), 0.62) 46%, rgba(var(--accent-rgb), 0.2) 62%, rgba(var(--accent-rgb), 0) 74%);
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-course-shade {
-  background: linear-gradient(90deg, rgba(var(--accent-hover-rgb), 0.95) 0%, rgba(var(--accent-rgb), 0.88) 31%, rgba(var(--accent-rgb), 0.62) 46%, rgba(var(--accent-rgb), 0.2) 62%, rgba(var(--accent-rgb), 0) 74%);
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .np-course-language-chip {
-  background: rgba(var(--accent-hover-rgb), 0.28);
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-course-language-chip {
-  background: rgba(var(--accent-hover-rgb), 0.28);
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .np-course-language-chip:hover {
-  background: rgba(var(--accent-hover-rgb), 0.44);
-  box-shadow: 0 7px 16px rgba(var(--accent-hover-rgb), 0.18);
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-course-language-chip:hover {
-  background: rgba(var(--accent-hover-rgb), 0.44);
-  box-shadow: 0 7px 16px rgba(var(--accent-hover-rgb), 0.18);
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .np-language-badge {
-  box-shadow: 0 3px 7px rgba(var(--accent-hover-rgb), 0.18);
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-language-badge {
-  box-shadow: 0 3px 7px rgba(var(--accent-hover-rgb), 0.18);
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .np-progress-track--hero {
-  background: rgba(var(--accent-hover-rgb), 0.32);
-  box-shadow: inset 0 3px 5px rgba(var(--accent-hover-rgb), 0.24),
-    0 1px 0 rgba(255, 255, 255, 0.22);
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-progress-track--hero {
-  background: rgba(var(--accent-hover-rgb), 0.32);
-  box-shadow: inset 0 3px 5px rgba(var(--accent-hover-rgb), 0.24),
-    0 1px 0 rgba(255, 255, 255, 0.22);
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .np-progress-track--hero > span {
-  background: linear-gradient(180deg, #f5fff6 0%, var(--np-green-soft, var(--accent-dim)) 100%);
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.7),
-    inset 0 -2px 1px rgba(var(--accent-hover-rgb), 0.12),
-    2px 0 8px rgba(var(--accent-rgb), 0.26);
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-progress-track--hero > span {
-  background: linear-gradient(180deg, #f5fff6 0%, var(--np-green-soft, var(--accent-dim)) 100%);
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.7),
-    inset 0 -2px 1px rgba(var(--accent-hover-rgb), 0.12),
-    2px 0 8px rgba(var(--accent-rgb), 0.26);
-}
-
 html:not([data-theme="dark"])[data-accent="custom"] .np-practice-launcher {
   border: 1px solid rgba(var(--accent-rgb), 0.2);
   background: radial-gradient(circle at 92% 0%, rgba(var(--accent-rgb), 0.7), transparent 34%),
@@ -11116,34 +9449,6 @@ html[data-theme="dark"][data-accent="custom"] .np-primary-button {
     0 12px 20px rgba(var(--accent-hover-rgb), 0.24);
 }
 
-html[data-theme="dark"][data-accent="custom"] .np-mobile-course-button {
-  background: linear-gradient(180deg, var(--np-green-soft, var(--accent-dim)), var(--np-green));
-  box-shadow: 0 5px 0 var(--np-green),
-    0 12px 20px rgba(var(--accent-hover-rgb), 0.24);
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .np-mobile-course-button {
-  box-shadow: 0 7px 0 var(--np-green),
-    0 16px 26px rgba(var(--accent-hover-rgb), 0.28);
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-mobile-course-button {
-  box-shadow: 0 7px 0 var(--np-green),
-    0 16px 26px rgba(var(--accent-hover-rgb), 0.28);
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .np-mobile-course-button:hover {
-  background: linear-gradient(180deg, var(--np-green-soft, var(--accent-dim)), var(--np-green));
-  box-shadow: 0 8px 0 var(--np-green),
-    0 20px 32px rgba(var(--accent-hover-rgb), 0.34);
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-mobile-course-button:hover {
-  background: linear-gradient(180deg, var(--np-green-soft, var(--accent-dim)), var(--np-green));
-  box-shadow: 0 8px 0 var(--np-green),
-    0 20px 32px rgba(var(--accent-hover-rgb), 0.34);
-}
-
 html:not([data-theme="dark"])[data-accent="custom"] .np-feedback-next:active,
 html:not([data-theme="dark"])[data-accent="custom"] .np-primary-button:active,
 html:not([data-theme="dark"])[data-accent="custom"] .np-mobile-course-button:active {
@@ -11156,20 +9461,6 @@ html[data-theme="dark"][data-accent="custom"] .np-feedback-next:active {
 
 html[data-theme="dark"][data-accent="custom"] .np-primary-button:active {
   box-shadow: 0 2px 0 var(--np-green);
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-mobile-course-button:active {
-  box-shadow: 0 2px 0 var(--np-green);
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .np-lesson-row:hover {
-  box-shadow: 0 5px 0 rgba(var(--accent-hover-rgb), 0.13),
-    0 14px 24px rgba(var(--accent-hover-rgb), 0.12);
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .np-lesson-row--mint {
-  border-color: rgba(var(--accent-rgb), 0.3);
-  background: var(--np-green-soft, var(--accent-dim));
 }
 
 /* The card and its badge are built from var(--accent) directly, so a custom
@@ -11217,29 +9508,6 @@ html:not([data-theme="dark"])[data-accent="custom"] .np-badge-list--expanded .np
 
 html[data-theme="dark"][data-accent="custom"] .np-badge-list--expanded .np-achievement.is-unlocked {
   border-color: rgba(var(--accent-rgb), 0.3);
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .np-learning-pills button.is-active {
-  border-color: rgba(var(--accent-rgb), 0.4);
-  background: var(--np-green-soft, var(--accent-dim));
-  box-shadow: 0 3px 0 rgba(var(--accent-hover-rgb), 0.18);
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-learning-pills button.is-active {
-  border-color: rgba(var(--accent-rgb), 0.4);
-  box-shadow: 0 3px 0 rgba(var(--accent-hover-rgb), 0.18);
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .np-curriculum-row:hover {
-  border-color: rgba(var(--accent-rgb), 0.42);
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-curriculum-row:hover {
-  border-color: rgba(var(--accent-rgb), 0.42);
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .np-curriculum-icon--mint {
-  background: var(--np-green-soft, var(--accent-dim));
 }
 
 html:not([data-theme="dark"])[data-accent="custom"] .np-feature-host .card-hover:hover {
@@ -11586,24 +9854,6 @@ html:not([data-theme="dark"])[data-accent="custom"] .new-ui-prototype {
       #fffaf1;
 }
 
-html:not([data-theme="dark"])[data-accent="custom"] .np-course-hero-frame {
-  box-shadow: 0 5px 0 rgba(var(--accent-hover-rgb), 0.3),
-      0 15px 26px rgba(var(--accent-hover-rgb), 0.18);
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-course-hero-frame {
-  box-shadow: 0 5px 0 rgba(var(--accent-hover-rgb), 0.3),
-      0 15px 26px rgba(var(--accent-hover-rgb), 0.18);
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .np-course-shade {
-  background: linear-gradient(90deg, rgba(var(--accent-rgb), 0.97) 0%, rgba(var(--accent-rgb), 0.9) 42%, rgba(var(--accent-rgb), 0.52) 61%, rgba(var(--accent-rgb), 0.08) 83%, rgba(var(--accent-rgb), 0) 95%);
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-course-shade {
-  background: linear-gradient(90deg, rgba(var(--accent-rgb), 0.97) 0%, rgba(var(--accent-rgb), 0.9) 42%, rgba(var(--accent-rgb), 0.52) 61%, rgba(var(--accent-rgb), 0.08) 83%, rgba(var(--accent-rgb), 0) 95%);
-}
-
 html:not([data-theme="dark"])[data-accent="custom"] .np-mobile-nav button.is-active {
   background: var(--np-green-soft, var(--accent-dim));
 }
@@ -11627,49 +9877,6 @@ html:not([data-theme="dark"])[data-accent="custom"] .np-fluency-hours > span {
 html[data-theme="dark"][data-accent="custom"] .np-fluency-heading > span {
   border: 1px solid rgba(var(--accent-rgb), 0.2);
   box-shadow: 0 3px 0 rgba(var(--accent-hover-rgb), 0.11);
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > span {
-  border: 1px solid rgba(var(--accent-rgb), 0.2);
-  box-shadow: 0 3px 0 rgba(var(--accent-hover-rgb), 0.11);
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .np-fluency-steps__bar > span,
-html:not([data-theme="dark"])[data-accent="custom"] .np-fluency-steps__stop.is-reached i {
-  background: linear-gradient(90deg, var(--np-green), var(--np-green-soft, var(--accent-dim)));
-  box-shadow: inset 0 -2px 1px rgba(var(--accent-hover-rgb), 0.2);
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-fluency-steps__bar > span,
-html[data-theme="dark"][data-accent="custom"] .np-fluency-steps__stop.is-reached i {
-  background: linear-gradient(90deg, var(--np-green), var(--np-green-soft, var(--accent-dim)));
-  box-shadow: inset 0 -2px 1px rgba(var(--accent-hover-rgb), 0.2);
-}
-
-html[data-accent="custom"] .np-fluency-steps__stop.is-current i {
-  box-shadow: 0 0 0 4px rgba(var(--accent-hover-rgb), 0.2), inset 0 -2px 1px rgba(var(--accent-hover-rgb), 0.2);
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .np-fluency-hours {
-  background: radial-gradient(circle at 88% 12%, rgba(255, 215, 87, 0.24), transparent 35%),
-    linear-gradient(145deg, var(--np-green-soft, var(--accent-dim)), var(--np-green-soft, var(--accent-dim)));
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .np-fluency-hours > small {
-  border: 1px solid rgba(var(--accent-hover-rgb), 0.16);
-  color: var(--accent-text);
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > small {
-  border: 1px solid rgba(var(--accent-hover-rgb), 0.16);
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .np-fluency-hours > strong {
-  color: var(--accent-text);
-}
-
-html:not([data-theme="dark"])[data-accent="custom"] .np-fluency-hours > p {
-  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-side-nav button:hover {
@@ -11710,20 +9917,11 @@ html[data-theme="dark"][data-accent="custom"] .np-search-field button {
   background: var(--accent-pressed, var(--np-green-dark));
 }
 
-html[data-theme="dark"][data-accent="custom"] .np-lesson-row--mint {
-  border-color: rgba(var(--accent-rgb), 0.32);
-  background: var(--accent-pressed, var(--np-green-dark));
-}
-
 /* The level card takes no repaint for a chosen accent: it is already built
    from var(--accent) over the theme's surface, and painting it solid put
    accent-coloured copy on an accent-coloured card. */
 
 html[data-theme="dark"][data-accent="custom"] .np-achievement {
-  background: var(--accent-pressed, var(--np-green-dark));
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-learning-pills button.is-active {
   background: var(--accent-pressed, var(--np-green-dark));
 }
 
@@ -11803,26 +10001,6 @@ html[data-theme="dark"][data-accent="custom"] .np-shop-item.is-equipped .np-shop
 
 html[data-theme="dark"][data-accent="custom"] .np-fluency-outlook {
   border-color: rgba(var(--accent-rgb), 0.28);
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-fluency-hours {
-  border-color: rgba(var(--accent-rgb), 0.22);
-  background: radial-gradient(circle at 88% 12%, rgba(255, 200, 71, 0.12), transparent 35%),
-    linear-gradient(145deg, var(--accent-pressed, var(--np-green-dark)), var(--accent-pressed, var(--np-green-dark)));
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > small,
-html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > p {
-  color: var(--accent-text);
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > small {
-  border-color: rgba(var(--accent-rgb), 0.16);
-  background: rgba(var(--accent-hover-rgb), 0.42);
-}
-
-html[data-theme="dark"][data-accent="custom"] .np-fluency-hours > strong {
-  color: var(--accent-text);
 }
 
 html[data-theme="dark"][data-accent="custom"] .np-icon-button:hover,
@@ -12317,141 +10495,10 @@ html[data-theme="dark"][data-accent="custom"] .np-level-card > small {
   hyphens: auto;
 }
 
-/* Conversation Beta's way in. The same control as Continue learning, one
-   step quieter: it is the second button on the page, not the first. */
-.np-beta-button {
-  margin-top: 10px;
-  border: 1px solid rgba(var(--accent-rgb, 79, 189, 81), 0.4);
-  background: rgba(var(--accent-rgb, 79, 189, 81), 0.1);
-  color: var(--np-text);
-  box-shadow: none;
-}
-
-.np-beta-button:hover {
-  border-color: rgba(var(--accent-rgb, 79, 189, 81), 0.6);
-  background: rgba(var(--accent-rgb, 79, 189, 81), 0.16);
-}
-
-.np-beta-button .np-course-button-kicker { color: var(--accent-ink, var(--np-text)); }
-
-/* What Continue Learning serves: a dropdown ON the button, sitting just left
-   of its arrow, wearing the button's own background rather than bringing one.
-   The chip is white-on-colour like the button's kicker text; the menu is an
-   ordinary app surface floating below it. Buttons do not inherit the page
-   font, so the chip sets it explicitly — the first cut of this control
-   rendered in the UA fallback font for exactly that reason. */
-.np-course-launch {
-  position: relative;
-}
-
-/* A <button> shrinks to fit unless told otherwise; before the wrapper the
-   home view stretched it directly. */
-.np-course-launch > .np-mobile-course-button {
-  width: 100%;
-}
-
-.np-lesson-content-picker {
-  position: absolute;
-  top: 50%;
-  right: 82px;
-  z-index: 5;
-  transform: translateY(-50%);
-}
-
-.new-ui-prototype .np-lesson-content-trigger {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 34px;
-  padding: 0 13px;
-  border: 1px solid rgba(255, 255, 255, 0.34);
-  border-radius: 999px;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.92);
-  font-family: var(--np-font-text);
-  font-size: 12.5px;
-  font-weight: 850;
-  letter-spacing: 0.01em;
-  cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
-}
-
-.new-ui-prototype .np-lesson-content-trigger:hover {
-  border-color: rgba(255, 255, 255, 0.6);
-  background: rgba(255, 255, 255, 0.09);
-}
-
-.new-ui-prototype .np-lesson-content-trigger > svg {
-  width: 14px;
-  height: 14px;
-}
-
-.new-ui-prototype .np-lesson-content-menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  z-index: 40;
-  display: grid;
-  gap: 2px;
-  min-width: 260px;
-  padding: 6px;
-  border: 1px solid var(--np-line);
-  border-radius: 16px;
-  background: var(--np-surface);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
-}
-
-.new-ui-prototype .np-lesson-content-menu > button {
-  display: grid;
-  gap: 2px;
-  padding: 9px 11px;
-  border: none;
-  border-radius: 11px;
-  background: transparent;
-  color: var(--np-text);
-  font-family: var(--np-font-text);
-  text-align: left;
-  cursor: pointer;
-}
-
-.new-ui-prototype .np-lesson-content-menu > button:hover {
-  background: var(--np-surface-soft);
-}
-
-.new-ui-prototype .np-lesson-content-menu > button[aria-checked="true"] {
-  background: rgba(var(--accent-rgb, 79, 189, 81), 0.14);
-}
-
-.new-ui-prototype .np-lesson-content-menu > button strong {
-  font-size: 13px;
-  font-weight: 900;
-}
-
-.new-ui-prototype .np-lesson-content-menu > button small {
-  color: var(--np-muted);
-  font-size: 11px;
-  font-weight: 650;
-  line-height: 1.4;
-}
-
 /* Narrow windows: the copy column reaches further right, so the chip moves to
    the button's free top-right corner instead of overlapping the text. */
 @media (max-width: 720px) {
-  .np-lesson-content-picker {
-    top: 10px;
-    right: 14px;
-    transform: none;
-  }
 
-  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-    .np-course-launch:hover .np-lesson-content-picker {
-      transform: translateY(-3px);
-    }
-
-    .np-course-launch:has(.np-mobile-course-button:active) .np-lesson-content-picker {
-      transform: translateY(3px);
-    }
-  }
 }
 
 /* Custom accents in dark mode need two distinct jobs: the accent marks an
@@ -12682,7 +10729,6 @@ html[data-theme="dark"][data-accent="custom"] .np-feature-host .mastery-progress
   .np-uk-translation { margin-left: 0; }
 }
 
-
 /* ══ Shop: text on accent-coloured fills ═════════════════════════════════
    Measured on a custom accent (#7f96ee), thirteen elements in the shop fell
    below 4.5:1 and two were effectively invisible. One cause throughout: the
@@ -12876,7 +10922,6 @@ html[data-theme="dark"][data-accent="custom"] .np-premium-action > button {
   }
 }
 
-
 /* ── where you are, marked the way she draws it ────────────────────────────
    Not a filled pill but the word in the accent, with the icon to match. Set
    last, and with every palette named, so a custom accent cannot leave one
@@ -12963,19 +11008,6 @@ html[data-theme="dark"] .np-home-choice-panel .np-progress-track {
   box-shadow: none;
 }
 
-/* The language card's badge: her globe on the accent, where the country card
-   carries the flag of the place it teaches. */
-.np-home-choice-flag--globe {
-  color: #fff;
-  background: var(--accent);
-}
-
-.np-home-choice-flag--globe > svg {
-  width: 28px;
-  height: 28px;
-  stroke-width: 2;
-}
-
 /* ── the picture runs on under the bar ─────────────────────────────────────
    Both cards' artwork is sized to the hero, so it stopped dead at the bar.
    The extra length is what the bar's fade dissolves into; the card clips it,
@@ -13060,22 +11092,6 @@ html[data-theme="dark"] .np-home-choice-field + .np-home-choice-field {
   html[data-theme="dark"] .np-home-choice-hero .np-home-choice-field + .np-home-choice-field {
     border-top-color: rgba(255, 255, 255, 0.14);
   }
-}
-
-/* The menu hangs off its own panel, so the panel is the anchor. */
-.np-home-choice-panel--content {
-  position: relative;
-}
-
-.np-home-choice-panel--content .np-home-choice-icon {
-  width: 22px;
-  height: 22px;
-  border-radius: 8px;
-}
-
-.np-home-choice-panel--content .np-home-choice-icon > svg {
-  width: 13px;
-  height: 13px;
 }
 
 .np-home-choice-change > svg {
