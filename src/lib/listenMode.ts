@@ -142,6 +142,27 @@ export const DEFAULT_LANGUAGE_GAP_MS = 0;
 /** One of the three bodies of material Listen can draw from. */
 export type ListenContentKind = "sentences" | "words" | "passages";
 export const LISTEN_CONTENT_KINDS: readonly ListenContentKind[] = ["sentences", "words", "passages"];
+
+/**
+ * The two voices a conversation is read in.
+ *
+ * A dialogue read by one voice is a monologue with quotation marks: the turns
+ * are the content, and nothing in a single reading tells you where one ends.
+ * Two voices carry that for free, without a word of explanation.
+ *
+ * German only, because German is the only language the packs write dialogues
+ * in. A course whose target is something else falls back to its own voice for
+ * both sides, which is what it had before — no worse, and no invented
+ * pairing of voices nobody chose.
+ *
+ * The server checks these against its own list and falls back to the
+ * language's voice if it does not know one, so a rename there costs the
+ * conversation its second voice rather than its audio.
+ */
+export const LISTEN_DIALOGUE_VOICES: Readonly<Record<"a" | "b", string>> = {
+  a: "de-DE-KatjaNeural",
+  b: "de-DE-ConradNeural",
+};
 /**
  * What a stored setting can say.
  *
@@ -710,6 +731,8 @@ export type ListenSpeechClip = {
   rate: number;
   lang: string;
   side: "target" | "meaning";
+  /** A named voice for this clip, when the card has more than one speaker. */
+  voice?: string;
   /** Silence held before this clip. Set on exactly one clip per card. */
   pauseBeforeMs?: number;
 };
@@ -749,6 +772,7 @@ export function buildListenSpeechPlan({
   meaningLang,
   targetLang = "de-DE",
   languageGapMs,
+  turns,
 }: {
   /** The line being LEARNED. Named `de` for the field it comes from. */
   de: string;
@@ -763,6 +787,15 @@ export function buildListenSpeechPlan({
    *  always was German need not say so. */
   targetLang?: string;
   languageGapMs: number;
+  /**
+   * The card's turns, when it is a conversation.
+   *
+   * Given, the target side is spoken turn by turn in alternating voices
+   * instead of as one block. The meaning side is left whole: it is there so
+   * you know what was said, and hearing the translation change voice as well
+   * makes two conversations out of one.
+   */
+  turns?: ReadonlyArray<{ side: "a" | "b"; de: string }>;
 }): ListenSpeechClip[] {
   /**
    * A German word quoted in the other line is read in German — whichever line
@@ -798,7 +831,24 @@ export function buildListenSpeechPlan({
       : [{ text, rate, lang: ownLang, side }]
   );
 
-  const targetOnce = speak(de, targetLang, en, meaningLang, "target", LISTEN_TARGET_RATE);
+  /**
+   * One clip per turn when the card is a conversation, and each side keeps
+   * its own voice across the whole card.
+   *
+   * Only where the target is German: the voices named are German ones, and
+   * reading a French line in a German voice to mark a change of speaker would
+   * trade one confusion for a worse one.
+   */
+  const spokenTurns = (turns ?? []).filter((turn) => turn.de.trim());
+  const targetOnce = spokenTurns.length > 1 && targetLang.startsWith("de")
+    ? spokenTurns.map((turn) => ({
+      text: turn.de,
+      rate: LISTEN_TARGET_RATE,
+      lang: targetLang,
+      side: "target" as const,
+      voice: LISTEN_DIALOGUE_VOICES[turn.side],
+    }))
+    : speak(de, targetLang, en, meaningLang, "target", LISTEN_TARGET_RATE);
   const target: ListenSpeechClip[] = Array.from(
     { length: Math.max(0, targetRepeats) },
     () => targetOnce
@@ -1097,6 +1147,14 @@ export type ListenItem = {
    */
   levelLabel?: string;
   kind: "sentence" | "word" | "passage";
+  /**
+   * The turns of a conversation, when this paragraph is one.
+   *
+   * Carried apart from `de` and `en`, which stay the whole thing joined up so
+   * everything that reads a card keeps working. The turns are what lets the
+   * card show who is speaking and the speech plan give them separate voices.
+   */
+  turns?: Array<{ side: "a" | "b"; de: string; en: string }>;
   popularity: number;
 };
 
@@ -1457,24 +1515,79 @@ export function buildListenQueue(
    * written in. There is no frequency score for a paragraph and inventing one
    * would be a number with nothing behind it.
    */
-  const passages: ListenItem[] = !content.includes("passages")
-    ? []
-    : PASSAGES
+  /**
+   * Every paragraph the course has: the authored passages, and the packs'
+   * written conversations.
+   *
+   * A dialogue is a paragraph by the only test that matters here — several
+   * lines that mean more together than apart. There are hundreds of them
+   * against ten passages, and leaving them out made Paragraphs a corner of
+   * the app rather than a way through it.
+   *
+   * A dialogue keeps its turns; a passage has none, and its lines are read
+   * straight through in one voice, which is what a passage is.
+   */
+  type ParagraphSource = {
+    id: string;
+    level: string;
+    /** What this is, in English: a passage's source line or a dialogue's title. */
+    note?: string;
+    lines: Array<{ de: string; en: string; speaker?: string }>;
+  };
+
+  const paragraphSources: ParagraphSource[] = !content.includes("passages") ? [] : [
+    ...PASSAGES.map((passage) => ({
+      id: `passage:${passage.id}`,
+      level: passage.level,
+      note: passage.source,
+      lines: passage.lines.map((line) => ({ de: line.de, en: line.en })),
+    })),
+    ...Object.entries(parts).flatMap(([partKey, part]) => {
+      const dialogues = Array.isArray((part as any)?.dialogues) ? (part as any).dialogues : [];
+      return dialogues.map((dialogue: any, index: number) => ({
+        // The pack and the position, because a title repeats across packs and
+        // a grade landing on the wrong conversation is worse than no grade.
+        id: `dialogue:${partKey}:${index}`,
+        level: String((part as any)?.level ?? ""),
+        note: typeof dialogue?.title === "string" ? dialogue.title : undefined,
+        lines: (Array.isArray(dialogue?.lines) ? dialogue.lines : []).map((line: any) => ({
+          de: String(line?.de ?? ""),
+          en: String(line?.en ?? ""),
+          speaker: typeof line?.speaker === "string" ? line.speaker : undefined,
+        })),
+      }));
+    }),
+  ];
+
+  const passages: ListenItem[] = paragraphSources
       .map((passage, index) => {
         const de = passage.lines.map((line) => line.de.trim()).filter(Boolean).join("\n");
         const en = passage.lines.map((line) => line.en.trim()).filter(Boolean).join("\n");
         return { passage, index, de, en };
       })
-      .filter(({ de, en, passage }) => de && en && keepPassage(passage.level))
+      .filter(({ de, en, passage }) => de && en && passage.lines.length > 1
+        && keepPassage(passage.level))
       .sort((a, b) => passageRung(a.passage.level) - passageRung(b.passage.level) || a.index - b.index)
       .map(({ passage, de, en }, index, ranked) => ({
-        // Namespaced, so a passage's grade can never land on a card that
-        // happens to share its id in the sentence tracker.
-        id: `passage:${passage.id}`,
+        // Already namespaced by its source, so a paragraph's grade can never
+        // land on a card that happens to share its id in the sentence tracker.
+        id: passage.id,
         aliases: [],
         de,
         en,
-        use: passage.source,
+        use: passage.note,
+        // Two speakers or none. A dialogue's sides are what the card shows and
+        // what the voices follow; a passage has one voice and no turns, which
+        // is the difference between reading a note and overhearing a chat.
+        turns: passage.lines.some((line) => line.speaker)
+          ? passage.lines
+            .filter((line) => line.de.trim() && line.en.trim())
+            .map((line) => ({
+              side: (String(line.speaker ?? "A").toUpperCase() === "B" ? "b" : "a") as "a" | "b",
+              de: line.de.trim(),
+              en: line.en.trim(),
+            }))
+          : undefined,
         rung: passageRung(passage.level),
         // The badge shows the rung the filter judged it by, not the label the
         // sentences carry — a card that says A2 and is kept out of an A2

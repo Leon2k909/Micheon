@@ -1049,7 +1049,12 @@ button { cursor: pointer; }
      #fbfdfa, comfortably past the 3:1 a control boundary needs. */
   --card-edge: #7e827c;
 }
-html[data-theme="dark"] { --shell-top: #0c1017; --shell-bottom: #070910; --card-edge: #7d8a9e; }
+/* The dark edge was running at 5.1-5.5:1 against the surfaces it sits on,
+   where a control boundary needs 3. Nearly double the floor is what made
+   every card and every open panel read as a white line drawn round it
+   rather than an edge. #646f7e measures 3.2-3.7:1 on the same surfaces:
+   still past the floor, and no longer the loudest thing on the page. */
+html[data-theme="dark"] { --shell-top: #0c1017; --shell-bottom: #070910; --card-edge: #646f7e; }
 html.is-electron { --titlebar-h: 38px; --app-h: calc(100dvh - 38px); }
 
 /* Full-screen fixed overlays (lesson view, completion screen, login) cover the
@@ -10446,7 +10451,12 @@ html[data-theme="dark"] .main-skeleton-nav { background: #232b3a; }
 .settings-panel {
   grid-column: 1 / -1;
   margin-top: 2px;
-  padding: 2px 14px 14px;
+  /* Even on all four sides. The top was 2px, which is the gap between the
+     panel and the row above it rather than a gap inside the panel - so the
+     first thing in an opened category sat against its own border while
+     everything else in it had room. The 2px that meant to hold the panel
+     close to its row is the margin above, and that is untouched. */
+  padding: 14px;
   border: 1px solid var(--card-edge, var(--border));
   border-radius: 16px;
   background: var(--surface-2);
@@ -11660,6 +11670,100 @@ html[data-theme="dark"] {
      rhythm changed from card to card as well as inside one. The container
      owns it now, and a line cannot opt out. */
   gap: 14px;
+}
+
+/* A conversation on a listening card.
+ *
+ * Left-aligned, unlike everything else here, because the turns have to line
+ * up with each other to read as an exchange — centred, each one floats at
+ * its own width and the back-and-forth disappears. The two sides are offset
+ * so the shape of the conversation is visible before a word of it is read.
+ */
+.listen-turns {
+  display: grid;
+  gap: 12px;
+  text-align: left;
+}
+
+.listen-turn {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 4px 10px;
+}
+
+/* The second speaker sits in from the first. Enough to see, not so far that
+   a long turn has to wrap early to pay for it. */
+.listen-turn.is-b {
+  margin-inline-start: 28px;
+}
+
+.listen-turn-who {
+  grid-row: 1;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-3);
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 18px;
+  text-align: center;
+}
+
+.listen-turn.is-b .listen-turn-who {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.listen-turn-said {
+  grid-row: 1;
+  color: var(--text-1);
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+
+.listen-turn-means {
+  grid-column: 2;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+  .listen-turn.is-b { margin-inline-start: 14px; }
+  .listen-turn-said { font-size: 17px; }
+}
+
+/* Nothing in the column gives up height to fit the box.
+ *
+ * A flex item shrinks by default, and this column has a fixed height — so
+ * content taller than the card did not scroll, it was COMPRESSED: each
+ * paragraph kept its text and lost its box, and the lines ran straight over
+ * whatever came next. On a one-sentence card there was never enough content
+ * to notice. A paragraph is three lines of German and three of English, and
+ * the two landed on top of each other.
+ *
+ * Refusing to shrink is what makes the overflow real, which is what makes
+ * the card's own scrolling work as its height rule already described.
+ */
+.listen-card > * {
+  flex-shrink: 0;
+}
+
+/* A card holding a paragraph grows instead of scrolling.
+ *
+ * The fixed height exists so the controls under the card never move between
+ * one item and the next, and for words and sentences it should stay. A
+ * paragraph is not that: it is meant to be read in one piece, and reading it
+ * through a 340px window while the audio runs is worse than the controls
+ * shifting once. So the height becomes a floor for these, and every other
+ * card is untouched.
+ */
+.listen-card--long {
+  height: auto;
+  min-height: 340px;
 }
 
 /* The Know-it menu is not content, and must not be scrolled like it.

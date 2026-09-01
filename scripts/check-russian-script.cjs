@@ -171,6 +171,7 @@ check("no two German cards collapse onto one Russian line", () => {
 const {
   THIRD_PERSON, MASCULINE_SHORT, FEMININE_SHORT, MASCULINE_PAST, FEMININE_PAST,
 } = require("./russian-gender-words.cjs");
+const { germanOnlyName } = require("./russian-german-only.cjs");
 
 check("the course never decides the learner's gender", () => {
   const offenders = [];
@@ -230,6 +231,38 @@ check("the course never decides the learner's gender", () => {
     offenders.length,
     0,
     "these decide the learner's gender; rewrite them rather than pick one — "
+    + offenders.slice(0, 6).join("; ")
+  );
+});
+
+check("the course never teaches a name that exists only in Germany", () => {
+  /**
+   * The learner produces the Russian and is graded on it, so a card keyed to a
+   * German sentence about Bavarian dialect teaches a Russian speaker to discuss
+   * a dialect of a language they are not learning, of a country they may never
+   * see. There is nothing on the Russian side for the name to be the name of.
+   *
+   * This is NOT a rule against German subjects. Standesamt is fine because
+   * Russia registers marriages and the card says загс; Fahrzeugbrief is fine
+   * because техпаспорт is the same document; Rentenpunkte is fine because
+   * Russia counts pension points too. The rule is against names with no
+   * referent — Schufa, Flensburg, Schultüte, Fronleichnam, Schweizerdeutsch —
+   * and scripts/russian-german-only.cjs argues each one.
+   *
+   * Written after the table had been culled by hand once. A one-off cleanup
+   * leaves nothing behind to stop the next block writing the same card again,
+   * which is the difference between fixing a thing and it staying fixed.
+   */
+  const offenders = [];
+  for (const [de, ru] of Object.entries(RUSSIAN_BY_GERMAN)) {
+    const name = germanOnlyName(de);
+    if (name) offenders.push(`${name}: "${de}" -> "${ru}"`);
+  }
+  assert.strictEqual(
+    offenders.length,
+    0,
+    "a Russian card cannot teach a name that exists only in Germany; leave the card"
+    + " out of the Russian table rather than translating it — "
     + offenders.slice(0, 6).join("; ")
   );
 });

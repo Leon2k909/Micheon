@@ -24,6 +24,19 @@ export type SeqItem = {
   text: string;
   rate?: number;
   lang: string;
+  /**
+   * Speak this clip in a named voice instead of the one chosen for its
+   * language.
+   *
+   * For a dialogue, where two people are talking and one voice reading both
+   * sides is a monologue with quotation marks. Left unset everywhere else,
+   * which keeps the learner's own voice choice in charge of the course.
+   *
+   * Only a voice the server is willing to synthesise will be honoured; it
+   * checks the name against its own list and falls back to the language's
+   * voice, so a bad name here is a wrong voice rather than silence.
+   */
+  voice?: string;
   /** Runs immediately before this clip starts, used for synced captions. */
   onStart?: () => void;
   /** Silence to hold before this clip — the learner's turn to say it first. */
@@ -519,11 +532,14 @@ async function getAudioUrl(
   rate: number,
   lang: string,
   signal?: AbortSignal,
-  refresh = false
+  refresh = false,
+  voiceOverride?: string
 ): Promise<string> {
   // The chosen voice is part of the cache key, or switching voice would keep
-  // replaying the old one for every sentence already heard.
-  const voice = voiceForLang(lang);
+  // replaying the old one for every sentence already heard. That covers the
+  // override too: the same line spoken by the other speaker is a different
+  // clip and must not be served the first one's audio.
+  const voice = voiceOverride || voiceForLang(lang);
   const key = `${lang}|${voice}|${rate}|${text}`;
   if (!refresh) {
     const cached = cachedAudioUrl(key);
@@ -677,7 +693,7 @@ async function playOne(item: SeqItem, token: number, signal?: AbortSignal): Prom
     try {
       // The second attempt bypasses the audio cache: if the first clip never
       // produced sound, the cached blob itself may be the broken part.
-      const url = await getAudioUrl(text, rate, lang, signal, attempt > 0);
+      const url = await getAudioUrl(text, rate, lang, signal, attempt > 0, item.voice);
       if (token !== playSeq || getTtsAudioVolume(lang) <= 0) return;
       announceStart();
       const spoke = await playUrl(url, token, lang);

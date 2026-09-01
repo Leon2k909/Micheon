@@ -927,6 +927,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
       languageGapMs,
       languageOrder,
       targetLang,
+      turns: item.turns,
     }).map((clip) => ({
       ...clip,
       onStart: () => mirrorOnPet(clip.text, clip.side === "target" ? targetLang : meaningLang),
@@ -1697,7 +1698,13 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
           </div>
         </div>
 
-        <div className="listen-card relative mx-1 mt-5 border-t border-[var(--border)] pt-6 text-center sm:mx-3 sm:pt-8">
+        <div
+          className={cn(
+            "listen-card relative mx-1 mt-5 border-t border-[var(--border)] pt-6 text-center sm:mx-3 sm:pt-8",
+            // A paragraph is read in one piece rather than through a window.
+            item.kind === "passage" && "listen-card--long"
+          )}
+        >
           {/* The voice, drawn from the voice. These are the real frequency
               bands of the clip being spoken — the same reading the guided
               session uses — rather than a loop that runs whether or not
@@ -1734,12 +1741,39 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               would otherwise stay blocked — and knowing what it meant is only
               half of it, since the next thing you want is to keep it.
               Tapping a word pauses the loop rather than talking over it. */}
-          <p className="listen-sentence text-2xl font-black leading-snug tracking-tight text-[var(--text-1)] sm:text-3xl" lang={targetSlot.htmlLang}>
-            <TappableSentence text={item.de} lang={targetLang} meaningText={item.en} onWordAudio={pause} />
-          </p>
-          <p className="text-base font-bold leading-relaxed text-[var(--accent)]" lang={meaningSlot.htmlLang}>
-            {item.en}
-          </p>
+          {/* A conversation is shown as the conversation it is.
+              Both sides joined into one paragraph read as a monologue with
+              the turns rubbed out, which is the half of a dialogue worth
+              hearing. Each turn keeps its own line, its speaker and its
+              meaning underneath, so the eye follows the same back-and-forth
+              the two voices are reading. */}
+          {item.turns && item.turns.length > 1 ? (
+            <div className="listen-turns">
+              {item.turns.map((turn, turnIndex) => (
+                <div
+                  className={cn("listen-turn", turn.side === "b" && "is-b")}
+                  key={`${turn.side}-${turnIndex}`}
+                >
+                  <span aria-hidden="true" className="listen-turn-who">
+                    {turn.side === "b" ? "B" : "A"}
+                  </span>
+                  <p className="listen-turn-said" lang={targetSlot.htmlLang}>
+                    <TappableSentence text={turn.de} lang={targetLang} meaningText={turn.en} onWordAudio={pause} />
+                  </p>
+                  <p className="listen-turn-means" lang={meaningSlot.htmlLang}>{turn.en}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <>
+              <p className="listen-sentence text-2xl font-black leading-snug tracking-tight text-[var(--text-1)] sm:text-3xl" lang={targetSlot.htmlLang}>
+                <TappableSentence text={item.de} lang={targetLang} meaningText={item.en} onWordAudio={pause} />
+              </p>
+              <p className="text-base font-bold leading-relaxed text-[var(--accent)]" lang={meaningSlot.htmlLang}>
+                {item.en}
+              </p>
+            </>
+          )}
           {/* How the same sentence is WRITTEN, when the card teaches how it is
               said. The course teaches the spoken form because that is what
               people say — "Ich hab das nicht ganz verstanden" — and in print
