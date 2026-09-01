@@ -107,6 +107,35 @@ const settingsCss = read("src/index.css");
 if (!/\.settings-row \{[^}]*border:[^;]*--card-edge/.test(settingsCss)) {
   failures.push("SettingsCategory: a white card on a near-white page needs a border to be visible at all");
 }
+// ...and it is an edge, not a highlight. A boundary needs 3:1 to be seen; the
+// dark value was set at over 5, which is what made every card look outlined
+// in white. Checked as a range so it cannot drift back up OR be softened away
+// to nothing, since the whole reason it exists is that the card vanishes
+// without it.
+{
+  const channel = (v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+  const luminance = (hex) => {
+    const [r, g, b] = [1, 3, 5].map((i) => channel(parseInt(hex.slice(i, i + 2), 16) / 255));
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const contrast = (a, b) => {
+    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+    return (hi + 0.05) / (lo + 0.05);
+  };
+  const dark = /html\[data-theme="dark"\][^{]*\{[^}]*--card-edge:\s*(#[0-9a-f]{6})/i.exec(settingsCss);
+  if (!dark) {
+    failures.push("the dark theme no longer names a card edge");
+  } else {
+    // The darkest and lightest surfaces a card sits on in the dark theme.
+    const ratios = ["#0c1017", "#1b1f2a"].map((bg) => contrast(dark[1], bg));
+    if (Math.min(...ratios) < 3) {
+      failures.push(`the dark card edge is ${Math.min(...ratios).toFixed(2)}:1, under the 3:1 a boundary needs`);
+    }
+    if (Math.max(...ratios) > 4.2) {
+      failures.push(`the dark card edge is ${Math.max(...ratios).toFixed(2)}:1, loud enough to read as a white outline`);
+    }
+  }
+}
 
 if (failures.length) {
   console.error("FAIL check-notification-actions");

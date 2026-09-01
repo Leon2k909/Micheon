@@ -44,7 +44,7 @@ global.localStorage = global.window.localStorage;
 const result = esbuild.buildSync({
   stdin: {
     contents: [
-      'export { buildListenQueue, arrangeListenMixedQueue, listenMixGroupFor, getListenMixedCounts, setListenMixedCounts, DEFAULT_LISTEN_MIXED_COUNTS, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenPetBilingualCaptions, setListenPetBilingualCaptions, getListenContentKinds, setListenContentKinds, listenContentKinds, listenContentSourceKey, LISTEN_CONTENT_KINDS, getListenQueueOrder, setListenQueueOrder, getListenQueueWithin, setListenQueueWithin, listenQueueHasGroups, LISTEN_QUEUE_WITHINS, DEFAULT_LISTEN_QUEUE_WITHIN, getListenReturnGap, setListenReturnGap, getListenReturnScope, setListenReturnScope, listenReturnCovers, LISTEN_RETURN_GAPS, LISTEN_RETURN_SCOPES, DEFAULT_LISTEN_RETURN_GAP, DEFAULT_LISTEN_RETURN_SCOPE, LISTEN_RETURN_GAP_MS, LISTEN_RETURN_GAP_CARDS, listenReturnGapIsCounted, getListenCurrentItemId, setListenCurrentItemId, getListenTargetRepeats, setListenTargetRepeats, getListenMeaningRepeats, setListenMeaningRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, getListenLanguageGapMs, setListenLanguageGapMs, buildListenSpeechPlan, DEFAULT_LANGUAGE_GAP_MS, DEFAULT_TARGET_REPEATS, DEFAULT_MEANING_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE, DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId } from "./src/lib/listenMode.ts";\n      export { formatEnglishText } from "./src/lib/englishVariant.ts";',
+      'export { buildListenQueue, arrangeListenMixedQueue, listenMixGroupFor, getListenMixedCounts, setListenMixedCounts, DEFAULT_LISTEN_MIXED_COUNTS, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem, getListenBackgroundPlayback, setListenBackgroundPlayback, getListenPetBilingualCaptions, setListenPetBilingualCaptions, getListenContentKinds, setListenContentKinds, listenContentKinds, listenContentSourceKey, LISTEN_CONTENT_KINDS, getListenQueueOrder, setListenQueueOrder, getListenQueueWithin, setListenQueueWithin, listenQueueHasGroups, LISTEN_QUEUE_WITHINS, DEFAULT_LISTEN_QUEUE_WITHIN, getListenReturnGap, setListenReturnGap, getListenReturnScope, setListenReturnScope, listenReturnCovers, LISTEN_RETURN_GAPS, LISTEN_RETURN_SCOPES, DEFAULT_LISTEN_RETURN_GAP, DEFAULT_LISTEN_RETURN_SCOPE, LISTEN_RETURN_GAP_MS, LISTEN_RETURN_GAP_CARDS, listenReturnGapIsCounted, getListenCurrentItemId, setListenCurrentItemId, getListenTargetRepeats, setListenTargetRepeats, getListenMeaningRepeats, setListenMeaningRepeats, getListenLanguageOrder, setListenLanguageOrder, getListenLoopItems, setListenLoopItems, getListenLoopPasses, setListenLoopPasses, listenQueueIndexForPlayhead, listenPlayheadForQueueIndex, listenLoopPassForPlayhead, getListenNextCardDelayMs, setListenNextCardDelayMs, getListenLanguageGapMs, setListenLanguageGapMs, buildListenSpeechPlan, DEFAULT_LANGUAGE_GAP_MS, DEFAULT_TARGET_REPEATS, DEFAULT_MEANING_REPEATS, DEFAULT_LISTEN_LANGUAGE_ORDER, DEFAULT_LISTEN_CONTENT_SOURCE, DEFAULT_LISTEN_QUEUE_ORDER, DEFAULT_LISTEN_LOOP_ITEMS, DEFAULT_LISTEN_LOOP_PASSES, DEFAULT_NEXT_CARD_DELAY_MS, listenCountForId, LISTEN_DIALOGUE_VOICES } from "./src/lib/listenMode.ts";\n      export { formatEnglishText } from "./src/lib/englishVariant.ts";',
       'export { loadGradeStore, saveGradeStore, statusForId, COMPLETED_KEY } from "./src/lib/activity.ts";',
       'export { setInterfaceLanguage } from "./src/lib/interfaceLanguage.ts";',
       'export { setLearningDirection } from "./src/lib/direction.ts";',
@@ -89,7 +89,7 @@ const {
   buildListenQueue, formatListenPetCaption, recordListenGrade, setListenReviewLevel, undoListenReviewChange, snoozeListenItem,
   getListenBackgroundPlayback, setListenBackgroundPlayback,
   getListenPetBilingualCaptions, setListenPetBilingualCaptions,
-  formatEnglishText,
+  formatEnglishText, LISTEN_DIALOGUE_VOICES,
   getListenContentKinds, setListenContentKinds, listenContentKinds,
   listenContentSourceKey, LISTEN_CONTENT_KINDS,
   getListenQueueOrder, setListenQueueOrder,
@@ -328,7 +328,9 @@ check("a paragraph's two sides stay line for line",
   passageCards.every((item) =>
     item.de.split("\n").length === item.en.split("\n").length));
 check("a paragraph's id cannot collide with a tracked card",
-  passageCards.every((item) => item.id.startsWith("passage:")));
+  // Namespaced by where it came from — an authored passage or a pack's
+  // conversation. Either way it cannot be mistaken for a sentence id.
+  passageCards.every((item) => /^(passage|dialogue):/u.test(item.id)));
 check("every paragraph card carries a level to show",
   passageCards.every((item) => Boolean(item.levelLabel) && Boolean(item.rung)));
 
@@ -337,6 +339,80 @@ check("the sentence and word sources leave the paragraphs out",
     .every((item) => item.kind !== "passage")
   && buildListenQueue(parts, {}, { contentSource: "words", order: "common" })
     .every((item) => item.kind !== "passage"));
+
+// \u2500\u2500 the conversations are paragraphs too, read by two people \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// Ten authored passages was the whole pool while the packs carried several
+// hundred written conversations \u2014 the same thing by the only test that
+// matters here: several lines that mean more together than apart.
+{
+  const paragraphs = buildListenQueue(parts, {}, { contentSource: ["passages"], order: "common" });
+  const conversations = paragraphs.filter((item) => item.id.startsWith("dialogue:"));
+  const passages = paragraphs.filter((item) => item.id.startsWith("passage:"));
+
+  check(
+    "the packs' conversations are in the paragraph queue",
+    conversations.length > 100 && passages.length > 0,
+    `${conversations.length} conversations, ${passages.length} passages`
+  );
+  check(
+    "every one of them is a paragraph card",
+    paragraphs.every((item) => item.kind === "passage")
+  );
+  check(
+    "a conversation keeps its turns and a passage has none",
+    conversations.every((item) => Array.isArray(item.turns) && item.turns.length > 1)
+      && passages.every((item) => item.turns === undefined)
+  );
+  check(
+    "a conversation's id cannot collide with a passage or a tracked card",
+    conversations.every((item) => /^dialogue:[^:]+:\d+$/u.test(item.id))
+  );
+
+  // The turns are the content. One voice reading both sides is a monologue
+  // with quotation marks: nothing in it says where a turn ends.
+  const sample = conversations.find((item) => item.turns.length >= 4);
+  const plan = buildListenSpeechPlan({
+    de: sample.de, en: sample.en, targetRepeats: 1, meaningRepeats: 1,
+    languageOrder: "target-first", meaningLang: "en-GB", targetLang: "de-DE",
+    languageGapMs: 0, turns: sample.turns,
+  });
+  const spoken = plan.filter((clip) => clip.side === "target");
+  check(
+    "a conversation is spoken one turn at a time",
+    spoken.length === sample.turns.length
+  );
+  check(
+    "...in two voices, one per side, the same one throughout",
+    spoken.every((clip, index) => clip.voice === LISTEN_DIALOGUE_VOICES[sample.turns[index].side])
+      && new Set(spoken.map((clip) => clip.voice)).size === 2
+  );
+  check(
+    "the translation is left in one voice, so it stays one conversation",
+    plan.filter((clip) => clip.side === "meaning").every((clip) => !clip.voice)
+  );
+
+  // A passage is one person writing to you, and reads straight through.
+  const passage = passages[0];
+  check(
+    "a passage is still read in the learner's own single voice",
+    buildListenSpeechPlan({
+      de: passage.de, en: passage.en, targetRepeats: 1, meaningRepeats: 1,
+      languageOrder: "target-first", meaningLang: "en-GB", targetLang: "de-DE",
+      languageGapMs: 0, turns: passage.turns,
+    }).every((clip) => !clip.voice)
+  );
+
+  // A course that is not German has no business borrowing German voices to
+  // mark a change of speaker.
+  check(
+    "another course's conversation is not read in German voices",
+    buildListenSpeechPlan({
+      de: sample.de, en: sample.en, targetRepeats: 1, meaningRepeats: 1,
+      languageOrder: "target-first", meaningLang: "en-GB", targetLang: "fr-FR",
+      languageGapMs: 0, turns: sample.turns,
+    }).every((clip) => !clip.voice)
+  );
+}
 
 check("All plays all three",
   ["sentence", "word", "passage"].every((kind) =>
@@ -1781,6 +1857,12 @@ check("Listen exposes real source and queue-order controls",
   && view.includes('data-testid={`listen-queue-${value}`}')
   && view.includes("setListenContentKinds(")
   && view.includes("setListenQueueOrder("));
+check(
+  "a conversation card shows its turns rather than one block of text",
+  view.includes("item.turns && item.turns.length > 1")
+    && view.includes('className="listen-turn-said"')
+    && view.includes('className="listen-turn-means"')
+);
 check("the source control ticks rather than picks, so pairs are reachable",
   view.includes('role="checkbox"')
   && view.includes("const toggleContentKind = (kind: ListenContentKind) => {")
