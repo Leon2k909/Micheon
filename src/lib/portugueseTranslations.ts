@@ -21361,4 +21361,78 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "unter Zeitdruck stehen": "estar com o tempo em cima",
   "Zeit für etwas einplanen": "contar com tempo para uma coisa",
   "den Überblick behalten": "não perder o fio à meada",
+
+  // ── Weighing two options against each other (part434) ───────────────────
+  //
+  // Das Manko is o senão — the small catch a Portuguese sentence hangs on the
+  // end of a compliment. Den Ausschlag geben is fazer pender a balança, and
+  // gut abschneiden is sair-se bem.
+  "die Bewertung": "a avaliação",
+  "der Vorzug": "a vantagem",
+  "der Pluspunkt": "o ponto a favor",
+  "das Manko": "o senão",
+  "die Alternative": "a alternativa",
+  "der Favorit": "o favorito",
+  "der Maßstab": "o padrão de referência",
+  "die Rangfolge": "a ordem de precedência",
+  "die Gewichtung": "a ponderação",
+  "der Gesichtspunkt": "o aspeto",
+  "unterlegen": "inferior",
+  "gleichwertig": "equivalente",
+  "vergleichbar": "comparável",
+  "ausschlaggebend": "decisivo",
+  "empfehlenswert": "aconselhável",
+  "zweitrangig": "secundário",
+  "vielmehr": "antes pelo contrário",
+  "tendenziell": "tendencialmente",
+  "bevorzugen": "preferir",
+  "übertreffen": "superar",
+  "überwiegen": "prevalecer",
+  "differenzieren": "distinguir",
+  "in Betracht ziehen": "ter em consideração",
+  "in die engere Wahl kommen": "ficar entre os selecionados",
+  "den Ausschlag geben": "fazer pender a balança",
+  "sich entscheiden für": "decidir-se por",
+  "gut abschneiden": "sair-se bem",
+
+  // ── Risk, and the sentence you say before taking one (part435) ──────────
+  //
+  // Vorsichtshalber is por via das dúvidas and auf Nummer sicher gehen is
+  // jogar pelo seguro — two fixed Portuguese expressions for two fixed German
+  // ones, neither of them assembled word by word.
+  //
+  // Trügerisch is ilusório rather than enganador, which this table already
+  // gives to irreführend. Die Notlage is o aperto, and der Ernstfall keeps a
+  // emergência, so the two do not collapse into one.
+  "die Vorsichtsmaßnahme": "a medida de precaução",
+  "die Gefahrenquelle": "a fonte de perigo",
+  "der Leichtsinn": "a leviandade",
+  "das Wagnis": "uma aposta arriscada",
+  "die Umsicht": "a prudência",
+  "der Warnhinweis": "o aviso",
+  "die Notlage": "o aperto",
+  "der Ernstfall": "a emergência",
+  "das Bedenken": "a reserva",
+  "die Schutzmaßnahme": "a medida de proteção",
+  "die Absicherung": "a salvaguarda",
+  "riskant": "arriscado",
+  "achtsam": "atento",
+  "unbedacht": "irrefletido",
+  "trügerisch": "ilusório",
+  "brenzlig": "melindroso",
+  "absehbar": "previsível",
+  "unabsehbar": "imprevisível",
+  "vermeidbar": "evitável",
+  "sicherheitshalber": "por precaução",
+  "vorsichtshalber": "por via das dúvidas",
+  "notfalls": "em último caso",
+  "höchstwahrscheinlich": "muito provavelmente",
+  "keinesfalls": "de maneira nenhuma",
+  "im schlimmsten Fall": "na pior das hipóteses",
+  "riskieren": "arriscar",
+  "abschätzen": "avaliar",
+  "Vorkehrungen treffen": "tomar providências",
+  "auf Nummer sicher gehen": "jogar pelo seguro",
+  "sich in Acht nehmen vor": "acautelar-se com",
+  "rechnen mit": "contar com",
 };
