@@ -39,7 +39,7 @@ import {
   USEFULNESS_FILTERS,
   type ConversationUsefulness,
 } from "@/lib/conversationPriority";
-import { cefrRung, cefrStep, cefrStepLabel, CEFR_STEPS, type CefrStep } from "@/lib/cefr";
+import { cefrRung, cefrRungLabel, cefrStep, cefrStepLabel, CEFR_STEPS, type CefrStep } from "@/lib/cefr";
 import { withoutMutedPacks } from "@/lib/mutedPacks";
 import { packMeta, packNoteForWord } from "@/lib/curriculum";
 import {
@@ -1268,9 +1268,14 @@ export function buildListenQueue(
       const level = ownLevel ?? parts[key]?.level;
       if (!levelFilter.has(cefrStep(level))) return false;
     }
-    if (usefulnessFilter.size > 0 && !usefulnessFilter.has(conversationPriorityInfo(key).key)) return false;
-    return true;
+    return keepUsefulness(partKey);
   };
+
+  /** The usefulness half on its own, for the callers that judge level apart. */
+  function keepUsefulness(partKey: unknown): boolean {
+    if (usefulnessFilter.size === 0) return true;
+    return usefulnessFilter.has(conversationPriorityInfo(String(partKey ?? "")).key);
+  }
 
   /**
    * The same narrowing, for a card that belongs to no pack.
@@ -1282,9 +1287,28 @@ export function buildListenQueue(
    * this in conversation" with a number nothing computed would put paragraphs
    * in a filter the learner set precisely to keep them out of.
    */
+  /**
+   * A paragraph is one rung above the German inside it.
+   *
+   * The level on a passage describes its sentences, and a passage is not a
+   * sentence. "Ey, bist du heute Abend dabei? Wir treffen uns so um acht am
+   * Bahnhof. Sag kurz Bescheid, ja?" is three easy clauses and was filed at
+   * A2 on that basis — so it turned up in a queue narrowed to A2, where
+   * everything else is one short sentence at a time. Reading three in a row
+   * is a different job from reading the hardest of them: you have to carry
+   * what the first said into the third.
+   *
+   * One rung and no more. The sentences really are what the author said they
+   * are, and the extra difficulty is the holding-together, which is worth a
+   * step rather than a reclassification.
+   */
+  const passageRung = (ownLevel: string) =>
+    Math.min(CEFR_STEPS.length, cefrRung(ownLevel) + 1);
+
   const keepPassage = (ownLevel: string) => {
     if (usefulnessFilter.size > 0) return false;
-    if (levelFilter.size > 0 && !levelFilter.has(cefrStep(ownLevel))) return false;
+    if (levelFilter.size > 0
+      && !levelFilter.has(CEFR_STEPS[passageRung(ownLevel) - 1])) return false;
     return true;
   };
 
@@ -1330,12 +1354,41 @@ export function buildListenQueue(
   // The contextual lesson remains available; only the arbitrary global card
   // is withheld. This is intentionally accuracy-first: silence teaches less
   // than a confidently spoken mistranslation, but it does not teach it wrong.
-  const rankedWords = !content.includes("words")
+  /**
+   * Words are ranked before they are narrowed, and narrowed by the rung the
+   * card will actually show.
+   *
+   * Two things were wrong and they hid each other. The filter read the pack
+   * label while the badge read spokenWordRung — and that function exists
+   * precisely to overrule the label, rescuing finden out of a B1 pack and
+   * pushing die Artischocke out of an A1 one. So a word whose pack said A2
+   * passed an A2 filter and then displayed A1, which is the card disagreeing
+   * with the setting that let it in.
+   *
+   * And the rung was computed from the word's index in the ALREADY filtered
+   * list, so narrowing to one level renumbered every word and could change
+   * the badge it was being judged by. The ranking is the course's own count
+   * of how often it says a word; it is a fact about the word, not about who
+   * else is in the queue. So it is taken once, over everything.
+   */
+  const rankedAll = !content.includes("words")
     ? []
     : rankWordCatalog(
-      buildWordCatalog(parts).filter((word) => word.listenSafe !== false && keep(word.partKey, word.level)),
+      buildWordCatalog(parts).filter((word) => word.listenSafe !== false),
       corpusIndex
     );
+  const wordRungs = new Map<string, number>();
+  rankedAll.forEach((word, index) => {
+    wordRungs.set(word.id, spokenWordRung(word, index, corpusIndex));
+  });
+  const rankedWords = rankedAll.filter((word) => {
+    if (!narrowing) return true;
+    if (levelFilter.size > 0) {
+      const rung = wordRungs.get(word.id) ?? cefrRung(word.level);
+      if (!levelFilter.has(CEFR_STEPS[Math.min(Math.max(rung, 1), CEFR_STEPS.length) - 1])) return false;
+    }
+    return keepUsefulness(word.partKey);
+  });
   rankedWords.forEach((word) => rememberPack(word.id, word.partKey));
   const words: ListenItem[] = rankedWords
     .map((word, index, ranked) => ({
@@ -1355,7 +1408,7 @@ export function buildListenQueue(
       // `index` is this word's place in the ranking above, which is the
       // course's own count of how often it says the word — the evidence that
       // decides whether a pack label is the last word on how hard it is.
-      rung: spokenWordRung(word, index, corpusIndex),
+      rung: wordRungs.get(word.id) ?? cefrRung(word.level),
       // The combined card is one queue slot: the common face is what the
       // voice says, and the folded synonyms stay visible on the card.
       // Compared with the face of the card rather than rated alone — the
@@ -1398,7 +1451,7 @@ export function buildListenQueue(
         return { passage, index, de, en };
       })
       .filter(({ de, en, passage }) => de && en && keepPassage(passage.level))
-      .sort((a, b) => cefrRung(a.passage.level) - cefrRung(b.passage.level) || a.index - b.index)
+      .sort((a, b) => passageRung(a.passage.level) - passageRung(b.passage.level) || a.index - b.index)
       .map(({ passage, de, en }, index, ranked) => ({
         // Namespaced, so a passage's grade can never land on a card that
         // happens to share its id in the sentence tracker.
@@ -1407,8 +1460,11 @@ export function buildListenQueue(
         de,
         en,
         use: passage.source,
-        rung: cefrRung(passage.level),
-        levelLabel: passage.level,
+        rung: passageRung(passage.level),
+        // The badge shows the rung the filter judged it by, not the label the
+        // sentences carry — a card that says A2 and is kept out of an A2
+        // queue is the two disagreeing in front of the learner.
+        levelLabel: cefrRungLabel(passageRung(passage.level)),
         kind: "passage" as const,
         popularity: index / Math.max(1, ranked.length - 1),
       }));
