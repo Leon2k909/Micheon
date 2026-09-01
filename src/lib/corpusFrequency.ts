@@ -75,9 +75,25 @@ function words(text: string): string[] {
  * The first word of a sentence is capitalised whatever it is, so it is not
  * evidence either way and is left out of both tallies rather than guessed at.
  */
-function shapedWords(text: string): Array<{ key: string; noun: boolean; initial: boolean }> {
+/**
+ * A separable prefix, which is the tail of a verb sitting at the end of its
+ * own sentence — "Pass AUF", "Hör ZU", "Mach WEITER".
+ *
+ * Only consulted for the word that opens a sentence, where the capital is
+ * meaningless and something else has to decide the reading.
+ */
+const SEPARABLE_PREFIX = new Set([
+  "auf", "an", "aus", "ab", "ein", "mit", "nach", "vor", "zu", "zurück", "weg",
+  "her", "hin", "los", "um", "durch", "über", "unter", "bei", "dran", "drauf",
+  "rein", "raus", "rüber", "runter", "hoch", "fest", "frei", "wieder", "vorbei",
+  "mal", "her", "voran", "entlang", "gegenüber", "zusammen", "auseinander",
+]);
+
+type ShapedWord = { key: string; noun: boolean; initial: boolean; runsIntoPrefix: boolean };
+
+function shapedWords(text: string): ShapedWord[] {
   const raw = String(text ?? "").replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/).filter(Boolean);
-  const out: Array<{ key: string; noun: boolean; initial: boolean }> = [];
+  const out: ShapedWord[] = [];
   raw.forEach((token, index) => {
     const key = token.toLocaleLowerCase("de-DE");
     if (key.length <= 2 || STOP.has(key)) return;
@@ -86,7 +102,17 @@ function shapedWords(text: string): Array<{ key: string; noun: boolean; initial:
     // that open sentences are exactly the conversational ones. vielleicht was
     // recorded 9 times against a true 19, heute and bitte likewise. It is kept
     // apart and added back to whichever tally the word's own shape indicates.
-    out.push({ key, noun: token[0] === token[0].toLocaleUpperCase("de-DE"), initial: index === 0 });
+    //
+    // Whether it runs into a separable prefix is recorded but not acted on:
+    // only the second pass, once the whole corpus has been read, knows enough
+    // to use it. Read here because this is where the sentence still exists —
+    // the tallies afterwards cannot see what followed the word.
+    out.push({
+      key,
+      noun: token[0] === token[0].toLocaleUpperCase("de-DE"),
+      initial: index === 0,
+      runsIntoPrefix: SEPARABLE_PREFIX.has((raw[index + 1] ?? "").toLocaleLowerCase("de-DE")),
+    });
   });
   return out;
 }
@@ -154,6 +180,8 @@ function computeCorpusIndex(parts: CorpusParts): CorpusIndex {
   const nounCount = new Map<string, number>();
   const otherCount = new Map<string, number>();
   const initialCount = new Map<string, number>();
+  /** Sentence openers, held back until the rest of the corpus has been read. */
+  const openers: ShapedWord[] = [];
   const keys = Object.keys(parts);
   /**
    * Every word the course teaches, which is what stops one card being paid in
@@ -191,14 +219,47 @@ function computeCorpusIndex(parts: CorpusParts): CorpusIndex {
         count.set(lemma, (count.get(lemma) ?? 0) + 1);
         seen.add(lemma);
       }
-      // And again, keeping the noun/not-noun split.
-      for (const { key: word, noun, initial } of shapedWords(phrase?.de ?? "")) {
-        const lemma = germanVerbLemma(word) ?? word;
-        const tally = initial ? initialCount : (noun ? nounCount : otherCount);
+      // And again, keeping the noun/not-noun split. Sentence openers are held
+      // back for a second pass — see below for what has to be known first.
+      for (const shaped of shapedWords(phrase?.de ?? "")) {
+        if (shaped.initial) { openers.push(shaped); continue; }
+        const lemma = germanVerbLemma(shaped.key) ?? shaped.key;
+        const tally = shaped.noun ? nounCount : otherCount;
         tally.set(lemma, (tally.get(lemma) ?? 0) + 1);
       }
     }
     for (const word of seen) spread.set(word, (spread.get(word) ?? 0) + 1);
+  }
+
+  /**
+   * The openers, placed once the rest of the corpus has been read.
+   *
+   * A word that opens a sentence and runs straight into a separable prefix is
+   * a verb — "Pass auf", "Hör zu" — and nothing but a verb is followed by its
+   * own tail. The corpus opens nine sentences with "Pass auf", the imperative
+   * of aufpassen, and every one was paid to der Pass on top of its nine real
+   * passports, carrying a mountain pass to 259th of 8,980 with an A1 badge.
+   *
+   * But "aus", "an" and "mit" are prepositions as well as prefixes, so the
+   * shape alone convicts innocent nouns: "Geld aus dem Automaten holen" opens
+   * with a noun and runs into one. So the corpus has to have seen the word
+   * used lowercase somewhere else before the reading is taken off the noun —
+   * which is why this waits for the first pass to finish. It has seen "pass"
+   * lowercase; it has never seen "geld".
+   *
+   * Everything else keeps the old treatment: held apart, then added back to
+   * whichever tally the word's own shape indicates. That is the case the split
+   * was built for — vielleicht, heute, bitte and danke are never verbs with
+   * tails, and half their mentions are at the start of a sentence.
+   */
+  for (const opener of openers) {
+    if (!opener) continue;
+    const lemma = germanVerbLemma(opener.key) ?? opener.key;
+    if (opener.runsIntoPrefix && (otherCount.get(lemma) ?? 0) > 0) {
+      otherCount.set(lemma, (otherCount.get(lemma) ?? 0) + 1);
+      continue;
+    }
+    initialCount.set(lemma, (initialCount.get(lemma) ?? 0) + 1);
   }
   // Ranked once here rather than per lookup: wordCommonality is called for
   // every word of every sentence in the catalogue.

@@ -161,6 +161,80 @@ check(
   "the index counts the same with and without the list of taught words, so nothing is guarding anything"
 );
 
+// ── a sentence-opener followed by a prefix is a verb ────────────────────────
+// Held against sentences written here rather than against the course's own,
+// so it states the rule instead of a count that moves whenever a pack is
+// added. The real corpus is asked one question afterwards, and it is the
+// question the rule exists to get right.
+const corpusOf = (sentences) => cf.buildCorpusIndex({
+  fake: { phrases: sentences.map((de) => ({ de })), vocab: [] },
+});
+
+const imperatives = corpusOf([
+  "Pass auf, der Weg ist glatt.",
+  "Pass auf, hier sind Wespen.",
+  "Pass auf, es ist heiß.",
+  // The one thing that licenses reading the three above as a verb: the corpus
+  // has seen the word lowercase, so the verb is known to exist.
+  "Also, pass auf: ich erzähle dir was.",
+]);
+check(
+  "a word that opens a sentence and runs into its own prefix is not a noun",
+  cf.corpusUses("der Pass", imperatives) === 0,
+  `"Pass auf" three times leaves der Pass with ${cf.corpusUses("der Pass", imperatives)} mentions,`
+    + " so the imperative of aufpassen is being counted as a passport"
+);
+
+// Deliberately conservative: a shape on its own does not convict a noun. If
+// the corpus has never once seen the word lowercase there is no evidence a
+// verb exists, and "Geld aus dem Automaten" has exactly the same shape as
+// "Pass auf". A noun keeping a few openers it should not have is a far
+// smaller error than every noun before a preposition losing its mentions.
+const noVerbEvidence = corpusOf([
+  "Pass auf, der Weg ist glatt.",
+  "Pass auf, hier sind Wespen.",
+]);
+check(
+  "...but only where the corpus has seen that word used as a verb somewhere",
+  cf.corpusUses("der Pass", noVerbEvidence) === 2,
+  `with no lowercase use anywhere the reading is still taken off the noun`
+    + ` (${cf.corpusUses("der Pass", noVerbEvidence)} of 2 left), which convicts nouns on shape alone`
+);
+
+const openers = corpusOf([
+  "Heute ist es kalt.",
+  "Heute war der Zug spät.",
+  "Danke für deine Hilfe.",
+]);
+check(
+  "...but an ordinary sentence-opener still counts",
+  cf.corpusUses("heute", openers) === 2 && cf.corpusUses("danke", openers) === 1,
+  `heute ${cf.corpusUses("heute", openers)}, danke ${cf.corpusUses("danke", openers)}:`
+    + " the words that open sentences are the conversational ones and they cannot lose the count"
+);
+
+const genuineNoun = corpusOf([
+  "Geld aus dem Automaten holen.",
+  "Geld ist nicht alles.",
+]);
+check(
+  "and a noun followed by a preposition that could be a prefix is still a noun",
+  cf.corpusUses("das Geld", genuineNoun) === 2,
+  `Geld reads ${cf.corpusUses("das Geld", genuineNoun)} of 2 — "aus" is being taken for a`
+    + " separable prefix on a word that is not a verb"
+);
+
+// The one question for the real corpus: the openers must not be able to carry
+// a word on their own. Phrased as a comparison rather than a number so it
+// survives every pack that gets added.
+const passOpeners = index.initialCount.get("pass") ?? 0;
+check(
+  "der Pass is not carried by sentences that open with Pass auf",
+  passOpeners < (index.otherCount.get("pass") ?? 0),
+  `${passOpeners} openers still count towards it, more than the ${index.otherCount.get("pass") ?? 0}`
+    + " the corpus records as a verb — the imperatives are being read as passports again"
+);
+
 if (failed) {
   console.error(`\n${failed} word-mention check(s) failed.`);
   process.exit(1);
