@@ -409,6 +409,115 @@ check(
   shouldNotBeHere.length === 0
 );
 
+/**
+ * ONE GERMAN WORD, ONE PORTUGUESE ANSWER.
+ *
+ * These two checks exist because the table had already broken both rules
+ * before anybody looked. The same woman was Anna in eleven cards and Ana in
+ * three, Tom introduced himself as Tom in one line of a conversation and as
+ * Tomás in the next, a Brötchen was a pãozinho, a papo-seco, a pão and a
+ * sandes, and a Pfand was a depósito seven times and a Pfand once. Every one
+ * of those lines was correct Portuguese on its own. Only reading them together
+ * showed the learner was being taught two words for one thing.
+ *
+ * That is exactly the kind of fault that comes back, because each card is
+ * written on its own and looks right on its own. So the rules are pinned here
+ * rather than merely fixed.
+ *
+ * A NOTE ON WORD EDGES. \b is no use in this file. JavaScript counts ü as a
+ * non-word character, so \bben\b matches inside üben, and a first pass of this
+ * work reported the name Ben in thirty-three cards, of which one was a name.
+ * The edges have to be spelled out against a Unicode letter class.
+ */
+const edge = (word) => new RegExp(`(?<![\\p{L}])${word}(?![\\p{L}])`, "u");
+
+/**
+ * THE PEOPLE. The course is for Portuguese speakers, so the people in it have
+ * Portuguese names, and a German name on the Portuguese side means a card was
+ * carried across rather than translated. The rule only bites where the German
+ * side names the person too, so an ordinary Portuguese word that happens to
+ * look like a German name — o tom, a paul, uma superfície lisa — cannot fail
+ * it.
+ */
+const RETIRED_NAMES = {
+  Anna: "Ana",
+  Tom: "Tomás",
+  Jonas: "João",
+  Lena: "Leonor",
+  Emma: "Ema",
+  Ben: "Bruno",
+  Paul: "Paulo",
+  Lisa: "Luísa",
+  Sabine: "Sofia",
+  Klaus: "Carlos",
+  Julia: "Joana",
+  Berger: "Bernardes",
+  Weber: "Ferreira",
+};
+/**
+ * Except in the cards that teach how a German letter is addressed. There the
+ * name is part of the German being taught, like the salutation around it, and
+ * a Portuguese surname in the middle of Sehr geehrte Frau Doktor would be
+ * teaching a form nobody writes.
+ */
+const KEEPS_ITS_GERMAN_NAME = new Set([
+  "Zu Händen Frau Weber — kurz: z. Hd.",
+  "Sehr geehrte Frau Doktor Weber — Titel gehören in die Anrede.",
+  "Liebe Frau Weber passt, sobald man sich kennt.",
+]);
+const germanNames = [];
+for (const [german, portuguese] of Object.entries(RETIRED_NAMES)) {
+  for (const row of pairs) {
+    if (KEEPS_ITS_GERMAN_NAME.has(row.german)) continue;
+    if (!edge(german).test(row.german)) continue;
+    if (!edge(german).test(row.portuguese)) continue;
+    germanNames.push(`${german} should be ${portuguese} — ${row.german}`);
+  }
+}
+check(
+  `the people in this course have Portuguese names${germanNames.length ? ` — ${germanNames[0]}` : ""}`,
+  germanNames.length === 0
+);
+
+/**
+ * THE THINGS. One German word gets one Portuguese answer, and where a card is
+ * allowed a different one the reason is written next to it.
+ */
+const ONE_ANSWER = [
+  {
+    german: "Brötchen",
+    answer: /papo-seco/,
+    unless: {
+      "Das Bordbistro hat auch belegte Brötchen.": "a filled roll is a sandes",
+      "Welche Brötchen sind noch warm?": "the line before it already named them",
+    },
+  },
+  { german: "Pfand", answer: /depósito/, unless: {} },
+  {
+    german: "Schnitzel",
+    answer: /escalope/,
+    unless: {
+      "Was gibt es heute? — Schnitzel, wie jeden Donnerstag.":
+        "the German canteen, where the dish keeps its name",
+    },
+  },
+  { german: "Brezel", answer: /Brezel/, unless: {} },
+  { german: "Radler", answer: /panaché/, unless: {} },
+  { german: "Apfelschorle", answer: /sumo de maçã com água com gás/, unless: {} },
+];
+const twoAnswers = [];
+for (const { german, answer, unless } of ONE_ANSWER) {
+  for (const row of pairs) {
+    if (!edge(german).test(row.german)) continue;
+    if (unless[row.german] || answer.test(row.portuguese)) continue;
+    twoAnswers.push(`${german} is not ${answer.source} here — ${row.german}`);
+  }
+}
+check(
+  `one German word gets one Portuguese answer${twoAnswers.length ? ` — ${twoAnswers[0]}` : ""}`,
+  twoAnswers.length === 0
+);
+
 if (failures.length) {
   console.error(`\n${failures.length} Portuguese table problem${failures.length === 1 ? "" : "s"}`);
   process.exit(1);

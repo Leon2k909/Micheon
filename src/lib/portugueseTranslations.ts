@@ -20008,7 +20008,7 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Die Krankenkasse zahlt das nicht.": "A Krankenkasse não paga isso.",
   "Ich wünsche dir gute Besserung.": "Desejo-te as melhoras.",
   "Pass gut auf dich auf, ja?": "Cuida bem de ti, está bem?",
-  "Praxis Dr. Weber, guten Tag.": "Consultório do doutor Weber, boa tarde.",
+  "Praxis Dr. Weber, guten Tag.": "Consultório do doutor Ferreira, boa tarde.",
   "Guten Tag, ich hätte gern einen Termin.": "Boa tarde, queria marcar uma consulta.",
   "Waren Sie schon einmal bei uns?": "Já cá esteve alguma vez?",
   "Nein, ich bin neu hier.": "Não, sou nova cá.",
