@@ -101,6 +101,11 @@ const PROPER_NAMES = [
   // one you are standing in — the property tax, the dog insurance, the school
   // holidays — and there is no Portuguese unit that maps onto one.
   "Bundesland", "Bundesländer",
+  // And the state-level offices, for the same reason as the federal ones. A
+  // Ministerpräsident heads a Bundesland; Portugal has no office that maps
+  // onto it, and the person is addressed by the German title whatever language
+  // the conversation is in.
+  "Ministerpräsident",
   // And the things on the counter that only have a German name. The card
   // about Leberkäse is a joke about the word itself — it contains neither
   // liver nor cheese — so translating the word away takes the card with it.
