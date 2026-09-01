@@ -21856,4 +21856,59 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Das klingt nach einer echten Bedrohung.": "Isso soa a uma ameaça a sério.",
   "Kannst du den Gartenschlauch holen?": "Podes ir buscar a mangueira?",
   "Ich muss noch die Pflanzen gießen.": "Ainda tenho de regar as plantas.",
+
+  // ── Notifications, bad signal and a flat battery (part449) ──────────────
+  //
+  // Der Link stays o link. A ligação is already this table's word for die
+  // Verbindung, and in Portugal nobody clicks a ligação anyway.
+  //
+  // Ich gehe nicht ran is não atendo — one verb, and the phone is understood.
+  "die Startseite": "a página inicial",
+  "das Premium-Abo": "a subscrição premium",
+  "kollektiv": "coletivo",
+  "erbärmlich": "lastimável",
+  "verabscheuen": "detestar",
+  "Großbritannien": "a Grã-Bretanha",
+  "Ich hab eine neue Benachrichtigung bekommen.": "Recebi uma notificação nova.",
+  "Ich hab die Mitteilung erst jetzt gesehen.": "Só agora é que vi a mensagem.",
+  "Lösch mal den Verlauf im Browser.": "Apaga lá o histórico do browser.",
+  "Hast du meine Nachricht gesehen?": "Viste a minha mensagem?",
+  "Geh zurück zur Startseite.": "Volta à página inicial.",
+  "Ich hab kein Premium-Abo.": "Não tenho subscrição premium.",
+  "Das ist einfach erbärmlich.": "Isso é simplesmente lastimável.",
+  "Ich kann dieses Verhalten echt nicht ausstehen.": "Não suporto mesmo este comportamento.",
+  "Ich war noch nie in Großbritannien.": "Nunca estive na Grã-Bretanha.",
+  "Das war eine kollektive Entscheidung.": "Foi uma decisão coletiva.",
+  "Deine Nachricht kommt bei mir doppelt an.": "A tua mensagem chega-me a dobrar.",
+  "Mein Akku ist gleich leer, ich rufe später an.": "A minha bateria está quase a acabar, ligo mais tarde.",
+  "Schick mir den Link einfach per Nachricht.": "Manda-me o link por mensagem e pronto.",
+  "Ich bin im Zug, das Netz ist schlecht.": "Vou no comboio, a rede está má.",
+  "Sprich mir einfach auf die Mailbox.": "Deixa-me mensagem no correio de voz.",
+  "Die Nummer kenne ich nicht, ich gehe nicht ran.": "Não conheço o número, não atendo.",
+  "Mein Bildschirm ist mitten im Gespräch schwarz.": "O meu ecrã fica preto a meio da chamada.",
+  "Schreib mir kurz, ob du das liest.": "Manda-me uma linha a dizer se estás a ler isto.",
+
+  // ── Sweden, a death and what a headline promises (part450) ──────────────
+  //
+  // Das Geschenk is uma prenda, never um presente. And er ist gestorben is
+  // faleceu: Portuguese has the gentler verb ready, and the German sentence
+  // with leider in it is already reaching for one.
+  "Schweden": "a Suécia",
+  "schwedisch": "sueco",
+  "tot": "morto",
+  "Willst du noch mehr?": "Queres mais?",
+  "Ich hab's dir versprochen.": "Eu prometi-te.",
+  "Wir sammeln Geld für ein Geschenk.": "Estamos a juntar dinheiro para uma prenda.",
+  "Kommst du aus Schweden?": "És da Suécia?",
+  "Das ist eine schwedische Firma.": "É uma empresa sueca.",
+  "Ist er wirklich tot?": "Ele morreu mesmo?",
+  "Er ist leider gestorben.": "Infelizmente faleceu.",
+  "Dieses Wort sehe ich heute zum dritten Mal.": "É a terceira vez que vejo esta palavra hoje.",
+  "Die Überschrift verspricht mal wieder zu viel.": "O título promete outra vez mais do que cumpre.",
+  "Diese Seite gibt es auch auf Deutsch.": "Esta página também existe em alemão.",
+  "Den Begriff schlage ich schnell nach.": "Vou procurar já o significado do termo.",
+  "Der halbe Text ist reine Werbung.": "Metade do texto é publicidade pura.",
+  "Das Wort klingt deutsch, ist es aber nicht.": "A palavra soa a alemão, mas não é.",
+  "Unten auf der Seite steht die Quelle.": "Ao fundo da página está a fonte.",
+  "Diesen Ausdruck höre ich zum ersten Mal.": "É a primeira vez que ouço esta expressão.",
 };
