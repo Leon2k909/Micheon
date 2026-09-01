@@ -113,9 +113,20 @@ const corpusCache = new WeakMap<object, CorpusIndex>();
  * What the index is built from: the sentences this course says, and the words
  * it teaches as entries in their own right.
  */
+type CorpusEntry = { de?: string; lookup?: string };
 type CorpusParts = Record<string, {
   phrases?: { de?: string }[];
-  seeds?: { de?: string; lookup?: string }[];
+  /**
+   * The words the pack teaches as entries in their own right.
+   *
+   * Both spellings, because the pack is written with `seeds` and the built
+   * part the app actually holds calls the same list `vocab`. Only `seeds` was
+   * read, and every caller passes a built part, so the set below was empty
+   * for every one of the 9,000 words the course teaches — see where it is
+   * filled for what that cost.
+   */
+  vocab?: CorpusEntry[];
+  seeds?: CorpusEntry[];
 }>;
 
 /** The shape every lookup here folds a word into before counting it. */
@@ -144,10 +155,27 @@ function computeCorpusIndex(parts: CorpusParts): CorpusIndex {
   const otherCount = new Map<string, number>();
   const initialCount = new Map<string, number>();
   const keys = Object.keys(parts);
+  /**
+   * Every word the course teaches, which is what stops one card being paid in
+   * another card's mentions.
+   *
+   * This read `seeds`, and a built part calls the list `vocab`, so it held
+   * nothing at all — the guard it exists for had never once fired. die Plane,
+   * a tarpaulin, was collecting all fourteen mentions of der Plan and arriving
+   * 300th in a queue that promises the commonest words first, ahead of die
+   * Wand and der Grund. die Buche was paid in das Buch, die Rabatte in der
+   * Rabatt, die Linke in der Link.
+   *
+   * Twelve more words were being paid the same way. The ending rules below
+   * guess that a noun in -e is an inflected form and strip it, which is right
+   * for Blumen and Erdbeeren and wrong for every noun whose own dictionary
+   * form ends that way — and the only thing that can tell those apart is
+   * knowing that the stem it landed on is a word in its own right.
+   */
   const headwords = new Set<string>();
   for (const key of keys) {
-    for (const seed of parts[key]?.seeds ?? []) {
-      const word = corpusKey(seed?.lookup ?? seed?.de ?? "");
+    for (const entry of parts[key]?.vocab ?? parts[key]?.seeds ?? []) {
+      const word = corpusKey(entry?.lookup ?? entry?.de ?? "");
       if (word) headwords.add(word);
     }
   }
