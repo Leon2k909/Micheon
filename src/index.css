@@ -4288,7 +4288,7 @@ a { color: inherit; text-decoration: none; }
 .guided-session.fs-app.prototype-guided-session.guided-background-bubbles {
   background:
     linear-gradient(180deg, rgba(255, 252, 245, 0.16) 0%, rgba(255, 250, 241, 0.2) 100%),
-    url("./prototype/assets/guided-speech-bubbles-v1.webp") center / cover no-repeat;
+    url("./prototype/assets/guided-speech-bubbles-v2.webp") right center / cover no-repeat;
 }
 
 .guided-session.fs-app.prototype-guided-session.guided-background-atlas {
@@ -6356,7 +6356,7 @@ html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session.guided-b
 html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session.guided-background-bubbles {
   background:
     linear-gradient(180deg, rgba(11, 14, 19, 0.82) 0%, rgba(11, 14, 19, 0.88) 100%),
-    url("./prototype/assets/guided-speech-bubbles-v1.webp") center / cover no-repeat;
+    url("./prototype/assets/guided-speech-bubbles-v2.webp") right center / cover no-repeat;
 }
 
 html[data-theme="dark"] .guided-session.fs-app.prototype-guided-session.guided-background-atlas {
