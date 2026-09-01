@@ -5,9 +5,10 @@ import { Part } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { DuoPath } from "@/components/duo/DuoPath";
 import { isBulkPartKey, partItemCount } from "@/lib/contentBank";
+import { orderParts } from "@/lib/curriculum";
 import { loadGradeStore } from "@/lib/activity";
 import { getAuthUser } from "@/lib/profileStorage";
-import { cefrOrder, cefrTier, type CefrTier } from "@/lib/cefr";
+import { cefrTier, type CefrTier } from "@/lib/cefr";
 import { ui, uiFmt, uiOr } from "@/lib/i18n";
 import { courseSides } from "@/lib/courseLanguages";
 import { buildCatalogSearchText, normalizeCatalogSearchText } from "@/lib/catalogSearch";
@@ -197,7 +198,16 @@ export function LearnView({
     setMutedPacks(new Set(setPacksMuted(selected, muted)));
   };
 
-  const parts = Object.entries(apiParts);
+  /**
+   * In course order, so this view and the path agree about what comes first.
+   *
+   * The list used to sort by level alone, which made it disagree with the
+   * path about the order of the very same packs — the path ran the hand
+   * order, the list ran A1 to C2. One course, one order, from one function:
+   * tier, then level, then the hand order, which is what the path draws and
+   * what Continue learning serves.
+   */
+  const parts = Object.entries(orderParts(apiParts));
   const coreParts = parts.filter(([key]) => !isBulkPartKey(key));
   const wordBankParts = parts.filter(([key]) => isBulkPartKey(key));
 
@@ -261,7 +271,7 @@ export function LearnView({
     // Every term must appear somewhere, so extra words narrow rather than widen.
     const corpus = corpora.get(key) ?? "";
     return terms.every((term) => corpus.includes(term));
-  }).sort(([, a], [, b]) => cefrOrder(a.level) - cefrOrder(b.level)),
+  }),
   [parts, corpora, terms, levelFilter, kindFilter, progressFilter, progressByPart, mutedPacks, hideFinished]);
 
   // Counted over every lesson, not the filtered ones: the button says how

@@ -1,3 +1,5 @@
+import { cefrOrder } from "@/lib/cefr";
+
 // The hand-defined curriculum: which packs exist, what order Continue
 // Learning serves them in, and how common their content is.
 //
@@ -410,6 +412,18 @@ export const CURRICULUM_ORDER: string[] = [
 ];
 
 const TIER1 = new Set(CURRICULUM_ORDER.slice(0, CURRICULUM_ORDER.indexOf("part8")));
+
+/**
+ * Reference material: kept, and served after everything that teaches German.
+ *
+ * "Typing ä, ö, ü and ß on Windows" is genuinely useful — you cannot type the
+ * language without it — and it was lesson eight, because its label says A1-A2
+ * and the level is what put it there. It is about a keyboard, not about
+ * German. A learner's eighth lesson should not be "Num Lock muss eingeschaltet
+ * sein". Named here so the exclusion is a decision with a reason next to it,
+ * not a level nobody believes.
+ */
+const REFERENCE_PACKS = new Set(["part141"]);
 const TIER3_NOTES: Record<string, string> = {
   "cb-slang-friends": "Slang — close friends only",
   part14: "Youth slang — casual only",
@@ -496,13 +510,42 @@ export function packNoteForWord(partKey: string | undefined, lookup: string | un
  * above, then anything unlisted (tatoeba packs, future content) after,
  * levelled tatoeba packs sorted a1 -> a2 -> b1.
  */
+/**
+ * Tier first, then level, then the hand order — everywhere.
+ *
+ * This used to be the hand order alone, with anything not on the list
+ * appended by pack id. Two things were wrong with that for somebody trying to
+ * learn quickly. Inside tier 1 the hand order ran B1 daily-admin packs —
+ * electricity bills, IBAN transfers, insurance, the Amt — at positions 26 to
+ * 50, while "Numbers, time & dates", "Shopping & money", "Directions and
+ * movement" and "Weather & seasons", all A1, sat at 203 to 225. A learner who
+ * could not yet count was being taught to query a heating bill. And past the
+ * curated list, pack id is not an order at all: it put B2 sayings at 29.
+ *
+ * The tiers stay exactly as they are; they are editorial judgement about what
+ * everyday German is, and nothing here second-guesses them. Level decides the
+ * order WITHIN a tier, so the whole of A1 comes before any of B1 in tier 1,
+ * and the hand order breaks ties inside a level — so "Greetings" still opens
+ * the course and the conversational run at the front is untouched. The lesson
+ * list already sorted by level; the path and Continue learning now agree with
+ * it, which is what one course with two views has to do.
+ *
+ * Reference packs go last, after every tier. Levelled by content they would
+ * land among the beginners' lessons, and they teach the keyboard, not the
+ * language.
+ */
 export function orderParts<T>(parts: Record<string, T>): Record<string, T> {
+  const curated = new Map(CURRICULUM_ORDER.map((key, index) => [key, index]));
+  const levelOf = (key: string) => (parts[key] as { level?: string } | undefined)?.level;
+  const keys = Object.keys(parts).filter((key) => !REFERENCE_PACKS.has(key));
+  keys.sort((a, b) =>
+    packMeta(a).tier - packMeta(b).tier
+    || cefrOrder(levelOf(a)) - cefrOrder(levelOf(b))
+    || (curated.get(a) ?? Number.MAX_SAFE_INTEGER) - (curated.get(b) ?? Number.MAX_SAFE_INTEGER)
+    || a.localeCompare(b, undefined, { numeric: true })
+  );
   const out: Record<string, T> = {};
-  for (const key of CURRICULUM_ORDER) {
-    if (parts[key]) out[key] = parts[key];
-  }
-  const rest = Object.keys(parts).filter((k) => !(k in out));
-  rest.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-  for (const key of rest) out[key] = parts[key];
+  for (const key of keys) out[key] = parts[key];
+  for (const key of REFERENCE_PACKS) if (parts[key]) out[key] = parts[key];
   return out;
 }

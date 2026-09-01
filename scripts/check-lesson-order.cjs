@@ -65,10 +65,14 @@ if (cefrOrder("all") < cefrOrder("C2")) {
   failures.push("an unlabelled lesson sorts before C2, so it lands in the middle of the ladder");
 }
 
-// And the list has to actually use it.
+// And the list has to actually use it. It did so with a sort of its own,
+// which made it disagree with the path about the order of the same packs;
+// it draws the course order now, and the course order is what runs cefrOrder
+// — so the rule is checked where it lives rather than where it used to.
 const view = fs.readFileSync(path.join(root, "src/components/lab/LearnView.tsx"), "utf8");
-if (!view.includes("cefrOrder(a.level) - cefrOrder(b.level)")) {
-  failures.push("LearnView no longer sorts its filtered lessons by level, so they fall back to catalogue order");
+const course = fs.readFileSync(path.join(root, "src/lib/curriculum.ts"), "utf8");
+if (!view.includes("Object.entries(orderParts(apiParts))") || !course.includes("cefrOrder(levelOf(a)) - cefrOrder(levelOf(b))")) {
+  failures.push("LearnView no longer sorts its lessons by level, so they fall back to catalogue order");
 }
 
 if (failures.length) {
