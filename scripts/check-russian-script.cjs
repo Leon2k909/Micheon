@@ -142,30 +142,11 @@ check("no two German cards collapse onto one Russian line", () => {
  * says учитель, because that is the card, not the reader. Only я and ты are
  * looked at.
  */
-const MASCULINE_SHORT = [
-  "свободен", "занят", "готов", "уверен", "рад", "должен", "согласен",
-  "болен", "голоден", "прав", "доволен", "женат", "здоров", "виноват",
-];
 /**
- * And the feminine, because the rule is that the course does not DECIDE, not
- * that it prefers the masculine. Written after a card came back as
- * "Ты сегодня вечером свободна или занята?", which is just as much a decision
- * as свободен would have been, and which the masculine-only list walked past.
+ * The gender word lists moved to scripts/russian-gender-words.cjs when a second
+ * gate needed them: check-russian-own-cards.cjs holds the Russian-only packs to
+ * this same rule, and two copies of a list is one copy going stale.
  */
-const FEMININE_SHORT = [
-  "свободна", "занята", "готова", "уверена", "рада", "должна", "согласна",
-  "больна", "голодна", "права", "довольна", "замужем", "здорова", "виновата",
-];
-/** Masculine past tense. Listed, not matched on -л, because стол is a table. */
-const MASCULINE_PAST = [
-  "понял", "хотел", "сделал", "сказал", "видел", "думал", "забыл", "знал",
-  "пришёл", "ушёл", "нашёл", "был", "смог", "взял", "дал", "мог", "писал",
-  "читал", "работал", "жил", "ел", "пил", "спал", "играл", "купил", "спросил",
-  "ответил", "решил", "начал", "закончил", "успел", "устал", "проспал",
-];
-const FEMININE_PAST = MASCULINE_PAST
-  .map((word) => word.replace(/ёл$/, "ла").replace(/л$/, "ла").replace(/г$/, "гла"))
-  .filter((word) => word.endsWith("ла"));
 
 /**
  * WHAT THIS STILL DOES NOT CATCH: a long-form adjective in direct address —
@@ -187,7 +168,9 @@ const FEMININE_PAST = MASCULINE_PAST
  * sentence that addresses the reader most directly is exactly the one that
  * does not name them.
  */
-const THIRD_PERSON = ["он", "она", "оно", "они", "его", "её", "их", "ему", "ей", "им"];
+const {
+  THIRD_PERSON, MASCULINE_SHORT, FEMININE_SHORT, MASCULINE_PAST, FEMININE_PAST,
+} = require("./russian-gender-words.cjs");
 
 check("the course never decides the learner's gender", () => {
   const offenders = [];

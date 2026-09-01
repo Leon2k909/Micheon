@@ -1,12 +1,20 @@
 import { meaningLanguageFor } from "@/lib/courseLanguages";
 import { getLearningDirection } from "@/lib/direction";
+import { russianOwnParts } from "@/lib/russianOwnCards";
 import { translate } from "@/lib/translations";
 import type { Dialogue, Part, Phrase, VocabItem } from "@/lib/types";
 
 /**
  * The Russian course is the shared catalogue narrowed to translated entries —
  * the same shape as frenchCourse, polishCourse and portugueseCourse, with its
- * own vocabulary.
+ * own vocabulary — PLUS a set of packs that are Russian first.
+ *
+ * WHY IT IS THE ONLY COURSE WITH THAT SECOND HALF. Narrowing can only ever
+ * produce what German already has a card for, and German has no card for
+ * «С лёгким паром!», none for a toast, none for отчество or дача. A course for
+ * learning Russian that can only say what German says is teaching German life
+ * in Russian, so russianOwnCards.ts holds what the table structurally cannot,
+ * and russianParts() merges the two.
  *
  * WHAT IS DIFFERENT ABOUT THIS ONE. Every other course swaps German text for
  * text in the same alphabet. Russian arrives in Cyrillic, and what a learner
@@ -137,6 +145,16 @@ export function russianParts<T extends Part>(parts: Record<string, T>): Record<s
     const narrowed = russianPart(part);
     if (narrowed) out[key] = narrowed;
   }
+
+  // The narrowing above can only ever produce what German already asks for.
+  // Everything Russian that German has no card for — the toasts, the banya
+  // greeting, the patronymic, the dacha — comes from russianOwnCards.ts, which
+  // is keyed by the Russian instead. Merged here because this is the single
+  // funnel every pack passes through, so one line puts them into lessons,
+  // tests, the tracker, search and the games at once.
+  const own = russianOwnParts(russianMeaningLanguage()) as unknown as Record<string, T>;
+  for (const [key, part] of Object.entries(own)) out[key] = part;
+
   return out;
 }
 
