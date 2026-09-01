@@ -333,6 +333,17 @@ const NOT_FOR_PORTUGUESE = new Set([
   "Ja. Aber sag bloß nicht: I become a steak.",
   "Warum? — Oh. Weil become werden heißt.",
   "Genau. Klassischer falscher Freund.",
+  // advancedWordPacks2 — the one card in a linguistics pack that is about
+  // German rather than about language. Its own note in the pack says the
+  // sentence performs the rule it states, and the rule is that a German main
+  // clause puts the verb second. Portuguese does not, and a learner of
+  // Portuguese has no use for the fact.
+  //
+  // The rest of that pack is kept and translated, because it is ordinary
+  // linguistic vocabulary that any language needs: die Betonung is a tónica,
+  // die Wortart is a classe de palavras, die Zeichensetzung is a pontuação.
+  // The line is between a word about language and a rule about German.
+  "Der deutsche Satzbau stellt das Verb an die zweite Stelle.",
 ]);
 /**
  * A list of sentences protects nothing if one of them has a typo in it, or if
@@ -343,6 +354,10 @@ const NOT_FOR_PORTUGUESE = new Set([
 const curriculum = [
   fs.readFileSync(path.join(root, "src/lib/data.ts"), "utf8"),
   fs.readFileSync(path.join(root, "src/lib/expansionPacks.ts"), "utf8"),
+  // The single-card exclusions are not all in the two big pack files. The one
+  // about German word order sits in the advanced sentence bank, and without
+  // this line the check above would report it as vanished on every build.
+  fs.readFileSync(path.join(root, "src/lib/advancedWordPacks2.ts"), "utf8"),
 ].join("\n");
 const vanished = [...NOT_FOR_PORTUGUESE].filter((german) => !curriculum.includes(`"${german}"`));
 check(
