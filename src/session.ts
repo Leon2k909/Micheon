@@ -9,6 +9,7 @@ import { matchingVisibleKeys, sentenceIdentityKey, takeMatchingSafe } from "@/li
 import {
   adaptiveRepeatPriority,
   isAdaptiveReinforcementEligible,
+  isSameDayCheckEligible,
   isAttemptedPracticeEligible,
 } from "@/lib/adaptivePractice";
 
@@ -137,6 +138,20 @@ export function buildSession(part: any, studyItems: any[], reviewState: any, _re
     }
     if (rec?.lastGrade === "know") {
       if (!isDueForReview(rec)) {
+        // Learned earlier today: offer it back as the closed-book check, so a
+        // sitting on day one has something to test rather than only new
+        // material. Worth half a rung, and the due date does not move.
+        if (isSameDayCheckEligible(rec)) {
+          queue.push({
+            type: EX.SENTENCE,
+            review: true,
+            reviewReason: "same-day",
+            reinforcement: true,
+            interval: rec.intervalDays ?? 1,
+            item,
+          });
+          return;
+        }
         if (!isAdaptiveReinforcementEligible(rec, item)) return;
         // Difficult sentences and phrases with repeated wrong attempts can use
         // a familiar slot before their formal SRS date. This is optional

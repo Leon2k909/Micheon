@@ -31,6 +31,9 @@ export type AdaptivePracticeFields = {
   lastGrade?: string;
   permanent?: boolean;
   dueAt?: string;
+  /** When the grade was last moved — read to tell today's phrases from older
+   *  ones, which is what makes a same-day check a same-day check. */
+  updatedAt?: string;
 };
 
 type SentenceDifficultyInput = {
@@ -176,6 +179,48 @@ export function isAttemptedPracticeEligible(
  * A short cooldown after an optional repetition guarantees rotation and keeps
  * one difficult sentence from occupying a familiar slot every lesson.
  */
+/** Same calendar day, in the learner's own timezone rather than UTC. */
+function isSameLocalDay(a: number, b: number): boolean {
+  const first = new Date(a);
+  const second = new Date(b);
+  return first.getFullYear() === second.getFullYear()
+    && first.getMonth() === second.getMonth()
+    && first.getDate() === second.getDate();
+}
+
+/**
+ * A phrase learned earlier today, offered back before the day is out.
+ *
+ * The ladder starts at a day, so nothing learned today is due today, and a
+ * sitting could only fill its review slots with material from yesterday or
+ * earlier. On the first day of a course there is none, which is why a first
+ * day was all new material and no checking.
+ *
+ * This is not the formal review and does not pretend to be: it takes a
+ * familiar slot only when the genuinely due ones do not fill them, it never
+ * moves the due date, and it is worth half a rung rather than one. What it
+ * buys is finding out the same afternoon whether the morning stuck.
+ *
+ * Once per day. A phrase re-checked every sitting is being drilled, which is
+ * the thing the spacing exists to avoid.
+ */
+export function isSameDayCheckEligible(
+  record: AdaptivePracticeFields | undefined,
+  now = Date.now()
+): boolean {
+  if (!record || record.lastGrade !== "know" || record.permanent) return false;
+  if (isSnoozed(record, now)) return false;
+  const dueAt = record.dueAt ? Date.parse(record.dueAt) : Number.POSITIVE_INFINITY;
+  if (Number.isFinite(dueAt) && now >= dueAt) return false; // the real review owns it
+  const learnedAt = record.updatedAt ? Date.parse(record.updatedAt) : 0;
+  if (!Number.isFinite(learnedAt) || learnedAt <= 0) return false;
+  if (!isSameLocalDay(learnedAt, now)) return false;
+  // Already checked since it was learned; the next word on it is tomorrow's.
+  const reinforcedAt = record.reinforcedAt ? Date.parse(record.reinforcedAt) : 0;
+  if (Number.isFinite(reinforcedAt) && reinforcedAt >= learnedAt) return false;
+  return true;
+}
+
 export function isAdaptiveReinforcementEligible(
   record: AdaptivePracticeFields | undefined,
   item: SentenceDifficultyInput,

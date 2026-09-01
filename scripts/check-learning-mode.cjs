@@ -735,6 +735,13 @@ const mutedFullLessonPhases = buildSentencePhaseRoute({
   mastered: false,
   bilingual: false,
   audioMuted: true,
+  typingFailed: true,
+});
+// What a phrase actually opens with: one typing test and no writing practice.
+const leanLessonPhases = buildSentencePhaseRoute({
+  mastered: false,
+  bilingual: false,
+  audioMuted: false,
 });
 const mutedBilingualLessonPhases = buildSentencePhaseRoute({
   mastered: false,
@@ -799,9 +806,42 @@ check(
 );
 check(
   "muting during either listening check moves safely to the next usable stage",
-  replacementSentencePhaseWhenMuted("ListenPick", { mastered: false, bilingual: false }) === "Type"
-    && replacementSentencePhaseWhenMuted("MissingWord", { mastered: false, bilingual: false }) === "Type"
-    && replacementSentencePhaseWhenMuted("Type", { mastered: false, bilingual: false }) === "Type"
+  replacementSentencePhaseWhenMuted("ListenPick", { mastered: false, bilingual: false, typingFailed: true }) === "Type"
+    && replacementSentencePhaseWhenMuted("MissingWord", { mastered: false, bilingual: false, typingFailed: true }) === "Type"
+    && replacementSentencePhaseWhenMuted("Type", { mastered: false, bilingual: false, typingFailed: true }) === "Type"
+);
+// ── one typing test, and the writing practice is what missing it costs ────
+// A phrase was written out six times in the sitting that introduced it. Only
+// the first of those was a test; the rest were transcription, which is the
+// slowest thing the app asks for and the reason a sitting covered so little.
+check(
+  "a new phrase asks for one typing stage, not six",
+  leanLessonPhases.filter((phase) =>
+    ["ListenPick", "Type", "Translate", "Gap", "WriteFromMemory", "RecallBoth"].includes(phase)
+  ).join(",") === "ListenPick",
+  "the lean route is asking for writing practice the learner has not failed anything to earn"
+);
+check(
+  "...and it is Hear & write, the one with nothing on screen to copy",
+  leanLessonPhases.includes("ListenPick")
+);
+check(
+  "recognition is untouched — nothing was swapped for a multiple choice",
+  ["Read", "MeaningSelect", "MissingWord", "Order"].every((phase) =>
+    leanLessonPhases.includes(phase) && fullLessonPhases.includes(phase))
+);
+check(
+  "missing the typing test buys the writing stages back",
+  ["Type", "Translate", "Gap", "WriteFromMemory", "RecallBoth"].every((phase) =>
+    !leanLessonPhases.includes(phase)
+    && buildSentencePhaseRoute({
+      mastered: false, bilingual: false, audioMuted: false, typingFailed: true,
+    }).includes(phase)),
+  "a wrong answer no longer earns the practice it is supposed to"
+);
+check(
+  "the muted lean route still leads somewhere real when the audio test is dropped",
+  replacementSentencePhaseWhenMuted("ListenPick", { mastered: false, bilingual: false }) === "Order"
 );
 check(
   "the guided lesson reacts to both master and learning-language mute controls",

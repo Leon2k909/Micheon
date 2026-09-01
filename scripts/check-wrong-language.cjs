@@ -52,21 +52,43 @@ check(
   "there is one shared test for an answer aimed at the other side",
   source.includes("const answeredOtherSide = (typed: string, expecting:")
 );
+/**
+ * Every place that consults the shared test, checked on its own terms.
+ *
+ * This was a count \u2014 "at least six guarded call sites" \u2014 which says a number
+ * changed rather than which site broke, passes just as happily when one guard
+ * loses its return and another gains one, and gets edited down to match every
+ * time a stage is removed. Stages come and go; the promise does not.
+ */
+// The definition reads `answeredOtherSide = (`, so it is not one of these:
+// every occurrence of the name followed straight by a bracket is a call.
+const consultations = source.split("answeredOtherSide(").slice(1);
+check(
+  "there is at least one stage doing this at all",
+  consultations.length > 0
+);
+consultations.forEach((after, index) => {
+  const tail = after.slice(0, 200);
+  check(
+    `consultation ${index + 1} flags the slip and returns before grading`,
+    /flagWrongLanguage\("(?:target|meaning)"\);\s*return;/.test(tail),
+    "the guard falls through and grades the answer it was meant to intercept"
+  );
+});
+// ...and none of them is consulted until the expected side has already failed,
+// or a correct answer in the right language could be read as a slip.
 check(
   "it is only consulted once the expected side has already failed",
-  (source.match(/!\w+\.ok && answeredOtherSide\(/g) ?? []).length >= 6,
-  `found ${(source.match(/answeredOtherSide\(/g) ?? []).length - 1} guarded call sites`
+  (source.match(/!\w+\.ok\s*\n?\s*&& answeredOtherSide\(/g) ?? []).length === consultations.length,
+  `${consultations.length} consultations, `
+  + `${(source.match(/!\w+\.ok\s*\n?\s*&& answeredOtherSide\(/g) ?? []).length} of them behind a failure`
 );
 check(
   "very short input is never judged as a language slip",
   /if \(trimmed\.length < 3\) return false;/.test(source)
 );
-check(
-  "every guard returns before anything is graded",
-  (source.match(/\{ flagWrongLanguage\("(?:target|meaning)"\); return; \}/g) ?? []).length >= 6
-);
-// The recall stages are the ones that mark struggle, so they matter most.
-for (const fn of ["checkRecallTarget", "checkRecallMeaning", "checkRecallBoth"]) {
+// The closed-book stage is the one that marks struggle, so it matters most.
+for (const fn of ["checkRecallBoth"]) {
   const body = source.match(new RegExp(`const ${fn} = \\(\\) => \\{[\\s\\S]*?\\n  \\};`));
   check(
     `${fn} checks for a language slip before it can mark struggle`,
