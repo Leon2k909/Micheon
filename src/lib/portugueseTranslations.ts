@@ -27831,4 +27831,79 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Trotzdem: Steinschlag nach dem Regen. Helm auf.": "Mesmo assim: queda de pedras depois da chuva. Capacete na cabeça.",
   "Und falls was passiert, hat die Bergrettung heute sowieso viel zu tun.": "E se acontecer alguma coisa, o salvamento em montanha hoje já tem muito que fazer.",
   "Guten Tag, dieses Paket soll nach Polen. Was kostet das Porto?": "Boa tarde, esta encomenda vai para a Polónia. Quanto custam os portes?",
+
+  // ── The capstone conversations, sixth twelve ───────────────────────────
+  //
+  // The parcel counter, the warehouse, customs, insurance and the surgery.
+  // Every technical word here is the one its own card already teaches: die
+  // Mahnung is o aviso de pagamento em atraso, der Verwendungszweck is o
+  // descritivo, der Hausrat is o recheio da casa, das Martinshorn is a sirene.
+  //
+  // Two words had no card behind them. Der Schüttelfrost is calafrios, which
+  // is what a Portuguese patient says and a Portuguese doctor writes. Ohne
+  // Befund is sem alterações — the phrase a Portuguese report ends with when
+  // it found nothing.
+  //
+  // Der Beitrag here is o prémio: in insurance Portuguese does not call it a
+  // contribution.
+  "Neun Euro, mit Sendungsverfolgung. Als Warensendung ginge es billiger.": "Nove euros, com seguimento da encomenda. Como envio de mercadoria ficava mais barato.",
+  "Nein, es soll schnell gehen. Wie viele Zustellversuche gibt es?": "Não, tem de ser rápido. Quantas tentativas de entrega há?",
+  "Zwei. Danach liegt es in der Filiale zur Abholung.": "Duas. Depois fica na loja para levantamento.",
+  "Gut. Und eine Empfangsbestätigung hätte ich gern dazu.": "Está bem. E queria também um comprovativo de receção.",
+  "Reicht die Versandtasche, oder brauche ich einen Karton?": "O envelope de expedição chega, ou preciso de uma caixa?",
+  "Für Gläser? Karton, Wellpappe und ordentlich Füllmaterial.": "Para copos? Caixa, cartão canelado e material de enchimento com fartura.",
+  "Und außen der Aufkleber mit dem Barcode?": "E por fora o autocolante com o código de barras?",
+  "Genau, gut sichtbar. Sonst zahlt bei einem Transportschaden keiner.": "Exatamente, bem à vista. Senão, num dano de transporte, não paga ninguém.",
+  "Verstanden. Der Versicherungswert steht ja auf dem Lieferschein.": "Percebido. O valor seguro vem na guia de remessa.",
+  "Die Jacke ist zu klein. Wie läuft die Rücksendung?": "O casaco é pequeno de mais. Como é que se faz a devolução?",
+  "Rücksendeetikett ausdrucken, drauf, abgeben. Das Rückgaberecht gilt vierzehn Tage.": "Imprimir a etiqueta de devolução, colá-la e entregar. O direito de devolução é de catorze dias.",
+  "Und wann kommt das Geld?": "E quando é que vem o dinheiro?",
+  "Nach der Ankunft im Lager, meist in einer Woche.": "Depois de chegar ao armazém, normalmente numa semana.",
+  "Okay. Nächstes Mal bestelle ich zwei Größen und schicke eine zurück.": "Está bem. Para a próxima encomendo dois tamanhos e devolvo um.",
+  "Erster Tag im Lager? Ich zeige dir alles.": "Primeiro dia no armazém? Vou mostrar-te tudo.",
+  "Gern. Was fahren die Gabelstapler da hin und her?": "Boa. O que é que os empilhadores andam a levar de um lado para o outro?",
+  "Paletten für den Großhandel. Der Einzelhandel läuft über das Band da.": "Paletes para o comércio por grosso. O comércio a retalho vai por aquela linha.",
+  "Und wann ist Inventur?": "E quando é que se faz o inventário?",
+  "Ende des Jahres. Dann zählt jeder hier jeden Lagerbestand zweimal.": "No fim do ano. Aí toda a gente aqui conta duas vezes todas as existências em armazém.",
+  "Ihr Paket kommt von außerhalb der EU. Das ist eine Einfuhr.": "A sua encomenda vem de fora da UE. Isso é uma importação.",
+  "Muss ich dann Zollgebühren zahlen?": "Então tenho de pagar taxas alfandegárias?",
+  "Kommt auf den Warenwert an. Die Zollinhaltserklärung fehlt leider.": "Depende do valor da mercadoria. Infelizmente falta a declaração de conteúdo para a alfândega.",
+  "Die hat der Absender vergessen? Großartig.": "O remetente esqueceu-se dela? Que maravilha.",
+  "Passiert oft. Er kann sie nachreichen, dann geht alles seinen Weg.": "Acontece muito. Ele pode entregá-la mais tarde e depois a coisa segue o seu curso.",
+  "Welche Versicherungen brauche ich wirklich? Ehrlich jetzt.": "De que seguros é que eu preciso mesmo? Agora a sério.",
+  "Haftpflicht zuerst. Die zahlt, wenn du anderen etwas kaputt machst.": "Primeiro o seguro de responsabilidade civil. Esse paga quando estragas coisas dos outros.",
+  "Und Hausrat?": "E o do recheio da casa?",
+  "Sinnvoll, sobald dir deine Sachen weh tun würden. Der Beitrag ist klein.": "Faz sentido a partir do momento em que perder as tuas coisas te doesse. O prémio é pequeno.",
+  "Gut. Den Rechtsschutz hebe ich mir für später auf.": "Está bem. O seguro de proteção jurídica guardo para mais tarde.",
+  "Hier ist eine Mahnung! Dabei war die Überweisung längst raus.": "Chegou um aviso de pagamento em atraso! E a transferência já tinha saído há muito.",
+  "Steht die Rechnungsnummer im Verwendungszweck?": "O número da fatura está no descritivo?",
+  "Ähm ... nein. Nur mein Name.": "Hum... não. Só o meu nome.",
+  "Deshalb. Ohne Nummer findet die Buchhaltung den Zahlungseingang nicht.": "É por isso. Sem o número, a contabilidade não encontra a entrada do pagamento.",
+  "Dann rufe ich an und schicke den Beleg mit. Danke!": "Então ligo e mando o comprovativo. Obrigada!",
+  "Was fehlt Ihnen denn?": "Então o que é que se passa consigo?",
+  "Seit gestern Schüttelfrost, Herzrasen und ein Kribbeln in den Händen.": "Desde ontem calafrios, palpitações e um formigueiro nas mãos.",
+  "Schlafen Sie zurzeit schlecht?": "Neste momento está a dormir mal?",
+  "Kaum. Die Schlafstörung habe ich schon länger.": "Quase não durmo. A perturbação do sono já vem de trás.",
+  "Dann schauen wir uns das gründlich an. Erst mal Blutdruck.": "Então vamos ver isso a fundo. Primeiro a tensão arterial.",
+  "Wir machen eine große Reise. Welche Impfungen brauchen wir?": "Vamos fazer uma grande viagem. De que vacinas é que precisamos?",
+  "Zeigen Sie mal Ihren Impfpass. Tetanus ist Pflicht, das zuerst.": "Mostre lá o seu boletim de vacinas. O tétano é obrigatório, isso primeiro.",
+  "Und gegen Tollwut?": "E contra a raiva?",
+  "Nur bei viel Kontakt mit Tieren. Malaria ist dort das größere Thema.": "Só com muito contacto com animais. Lá a malária é que é o assunto maior.",
+  "Verstanden. Dann planen wir die Termine gleich durch.": "Percebido. Então marcamos já as consultas todas.",
+  "Es zieht vom Nacken bis unters Schulterblatt.": "Puxa da nuca até debaixo da omoplata.",
+  "Der Muskel ist hart. Das Gewebe hier ist deutlich verspannt.": "O músculo está duro. O tecido aqui está claramente tenso.",
+  "Ist das was mit einem Nerv?": "Isso tem que ver com algum nervo?",
+  "Eher nicht. Das Immunsystem hat damit nichts zu tun, die Haltung schon.": "Provavelmente não. O sistema imunitário não tem nada que ver com isto, a postura tem.",
+  "Also mehr Bewegung. Und weniger Schreibtisch.": "Portanto, mais movimento. E menos secretária.",
+  "Ihre Laborwerte sind da. Der Blutzucker ist in Ordnung.": "As suas análises chegaram. O açúcar no sangue está bem.",
+  "Und das Cholesterin?": "E o colesterol?",
+  "Leicht erhöht. Nichts, was Sport und Küche nicht regeln.": "Ligeiramente alto. Nada que o desporto e a cozinha não resolvam.",
+  "Puh. Und der Ultraschall von letzter Woche?": "Ufa. E a ecografia da semana passada?",
+  "Ohne Befund. Die Früherkennung machen wir trotzdem jedes Jahr.": "Sem alterações. Mesmo assim fazemos o rastreio precoce todos os anos.",
+  "Mein Rücken, mein Knie, meine Stimme — wohin zuerst?": "As minhas costas, o meu joelho, a minha voz — a quem é que vou primeiro?",
+  "Für Rücken und Knie zum Physiotherapeuten.": "Para as costas e o joelho, ao fisioterapeuta.",
+  "Und für die Stimme?": "E para a voz?",
+  "Zum Logopäden. Und der Apotheker hat sicher noch Tee für dich.": "Ao terapeuta da fala. E o farmacêutico de certeza que ainda tem um chá para ti.",
+  "Drei Profis für einen Menschen. Na dann, der Reihe nach.": "Três profissionais para uma pessoa só. Pronto, então por ordem.",
+  "Hinter uns: Blaulicht und Martinshorn. Alle fahren zur Seite.": "Atrás de nós: luz azul rotativa e sirene. Toda a gente encosta.",
 };
