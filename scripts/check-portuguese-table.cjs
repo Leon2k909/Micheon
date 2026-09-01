@@ -266,24 +266,39 @@ check(
  *
  * Cards a Portuguese speaker really does need about German life — Bürgeramt,
  * Pfand, Anmeldung — are in other packs and this rule does not touch them.
+ *
+ * Part 585 is the third, and it is a capstone conversation rather than a word
+ * pack: six lines on whether it is der, die or das Wörterbuch, and on what
+ * turns der Tisch into den Tisch. That is German grammar being taught, and
+ * Portuguese has neither three genders to guess at nor any cases at all, so
+ * there is nothing in it for this course. It is refused whole, the way the
+ * note beside the single cards says a dialogue must be carried or dropped.
  */
-const EXCLUDED_PACKS = { part141: "src/lib/data.ts", part330: "src/lib/expansionPacks.ts" };
+const EXCLUDED_PACKS = {
+  part141: "src/lib/data.ts",
+  part330: "src/lib/expansionPacks.ts",
+  part585: "src/lib/capstoneDialogues.ts",
+};
 const excluded = new Set();
 for (const [id, file] of Object.entries(EXCLUDED_PACKS)) {
   const source = fs.readFileSync(path.join(root, file), "utf8");
-  const from = source.indexOf(`\n  ${id}: {`);
+  // The word packs write an object, the capstone conversations an array under
+  // a quoted key. Both shapes have to be findable by the same pack name.
+  const from = Math.max(source.indexOf(`\n  ${id}: {`), source.indexOf(`\n  "${id}": [`));
   if (from < 0) {
     check(`the excluded pack ${id} is still where this expects it`, false);
     continue;
   }
   const after = source.slice(from + 1);
-  const next = after.search(/\n {2}(part\d+|cb-[a-z-]+): \{/);
+  const next = after.search(/\n {2}"?(part\d+|cb-[a-z-]+)"?: [{[]/);
   const block = next < 0 ? after : after.slice(0, next);
-  // The seed words are ordinary vocabulary; it is the sentences that are
-  // about how German is written.
+  // In a word pack the seed words are ordinary vocabulary and it is the
+  // sentences that are about how German is written, so the search starts at
+  // the phrases. A capstone pack has no phrases section and is nothing but
+  // the conversation, so the whole block goes.
   const phrases = block.indexOf("phrases:");
-  if (phrases < 0) continue;
-  for (const m of block.slice(phrases).matchAll(/\bde:\s*"((?:[^"\\]|\\.)*)"/g)) excluded.add(m[1]);
+  const lines = phrases < 0 ? block : block.slice(phrases);
+  for (const m of lines.matchAll(/\bde:\s*"((?:[^"\\]|\\.)*)"/g)) excluded.add(m[1]);
 }
 check(`the excluded packs were found and read (${excluded.size} sentences)`, excluded.size > 30);
 

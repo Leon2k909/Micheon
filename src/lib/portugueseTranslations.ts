@@ -27980,4 +27980,78 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Dann tragen wir es zu viert. Danach gibt es Kaffee aus der neuen Kaffeemaschine.": "Então levamo-lo os quatro. Depois há café da máquina nova.",
   "Abgemacht. Und das alte Sofa stellen wir in die Garage.": "Fechado. E o sofá velho pomo-lo na garagem.",
   "Mist, mein Ausweis liegt zu Hause. Nur der Führerschein ist dabei.": "Bolas, o meu cartão de cidadão ficou em casa. Só trago a carta de condução.",
+
+  // ── The capstone conversations, eighth twelve ──────────────────────────
+  //
+  // A whole conversation is missing from this stretch and is missing on
+  // purpose. Part 585 asks whether it is der, die or das Wörterbuch and what
+  // turns der Tisch into den Tisch — six lines of German grammar, and
+  // Portuguese has neither three genders to guess at nor any cases at all.
+  // The gate now refuses the pack by name, the way it already refuses the
+  // spelling alphabet and the umlaut typing, so nobody translates it by
+  // accident on a later pass.
+  //
+  // Everything else here is the word bank's own answer: der Bahnsteig is a
+  // plataforma, die Gasse is o beco, staunen is ficar boquiaberto, terminieren
+  // is marcar data para, wortkarg is de poucas falas.
+  "Für die Fahrkarte reicht der. Welcher Bahnsteig ist es?": "Para o bilhete essa chega. Qual é a plataforma?",
+  "Sieben, durch die Bahnhofshalle und dann links.": "A sete, pelo átrio da estação e depois à esquerda.",
+  "Gut. Und vom Bahnhof nehmen wir ein Taxi zur Pension.": "Está bem. E da estação apanhamos um táxi para a pensão.",
+  "Oder den Spaziergang durch die Gasse — die Kurve am Fluss ist schön.": "Ou damos o passeio pelo beco — a curva junto ao rio é bonita.",
+  "Probier mal die Soße. Fehlt da was?": "Prova lá o molho. Falta alguma coisa?",
+  "Pfeffer. Und ein kleines bisschen Salz.": "Pimenta. E um bocadinho de sal.",
+  "Der Reis ist fertig, die Nudeln auch. Beides da.": "O arroz está pronto, a massa também. Estão os dois.",
+  "Dann ist die Mahlzeit komplett. Käse noch drüber?": "Então a refeição está completa. Leva queijo por cima?",
+  "Klar. Und danach Schokolade — der Hunger hat Platz für beides.": "Claro. E depois chocolate — a fome tem lugar para as duas coisas.",
+  "Habt ihr eine neue Trainerin?": "Têm uma treinadora nova?",
+  "Ja, seit März. Vorher war sie selbst Spielerin, ziemlich gut sogar.": "Temos, desde março. Antes era ela própria jogadora, e bastante boa.",
+  "Und wie findet die Mannschaft sie?": "E a equipa, que acha dela?",
+  "Alle sind begeistert. Sogar die Chefin vom Verein.": "Estão todos entusiasmados. Até a presidente do clube.",
+  "Dann schaue ich Samstag zu — mit Großvater und Großmutter.": "Então no sábado vou ver — com o avô e a avó.",
+  "Samstag ist das Turnier: Volleyball, Badminton und Tennis.": "No sábado é o torneio: voleibol, badmínton e ténis.",
+  "Ich bringe den Schläger mit. Und danach?": "Levo a raqueta. E depois?",
+  "Picknick am See, mit Grill und Sonnenschirm.": "Piquenique à beira do lago, com grelhador e guarda-sol.",
+  "Perfekt. Zelt und Schlafsack auch, oder wird das zu viel?": "Perfeito. Tenda e saco-cama também, ou já é de mais?",
+  "Bring sie mit. Aus einem Turnier wird bei uns gern Camping.": "Traz. Connosco um torneio dá facilmente em acampamento.",
+  "Der Scanner macht so ein komisches Geräusch beim Upload.": "O scanner faz um barulho estranho ao carregar os ficheiros.",
+  "Solange keine Flamme rauskommt, ist alles gut.": "Enquanto não sair chama, está tudo bem.",
+  "Sehr witzig. Es ist unsere einzige Hardware für die Reservierung morgen.": "Muito engraçado. É o nosso único equipamento para a reserva de amanhã.",
+  "Dann behandeln wir es wie einen Notfall: ausschalten, abkühlen, neu starten.": "Então tratamos disto como uma emergência: desligar, arrefecer, voltar a ligar.",
+  "Und wenn das nichts hilft, hilft Konzentration — oder ein neues Gerät.": "E se isso não resolver, resolve a concentração — ou um aparelho novo.",
+  "Ich habe die Datei doch runtergeladen. Warum geht nichts?": "Mas eu descarreguei o ficheiro. Porque é que não funciona nada?",
+  "Du musst sie erst entpacken. Dann das Programm anklicken.": "Primeiro tens de o descompactar. Depois clicar no programa.",
+  "Ah. Und dann konfigurieren, oder?": "Ah. E depois configurar, não é?",
+  "Genau, einmal durchklicken, am Ende exportieren. Fertig.": "Exatamente, passas por tudo aos cliques e no fim exportas. Pronto.",
+  "Danach logge ich mich aus und schalte den Rechner aus. Versprochen.": "Depois disso termino a sessão e desligo o computador. Prometo.",
+  "Der Stuhl wackelt nicht mehr! Was hast du gemacht?": "A cadeira já não abana! O que é que fizeste?",
+  "Neu verleimt, geschliffen und poliert. Dann noch lackiert.": "Voltei a colar com cola de madeira, lixei e poli. Depois ainda envernizei.",
+  "Das sieht besser aus als neu. Und der Korb da?": "Está melhor do que nova. E aquele cesto?",
+  "Selbst gemacht — gewebt, aus alten Resten.": "Feito por mim — tecido, com restos velhos.",
+  "Nächstes Wochenende bringst du mir das bei. Erst häkeln, dann weben.": "No próximo fim de semana ensinas-me isso. Primeiro fazer croché, depois tecer.",
+  "Wir renovieren im Herbst. Erst streichen, dann neu möblieren.": "Vamos remodelar no outono. Primeiro pintar, depois mobilar de novo.",
+  "Und die dunkle Ecke? Da bekommt man doch nie Licht rein.": "E aquele canto escuro? Ali nunca se consegue meter luz.",
+  "Mit einem Spiegel vergrößern wir sie optisch. Alter Trick.": "Com um espelho aumentamo-lo à vista. Truque antigo.",
+  "Gut. Beim Tragen musst du dann aber in die Knie gehen, nicht in den Rücken.": "Está bem. Mas a levantar peso dobra os joelhos, não as costas.",
+  "Keine Sorge. Und abends wird verriegelt, die Leiter bleibt draußen.": "Não te preocupes. E à noite tranca-se tudo, o escadote fica lá fora.",
+  "Ich habe im März gesät, und jetzt blüht das ganze Beet!": "Semeei em março e agora está o canteiro todo florido!",
+  "Schön! Hast du gedüngt?": "Que bonito! Adubaste?",
+  "Nur mit Kompost. Recyceln für den Garten, sozusagen.": "Só com composto. Reciclar para o jardim, por assim dizer.",
+  "Und die Kinder? Helfen die mit?": "E os miúdos? Ajudam?",
+  "Sie buddeln vor allem. Aber pflücken können sie schon sehr gut.": "Escavam, sobretudo. Mas colher já sabem muito bem.",
+  "Ich habe gestern eine Stunde nur den Sternen zugeschaut. Ich staune immer noch.": "Ontem passei uma hora só a olhar para as estrelas. Ainda estou boquiaberta.",
+  "Das kann ich gut verstehen. Mich entspannt das auch.": "Compreendo muito bem. A mim também me descontrai.",
+  "Und je mehr ich begreife, desto mehr bewundere ich das alles.": "E quanto mais apreendo, mais admiro tudo aquilo.",
+  "So soll Lernen sein. Besser als sich zu langweilen.": "É assim que a aprendizagem deve ser. Melhor do que estar aborrecida.",
+  "Eben. Nächste Woche fange ich an zu musizieren. Ganz neues Staunen.": "Pois é. Para a semana começo a tocar música. Um espanto completamente novo.",
+  "Ich habe den Tisch reserviert und den Ausflug terminiert.": "Reservei a mesa e marquei data para o passeio.",
+  "Du klingst wie ein Büro. Wir wollten uns entspannen!": "Falas como um escritório. Nós íamos era descontrair!",
+  "Deshalb ja! Nichts wird verschwendet, auch keine Zeit.": "É precisamente por isso! Não se desperdiça nada, tempo também não.",
+  "Gut. Samstag fahren wir am Fluss entlang und sonnen uns.": "Está bem. No sábado vamos ao longo do rio e apanhamos sol.",
+  "Und Sonntag ruhen wir. Das unterschreibe ich dir sogar.": "E no domingo descansamos. Isso até to assino.",
+  "Deine Brüder sind wirklich verschieden, oder?": "Os teus irmãos são mesmo diferentes, não são?",
+  "Sehr. Der eine redselig und gesellig, der andere eher wortkarg.": "Muito. Um é conversador e sociável, o outro é antes de poucas falas.",
+  "Aber beide liebevoll, das merkt man sofort.": "Mas ambos carinhosos, isso nota-se logo.",
+  "Ja. Der eine optimistisch, der andere vorsichtig. Zusammen perfekt.": "São. Um otimista, o outro cauteloso. Juntos, perfeitos.",
+  "Hartnäckig sind sie beide. Das liegt dann wohl in der Familie.": "Teimosos são os dois. Isso deve vir de família.",
+  "Die Ansage am Bahnhof war mal wieder völlig undeutlich.": "A mensagem gravada na estação foi outra vez completamente impercetível.",
 };
