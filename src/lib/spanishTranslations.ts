@@ -8778,7 +8778,7 @@ export const SPANISH_BY_GERMAN: Record<string, string> = {
   "Felswand": "la pared de roca",
   "Überhang": "el desplome",
   "Grat": "la cresta",
-  "Pass": "el puerto de montaña",
+  "Pass": "el pasaporte / el puerto de montaña",
   "Hochebene": "la meseta",
   "Steigung": "la pendiente",
   "Schlucht": "el desfiladero",

@@ -11659,8 +11659,15 @@ html[data-theme="dark"] {
      use note AND a list of synonyms reaches 518px - and scrolls inside the
      card. The grading row is sticky, so it stays on screen while that
      happens: it is the only thing here that has to be reachable. */
-  height: 340px;
-  overflow-y: auto;
+  /* ...which is what shipped, and what came back was a scrollbar. A sentence
+     with its written form, plus the "set to Solid" notice under the grading
+     row, runs past 340 by a line — and a card that scrolls inside itself for
+     one line reads as broken, not as tidy. So the measured number stays as
+     the floor and the card grows past it when the item needs to; the common
+     card is exactly as tall as before, the rare one is taller, and nothing
+     scrolls. The controls under it moving on that rare card is the smaller
+     cost. */
+  min-height: 340px;
   /* One gap for the whole card, set here rather than on each line.
 
      Every line used to bring its own: 16px under the counter, 12px under
@@ -11785,49 +11792,6 @@ html[data-theme="dark"] {
  */
 .listen-card > * {
   flex-shrink: 0;
-}
-
-/* A card holding a paragraph grows instead of scrolling.
- *
- * The fixed height exists so the controls under the card never move between
- * one item and the next, and for words and sentences it should stay. A
- * paragraph is not that: it is meant to be read in one piece, and reading it
- * through a 340px window while the audio runs is worse than the controls
- * shifting once. So the height becomes a floor for these, and every other
- * card is untouched.
- */
-.listen-card--long {
-  height: auto;
-  min-height: 340px;
-}
-
-/* The Know-it menu is not content, and must not be scrolled like it.
-
-   Floating the menu stopped it making the block taller, but an absolutely
-   positioned child still adds to an ancestor's scroll height — the card went
-   to 622px of scroll inside a 358px box and swallowed the menu. While it is
-   open the card may overflow visibly, so the menu hangs below the card
-   instead. The fixed height is untouched, so nothing moves, and the moment
-   the menu closes the long-sentence scrolling is back. */
-.listen-card:has([data-testid="listen-review-menu"]) {
-  overflow-y: visible;
-}
-
-/* The word panel is not content either, and it opens upward into the same edge.
-
-   placeWordPopover turns the panel downward only when the WINDOW has no room
-   overhead. The window nearly always has room — Listen's sentence sits a third
-   of the way down it — so the panel opens upward, and the thing that cuts it is
-   not the window but this card, which scrolls and therefore clips on both axes.
-   The word being explained and its meaning are the top of the panel, so what
-   survived the cut was two buttons and nothing saying what they were for.
-
-   Widening that arithmetic to know about scrolling ancestors would put layout
-   the browser already does into a number we keep by hand. The card stops
-   clipping instead, for as long as a panel is open, exactly as it does for the
-   menu above. */
-.listen-card:has(.fs-word-popover) {
-  overflow-y: visible;
 }
 
 /* The rule under the card's content gets the same gap on both sides, so the

@@ -900,7 +900,7 @@ export const POLISH_BY_GERMAN: Record<string, string> = {
   "Formular": "formularz",
   "Antrag": "wniosek",
   "Ausweis": "dowód osobisty",
-  "Pass": "paszport",
+  "Pass": "paszport / przełęcz",
   "Amt": "urząd",
   "Anmeldung": "meldunek",
   "Unterschrift": "podpis",

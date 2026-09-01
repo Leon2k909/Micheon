@@ -14144,7 +14144,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "der Stau", lookup: "Stau", fallbackEn: "traffic jam", tip: "noun", article: "der" },
       { de: "die Ausrede", lookup: "Ausrede", fallbackEn: "excuse", tip: "noun", article: "die" },
       { de: "die Wahrheit", lookup: "Wahrheit", fallbackEn: "truth", tip: "noun", article: "die" },
-      { de: "nämlich", lookup: "nämlich", fallbackEn: "you see — the reason, added afterwards", tip: "adverb" },
+      { de: "nämlich", lookup: "nämlich", fallbackEn: "namely, you see", tip: "adverb", use: "tacks the reason on after the fact: Ich komme nicht, ich bin nämlich krank — I'm not coming, you see, I'm ill" },
       { de: "lügen", lookup: "lügen", fallbackEn: "to tell a lie", tip: "verb", use: "the untruth verb: log, hat gelogen. Nothing to do with liegen (to be lying somewhere) — English just spells both 'lie'" },
       { de: "die Lüge", lookup: "Lüge", fallbackEn: "untruth, lie", tip: "noun", article: "die" },
       { de: "anlügen", lookup: "anlügen", fallbackEn: "to lie to someone", tip: "verb", use: "needs a person in the accusative: Du hast mich angelogen = you lied to me" },

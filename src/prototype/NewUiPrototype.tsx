@@ -170,6 +170,7 @@ const CourseSession = lazy(() => import("@/components/course/CourseSession").the
 const CourseShell = lazy(() => import("@/components/course/CourseShell").then((module) => ({ default: module.CourseShell })));
 const CreateView = lazy(() => import("@/components/create/CreateView").then((module) => ({ default: module.CreateView })));
 const DuoPathView = lazy(() => import("@/components/duo/DuoPathView").then((module) => ({ default: module.DuoPathView })));
+const TopicRoundView = lazy(() => import("@/components/duo/TopicRoundView").then((module) => ({ default: module.TopicRoundView })));
 const UkPracticeView = lazy(() => import("@/components/course/UkPracticeView").then((module) => ({ default: module.UkPracticeView })));
 const UkTestView = lazy(() => import("@/components/lifeInTheUk/UkTestView").then((module) => ({ default: module.UkTestView })));
 const UkTimelineView = lazy(() => import("@/components/lifeInTheUk/UkTimelineView").then((module) => ({ default: module.UkTimelineView })));
@@ -4121,6 +4122,17 @@ export default function NewUiPrototype({
   const [partsRequested, setPartsRequested] = useState(false);
   const apiParts = usePrototypeParts(partsRequested);
   const requestParts = useCallback(() => setPartsRequested(true), []);
+  /**
+   * The topic round stays inside Learn rather than becoming a view: it is
+   * one of the ways in, not a destination the sidebar needs a row for.
+   * Opening it is what asks for the catalogue — the Learn row itself never
+   * does, and must not, since it is on the path of every first click.
+   */
+  const [topicRoundOpen, setTopicRoundOpen] = useState(false);
+  const openTopicRound = () => {
+    requestParts();
+    setTopicRoundOpen(true);
+  };
   const reduceMotion = useReducedMotion();
   const effectiveProfile = profile ?? PREVIEW_PROFILE;
   const leonOnlyFeaturesUnlocked = hasLeonSocialPreview(profile?.email);
@@ -4303,6 +4315,9 @@ export default function NewUiPrototype({
     // other — arriving with no catalogue, or dragging 3.9 MB it never needs.
     if (NEEDS_CATALOGUE.includes(view)) setPartsRequested(true);
     setVocabFirst(view === "progress" && takeVocabLibraryFirst());
+    // Leaving Learn closes the round, so coming back lands on the row of
+    // ways in rather than halfway through a board from last time.
+    setTopicRoundOpen(false);
     setActiveView(view);
     const scrollToTop = () => window.scrollTo({ top: 0, behavior: "auto" });
     scrollToTop();
@@ -4574,8 +4589,17 @@ export default function NewUiPrototype({
         vocab={knownVocab}
       />
     )
+  ) : activeView === "path" && topicRoundOpen ? (
+    // The topic round, inside Learn. Its back bar returns to the row of ways
+    // in rather than to Home, because that row is where it was opened from.
+    <div className="np-feature-host">
+      <FeatureBackBar back={ui("Back to Learn")} label={ui("Topic round")} onBack={() => navigate("path")} />
+      <Suspense fallback={<FeatureLoading />}>
+        <TopicRoundView apiParts={apiParts} catalogueReady={partsReady} profile={effectiveProfile} />
+      </Suspense>
+    </div>
   ) : activeView === "path" ? (
-    // Both ways in, on one screen. The guided session button is the same call
+    // Every way in, on one screen. The guided session button is the same call
     // the dashboard hero makes; nothing about that route changed.
     <div className="np-feature-host">
       <Suspense fallback={<FeatureLoading />}>
@@ -4584,6 +4608,7 @@ export default function NewUiPrototype({
           onConversation={() => navigate("passages")}
           onFastTrack={openFastTrack}
           onGuidedSession={openGuidedSession}
+          onTopicRound={openTopicRound}
         />
       </Suspense>
     </div>

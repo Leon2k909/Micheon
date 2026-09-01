@@ -1533,18 +1533,53 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
             ? ui("There is nothing at that level and usefulness together. Widen either one and the queue comes back.")
             : ui("Once the course content is loaded, everything you are learning becomes listenable here.")}
         </p>
+        {/*
+          One way out per filter, not one way out of both.
+
+          Thirteen of the forty-two level-and-usefulness pairs are genuinely
+          empty — every B1-and-up level crossed with the beginner bands — and
+          the only button here cleared BOTH filters. A learner who had chosen
+          B2 and then tapped a usefulness band lost the B2 as well, and had to
+          find it again in the panel below. The empty state names what it is
+          about to widen, and widens only that; clearing everything stays as
+          the last option, for when both were the problem.
+        */}
         {narrowed ? (
-          <button
-            className="mt-4 min-h-10 rounded-xl border border-[var(--accent)] bg-[var(--accent)] px-4 py-2 text-xs font-black text-[var(--accent-text)] shadow-[0_3px_0_var(--accent-dark)]"
-            data-testid="listen-clear-filters"
-            onClick={() => {
-              setLevelFilter(setListenLevelFilters([], learningDirection));
-              setUsefulnessFilter(setListenUsefulnessFilters([], learningDirection));
-            }}
-            type="button"
-          >
-            {ui("Play everything again")}
-          </button>
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            {levelFilter.size > 0 ? (
+              <button
+                className="min-h-10 rounded-xl border border-[var(--accent)] bg-[var(--accent)] px-4 py-2 text-xs font-black text-[var(--accent-text)] shadow-[0_3px_0_var(--accent-dark)]"
+                data-testid="listen-clear-level-filter"
+                onClick={() => setLevelFilter(setListenLevelFilters([], learningDirection))}
+                type="button"
+              >
+                {ui("All levels")}
+              </button>
+            ) : null}
+            {usefulnessFilter.size > 0 ? (
+              <button
+                className="min-h-10 rounded-xl border border-[var(--accent)] bg-[var(--accent)] px-4 py-2 text-xs font-black text-[var(--accent-text)] shadow-[0_3px_0_var(--accent-dark)]"
+                data-testid="listen-clear-usefulness-filter"
+                onClick={() => setUsefulnessFilter(setListenUsefulnessFilters([], learningDirection))}
+                type="button"
+              >
+                {ui("All usefulness levels")}
+              </button>
+            ) : null}
+            {levelFilter.size > 0 && usefulnessFilter.size > 0 ? (
+              <button
+                className="min-h-10 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-4 py-2 text-xs font-black text-[var(--text-2)]"
+                data-testid="listen-clear-filters"
+                onClick={() => {
+                  setLevelFilter(setListenLevelFilters([], learningDirection));
+                  setUsefulnessFilter(setListenUsefulnessFilters([], learningDirection));
+                }}
+                type="button"
+              >
+                {ui("Play everything again")}
+              </button>
+            ) : null}
+          </div>
         ) : null}
       </section>
     ) : null;
@@ -1700,9 +1735,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
 
         <div
           className={cn(
-            "listen-card relative mx-1 mt-5 border-t border-[var(--border)] pt-6 text-center sm:mx-3 sm:pt-8",
-            // A paragraph is read in one piece rather than through a window.
-            item.kind === "passage" && "listen-card--long"
+            "listen-card relative mx-1 mt-5 border-t border-[var(--border)] pt-6 text-center sm:mx-3 sm:pt-8"
           )}
         >
           {/* The voice, drawn from the voice. These are the real frequency

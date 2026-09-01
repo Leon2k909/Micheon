@@ -90,18 +90,15 @@ assert.ok(/\.fs-word-popover\s*\{[^}]*max-width: min\(280px, calc\(100vw - 20px\
 // ── and nothing between the word and the window cuts it ─────────────────────
 // Everything above measures the panel against the WINDOW, which is the whole
 // of what placeWordPopover knows. It is not the whole of what can cut the
-// panel: Listen's card scrolls, so it clips on both axes, and a sentence
-// sitting near its top edge opened the panel straight into it. The window had
-// room, the arithmetic was right, and the top of the panel was sliced off
-// anyway — the word and its meaning gone, two unlabelled buttons left.
-assert.ok(/\.listen-card\s*\{[^}]*overflow-y: auto/.test(styles),
-  "the listen card no longer scrolls, so this clipping guard is describing something that is gone");
-assert.ok(/\.listen-card:has\(\.fs-word-popover\)\s*\{[^}]*overflow-y: visible/.test(styles),
-  "the scrolling card clips the word panel again: nothing lifts its overflow while a panel is open");
-// The card must still clip when no panel is open, or the long-sentence
-// scrolling this escape is carved out of has been given away wholesale.
-assert.ok(!/\.listen-card\s*\{[^}]*overflow-y: visible/.test(styles),
-  "the card stopped clipping entirely, so a long sentence overruns it instead of scrolling");
+// panel: when Listen's card scrolled it clipped on both axes, and a sentence
+// sitting near its top edge opened the panel straight into it. The card sizes
+// to its content now and does not scroll at all, so the guard is simpler than
+// the escape hatch it replaced: the card must not clip, full stop. Bring the
+// scrolling back and the clipping comes back with it.
+const listenCard = /\.listen-card\s*\{[^}]*\}/.exec(styles);
+assert.ok(listenCard, "the listen card rule cannot be found, so nothing here can see whether it clips");
+assert.ok(!/overflow(?:-y|-x)?\s*:\s*(?:auto|hidden|clip|scroll)/.test(listenCard[0]),
+  "the listen card clips its own overflow again, so a word panel opened near its top edge is sliced off");
 
 console.log(
   "check-word-popover: the word panel opens away from the edge it would cross — "

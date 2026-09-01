@@ -77,9 +77,11 @@ check(`no card has an empty Portuguese side${blank.length ? ` — ${blank[0].ger
  * An umlaut or an ß on the Portuguese side almost always means a line was
  * never translated. Two things are allowed to carry one.
  *
- * Names, because Portuguese does not respell them — Herr Müller stays Herr
- * Müller — and the offices keep the name written on the door, since that is
- * the word somebody has to say at the counter.
+ * Names, where one survives — see the retired names further down, which is
+ * where the question of WHICH name a card should use is settled. This list
+ * only says that a name is allowed to carry an umlaut; it does not say the
+ * name belongs there. And the offices keep the name written on the door, since
+ * that is the word somebody has to say at the counter.
  *
  * And the regional greetings, which the card is ABOUT: the pack teaches that
  * the north says Moin and Bavaria says Servus, so a line that translated them
@@ -266,24 +268,39 @@ check(
  *
  * Cards a Portuguese speaker really does need about German life — Bürgeramt,
  * Pfand, Anmeldung — are in other packs and this rule does not touch them.
+ *
+ * Part 585 is the third, and it is a capstone conversation rather than a word
+ * pack: six lines on whether it is der, die or das Wörterbuch, and on what
+ * turns der Tisch into den Tisch. That is German grammar being taught, and
+ * Portuguese has neither three genders to guess at nor any cases at all, so
+ * there is nothing in it for this course. It is refused whole, the way the
+ * note beside the single cards says a dialogue must be carried or dropped.
  */
-const EXCLUDED_PACKS = { part141: "src/lib/data.ts", part330: "src/lib/expansionPacks.ts" };
+const EXCLUDED_PACKS = {
+  part141: "src/lib/data.ts",
+  part330: "src/lib/expansionPacks.ts",
+  part585: "src/lib/capstoneDialogues.ts",
+};
 const excluded = new Set();
 for (const [id, file] of Object.entries(EXCLUDED_PACKS)) {
   const source = fs.readFileSync(path.join(root, file), "utf8");
-  const from = source.indexOf(`\n  ${id}: {`);
+  // The word packs write an object, the capstone conversations an array under
+  // a quoted key. Both shapes have to be findable by the same pack name.
+  const from = Math.max(source.indexOf(`\n  ${id}: {`), source.indexOf(`\n  "${id}": [`));
   if (from < 0) {
     check(`the excluded pack ${id} is still where this expects it`, false);
     continue;
   }
   const after = source.slice(from + 1);
-  const next = after.search(/\n {2}(part\d+|cb-[a-z-]+): \{/);
+  const next = after.search(/\n {2}"?(part\d+|cb-[a-z-]+)"?: [{[]/);
   const block = next < 0 ? after : after.slice(0, next);
-  // The seed words are ordinary vocabulary; it is the sentences that are
-  // about how German is written.
+  // In a word pack the seed words are ordinary vocabulary and it is the
+  // sentences that are about how German is written, so the search starts at
+  // the phrases. A capstone pack has no phrases section and is nothing but
+  // the conversation, so the whole block goes.
   const phrases = block.indexOf("phrases:");
-  if (phrases < 0) continue;
-  for (const m of block.slice(phrases).matchAll(/\bde:\s*"((?:[^"\\]|\\.)*)"/g)) excluded.add(m[1]);
+  const lines = phrases < 0 ? block : block.slice(phrases);
+  for (const m of lines.matchAll(/\bde:\s*"((?:[^"\\]|\\.)*)"/g)) excluded.add(m[1]);
 }
 check(`the excluded packs were found and read (${excluded.size} sentences)`, excluded.size > 30);
 
@@ -392,6 +409,251 @@ const shouldNotBeHere = pairs.filter((row) => excluded.has(row.german));
 check(
   `no card this course leaves out is translated${shouldNotBeHere.length ? ` — ${shouldNotBeHere[0].german}` : ""}`,
   shouldNotBeHere.length === 0
+);
+
+/**
+ * ONE GERMAN WORD, ONE PORTUGUESE ANSWER.
+ *
+ * These two checks exist because the table had already broken both rules
+ * before anybody looked. The same woman was Anna in eleven cards and Ana in
+ * three, Tom introduced himself as Tom in one line of a conversation and as
+ * Tomás in the next, a Brötchen was a pãozinho, a papo-seco, a pão and a
+ * sandes, and a Pfand was a depósito seven times and a Pfand once. Every one
+ * of those lines was correct Portuguese on its own. Only reading them together
+ * showed the learner was being taught two words for one thing.
+ *
+ * That is exactly the kind of fault that comes back, because each card is
+ * written on its own and looks right on its own. So the rules are pinned here
+ * rather than merely fixed.
+ *
+ * A NOTE ON WORD EDGES. \b is no use in this file. JavaScript counts ü as a
+ * non-word character, so \bben\b matches inside üben, and a first pass of this
+ * work reported the name Ben in thirty-three cards, of which one was a name.
+ * The edges have to be spelled out against a Unicode letter class.
+ */
+const edge = (word) => new RegExp(`(?<![\\p{L}])${word}(?![\\p{L}])`, "u");
+
+/**
+ * THE PEOPLE. The course is for Portuguese speakers, so the people in it have
+ * Portuguese names, and a German name on the Portuguese side means a card was
+ * carried across rather than translated. The rule only bites where the German
+ * side names the person too, so an ordinary Portuguese word that happens to
+ * look like a German name — o tom, a paul, uma superfície lisa — cannot fail
+ * it.
+ */
+const RETIRED_NAMES = {
+  Anna: "Ana",
+  Tom: "Tomás",
+  Jonas: "João",
+  Lena: "Leonor",
+  Emma: "Ema",
+  Ben: "Bruno",
+  Paul: "Paulo",
+  Lisa: "Luísa",
+  Sabine: "Sofia",
+  Klaus: "Carlos",
+  Julia: "Joana",
+  Berger: "Bernardes",
+  Weber: "Ferreira",
+  Müller: "Silva",
+  Wagner: "Almeida",
+  Klein: "Costa",
+  Krause: "Rocha",
+  Meyer: "Baptista",
+  Jana: "Inês",
+  Miri: "Bia",
+  // A street, for the same reason as the people. Gartenstraße is an address
+  // being read out to an ambulance, so it becomes one an ambulance in Portugal
+  // could drive to. Goethestraße is NOT here: that card sits in the pack about
+  // German transport, next to the Schienenersatzverkehr and the connection at
+  // Hannover, and its street stays German with the rest of them.
+  Gartenstraße: "Rua do Jardim",
+  // The colleague who offers his condolences has a Turkish surname in the
+  // German, because that is who a German office holds. The Portuguese course
+  // keeps the point and moves it: Semedo is as ordinary in Lisbon as Yilmaz is
+  // in Cologne.
+  Yilmaz: "Semedo",
+};
+/**
+ * Except in the cards that teach how a German letter is addressed. There the
+ * name is part of the German being taught, like the salutation around it, and
+ * a Portuguese surname in the middle of Sehr geehrte Frau Doktor would be
+ * teaching a form nobody writes.
+ */
+const KEEPS_ITS_GERMAN_NAME = new Set([
+  "Zu Händen Frau Weber — kurz: z. Hd.",
+  "Sehr geehrte Frau Doktor Weber — Titel gehören in die Anrede.",
+  "Liebe Frau Weber passt, sobald man sich kennt.",
+]);
+const germanNames = [];
+for (const [german, portuguese] of Object.entries(RETIRED_NAMES)) {
+  for (const row of pairs) {
+    if (KEEPS_ITS_GERMAN_NAME.has(row.german)) continue;
+    if (!edge(german).test(row.german)) continue;
+    if (!edge(german).test(row.portuguese)) continue;
+    germanNames.push(`${german} should be ${portuguese} — ${row.german}`);
+  }
+}
+check(
+  `the people in this course have Portuguese names${germanNames.length ? ` — ${germanNames[0]}` : ""}`,
+  germanNames.length === 0
+);
+
+/**
+ * THE THINGS. One German word gets one Portuguese answer, and where a card is
+ * allowed a different one the reason is written next to it.
+ */
+const ONE_ANSWER = [
+  {
+    german: "Brötchen",
+    answer: /papo-seco/,
+    unless: {
+      "Das Bordbistro hat auch belegte Brötchen.": "a filled roll is a sandes",
+      "Welche Brötchen sind noch warm?": "the line before it already named them",
+    },
+  },
+  { german: "Pfand", answer: /depósito/, unless: {} },
+  {
+    german: "Schnitzel",
+    answer: /escalope/,
+    unless: {
+      "Was gibt es heute? — Schnitzel, wie jeden Donnerstag.":
+        "the German canteen, where the dish keeps its name",
+    },
+  },
+  { german: "Brezel", answer: /Brezel/, unless: {} },
+  /**
+   * A Kita is a creche. Portugal separates the two halves of what one German
+   * word covers — a creche takes them to three, an infantário from three to
+   * six — and the table had drifted into using both, twelve cards to nine, for
+   * the same German word. The word card says creche, so creche it is
+   * throughout, and the nursery in the phone call is called Girassol like the
+   * other one is called Raio de Sol.
+   */
+  { german: "Kita", answer: /creche/, unless: {} },
+  /**
+   * Glückwunsch was a felicitação on its own card and os parabéns in all
+   * fourteen sentences that use it, which is the right way round: nobody says
+   * felicitação out loud. It could not simply take os parabéns, because das
+   * Ständchen had it — in Portugal the birthday song IS os parabéns — so
+   * Ständchen moved to a serenata and the everyday word went to the everyday
+   * German word.
+   */
+  { german: "Glückwunsch", answer: /parabéns/, unless: {} },
+  // And the spelling of the thing itself: piza on the card, pizza in all eight
+  // sentences, and pizza on every box in Portugal.
+  { german: "Pizza", answer: /pizza/, unless: {} },
+  { german: "Radler", answer: /panaché/, unless: {} },
+  { german: "Apfelschorle", answer: /sumo de maçã com água com gás/, unless: {} },
+];
+const twoAnswers = [];
+for (const { german, answer, unless } of ONE_ANSWER) {
+  // Case-insensitively: the answer is a word, and a word at the start of a
+  // sentence is capitalised. Parabéns! opens fourteen of its own cards, and a
+  // case-sensitive test called every one of them a second answer.
+  const answers = new RegExp(answer.source, answer.flags.includes("i") ? answer.flags : answer.flags + "i");
+  for (const row of pairs) {
+    if (!edge(german).test(row.german)) continue;
+    if (unless[row.german] || answers.test(row.portuguese)) continue;
+    twoAnswers.push(`${german} is not ${answer.source} here — ${row.german}`);
+  }
+}
+check(
+  `one German word gets one Portuguese answer${twoAnswers.length ? ` — ${twoAnswers[0]}` : ""}`,
+  twoAnswers.length === 0
+);
+
+/**
+ * THE PLACES.
+ *
+ * A card that is not about Germany does not send anybody to Berlin. This is
+ * the rule the course was written under from the moment it was asked for, and
+ * the cards that shipped before it have now been brought into line: a ticket
+ * is to Coimbra, a cancelled flight was to Funchal, the polytechnic is in
+ * Porto, the cousin nobody has met is from Faro.
+ *
+ * WHY AN EXPLICIT LIST RATHER THAN A RULE. Whether a card is ABOUT Germany is
+ * not a property of the sentence. "Wartet der Anschluss in Hannover?" reads
+ * like an ordinary question about a connecting train; it sits in a pack that
+ * also teaches the Deutschlandticket, the ICE and the fine for riding without
+ * a ticket, so its places stay German with the rest of them. No pattern can
+ * see that. Guessing it from the pack was tried — scripts/portugal-audit.cjs
+ * still does, for finding candidates — but a guess is not something to fail a
+ * build on. So the thirty cards allowed to keep a German place are listed, each
+ * having been read, and a thirty-first has to be argued for here.
+ */
+const GERMAN_PLACES = [
+  "Berlim", "Munique", "Hamburgo", "Colónia", "Frankfurt", "Estugarda",
+  "Dresden", "Leipzig", "Bona", "Bremen", "Hanôver", "Nuremberga", "Mannheim",
+  "Mainz", "Kassel", "Potsdam", "Tübingen", "Göttingen", "Düsseldorf",
+  "Baviera", "Renânia", "Vestefália", "Flensburg", "Gartenstraße",
+  "Goethestraße", "Alexanderplatz",
+];
+const KEEPS_ITS_GERMAN_PLACE = new Set([
+  // German rail, end to end: the ticket that is not valid on an ICE, the
+  // replacement bus, the connection that may or may not wait, the platform
+  // announcement. Move one of these to Portugal and the pack teaches nothing.
+  "Der ICE nach Berlin fällt heute aus.",
+  "Der Anschluss in Mannheim ist knapp, nur acht Minuten.",
+  "Wir haben nur acht Minuten in Mannheim.",
+  "Ab Göttingen wird es meistens leerer.",
+  "Nächster Halt: Alexanderplatz. Ausstieg in Fahrtrichtung rechts.",
+  "Einmal nach Köln und zurück, bitte.",
+  "Wartet der Anschluss in Hannover?",
+  "Wissen Sie zufällig, wo die Goethestraße ist?",
+  "Wir müssen in Hannover umsteigen.",
+  "Ab Kassel ist Schienenersatzverkehr.",
+  "Doch! Ab Potsdam. Um Mitternacht waren wir zu Hause. Aber hey, das Deutschlandticket hat sich gelohnt.",
+  "Die Mitfahrgelegenheit nach Berlin kostet fünfzehn Euro.",
+  "Wir fahren doch beide jeden Tag nach Mainz.",
+  // The German roads, which are named the way German roads are named.
+  "A7 Richtung Hamburg, kurz nach der Raststätte.",
+  "Wir sind auf der B27, kurz vor der Ausfahrt Tübingen.",
+  // Carnival, which is a different festival with a different shout in each
+  // city, and the pack is about exactly that difference.
+  "In Köln ruft man Alaaf, in Düsseldorf Helau.",
+  "Im Rheinland steht die Stadt an Rosenmontag still.",
+  "In Bayern heißt das Ganze Fasching.",
+  "Der Krapfen mit Senf ist der klassische Streich.",
+  "Kommst du am Rosenmontag mit nach Köln? Karneval!",
+  "Als Pirat, wie immer. Eine Regel musst du kennen: In Köln rufst du 'Alaaf'. Niemals 'Helau'.",
+  "'Helau' ist Düsseldorf. Damit outest du dich sofort — im schlimmsten Fall kriegst du kein Kölsch mehr.",
+  "Kölle Alaaf!",
+  // The doughnut that is called something different in every region, which is
+  // the joke the card is made of. A bola de Berlim is the Portuguese name for
+  // the thing, so it names Berlin whichever way round it is read.
+  "der Krapfen",
+  "der Berliner",
+  // The registers a German keeps: the plate that says where a car is from, the
+  // state you live in, the points that accumulate in Flensburg, the trophy
+  // that goes to Munich.
+  "Das Kfz-Kennzeichen ist aus München.",
+  "Wir wohnen in NRW.",
+  "Punkte kommen nach Flensburg.",
+  "Ich habe einen Punkt in Flensburg bekommen.",
+  "Die Schale geht dieses Jahr wohl wieder nach München.",
+]);
+const strayPlaces = pairs.filter(
+  (row) =>
+    !KEEPS_ITS_GERMAN_PLACE.has(row.german) &&
+    GERMAN_PLACES.some((place) => edge(place).test(row.portuguese))
+);
+check(
+  `no card outside Germany sends anybody to a German place${strayPlaces.length ? ` — ${strayPlaces[0].german}` : ""}`,
+  strayPlaces.length === 0
+);
+/**
+ * And the list stays honest. An entry for a card that no longer names a place
+ * — or no longer exists — reads like a decision somebody made and is not one,
+ * which is how an allow-list quietly turns into a place to hide things.
+ */
+const stalePlaces = [...KEEPS_ITS_GERMAN_PLACE].filter((german) => {
+  const row = pairs.find((r) => r.german === german);
+  return !row || !GERMAN_PLACES.some((place) => edge(place).test(row.portuguese));
+});
+check(
+  `every card allowed a German place still has one${stalePlaces.length ? ` — ${stalePlaces[0]}` : ""}`,
+  stalePlaces.length === 0
 );
 
 if (failures.length) {

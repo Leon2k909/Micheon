@@ -1830,6 +1830,14 @@ check("an empty queue caused by a filter says so and offers the way back",
   view.includes('data-testid="listen-clear-filters"')
   && view.includes("const narrowed = levelFilter.size > 0 || usefulnessFilter.size > 0")
   && view.includes('ui("Nothing matches those filters")'));
+// One way out PER filter. Thirteen of the forty-two level-and-usefulness
+// pairs are genuinely empty, and a single button that cleared both threw
+// away the level the learner had chosen along with the band that emptied it.
+check("the empty state widens one filter at a time, and only the one that is set",
+  /levelFilter\.size > 0 \? \([\s\S]{0,400}?data-testid="listen-clear-level-filter"[\s\S]{0,300}?setListenLevelFilters\(\[\]/.test(view)
+  && /usefulnessFilter\.size > 0 \? \([\s\S]{0,400}?data-testid="listen-clear-usefulness-filter"[\s\S]{0,300}?setListenUsefulnessFilters\(\[\]/.test(view)
+  && view.includes('{ui("All levels")}') && view.includes('{ui("All usefulness levels")}'),
+  "the only escape from an empty filter still clears both filters at once");
 check("the filters are offered as controls, not just honoured in code",
   view.includes("data-testid={`listen-level-${value}`}")
   && view.includes("data-testid={`listen-usefulness-${option.key}`}")
@@ -2189,35 +2197,25 @@ void (async () => {
   // The rule, not the number: the number is measured and moves whenever the
   // card's own padding does, and pinning it meant a re-measure looked like a
   // regression. What must not come back is the floor.
+  //
+  // That was the rule, and what it produced was a scrollbar. A sentence with
+  // its written form and the "set to Solid" notice runs a line past the
+  // height, and a card scrolling inside itself for one line reads as broken.
+  // So the rule is the other way round now: the measured height is a FLOOR
+  // the common card sits exactly on, the rare card grows past it, and nothing
+  // scrolls. The controls moving on that rare card is the cost, and it is the
+  // smaller one. The paragraph exception went with it — every card grows.
   check(
-    "the listen card is one height, not a floor it can grow past",
-    cardBlock.includes("  height: ")
-    && !cardBlock.includes("min-height:")
-  );
-  /*
-   * One exception, and it is named here so it stays one.
-   *
-   * The rule above exists because a floor let every card take its own height
-   * and walked Play, Back and Next down the page. That reasoning was measured
-   * on words and sentences, which differ by a line or two. A paragraph is not
-   * that: it is the content, all of it, and a card that windows it makes the
-   * learner scroll to read the thing the card is for — on every paragraph,
-   * not on the rare long one. A second fixed height would not help either,
-   * because the paragraphs run from three lines to a whole conversation.
-   *
-   * So paragraph cards grow, everything else is pinned, and the check is that
-   * nothing ELSE learns to grow.
-   */
-  const growable = [...listenCss.matchAll(/^\.listen-card[^\s,{]*\s*\{[^}]*min-height:/gmu)]
-    .map((m) => m[0].slice(0, m[0].indexOf("{")).trim());
-  check(
-    "only the paragraph card is allowed to grow past that height",
-    growable.length === 1 && growable[0] === ".listen-card--long",
-    `these can grow: ${growable.join(", ") || "(none, so the exception has gone)"}`
+    "the listen card sizes to its content above a floor, rather than scrolling inside a fixed height",
+    cardBlock.includes("min-height:")
+    && !/^\s+height: /mu.test(cardBlock)
+    && !cardBlock.includes("overflow-y: auto"),
+    "a fixed height with inner scrolling puts a scrollbar on a card one line too tall"
   );
   check(
-    "...and it is the paragraph cards that get it",
-    listenView.includes('item.kind === "passage" && "listen-card--long"')
+    "no card keeps a growing exception of its own, because every card grows now",
+    !listenCss.includes(".listen-card--long") && !listenView.includes("listen-card--long"),
+    "a --long modifier survived the rule it was an exception to"
   );
   // ...and the one control that must stay reachable does, on the rarer item
   // that still overruns and scrolls inside the card.

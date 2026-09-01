@@ -316,6 +316,12 @@ export const KEEP_APART: string[][] = [
   ["oberhalb"],          // the genitive preposition — not the adverb oben
   ["unterhalb"],         // the genitive preposition — not the adverb unten
   ["einparken"],         // parking INTO a space — plain parken keeps its card
+  // Glossed "passport" it fell into one card with der Reisepass, and the
+  // bank ranks Reisepass higher, so the formal compound fronted a card whose
+  // joined gloss read "passport / mountain pass" — a meaning Reisepass has
+  // never had. Pass is the everyday word AND the mountain road; it keeps
+  // its own card, and Reisepass stays the full formal name beside it.
+  ["pass"],
 ];
 
 const KEEP_APART_WORDS = new Set(

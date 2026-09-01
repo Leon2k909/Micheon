@@ -11773,7 +11773,7 @@ export const FRENCH_BY_GERMAN: Record<string, string> = {
   "Felswand": "la paroi rocheuse",
   "Überhang": "le surplomb",
   "Grat": "l'arête",
-  "Pass": "le col",
+  "Pass": "le passeport",
   "Hochebene": "le plateau",
   "Steigung": "la pente",
   "Schlucht": "la gorge",
