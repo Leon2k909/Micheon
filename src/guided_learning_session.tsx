@@ -933,7 +933,7 @@ export default function GuidedLearningSession() {
           const id = wordSteps[0]?.item?.partKey ?? keys[0] ?? activePart;
           setActivePart(id);
           saveScopedJson("active-part", id, user);
-          setSessionSteps(withRegisterCheck([...wordSteps, { type: "complete" }], user));
+          setSessionSteps(withRegisterCheck(withSecondShowing([...wordSteps, { type: "complete" }]), user));
           beginLessonTiming(id);
           setShowGuidedSession(true);
           return;
@@ -1371,7 +1371,7 @@ export default function GuidedLearningSession() {
         steps = [...steps, { type: "complete" }];
         setActivePart(id);
         saveScopedJson("active-part", id, user);
-        setSessionSteps(withRegisterCheck(steps, user));
+        setSessionSteps(withRegisterCheck(withSecondShowing(steps), user));
         beginLessonTiming(id);
         setShowGuidedSession(true);
         return;
@@ -1428,12 +1428,12 @@ export default function GuidedLearningSession() {
         setActivePart(id);
         saveScopedJson("active-part", id, user);
         let reviewSteps = stepsForLearningDirection(buildSession(partWithKey, items, {}, 0));
-        setSessionSteps(withRegisterCheck(reviewSteps, user));
+        setSessionSteps(withRegisterCheck(withSecondShowing(reviewSteps), user));
       }
     } else {
       setActivePart(id);
       saveScopedJson("active-part", id, user);
-      setSessionSteps(withRegisterCheck(steps, user));
+      setSessionSteps(withRegisterCheck(withSecondShowing(steps), user));
     }
     beginLessonTiming(id);
     setShowGuidedSession(true);
@@ -1461,6 +1461,48 @@ export default function GuidedLearningSession() {
     guidedAutoStartedRef.current = true;
     startSessionRef.current(requestedPart);
   }, [apiParts, guidedRequest, showPlacementTest]);
+
+  /**
+   * The same sitting, twice over.
+   *
+   * Each phrase is taught once and then comes back later in the same session
+   * for the closed-book check — type it, both ways, with nothing on screen.
+   * The whole rest of the sitting sits between the two showings, which is
+   * what makes the second one worth anything: recalling something you met
+   * five phrases ago is remembering, recalling it immediately is reading.
+   *
+   * The second showing is PRACTICE, not a review. It is marked as
+   * reinforcement, so it does not climb the ladder and does not move the due
+   * date — the phrase still comes back in the next sitting exactly when it
+   * always would have. Nothing about the schedule changes; a sitting simply
+   * asks twice before it lets go.
+   *
+   * mastery is set to strong on the copy because that is what picks the
+   * closed-book route, and it is a routing hint here rather than a claim
+   * about the tracker — the same way the lesson builder already marks a
+   * swapped-in replacement as new.
+   *
+   * The completion screen stays last, and anything that is not a sentence —
+   * a dialogue, a register question — is left alone: those are not a phrase
+   * being learned and have nothing to come back for.
+   */
+  const withSecondShowing = (steps: any[]): any[] => {
+    const endsOnComplete = steps[steps.length - 1]?.type === "complete";
+    const body = endsOnComplete ? steps.slice(0, -1) : steps;
+    const again = body
+      .filter((step) => step?.type === "sentence" && step.item?.id)
+      .map((step) => ({
+        ...step,
+        reinforcement: true,
+        secondShowing: true,
+        reviewReason: "second-showing",
+        item: { ...step.item, mastery: "strong" },
+      }));
+    if (again.length === 0) return steps;
+    return endsOnComplete
+      ? [...body, ...again, steps[steps.length - 1]]
+      : [...body, ...again];
+  };
 
   const logActivity = (stepsForCount: any[], completed = false) => {
     const startedAt = sessionStartRef.current;

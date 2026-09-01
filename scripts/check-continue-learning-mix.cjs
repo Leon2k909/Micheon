@@ -464,6 +464,40 @@ const petQuestionSchedulerEnd = labSource.indexOf(
 const petQuestionSchedulerSource = petQuestionSchedulerStart >= 0 && petQuestionSchedulerEnd > petQuestionSchedulerStart
   ? labSource.slice(petQuestionSchedulerStart, petQuestionSchedulerEnd)
   : "";
+// ── every phrase comes round twice in the sitting that taught it ───────────
+// Six phrases taught once each is one exposure per phrase per day. The second
+// showing costs nothing to serve — the material is already chosen and loaded —
+// and the rest of the sitting sits between the two, which is what makes it
+// worth anything: recalling something you met five phrases ago is
+// remembering; recalling it immediately is reading.
+check(
+  "a sitting serves everything it teaches a second time",
+  /const withSecondShowing = \(steps: any\[\]\): any\[\] =>/.test(labSource)
+    && /\.filter\(\(step\) => step\?\.type === "sentence" && step\.item\?\.id\)/.test(labSource)
+);
+check(
+  "...and every sitting the app builds gets it, not just the main one",
+  (labSource.match(/withRegisterCheck\(withSecondShowing\(/g) ?? []).length >= 4,
+  `${(labSource.match(/withRegisterCheck\(withSecondShowing\(/g) ?? []).length} of the four step lists are doubled`
+);
+check(
+  "the completion screen stays at the end of it",
+  /const endsOnComplete = steps\[steps\.length - 1\]\?\.type === "complete";/.test(labSource)
+    && /\[\.\.\.body, \.\.\.again, steps\[steps\.length - 1\]\]/.test(labSource)
+);
+// The second showing is PRACTICE. Marking it as a review would climb the
+// ladder twice for one sitting and push the real review out a day — the
+// phrase has to come back in the next sitting exactly when it always would.
+check(
+  "the second showing is reinforcement, so it moves no due date",
+  /reinforcement: true,\s*\n\s*secondShowing: true,/.test(labSource)
+);
+check(
+  "...and is routed to the closed-book check rather than taught again",
+  /item: \{ \.\.\.step\.item, mastery: "strong" \}/.test(labSource),
+  "the second showing repeats the whole teaching route instead of testing recall"
+);
+
 check(
   "the app marks optional practice separately from successful scheduled recall",
   /if \(s\.reinforcement\) \{[\s\S]{0,200}?markReinforced\(s\.item\.id, s\.item\.aliases/.test(labSource)
