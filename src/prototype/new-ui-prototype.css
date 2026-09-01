@@ -6414,7 +6414,7 @@ html[data-theme="dark"] .new-ui-prototype {
   --np-text: #eef2f8;
   --np-muted: #c2cbd8;
   --np-soft: #98a3b3;
-  --np-line: rgba(205, 217, 233, 0.22);
+  --np-line: rgba(205, 217, 233, 0.07);
   --np-green: #3fd964;
   --np-green-dark: #6ee88b;
   --np-green-soft: #10301d;
@@ -6426,8 +6426,8 @@ html[data-theme="dark"] .new-ui-prototype {
   --surface: #161b23;
   --surface-2: #232b3a;
   --surface-3: #2e3747;
-  --border: rgba(205, 217, 233, 0.3);
-  --border-2: rgba(205, 217, 233, 0.44);
+  --border: rgba(205, 217, 233, 0.08);
+  --border-2: rgba(205, 217, 233, 0.12);
   --text-1: #eef2f8;
   --text-2: #cdd5e1;
   --text-3: #a3aebc;
@@ -6715,8 +6715,8 @@ html[data-theme="dark"] .np-feature-host {
   --surface: #161b23;
   --surface-2: #232b3a;
   --surface-3: #2e3747;
-  --border: rgba(205, 217, 233, 0.3);
-  --border-2: rgba(205, 217, 233, 0.44);
+  --border: rgba(205, 217, 233, 0.08);
+  --border-2: rgba(205, 217, 233, 0.12);
   --text-1: #eef2f8;
   --text-2: #cdd5e1;
   --text-3: #a3aebc;

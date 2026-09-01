@@ -123,7 +123,12 @@ const LIGHT = "  --surface: #ffffff;";
 const DARK = "  --surface: #161b23;";
 
 audit("light", LIGHT, { textMin: 4.5, edgeMin: 2.0 });
-audit("dark", DARK, { textMin: 4.5, edgeMin: 1.9 });
+// 1.9 was only ever reached by the border: the dark fills sit 1.22:1 apart
+// and the 0.3-alpha edge scored 2.1, which on screen was every card outlined
+// in white. That outline was asked to go, everywhere, so the floor is what a
+// panel edge measures once it is a whisper — and it still guards the edge
+// vanishing outright, which 1.0 would be. High contrast keeps its 3:1.
+audit("dark", DARK, { textMin: 4.5, edgeMin: 1.2 });
 audit("light + high contrast", [LIGHT, 'html[data-contrast="high"] .new-ui-prototype'], { textMin: 7.0, edgeMin: 3.0 });
 audit("dark + high contrast", [DARK, 'html[data-theme="dark"][data-contrast="high"] .new-ui-prototype'], { textMin: 7.0, edgeMin: 3.0 });
 
