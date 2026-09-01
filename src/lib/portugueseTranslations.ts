@@ -21574,4 +21574,153 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "sich rechtfertigen": "justificar-se",
   "gut ankommen": "cair bem",
   "Feedback geben": "dar feedback",
+
+  // ── Screens, feeds and the words that came with them (part440) ──────────
+  //
+  // Live is em direto, never ao vivo, and die Timeline is a cronologia — the
+  // name the Portuguese interface itself uses. Drücken, of a button, is
+  // carregar, as everywhere else in this table.
+  "das Englisch": "o inglês",
+  "die Originalsprache": "a língua original",
+  "der Trend": "a tendência",
+  "das Königreich": "o reino",
+  "vereinigen": "unificar",
+  "anzeigen": "exibir",
+  "der Bot": "o bot",
+  "das Tool": "a ferramenta",
+  "klicken": "clicar",
+  "zurück": "para trás",
+  "verwenden": "utilizar",
+  "live": "em direto",
+  "der Kurzbefehl": "o atalho de teclado",
+  "boosten": "impulsionar",
+  "die Funktion": "a funcionalidade",
+  "die Statistik": "a estatística",
+  "die Timeline": "a cronologia",
+  "die Aufmerksamkeit": "a atenção",
+  "automatisch": "automático",
+  "der Agent": "o agente",
+  "bereits": "já",
+  "der Desktop": "o computador de secretária",
+  "grundlegend": "fundamental",
+  "hilfreich": "útil",
+  "drücken": "carregar",
+  "das Fragezeichen": "o ponto de interrogação",
+  "daran": "nisso",
+  "super": "ótimo",
+  "aktiv": "ativo",
+
+  // ── Enthusiasm, and the verbs under it (part441) ────────────────────────
+  //
+  // Atemberaubend is de cortar a respiração: Portuguese cuts the breath where
+  // German takes it away, and the card would lose the whole picture if it
+  // borrowed a plain adjective instead.
+  "entfolgen": "deixar de seguir",
+  "die Person": "a pessoa",
+  "benötigen": "necessitar de",
+  "der Spaß": "a diversão",
+  "absolut": "absoluto",
+  "großartig": "magnífico",
+  "die Pracht": "o esplendor",
+  "sogar": "até mesmo",
+  "unglaublich": "inacreditável",
+  "verbessern": "melhorar",
+  "atemberaubend": "de cortar a respiração",
+  "dabei": "ao mesmo tempo",
+  "dazu": "para além disso",
+  "der Gott": "o deus",
+  "können": "poder",
+  "nun": "agora",
+  "okay": "está bem",
+  "analysieren": "analisar",
+  "animieren": "animar",
+  "beisammen": "juntos",
+  "bekommen": "receber",
+  "bieten": "oferecer",
+  "eigen": "próprio",
+  "entwickeln": "desenvolver",
+  "erhöhen": "aumentar",
+  "erstellen": "elaborar",
+  "extrem": "extremo",
+
+  // ── Sound, products and the words a release note uses (part442) ─────────
+  //
+  // Knackig is estaladiço, the Portuguese word for a crust or a biscuit that
+  // gives way under the tooth. Der Blitzschlag is a queda de um raio —
+  // Portuguese has the lightning fall rather than strike.
+  //
+  // European spelling for a controlo, and o utilizador for der Benutzer.
+  "bitten": "pedir",
+  "komplett": "completo",
+  "die Kompression": "a compressão",
+  "die Kontrolle": "o controlo",
+  "kürzlich": "recentemente",
+  "die Lautstärke": "o volume do som",
+  "neugierig": "curioso",
+  "das Produkt": "o produto",
+  "sanft": "suave",
+  "sodass": "de modo que",
+  "synchronisieren": "sincronizar",
+  "der Ton": "o som",
+  "weich": "macio",
+  "der Zugang": "o acesso",
+  "amerikanisch": "americano",
+  "befriedigend": "satisfatório",
+  "der Benutzer": "o utilizador",
+  "beängstigend": "assustador",
+  "der Blitzschlag": "a queda de um raio",
+  "buchstäblich": "literalmente",
+  "debuggen": "depurar",
+  "erhalten": "obter",
+  "erreichen": "alcançar",
+  "launchen": "lançar",
+  "ändern": "alterar",
+  "haptisch": "tátil",
+  "hinweg": "ao longo de",
+  "die Innovation": "a inovação",
+  "intelligent": "inteligente",
+  "knackig": "estaladiço",
+
+  // ── The long run, the sliders and who wrote it (part443) ────────────────
+  //
+  // Der Nutzer and der Benutzer both mean user, and Portuguese would answer
+  // both with utilizador if left alone. It has a second word that fits the
+  // broader one exactly: o utente, the person who uses a service. So der
+  // Benutzer keeps o utilizador and der Nutzer takes o utente.
+  //
+  // Der Drehbuchautor is o argumentista, which is the only word Portugal uses
+  // for the person who writes the script.
+  "langfristig": "a longo prazo",
+  "liefern": "entregar",
+  "lokal": "local",
+  "lächerlich": "ridículo",
+  "mithören": "escutar às escondidas",
+  "das Modell": "o modelo",
+  "mächtig": "poderoso",
+  "der Nutzer": "o utente",
+  "der Parameter": "o parâmetro",
+  "die Produktlinie": "a linha de produtos",
+  "reaktionsschnell": "de resposta rápida",
+  "riesig": "enorme",
+  "der Schieberegler": "a barra deslizante",
+  "sicherstellen": "assegurar",
+  "sich spezialisieren": "especializar-se",
+  "die Synchronisierung": "a sincronização",
+  "verschieden": "diferente",
+  "visuell": "visual",
+  "das Volumen": "o volume",
+  "weiterentwickeln": "aperfeiçoar",
+  "die Zukunft": "o futuro",
+  "zusätzlich": "adicional",
+  "zuvor": "anteriormente",
+  "anstatt": "em vez de",
+  "aufgebracht": "indignado",
+  "der Autor": "o autor",
+  "außerhalb": "fora de",
+  "der Blog": "o blogue",
+  "britisch": "britânico",
+  "die Chancengleichheit": "a igualdade de oportunidades",
+  "der Drehbuchautor": "o argumentista",
+  "der Ersteller": "o criador",
+  "der Gesprächsverlauf": "o histórico da conversa",
 };
