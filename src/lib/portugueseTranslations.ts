@@ -3647,7 +3647,7 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Bei uns ist Fernwärme im Haus.": "No nosso prédio há aquecimento urbano.",
   "Wir haben auf Ökostrom umgestellt.": "Mudámos para eletricidade verde.",
   "Das Gerät zieht ziemlich viel Strom.": "Aquele aparelho gasta bastante eletricidade.",
-  "Der Wasserkocher ist schneller als der Herd.": "A chaleira elétrica é mais rápida do que o fogão.",
+  "Der Wasserkocher ist schneller als der Herd.": "O jarro elétrico é mais rápido do que o fogão.",
   "Im Keller riecht es nach Gas — ruf mal an.": "Na cave cheira a gás — liga lá para eles.",
   "Die Steckdose hier ist kaputt.": "Esta tomada está avariada.",
   "Zieh den Stecker, wenn du fertig bist.": "Tira a ficha quando acabares.",
@@ -27605,4 +27605,81 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Knapp. Und die Verpackung ist leider komplett aus Plastik.": "À justa. E infelizmente a embalagem é toda de plástico.",
   "Egal, wir nehmen ihn. Vorsicht beim Tragen, das Holz ist empfindlich.": "Tanto faz, levamos. Cuidado a transportar, a madeira é delicada.",
   "Welche Note hast du in der Klassenarbeit bekommen?": "Que nota é que tiveste no teste?",
+
+  // ── The capstone conversations, third twelve ───────────────────────────
+  //
+  // Eine Zwei stays a German mark here as it does in the school pack: in
+  // Germany a two is a good grade and on the Portuguese scale it is not, so
+  // renumbering the card would invert what it teaches.
+  //
+  // Der Kühlschrank is o frigorífico in these lines. The gate refuses only the
+  // one card that ASKS how to say fridge in German; a conversation about a
+  // magnet sticking to one is an ordinary sentence with an ordinary word.
+  //
+  // Muskelkater keeps the words the packs taught it with, dores musculares.
+  // One older card called a Wasserkocher a chaleira, the pot you put on a hob;
+  // it moves to o jarro elétrico, which is what the other nine cards say and
+  // what the appliance is called in a Portuguese kitchen.
+  //
+  // Der Fachmann is still o entendido.
+  "Eine Zwei! Dabei ist Mathe echt nicht mein Fach.": "Um dois! E olha que matemática não é mesmo a minha praia.",
+  "Eine Zwei ist super. Hat wieder jemand abgeschrieben?": "Um dois é ótimo. Alguém voltou a copiar?",
+  "Klar, und der Lehrer hat es sofort gemerkt.": "Claro, e o professor deu logo por isso.",
+  "Selber schuld. Das Zeugnis kommt ja schon nächste Woche.": "A culpa é dele. As notas saem já para a semana.",
+  "Mein Nacken ist total verspannt, und die Schulter tut auch weh.": "Tenho a nuca completamente tensa e o ombro também dói.",
+  "Zu viel am Schreibtisch? Beweg mal die Finger — tut da was weh?": "Secretária a mais? Mexe lá os dedos — dói alguma coisa?",
+  "Nein, aber das Handgelenk ist ein bisschen geschwollen.": "Não, mas o pulso está um bocado inchado.",
+  "Dann leg heute eine Pause ein und kühl das Gelenk.": "Então hoje faz uma pausa e põe gelo na articulação.",
+  "Mach ich. Muskelkater in den Waden habe ich auch noch.": "Faço. E ainda tenho dores musculares nas barrigas das pernas.",
+  "Hast du den Kommentar gesehen? Das macht mich echt wütend.": "Viste o comentário? Isso põe-me mesmo furiosa.",
+  "Ich kann das auch nicht mehr ertragen. Wer hat das gepostet?": "Eu também já não aguento isto. Quem é que publicou aquilo?",
+  "Keine Ahnung, irgendein neues Konto. Ich dreh gleich durch.": "Não faço ideia, uma conta nova qualquer. Estou quase a passar-me.",
+  "Melde es einfach und gut. Das ist meistens so bei denen.": "Denuncia e pronto. Com esses é quase sempre assim.",
+  "Stimmt. Ich freu mich schon drauf, wenn das Konto weg ist.": "É verdade. Já estou ansiosa por ver a conta desaparecer.",
+  "Hast du die Nachrichten gelesen? Es droht ein weiterer Stellenabbau.": "Leste as notícias? Ameaça haver mais um corte de postos de trabalho.",
+  "Ja. Für die Region klingt das nach einer echten Bedrohung.": "Li. Para a região isso soa a uma ameaça a sério.",
+  "Trifft es auch eure Firma?": "Também atinge a vossa empresa?",
+  "Noch nicht. Unser Produkt ist ein typischer Anwendungsfall für die neue Technik.": "Ainda não. O nosso produto é um caso de utilização típico da técnica nova.",
+  "Dann hoffen wir, dass das so bleibt.": "Então esperemos que assim continue.",
+  "Du hast nicht geantwortet. Hast du meine Nachricht gesehen?": "Não respondeste. Viste a minha mensagem?",
+  "Erst jetzt! Die Benachrichtigung war irgendwie weg.": "Só agora! A notificação tinha desaparecido não sei porquê.",
+  "Schon wieder? Bei mir war das auch mal so.": "Outra vez? A mim também já me aconteceu.",
+  "Ich habe dann den Verlauf im Browser gelöscht, seitdem geht es.": "Depois apaguei o histórico do browser e desde aí funciona.",
+  "Gut. Ohne Premium-Abo bleibt eben manches komisch.": "Bom. É que sem subscrição premium há coisas que ficam sempre estranhas.",
+  "Wir sammeln Geld für ein Geschenk. Bist du dabei?": "Estamos a juntar dinheiro para uma prenda. Alinhas?",
+  "Klar. Für die Kollegin aus Schweden, oder?": "Claro. Para a colega da Suécia, não é?",
+  "Genau, sie geht zurück nach Schweden zu ihrer alten Firma.": "Exatamente, vai voltar para a Suécia, para a antiga empresa dela.",
+  "Schade. Ich hab ihr versprochen, dass wir sie besuchen.": "Que pena. Eu prometi-lhe que a íamos visitar.",
+  "Dann halte das Versprechen. Schweden im Sommer soll wunderschön sein.": "Então cumpre a promessa. Dizem que a Suécia no verão é lindíssima.",
+  "Kommst du kurz raus? Du musst dir das ansehen.": "Chegas cá fora um bocadinho? Tens de ver isto.",
+  "Was denn? Ich hab nichts gehört.": "O quê? Eu não ouvi nada.",
+  "Eben! Die ganze Straße ist leer, alle Autos sind weg.": "Pois é! A rua toda está vazia, os carros desapareceram todos.",
+  "Das ist doch verrückt. So was hab ich noch nie gesehen.": "Mas isso é uma loucura. Nunca vi tal coisa.",
+  "Morgen wird gebaut, stand auf den Schildern. Wir brauchen einen Parkplatz.": "Amanhã há obras, estava nas placas. Precisamos de estacionamento.",
+  "Hast du es gehört? Er ist von seinem Amt zurückgetreten.": "Já soubeste? Demitiu-se do cargo.",
+  "Endlich. Das Ergebnis der Prüfung war ja auch enttäuschend.": "Finalmente. E o resultado da auditoria também foi dececionante.",
+  "Und die Angaben im Bericht waren unvollständig.": "E os dados do relatório estavam incompletos.",
+  "Kann sein Nachfolger da überhaupt mithalten?": "E o sucessor dele consegue sequer acompanhar o ritmo?",
+  "Mal sehen. Das Update zur Sache verzögert sich ja sowieso.": "Veremos. A atualização sobre o assunto está atrasada de qualquer maneira.",
+  "Ich habe die Maschine online bestellt. Ist die noch auf Lager?": "Encomendei a máquina pela internet. Ainda está em stock?",
+  "Ja, die Lieferung kommt Donnerstag. Der Versand ist kostenlos.": "Está, a entrega chega na quinta. Os portes são grátis.",
+  "Sehr gut. Kann ich auch in Raten zahlen?": "Muito bem. Também posso pagar a prestações?",
+  "Können Sie, drei oder sechs Monate. Und Sie können jederzeit kündigen.": "Pode, a três ou seis meses. E pode cancelar a qualquer momento.",
+  "Perfekt. Ist das Zubehör eigentlich im Preis mit drin?": "Perfeito. E afinal os acessórios estão incluídos no preço?",
+  "Ist der Lautsprecher eigentlich kabelgebunden oder kabellos?": "Afinal a coluna é com fios ou sem fios?",
+  "Beides — das Kabel ist abnehmbar. Und der Klang ist überraschend gut.": "As duas coisas — o cabo é amovível. E a sonoridade é surpreendentemente boa.",
+  "Ist er mit meinem Handy kompatibel?": "É compatível com o meu telemóvel?",
+  "Ja. In den Einstellungen lässt sich sogar die Helligkeit vom Display anpassen.": "É. Nas definições até se pode ajustar o brilho do ecrã.",
+  "Gut. Dann fehlt mir nur noch das Zubehör dazu.": "Bom. Então só me faltam os acessórios.",
+  "Warum hält ein Magnet eigentlich am Kühlschrank, aber nicht an der Tür?": "Afinal porque é que um íman se agarra ao frigorífico e não à porta?",
+  "Die Tür ist aus Holz. Ein Magnetfeld zieht nur Metall an.": "A porta é de madeira. Um campo magnético só atrai metal.",
+  "Und warum fällt er nicht einfach runter?": "E porque é que não cai simplesmente?",
+  "Die Reibung hält ihn oben. Physik im Alltag.": "É o atrito que o segura. Física no dia a dia.",
+  "Dann bist du dran mit dem Stromkreis von der Lampe. Erklären, bitte!": "Então agora é a tua vez com o circuito elétrico do candeeiro. Explica lá!",
+  "Schon wieder alles dunkel! Die Sicherung ist raus.": "Outra vez tudo às escuras! Saltou o disjuntor.",
+  "Dann ist zu viel auf einem Stromkreis. Was lief denn alles?": "Então há coisas a mais no mesmo circuito. O que é que estava ligado?",
+  "Waschmaschine, Ofen und der Wasserkocher.": "A máquina de lavar, o forno e o jarro elétrico.",
+  "Na klar. Zu viel Stromstärke, der Widerstand macht das nicht mit.": "Pois claro. Intensidade de corrente a mais, a resistência não aguenta.",
+  "Beim Schalter hat es sogar einen Funken gegeben. Das schaut sich ein Fachmann an.": "No interruptor até houve uma faísca. Isso vai ver um entendido.",
+  "Mein Fahrrad ist voller Rost. Was mache ich dagegen?": "A minha bicicleta está cheia de ferrugem. O que é que faço?",
 };
