@@ -20788,4 +20788,128 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Ich bin fertig, darf ich raus?": "Já acabei, posso sair?",
   "Streng dich ein bisschen an.": "Esforça-te um bocadinho.",
   "Da kannst du stolz auf dich sein.": "Disso podes orgulhar-te.",
+
+  // ── Clearing the air (part134) ──────────────────────────────────────────
+  //
+  // Sich wieder vertragen is fazer as pazes, and beleidigt sein, in this
+  // tone, is estar amuada — a sulk rather than an offence. Für mich ist das
+  // erledigt is por mim está arrumado.
+  "Ich gebe zu, das war mein Fehler.": "Admito, a culpa foi minha.",
+  "Das war ein Missverständnis.": "Foi um mal-entendido.",
+  "Ich wollte das nur kurz klarstellen.": "Só queria esclarecer isto.",
+  "Das war kein Vorwurf.": "Não estava a censurar-te.",
+  "Bist du jetzt beleidigt?": "Agora ficaste amuada?",
+  "Es tut mir aufrichtig leid.": "Lamento sinceramente.",
+  "Ich hätte das anders sagen sollen.": "Eu devia ter dito isso de outra maneira.",
+  "Können wir uns wieder vertragen?": "Fazemos as pazes?",
+  "So war das nicht gemeint.": "Não foi isso que eu quis dizer.",
+  "Lass uns nochmal in Ruhe reden.": "Vamos falar outra vez com calma.",
+  "Ich habe überreagiert, sorry.": "Exagerei na reação, desculpa.",
+  "Da hast du recht, das sehe ich ein.": "Nisso tens razão, reconheço.",
+  "Ich glaube, der Kellner hat sich vertan.": "Acho que o empregado se enganou.",
+  "Kein Problem, wirklich.": "Não há problema nenhum, a sério.",
+  "Das ist für mich erledigt.": "Por mim está arrumado.",
+  "Ich bin dir nicht böse.": "Não estou zangada contigo.",
+  "Reden wir morgen weiter?": "Continuamos a conversa amanhã?",
+  "Danke, dass du es angesprochen hast.": "Obrigada por teres levantado o assunto.",
+  "Hast du kurz Zeit? Ich wollte etwas klarstellen.": "Tens um bocadinho? Queria esclarecer uma coisa.",
+  "Klar, setz dich.": "Claro, senta-te.",
+  "Danke, dass du es ansprichst.": "Obrigada por levantares o assunto.",
+  "Schon gut. Für mich ist das erledigt.": "Está tudo bem. Por mim está arrumado.",
+
+  // ── When the machine stops (part135) ────────────────────────────────────
+  //
+  // Das Passwort is a palavra-passe, die Datei is o ficheiro and der
+  // Bildschirm is o ecrã, as everywhere else in this table. Abstürzen is ir
+  // abaixo — a Portuguese program goes down rather than crashes.
+  "Ich habe mein Passwort vergessen.": "Esqueci-me da palavra-passe.",
+  "Ich kann mich nicht anmelden.": "Não consigo entrar na conta.",
+  "Das Programm ist abgestürzt.": "O programa foi abaixo.",
+  "Auf dem Bildschirm ist alles verschoben.": "No ecrã está tudo desalinhado.",
+  "Die Tastatur reagiert nicht mehr.": "O teclado deixou de responder.",
+  "Der Monitor geht gar nicht erst an.": "O monitor nem sequer liga.",
+  "Ich finde die Datei nicht.": "Não encontro o ficheiro.",
+  "Der Drucker macht wieder Probleme.": "A impressora está outra vez a dar problemas.",
+  "Der Speicher ist voll.": "A memória está cheia.",
+  "Hast du es mal neu gestartet?": "Já experimentaste reiniciar?",
+  "Es lädt und lädt.": "Está sempre a carregar e nunca mais.",
+  "Da kommt eine Fehlermeldung.": "Aparece uma mensagem de erro.",
+  "Ich habe alles gespeichert, zum Glück.": "Ainda bem que gravei tudo.",
+  "Kannst du mal draufschauen?": "Podes dar uma vista de olhos?",
+  "Das Update hat ewig gedauert.": "A atualização demorou um século.",
+  "Ich mache ein Backup, sicherheitshalber.": "Vou fazer uma cópia de segurança, por precaução.",
+  "Es funktioniert wieder!": "Já está a funcionar outra vez!",
+  "Keine Ahnung, was das war.": "Não faço ideia do que foi aquilo.",
+  "Schick mir mal einen Screenshot.": "Manda-me uma captura de ecrã.",
+  "Bei mir funktioniert nichts mehr.": "Aqui já não funciona nada.",
+  "Ja, zweimal. Es lädt und lädt.": "Já, duas vezes. Está sempre a carregar e nunca mais.",
+  "Kommt eine Fehlermeldung?": "Aparece alguma mensagem de erro?",
+  "Moment, ich schicke dir einen Screenshot.": "Espera, mando-te uma captura de ecrã.",
+  "Perfekt, dann schaue ich mal drauf.": "Perfeito, então dou uma vista de olhos.",
+
+  // ── Du, Sie, and the moment somebody offers (part136) ───────────────────
+  //
+  // This is one German pack that crosses over whole, because Portuguese has
+  // the same two doors: duzen is tratar por tu and siezen is tratar por você.
+  // The offer itself, podemos tratar-nos por tu, is made at exactly the same
+  // point in a Portuguese conversation.
+  //
+  // Zu vertraulich sein is ser confiada de mais, which is the word Portuguese
+  // reaches for when somebody has been over-familiar.
+  "Können wir uns duzen?": "Podemos tratar-nos por tu?",
+  "Wir siezen uns hier eigentlich.": "Aqui, na verdade, tratamo-nos por você.",
+  "Gerne, ich bin die Anna.": "Com todo o gosto, eu sou a Anna.",
+  "Entschuldigung, ich wollte nicht zu vertraulich sein.": "Desculpe, não queria ser confiada de mais.",
+  "Bei uns duzen sich alle.": "Aqui tratam-se todos por tu.",
+  "Ich bringe ein kleines Gastgeschenk mit.": "Levo uma lembrança para os anfitriões.",
+  "Blumen gehen eigentlich immer.": "Flores servem sempre.",
+  "Wollen wir anstoßen?": "Vamos brindar?",
+  "Prost! Auf euch!": "Saúde! A vocês!",
+  "Darf ich Ihnen etwas anbieten?": "Posso oferecer-lhe alguma coisa?",
+  "Bitte, nach Ihnen.": "Faça favor, passe primeiro.",
+  "Lassen Sie sich Zeit.": "Não tenha pressa.",
+  "Wie darf ich Sie ansprechen?": "Como prefere que o trate?",
+  "Ich sage lieber Sie, wenn es recht ist.": "Prefiro tratar por você, se não se importa.",
+  "Grüß dich!": "Viva!",
+  "Schön, Sie kennenzulernen.": "Muito prazer em conhecê-lo.",
+  "Danke, dass ich kommen durfte.": "Obrigada pelo convite.",
+  "Ich melde mich, sobald ich zu Hause bin.": "Digo alguma coisa assim que chegar a casa.",
+  "Wir arbeiten jetzt schon ein Jahr zusammen.": "Já trabalhamos juntos há um ano.",
+  "Stimmt, das ist verrückt.": "É verdade, é de doidos.",
+  "Können wir uns nicht duzen?": "Não nos podemos tratar por tu?",
+  "Sehr gern. Ich bin die Anna.": "Com muito gosto. Eu sou a Anna.",
+  "Freut mich, Anna. Ich bin Tom.": "Muito prazer, Anna. Eu sou o Tom.",
+  "Auf uns dann. Prost!": "A nós, então. Saúde!",
+
+  // ── The body, part by part (part137) ────────────────────────────────────
+  //
+  // Die Wade is a barriga da perna, and einen Kloß im Hals haben is ter um nó
+  // na garganta — a knot rather than a dumpling, and the only thing about the
+  // feeling that changes. Sich durchstrecken is espreguiçar-se.
+  "Meine Schulter tut weh.": "Dói-me o ombro.",
+  "Ich habe mir den Ellbogen gestoßen.": "Bati com o cotovelo.",
+  "Mein Handgelenk ist geschwollen.": "Tenho o pulso inchado.",
+  "Ich habe Muskelkater in den Waden.": "Tenho as barrigas das pernas cheias de dores.",
+  "Der Nacken ist total verspannt.": "Tenho a nuca completamente tensa.",
+  "Mir ist der Rücken eingeschlafen.": "Fiquei com as costas dormentes.",
+  "Ich bin auf den Knöchel gefallen.": "Caí em cima do tornozelo.",
+  "Halt mal kurz die Luft an.": "Prende a respiração um bocadinho.",
+  "Beweg bitte mal die Finger.": "Mexe lá os dedos, se faz favor.",
+  "Tut das weh, wenn ich hier drücke?": "Dói quando carrego aqui?",
+  "Ich kann den Arm kaum heben.": "Quase não consigo levantar o braço.",
+  "Mir ist schwindelig.": "Estou tonta.",
+  "Ich habe einen Kloß im Hals.": "Tenho um nó na garganta.",
+  "Meine Füße sind eiskalt.": "Tenho os pés gelados.",
+  "Streck dich mal richtig durch.": "Espreguiça-te bem.",
+  "Das verheilt von allein.": "Isso sara sozinho.",
+  "Ich bin einfach kaputt.": "Estou simplesmente estoirada.",
+  "Schon besser, danke.": "Já melhor, obrigada.",
+  "Mein Kopf tut weh.": "Dói-me a cabeça.",
+  "Ich habe kalte Hände.": "Tenho as mãos frias.",
+  "Ihre Augen sind grün, seine blau.": "Os olhos dela são verdes, os dele azuis.",
+  "Der Zahn wackelt schon.": "O dente já abana.",
+  "Streck mal die Arme aus.": "Estica lá os braços.",
+  "Ich stehe den ganzen Tag auf den Beinen.": "Passo o dia todo em pé.",
+  "Wasch dir bitte die Hände.": "Lava as mãos, se faz favor.",
+  "Mein rechtes Knie zwickt beim Treppensteigen.": "O joelho direito dá-me pontadas a subir escadas.",
 };
