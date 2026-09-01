@@ -344,6 +344,14 @@ const NOT_FOR_PORTUGUESE = new Set([
   // die Wortart is a classe de palavras, die Zeichensetzung is a pontuação.
   // The line is between a word about language and a rule about German.
   "Der deutsche Satzbau stellt das Verb an die zweite Stelle.",
+  // phrasebank — two cards about how German is spelled, sitting in a pack that
+  // is otherwise about spelling a name aloud in any language. The umlaut and
+  // the sharp S exist only in German, so a Portuguese course has nothing to
+  // put on the answer side. The cards around them are kept and translated: how
+  // do you write your name, how many letters has the alphabet, capital or
+  // lower case.
+  "Mein Name schreibt sich mit einem Umlaut.",
+  "Man schreibt das mit einem scharfen S.",
 ]);
 /**
  * A list of sentences protects nothing if one of them has a typo in it, or if
@@ -358,6 +366,9 @@ const curriculum = [
   // about German word order sits in the advanced sentence bank, and without
   // this line the check above would report it as vanished on every build.
   fs.readFileSync(path.join(root, "src/lib/advancedWordPacks2.ts"), "utf8"),
+  // And the everyday phrasebank, which holds two of the single-card
+  // exclusions of its own.
+  fs.readFileSync(path.join(root, "src/lib/phrasebank.ts"), "utf8"),
 ].join("\n");
 const vanished = [...NOT_FOR_PORTUGUESE].filter((german) => !curriculum.includes(`"${german}"`));
 check(

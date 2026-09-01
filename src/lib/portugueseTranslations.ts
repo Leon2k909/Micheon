@@ -25420,4 +25420,101 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Geht klar.": "Combinado.",
   "Kein Ding.": "Não custa nada.",
   "Wird gemacht.": "Fica feito.",
+
+  // ── Boxing, Tourette, ADHD and the numbers (phrasebank, seventh) ────────
+  //
+  // Ein blauer Fleck is uma nódoa negra, and er kämpft in der Rechtsauslage is
+  // ele luta como canhoto — Portuguese names the stance by the hand.
+  //
+  // The neurodiversity pack takes the Portuguese clinical names: ADHS is PHDA,
+  // die Reizüberflutung is a sobrecarga sensorial, and stimming, masking and
+  // body doubling stay as they are, because Portuguese borrowed them too.
+  // Mein Spezialinteresse becomes a gramática portuguesa — the learner's own
+  // grammar, since the card is about how a person is and not about Germany.
+  //
+  // The long scale carries straight over: Portugal counts mil milhões and um
+  // bilião exactly where German counts eine Milliarde and eine Billion, so the
+  // two cards keep the fact they were teaching. And the teens are European:
+  // dezasseis, dezassete, dezanove.
+  //
+  // Two cards of this stretch are NOT here — see the note in the gate. One is
+  // about the umlaut in a name, the other about the sharp S.
+  "Wie gesagt.": "Como já disse.",
+  "Und ob!": "E como!",
+  "Ganz genau.": "Exatamente isso.",
+  "Na sicher!": "Com certeza!",
+  "Ich hab doch gesagt, dass wir das schaffen!": "Eu bem disse que nós conseguíamos!",
+  "Und dann hab ich gesagt, das geht nicht.": "E então eu disse que não dava.",
+  "Ich hab ja nur gesagt, dass es regnen könnte.": "Eu só disse que podia chover.",
+  "Das hab ich so nicht gesagt.": "Não foi assim que eu disse.",
+  "So ungefähr.": "Mais ou menos isso.",
+  "Er hat ihm eine Kopfnuss gegeben.": "Deu-lhe uma cabeçada.",
+  "Ein Kopfstoß ist im Boxen illegal.": "No boxe a cabeçada é falta.",
+  "Nimm die Hände hoch und geh in Deckung!": "Levanta as mãos e protege-te!",
+  "Er hat einen perfekten Haken gelandet.": "Acertou um gancho perfeito.",
+  "Weich dem Schlag aus!": "Desvia-te do soco!",
+  "Er trainiert täglich Schattenboxen.": "Treina sombra todos os dias.",
+  "Wir machen heute leichtes Sparring.": "Hoje fazemos sparring leve.",
+  "Der Kampf endete mit einem Knockout.": "O combate acabou por knockout.",
+  "Sein Führhand-Jab ist extrem schnell.": "O jab dele é rapidíssimo.",
+  "Er hat versucht, einen Takedown zu machen.": "Tentou fazer uma queda.",
+  "Im Clinch kann man nicht gut schlagen.": "Em clinch não se bate bem.",
+  "Der Würgegriff war sehr eng.": "O estrangulamento estava muito apertado.",
+  "Er hat einen blauen Fleck vom Sparring.": "Ficou com uma nódoa negra do sparring.",
+  "Er kämpft in der Rechtsauslage.": "Ele luta como canhoto.",
+  "Gib nicht auf, bleib auf den Beinen!": "Não desistas, aguenta-te de pé!",
+  "Ich habe Tourette, das ist ein unwillkürlicher Tic.": "Tenho Tourette, é um tique involuntário.",
+  "Entschuldigung, das war ein motorischer Tic.": "Desculpe, foi um tique motor.",
+  "Mein Auge zuckt, wenn ich müde bin.": "O meu olho treme quando estou cansada.",
+  "Er muss sich oft räuspern.": "Tem de pigarrear muitas vezes.",
+  "Bitte ignoriere meine Tics einfach.": "Ignora simplesmente os meus tiques, se faz favor.",
+  "Ich kann diese Bewegungen nicht kontrollieren.": "Não consigo controlar estes movimentos.",
+  "Unter Stress werden die Tics viel schlimmer.": "Com stress os tiques pioram muito.",
+  "Tics zu unterdrücken kostet extrem viel Kraft.": "Suster os tiques custa uma força enorme.",
+  "Das ist keine Absicht, sondern ein Reflex.": "Não é de propósito, é um reflexo.",
+  "Koprolalie betrifft nur wenige Menschen mit Tourette.": "A coprolalia afeta apenas algumas pessoas com Tourette.",
+  "Die Tics kommen und gehen in Wellen.": "Os tiques vêm e vão por vagas.",
+  "Mach dir keine Sorgen, es tut mir nicht weh.": "Não te preocupes, não me faz doer.",
+  "Hat er einen nervösen Tick?": "Ele tem algum tique nervoso?",
+  "Es ist ein neurologisches Symptom.": "É um sintoma neurológico.",
+  "Danke für dein Verständnis!": "Obrigada pela tua compreensão!",
+  "Ich habe ADHS und kann mich schwer konzentrieren.": "Tenho PHDA e custa-me concentrar.",
+  "Ich bin gerade im Hyperfokus.": "Estou em hiperfoco neste momento.",
+  "Hier ist es zu laut, ich habe eine Reizüberflutung.": "Aqui há barulho a mais, estou em sobrecarga sensorial.",
+  "Stimming hilft mir, mich zu beruhigen.": "O stimming ajuda-me a acalmar.",
+  "Ich leide heute unter exekutiver Dysfunktion.": "Hoje estou com disfunção executiva.",
+  "Mein Spezialinteresse ist die deutsche Grammatik.": "O meu interesse especial é a gramática portuguesa.",
+  "Masking kann auf Dauer sehr erschöpfend sein.": "A longo prazo o masking pode ser muito esgotante.",
+  "Lass uns Body-Doubling machen, um produktiv zu sein.": "Vamos fazer body doubling para render mais.",
+  "Ich brauche einen Gehörschutz wegen meiner Geräuschempfindlichkeit.": "Preciso de proteção auditiva por causa da minha sensibilidade ao ruído.",
+  "Neurodiversität bereichert unsere Gesellschaft.": "A neurodiversidade enriquece a nossa sociedade.",
+  "Ich zappele oft mit den Füßen herum.": "Ando muitas vezes a mexer os pés.",
+  "Sein Gehirn funktioniert einfach ein bisschen anders.": "O cérebro dele funciona simplesmente de outra maneira.",
+  "Manchmal vergesse ich zu essen, wenn ich abgelenkt bin.": "Às vezes esqueço-me de comer quando estou distraída.",
+  "Ich brauche eine Pause an einem ruhigen Ort.": "Preciso de uma pausa num sítio sossegado.",
+  "Jeder Mensch lernt auf seine eigene Weise.": "Cada pessoa aprende à sua maneira.",
+  "Können Sie das bitte buchstabieren?": "Pode soletrar, se faz favor?",
+  "Wie schreibt man deinen Namen?": "Como é que se escreve o teu nome?",
+  "Das Alphabet hat sechsundzwanzig Buchstaben.": "O alfabeto tem vinte e seis letras.",
+  "Null, eins, zwei, drei, vier, fünf, sechs, sieben, acht, neun, zehn.": "Zero, um, dois, três, quatro, cinco, seis, sete, oito, nove, dez.",
+  "Elf, zwölf, dreizehn, vierzehn, fünfzehn, sechzehn, siebzehn, achtzehn, neunzehn, zwanzig.": "Onze, doze, treze, catorze, quinze, dezasseis, dezassete, dezoito, dezanove, vinte.",
+  "Einundzwanzig ist eins plus zwanzig.": "Vinte e um é um mais vinte.",
+  "Ich bin der Erste in der Reihe.": "Sou o primeiro da fila.",
+  "Heute ist der einunddreißigste Juli.": "Hoje é trinta e um de julho.",
+  "Wir brauchen die doppelte Menge.": "Precisamos do dobro.",
+  "Drei plus vier ist sieben.": "Três mais quatro são sete.",
+  "Zehn geteilt durch zwei ist fünf.": "Dez a dividir por dois são cinco.",
+  "Einhundert, eintausend, eine Million.": "Cem, mil, um milhão.",
+  "Schreiben Sie das mit einem großen oder kleinen Buchstaben?": "Escreve isso com maiúscula ou minúscula?",
+  "Eine Milliarde entspricht tausend Millionen.": "Mil milhões é o mesmo que mil vezes um milhão.",
+  "Eine Billion entspricht tausend Milliarden.": "Um bilião é o mesmo que mil vezes mil milhões.",
+  "Das ist halt so.": "As coisas são assim.",
+  "Wir können ins Kino gehen oder so.": "Podemos ir ao cinema ou assim.",
+  "Ich bin quasi schon fertig.": "Estou praticamente pronta.",
+  "Komm mal her!": "Chega aqui!",
+  "Das hast du doch gewusst!": "Mas tu sabias disso!",
+  "Es ist schon ziemlich spät.": "Já é bastante tarde.",
+  "Das ist ja toll!": "Isso é que é bom!",
+  "Mach das eben fertig.": "Acaba lá isso.",
+  "Das ist wohl wahr.": "Lá isso é verdade.",
 };
