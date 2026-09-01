@@ -538,6 +538,99 @@ check(
   twoAnswers.length === 0
 );
 
+/**
+ * THE PLACES.
+ *
+ * A card that is not about Germany does not send anybody to Berlin. This is
+ * the rule the course was written under from the moment it was asked for, and
+ * the cards that shipped before it have now been brought into line: a ticket
+ * is to Coimbra, a cancelled flight was to Funchal, the polytechnic is in
+ * Porto, the cousin nobody has met is from Faro.
+ *
+ * WHY AN EXPLICIT LIST RATHER THAN A RULE. Whether a card is ABOUT Germany is
+ * not a property of the sentence. "Wartet der Anschluss in Hannover?" reads
+ * like an ordinary question about a connecting train; it sits in a pack that
+ * also teaches the Deutschlandticket, the ICE and the fine for riding without
+ * a ticket, so its places stay German with the rest of them. No pattern can
+ * see that. Guessing it from the pack was tried — scripts/portugal-audit.cjs
+ * still does, for finding candidates — but a guess is not something to fail a
+ * build on. So the thirty cards allowed to keep a German place are listed, each
+ * having been read, and a thirty-first has to be argued for here.
+ */
+const GERMAN_PLACES = [
+  "Berlim", "Munique", "Hamburgo", "Colónia", "Frankfurt", "Estugarda",
+  "Dresden", "Leipzig", "Bona", "Bremen", "Hanôver", "Nuremberga", "Mannheim",
+  "Mainz", "Kassel", "Potsdam", "Tübingen", "Göttingen", "Düsseldorf",
+  "Baviera", "Renânia", "Vestefália", "Flensburg", "Gartenstraße",
+  "Goethestraße", "Alexanderplatz",
+];
+const KEEPS_ITS_GERMAN_PLACE = new Set([
+  // German rail, end to end: the ticket that is not valid on an ICE, the
+  // replacement bus, the connection that may or may not wait, the platform
+  // announcement. Move one of these to Portugal and the pack teaches nothing.
+  "Der ICE nach Berlin fällt heute aus.",
+  "Der Anschluss in Mannheim ist knapp, nur acht Minuten.",
+  "Wir haben nur acht Minuten in Mannheim.",
+  "Ab Göttingen wird es meistens leerer.",
+  "Nächster Halt: Alexanderplatz. Ausstieg in Fahrtrichtung rechts.",
+  "Einmal nach Köln und zurück, bitte.",
+  "Wartet der Anschluss in Hannover?",
+  "Wissen Sie zufällig, wo die Goethestraße ist?",
+  "Wir müssen in Hannover umsteigen.",
+  "Ab Kassel ist Schienenersatzverkehr.",
+  "Doch! Ab Potsdam. Um Mitternacht waren wir zu Hause. Aber hey, das Deutschlandticket hat sich gelohnt.",
+  "Die Mitfahrgelegenheit nach Berlin kostet fünfzehn Euro.",
+  "Wir fahren doch beide jeden Tag nach Mainz.",
+  // The German roads, which are named the way German roads are named.
+  "A7 Richtung Hamburg, kurz nach der Raststätte.",
+  "Wir sind auf der B27, kurz vor der Ausfahrt Tübingen.",
+  // Carnival, which is a different festival with a different shout in each
+  // city, and the pack is about exactly that difference.
+  "In Köln ruft man Alaaf, in Düsseldorf Helau.",
+  "Im Rheinland steht die Stadt an Rosenmontag still.",
+  "In Bayern heißt das Ganze Fasching.",
+  "Der Krapfen mit Senf ist der klassische Streich.",
+  "Kommst du am Rosenmontag mit nach Köln? Karneval!",
+  "Als Pirat, wie immer. Eine Regel musst du kennen: In Köln rufst du 'Alaaf'. Niemals 'Helau'.",
+  "'Helau' ist Düsseldorf. Damit outest du dich sofort — im schlimmsten Fall kriegst du kein Kölsch mehr.",
+  "Kölle Alaaf!",
+  // The doughnut that is called something different in every region, which is
+  // the joke the card is made of. A bola de Berlim is the Portuguese name for
+  // the thing, so it names Berlin whichever way round it is read.
+  "der Krapfen",
+  "der Berliner",
+  // The registers a German keeps: the plate that says where a car is from, the
+  // state you live in, the points that accumulate in Flensburg, the trophy
+  // that goes to Munich.
+  "Das Kfz-Kennzeichen ist aus München.",
+  "Wir wohnen in NRW.",
+  "Punkte kommen nach Flensburg.",
+  "Ich habe einen Punkt in Flensburg bekommen.",
+  "Die Schale geht dieses Jahr wohl wieder nach München.",
+]);
+const strayPlaces = pairs.filter(
+  (row) =>
+    !KEEPS_ITS_GERMAN_PLACE.has(row.german) &&
+    GERMAN_PLACES.some((place) => edge(place).test(row.portuguese))
+);
+check(
+  `no card outside Germany sends anybody to a German place${strayPlaces.length ? ` — ${strayPlaces[0].german}` : ""}`,
+  strayPlaces.length === 0
+);
+/**
+ * And the list stays honest. An entry for a card that no longer names a place
+ * — or no longer exists — reads like a decision somebody made and is not one,
+ * which is how an allow-list quietly turns into a place to hide things.
+ */
+const stalePlaces = [...KEEPS_ITS_GERMAN_PLACE].filter((german) => {
+  const row = pairs.find((r) => r.german === german);
+  return !row || !GERMAN_PLACES.some((place) => edge(place).test(row.portuguese));
+});
+check(
+  `every card allowed a German place still has one${stalePlaces.length ? ` — ${stalePlaces[0]}` : ""}`,
+  stalePlaces.length === 0
+);
+
 if (failures.length) {
   console.error(`\n${failures.length} Portuguese table problem${failures.length === 1 ? "" : "s"}`);
   process.exit(1);
