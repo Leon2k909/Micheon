@@ -11672,6 +11672,41 @@ html[data-theme="dark"] {
   gap: 14px;
 }
 
+/* Replay, on the closed-book stage where the audio IS the question.
+   Quiet and inside the cue box, because it is part of being asked rather
+   than a control the learner has to go looking for. */
+.fs-closed-recall-again {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  border: 1px solid var(--card-edge, var(--border));
+  border-radius: 999px;
+  padding: 6px 12px;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 800;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.fs-closed-recall-again:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* The seconds left on a reading stage, on the button that ends it early.
+   Quiet: it is a fact about the stage, not a deadline being enforced, and a
+   loud number turns ten seconds of reading into ten seconds of being timed. */
+.lesson-cta-count {
+  margin-inline-start: 8px;
+  border-radius: 999px;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
 /* A conversation on a listening card.
  *
  * Left-aligned, unlike everything else here, because the turns have to line

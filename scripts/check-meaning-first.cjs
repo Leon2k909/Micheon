@@ -115,8 +115,12 @@ check("the meaning is the big line",
 check("the target sits underneath it, still tappable",
   /phase === "MeaningFirst" \?[\s\S]{0,1400}<TappableSentence text=\{item\.de\}/u.test(guided),
   "the target is missing from the stage, or is there as dead text");
+// Matched as "MeaningFirst is one of the stages that speaks" rather than as
+// the exact line, which broke the moment closed-book recall joined the list —
+// it needs the audio to say WHICH phrase it is asking about.
 check("it plays the target rather than leaving it silent",
-  guided.includes('if (phase === "ListenPick" || phase === "MeaningFirst") lessonSpeak(item.de, 0.88, targetLang);'),
+  /if \(phase === "ListenPick" \|\| phase === "MeaningFirst"[\s\S]{0,120}?lessonSpeak\(item\.de, 0\.88, targetLang\);/u.test(guided)
+    && !/phase !== "MeaningFirst"[\s\S]{0,60}?\) return;[\s\S]{0,40}?lessonSpeak/u.test(guided),
   "a stage about how the phrase is SAID does not say it");
 check("it has no input of its own",
   !/phase === "MeaningFirst"[\s\S]{0,1200}<(input|textarea)/u.test(guided),

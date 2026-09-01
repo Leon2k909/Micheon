@@ -170,6 +170,19 @@ const AUTO_CHECK_PAUSE_MS = 450;
 const MISSING_WORD_OPENING_MS = 700;
 
 /**
+ * How long a reading stage waits before going on by itself.
+ *
+ * Read and Meaning first ask for no answer — they show the phrase, speak it,
+ * and wait for a press that is the same press every single time. Ten seconds
+ * is long enough to read a sentence and hear it through, and the countdown is
+ * on screen the whole time, so it is a stage that finishes rather than a
+ * screen that is taken away.
+ */
+const READING_STAGE_MS = 10_000;
+/** The stages that read to you and ask nothing back. */
+const READING_PHASES: readonly Phase[] = ["Read", "MeaningFirst"];
+
+/**
  * An answer reduced to the letters and digits in it, lower case.
  *
  * Only ever compared with another answer's shape, to ask whether one is the
@@ -2242,10 +2255,20 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     // MeaningFirst plays it too: the point of that stage is meeting the pair
     // in the direction you speak in, and rehearsing a line you have only read
     // is how a learner ends up with a sentence they cannot say out loud.
-    if (phase !== "Read" && phase !== "ListenPick" && phase !== "MeaningFirst") return;
-    if (phase === "ListenPick" || phase === "MeaningFirst") lessonSpeak(item.de, 0.88, targetLang);
+    // RecallBoth plays it because otherwise nothing on the card says WHICH
+    // phrase to recall. A sitting practises six and comes back to every one of
+    // them, so "what you just practised" was six things and the learner had to
+    // guess which before they could answer. Hearing it names the phrase and
+    // prints neither answer, which is the whole point of a closed book.
+    if (phase !== "Read" && phase !== "ListenPick"
+      && phase !== "MeaningFirst" && phase !== "RecallBoth") return;
+    if (phase === "ListenPick" || phase === "MeaningFirst" || phase === "RecallBoth") {
+      lessonSpeak(item.de, 0.88, targetLang);
+    }
     else if (hasFr) ttsSequence([{ text: item.de, lang: "de-DE" }, { text: item.fr, rate: 0.85, lang: "fr-FR" }]);
     else lessonSpeak(item.de, 0.88, targetLang);
+    /* eslint-disable-next-line no-useless-return */
+    return;
   }, [phase, item.de, item.fr, hasFr, audioMuted, targetLang]);
 
   // Focus input when entering Type or Translate phase
@@ -2928,6 +2951,48 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     }
   };
 
+  /**
+   * A reading stage counts itself down and then moves on.
+   *
+   * Held while the voice is still going, because a long sentence — or a
+   * paragraph — can run past ten seconds, and taking the card away
+   * mid-sentence is worse than any amount of waiting. The count restarts when
+   * the audio stops, so what the learner gets is ten seconds of silence to
+   * read in rather than ten seconds that began before the reading could.
+   *
+   * Tapping a word restarts it too. Somebody who stopped to hear one word is
+   * the last person who should be hurried.
+   */
+  const [readingLeft, setReadingLeft] = useState<number | null>(null);
+  const restartReadingCountdown = useCallback(() => {
+    if (READING_PHASES.includes(phase)) setReadingLeft(READING_STAGE_MS / 1000);
+  }, [phase]);
+
+  useEffect(() => {
+    if (!READING_PHASES.includes(phase)) {
+      setReadingLeft(null);
+      return undefined;
+    }
+    // Nothing counts down while the phrase is still being spoken.
+    if (ttsOn) {
+      setReadingLeft(READING_STAGE_MS / 1000);
+      return undefined;
+    }
+    const tick = window.setInterval(() => {
+      setReadingLeft((left) => {
+        if (left === null) return null;
+        if (left > 1) return left - 1;
+        // The last tick advances. Cleared here rather than in a second effect
+        // so the stage cannot be advanced twice by a tick that outlives it.
+        window.clearInterval(tick);
+        if (currentPhaseRef.current === phase) advance();
+        return null;
+      });
+    }, 1000);
+    return () => window.clearInterval(tick);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, ttsOn]);
+
   const previewMissingWord = (choice: string) => {
     setMissingWordPreview(choice);
     lessonSpeak(choice, 0.78, targetLang);
@@ -3239,7 +3304,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             </h1>
             <p className="fs-sub">
               {phase === "RecallBoth"
-                    ? ui("No answers are shown now. Type both sides from memory.")
+                    ? ui(audioMuted ? "No answers are shown now. Type both sides from memory." : "Listen to the phrase, then type both sides from memory.")
                     : hasFr
                       ? ui(audioMuted
                         ? "Read, choose, then type it in German and French."
@@ -3367,7 +3432,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               <small>{ui("Select its meaning below")}</small>
             </div>
             <div className="fs-line">
-              <TappableSentence text={item.de} lang={targetLang} meaningText={item.en} />
+              <TappableSentence text={item.de} lang={targetLang} meaningText={item.en} onWordAudio={restartReadingCountdown} />
             </div>
           </div>
         ) : phase === "ListenPick" ? (
@@ -3393,7 +3458,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               </div>
               <div className="fs-line">
                 {missingWordChecked && missingWordCorrect
-                  ? <TappableSentence text={item.de} lang={targetLang} meaningText={item.en} />
+                  ? <TappableSentence text={item.de} lang={targetLang} meaningText={item.en} onWordAudio={restartReadingCountdown} />
                   : missingWord.display}
               </div>
             </div>
@@ -3423,14 +3488,38 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             </div>
             <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="fs-trow">
               <span className="fs-chip">{meaningIsGerman ? "EN" : "DE"}</span>
-              <p><TappableSentence text={item.de} lang={targetLang} meaningText={item.en} /></p>
+              <p><TappableSentence text={item.de} lang={targetLang} meaningText={item.en} onWordAudio={restartReadingCountdown} /></p>
             </motion.div>
           </>
         ) : phase === "RecallBoth" ? (
           <div className="fs-closed-recall-cue">
             <span><EyeOff aria-hidden="true" className="h-4 w-4" /> {ui("Closed-book recall")}</span>
-            <strong>{ui("Recall what you just practised in both languages.")}</strong>
-            <small>{ui("Neither answer is shown unless you choose Hint or Show answer.")}</small>
+            {audioMuted ? (
+              <>
+                {/*
+                  With the sound off the phrase has to be named some other way,
+                  or the stage is a question about which of six phrases this is.
+                  The meaning is the smaller giveaway: it identifies the phrase
+                  while leaving the German — the harder half, and the one the
+                  first box asks for — still to be recalled.
+                */}
+                <strong>{shownEnglish}</strong>
+                <small>{uiFmt("Type this in {language}, and type the meaning back.", { language: ui(targetLabel) })}</small>
+              </>
+            ) : (
+              <>
+                <strong>{ui("Listen, then type both sides from memory.")}</strong>
+                <small>{ui("Neither answer is shown unless you choose Hint or Show answer.")}</small>
+                <button
+                  className="fs-closed-recall-again"
+                  onClick={() => lessonSpeak(item.de, 0.88, targetLang)}
+                  type="button"
+                >
+                  <Volume2 aria-hidden="true" className="h-4 w-4" />
+                  {ui("Play it again")}
+                </button>
+              </>
+            )}
           </div>
         ) : phase === "Order" ? (
           <div className="fs-reorder-prompt">
@@ -3493,7 +3582,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 {/* Retrieval stages hide the answer, then reveal it after a correct response. */}
                 {phase === "Gap" && !(gapChecked && gapResult.ok) ? gap.display
                   : phase === "WriteFromMemory" && !sayChecked ? "• • •"
-                  : <TappableSentence text={item.de} lang={targetLang} meaningText={item.en} />}
+                  : <TappableSentence text={item.de} lang={targetLang} meaningText={item.en} onWordAudio={restartReadingCountdown} />}
               </div>
             </div>
             <AnimatePresence>
@@ -3563,7 +3652,11 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             {/* One Hear-it only — the purple listen button in the heading replays. */}
             <Button onClick={advance}
               className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
-              {ui("Continue")} <ChevronRight className="ml-2 h-4 w-4" />
+              {ui("Continue")}
+              {readingLeft === null
+                ? null
+                : <span className="lesson-cta-count">{uiFmt("{seconds}s", { seconds: uiNumber(readingLeft) })}</span>}
+              <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           </motion.div>
         )}
@@ -3576,7 +3669,11 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             </p>
             <Button onClick={advance}
               className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
-              {ui("Continue")} <ChevronRight className="ml-2 h-4 w-4" />
+              {ui("Continue")}
+              {readingLeft === null
+                ? null
+                : <span className="lesson-cta-count">{uiFmt("{seconds}s", { seconds: uiNumber(readingLeft) })}</span>}
+              <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           </motion.div>
         )}

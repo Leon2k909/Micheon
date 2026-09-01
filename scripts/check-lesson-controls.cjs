@@ -338,6 +338,67 @@ for (const [handler, stage] of [
   );
 }
 
+// ── closed-book recall names the phrase it is asking about ──────────────
+// "Recall what you just practised" works when one thing was practised. A
+// sitting teaches six and comes back to all of them, so the stage was asking
+// the learner to work out WHICH before they could start answering.
+check(
+  "the closed-book stage plays the phrase, so it is clear which one it means",
+  /phase === "ListenPick" \|\| phase === "MeaningFirst" \|\| phase === "RecallBoth"/.test(guided)
+    && guided.includes('{ui("Listen, then type both sides from memory.")}')
+);
+check(
+  "...and can be replayed, because the audio is the question",
+  guided.includes('className="fs-closed-recall-again"')
+    && css.includes(".fs-closed-recall-again {")
+);
+check(
+  "with the sound off it names the phrase some other way rather than not at all",
+  /audioMuted \? \(\s*<>[\s\S]{0,700}?<strong>\{shownEnglish\}<\/strong>/.test(guided),
+  "muting the audio leaves the closed-book stage with no way to say which phrase it wants"
+);
+check(
+  "and it still prints neither answer when the sound is on",
+  !/phase === "RecallBoth" \? \([\s\S]{0,400}?<strong>\{item\.de\}/.test(guided)
+);
+
+// ── a reading stage finishes on its own ────────────────────────────────────
+// Read and Meaning first ask for no answer: they show the phrase, speak it,
+// and wait for a press that is the same press every time. The stage counts
+// itself down instead, with the number on screen throughout, so it reads as a
+// stage ending rather than a screen being taken away.
+check(
+  "the reading stages count down and move on",
+  /const READING_STAGE_MS = 10_000;/.test(guided)
+    && /const READING_PHASES: readonly Phase\[\] = \["Read", "MeaningFirst"\];/.test(guided)
+    && /if \(currentPhaseRef\.current === phase\) advance\(\);/.test(guided)
+);
+check(
+  "...and only those two, so nothing that asks a question answers itself",
+  !/READING_PHASES[^\n]*"(Type|Translate|Gap|Order|WriteFromMemory|RecallBoth|MeaningSelect|ListenPick|MissingWord)"/.test(guided)
+);
+check(
+  "the count is on screen the whole time, not a surprise at the end",
+  guided.includes('<span className="lesson-cta-count">')
+    && /uiFmt\("\{seconds\}s", \{ seconds: uiNumber\(readingLeft\) \}\)/.test(guided)
+    && css.includes(".lesson-cta-count {")
+);
+// A long sentence, or a paragraph, runs past ten seconds. Counting through it
+// would take the card away mid-phrase, which is worse than any wait.
+check(
+  "nothing counts down while the phrase is still being spoken",
+  /if \(ttsOn\) \{\s*\n\s*setReadingLeft\(READING_STAGE_MS \/ 1000\);/.test(guided),
+  "the countdown runs under the audio, so a long clip is cut off by its own stage"
+);
+check(
+  "stopping to hear one word restarts it rather than being counted as idling",
+  /onWordAudio=\{restartReadingCountdown\}/.test(guided)
+);
+check(
+  "a tick that outlives its stage cannot advance the next one",
+  /window\.clearInterval\(tick\);\s*\n\s*if \(currentPhaseRef\.current === phase\) advance\(\);/.test(guided)
+);
+
 // ── the missing-word stage opens by playing ────────────────────────────────
 // Three options, one word each, every one behind a button: answering cost
 // three presses before the learner could form an opinion. The first plays on
