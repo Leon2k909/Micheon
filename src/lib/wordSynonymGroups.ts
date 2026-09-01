@@ -322,6 +322,11 @@ export const KEEP_APART: string[][] = [
   // never had. Pass is the everyday word AND the mountain road; it keeps
   // its own card, and Reisepass stays the full formal name beside it.
   ["pass"],
+  // Glossed "excuse, pretext" it folded into die Ausrede, and the fold put
+  // "pretext" on the Ausrede card. An Ausrede is the excuse you make up
+  // afterwards; a Vorwand is the pretext you act under — unter dem Vorwand,
+  // dass — and the course teaches the difference, so they stay two cards.
+  ["vorwand"],
 ];
 
 const KEEP_APART_WORDS = new Set(

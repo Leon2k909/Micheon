@@ -131,7 +131,7 @@ export const roundingWordPartBlueprints: Record<string, Blueprint> = {
     { de: "der Haushaltsplan", lookup: "Haushaltsplan", fallbackEn: "budget plan", tip: "noun", article: "der" },
   ]),
   part548: pack("Part 548", "B1", "Words to eight thousand 4", "Reviewed words no pack taught yet, 94–124 of 156.", [
-    { de: "der Vorwand", lookup: "Vorwand", fallbackEn: "pretext", tip: "noun", article: "der" },
+    { de: "der Vorwand", lookup: "Vorwand", fallbackEn: "excuse, pretext", tip: "noun", article: "der", use: "a reason given to hide the real one: unter dem Vorwand, dass … — on the pretext that …" },
     { de: "die Verschwörung", lookup: "Verschwörung", fallbackEn: "conspiracy", tip: "noun", article: "die" },
     { de: "der Demonstrant", lookup: "Demonstrant", fallbackEn: "protester", tip: "noun", article: "der" },
     { de: "der Ärmelkanal", lookup: "Ärmelkanal", fallbackEn: "the English Channel", tip: "noun", article: "der" },
