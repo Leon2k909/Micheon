@@ -21283,4 +21283,82 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Die Erwärmung der Meere verläuft schneller, als jede bisherige Prognose annahm.": "O aquecimento dos mares está a ser mais rápido do que qualquer previsão até agora supunha.",
   "Der Ausstoß pro Kopf sagt mehr als die Gesamtzahl.": "As emissões por pessoa dizem mais do que o total.",
   "Naturkatastrophen treffen selten die, die sie verursacht haben.": "As catástrofes naturais raramente atingem quem as causou.",
+
+  // ── Finding the fault and fixing it (part432) ───────────────────────────
+  //
+  // The idioms carry over as idioms. Auf den Grund gehen is ir ao fundo da
+  // questão, in Angriff nehmen is deitar mãos a, auf die Spur kommen is
+  // apanhar o rasto a, and ausfindig machen is dar com — Portuguese finds a
+  // thing by coming upon it.
+  //
+  // Der Defekt is o defeito, not uma avaria: this table already gives avaria
+  // to die Panne, and a course that answers two German words with one
+  // Portuguese word teaches neither.
+  "die Fehlerquelle": "a origem do erro",
+  "der Lösungsansatz": "a abordagem",
+  "die Schwachstelle": "o ponto fraco",
+  "die Übergangslösung": "a solução provisória",
+  "der Defekt": "o defeito",
+  "feststellen": "apurar",
+  "ermitteln": "averiguar",
+  "beseitigen": "eliminar",
+  "diagnostizieren": "diagnosticar",
+  "fehlerhaft": "defeituoso",
+  "unzureichend": "insuficiente",
+  "provisorisch": "provisório",
+  "funktionsfähig": "operacional",
+  "vergeblich": "em vão",
+  "zwangsläufig": "forçosamente",
+  "notdürftig": "com um remendo",
+  "gezielt": "de forma dirigida",
+  "auf den Grund gehen": "ir ao fundo da questão",
+  "in Angriff nehmen": "deitar mãos a",
+  "Abhilfe schaffen": "remediar a situação",
+  "ausfindig machen": "dar com",
+  "sich einen Überblick verschaffen": "ficar com uma visão de conjunto",
+  "zurückführen auf": "atribuir a",
+  "sich erweisen als": "revelar-se",
+  "instand setzen": "pôr em condições",
+  "systematisch vorgehen": "proceder com método",
+  "auf die Spur kommen": "apanhar o rasto a",
+
+  // ── The diary, the deadline and the dawdling (part433) ──────────────────
+  //
+  // Der Zeitfresser is um sorvedouro de tempo, trödeln is remanchar, and den
+  // Überblick behalten is não perder o fio à meada. All three exist in
+  // Portuguese already; none of them needed inventing.
+  //
+  // Aufschieben and vertagen split: adiar for the task you push to tomorrow,
+  // protelar for the decision somebody keeps pushing away.
+  "der Zeitplan": "o cronograma",
+  "die Nebensache": "uma questão secundária",
+  "die Priorität": "a prioridade",
+  "der Zeitrahmen": "o prazo previsto",
+  "der Terminkalender": "a agenda",
+  "der Puffer": "a folga",
+  "die Dringlichkeit": "a urgência",
+  "der Stichtag": "a data-limite",
+  "der Zeitfresser": "um sorvedouro de tempo",
+  "der Rückstand": "o atraso acumulado",
+  "zeitaufwendig": "moroso",
+  "überfällig": "fora de prazo",
+  "vorrangig": "prioritário",
+  "termingerecht": "dentro do prazo",
+  "vollgepackt": "a abarrotar",
+  "zeitkritisch": "de prazo crítico",
+  "vorab": "de antemão",
+  "kurzerhand": "sem mais nem menos",
+  "zwischenzeitlich": "entretanto",
+  "planmäßig": "conforme previsto",
+  "aufschieben": "adiar",
+  "sich vornehmen": "propor-se a",
+  "straffen": "apertar",
+  "sich verzetteln": "perder-se em pormenores",
+  "trödeln": "remanchar",
+  "vertagen": "protelar",
+  "eine Frist einhalten": "cumprir um prazo",
+  "Zeit totschlagen": "matar o tempo",
+  "unter Zeitdruck stehen": "estar com o tempo em cima",
+  "Zeit für etwas einplanen": "contar com tempo para uma coisa",
+  "den Überblick behalten": "não perder o fio à meada",
 };
