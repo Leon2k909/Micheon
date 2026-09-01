@@ -27756,4 +27756,79 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Den Schreiner. Das Glas oben macht der Glaser gleich mit.": "Do marceneiro. O vidro de cima fica logo a cargo do vidraceiro.",
   "Drei Betriebe für ein kleines Bad. Gutes Handwerk hat seinen Preis.": "Três empresas para uma casa de banho pequena. O bom ofício custa o seu dinheiro.",
   "Mein Neffe fängt im August seine Ausbildung an. Drei Jahre!": "O meu sobrinho começa a formação profissional em agosto. Três anos!",
+
+  // ── The capstone conversations, fifth twelve ───────────────────────────
+  //
+  // The workshop and the mountain, and again the word bank came first: der
+  // Bauzaun is o tapume da obra, die Serpentine is a curva em gancho, der
+  // Wanderführer is o guia de percursos, die Böe is o golpe de vento, das
+  // Naturschutzgebiet is a reserva natural, der Handwerker is o artífice.
+  //
+  // Der Rohbau had no card of its own and gets the trade word a Portuguese
+  // builder uses, a obra em tosco — the shell standing before anything is
+  // finished inside it.
+  //
+  // Reparieren kann jeder, montieren ist eine Kunst keeps the German shape of
+  // the joke by doubling the verb, which is how Portuguese says the same
+  // thing: reparar qualquer um repara.
+  "Mit Zwischenprüfung nach dem zweiten Ausbildungsjahr, wie immer.": "Com prova intercalar no fim do segundo ano de formação, como sempre.",
+  "Und nach der Abschlussprüfung ist er dann Geselle.": "E depois da prova final fica oficial.",
+  "Genau. Der Meisterbrief kommt später, wenn er will.": "Exatamente. A carta de mestre vem mais tarde, se ele quiser.",
+  "Die Innung hat ihm sogar schon einen Betrieb gezeigt.": "A corporação de ofício até já lhe mostrou uma empresa.",
+  "Nebenan geht es los! Die Baugrube ist schon fertig.": "Ao lado já começou! A vala da fundação já está feita.",
+  "Dann kommt jetzt das Fundament. Der Betonmischer steht ja bereit.": "Agora vem a fundação. E a betoneira já está a postos.",
+  "Der Bauleiter meinte, der Rohbau steht vor dem Winter.": "O diretor de obra disse que a obra em tosco fica pronta antes do inverno.",
+  "Sportlich. Und der Innenausbau?": "Ambicioso. E os acabamentos interiores?",
+  "Im Frühjahr, alles in Trockenbau. Die Baugenehmigung hing übrigens am Bauzaun.": "Na primavera, tudo em construção a seco. Já agora, a licença de construção estava afixada no tapume da obra.",
+  "Hast du die Schraubzwinge gesehen? Ich finde sie nicht.": "Viste o grampo? Não o encontro.",
+  "Neben der Drehbank, unter deinem Overall.": "Ao lado do torno mecânico, debaixo do teu fato-macaco.",
+  "Danke. Und das Sägeblatt für die Kettensäge?": "Obrigada. E a lâmina de serra da motosserra?",
+  "Ist gerade beim Schleifen. Nimm solange Feile und Stemmeisen.": "Está a ser afiada. Entretanto usa a lima e o formão.",
+  "Gut. Aber zuerst wird der Boden gefegt, die Sägespäne liegen überall.": "Está bem. Mas primeiro varre-se o chão, a serradura está por todo o lado.",
+  "Der Schrank wackelt. Da fehlt eine Schraube mit Unterlegscheibe.": "O armário abana. Falta ali um parafuso com anilha.",
+  "Schau in die Kiste — Gewinde in jeder Größe, Niete, Klammern.": "Vê na caixa — roscas de todos os tamanhos, rebites, agrafos.",
+  "Gefunden. Und die Leiste hier? Die Maserung passt gar nicht zum Rest.": "Encontrei. E esta ripa? O veio da madeira não condiz nada com o resto.",
+  "Das ist Furnier auf Spanplatte, kein echtes Holz.": "Isso é folha de madeira sobre aglomerado, não é madeira a sério.",
+  "Deshalb! Dann klebe ich sie mit Leim fest und gut ist.": "Ah, é por isso! Então colo-a com cola de madeira e pronto.",
+  "Wand verputzen, schleifen, streichen — richtig?": "Rebocar a parede, lixar, pintar — é isso?",
+  "Fast. Nach dem Verputzen erst grundieren, sonst hält die Farbe nicht.": "Quase. Depois de rebocar, aplicar primário, senão a tinta não pega.",
+  "Und das Regal? Zuschneiden und anschrauben?": "E a estante? Cortar à medida e aparafusar?",
+  "Erst anzeichnen, dann zuschneiden, dann verschrauben. Und alles festziehen.": "Primeiro marcar, depois cortar à medida, depois aparafusar. E apertar tudo bem.",
+  "Verstanden. Reparieren kann jeder — montieren ist eine Kunst.": "Percebido. Reparar qualquer um repara — montar é que é uma arte.",
+  "Der Handwerker war da. Hier ist der Kostenvoranschlag.": "O artífice esteve cá. Aqui está o orçamento.",
+  "Materialkosten, Stundenlohn ... und was ist diese Pauschale?": "Custo dos materiais, valor à hora... e o que é esta taxa fixa?",
+  "Anfahrt und Kleinkram. Dafür gibt es Skonto, wenn wir schnell zahlen.": "A deslocação e miudezas. Em contrapartida há desconto de pronto pagamento, se pagarmos depressa.",
+  "Vierzehn Tage Zahlungsziel steht hier. Machen wir.": "Diz aqui prazo de pagamento de catorze dias. Vamos a isso.",
+  "Und nach der Abnahme haben wir zwei Jahre Gewährleistung.": "E depois da receção da obra temos dois anos de garantia legal.",
+  "Sitzt dein Klettergurt? Ich prüfe noch mal jeden Karabiner.": "O teu arnês está bem posto? Vou verificar outra vez cada mosquetão.",
+  "Alles fest. Wie lang ist der Klettersteig?": "Está tudo firme. Qual é a extensão da via ferrata?",
+  "Zwei Stunden bis zum Grat, mit einer Stelle unterm Überhang.": "Duas horas até à crista, com uma passagem por baixo da saliência.",
+  "Und da oben? Trittsicherheit reicht, oder brauche ich mehr?": "E lá em cima? Passo firme chega, ou preciso de mais?",
+  "Reicht. Nur bei Regen wird der Fels ernst. Los jetzt.": "Chega. Só com chuva é que a rocha fica a sério. Vamos lá.",
+  "Hier stimmt was nicht. Auf der Wanderkarte ist ein Wegweiser.": "Aqui há coisa que não bate certo. No mapa de percursos há uma placa indicadora.",
+  "Der liegt da drüben im Gras. Der Wind war wohl zu stark.": "Está ali caída na erva. O vento deve ter sido forte de mais.",
+  "Super. Also: Rundweg links oder Aussichtspunkt rechts?": "Ótimo. Então: percurso circular à esquerda ou miradouro à direita?",
+  "Rechts, über die Serpentinen. Der Wanderführer schwärmt davon.": "À direita, pelas curvas em gancho. O guia de percursos fala muito bem disso.",
+  "Gut. An der Baumgrenze machen wir Rast.": "Está bem. Fazemos uma paragem no limite das árvores.",
+  "Alles ist klamm. Kriegen wir das Lagerfeuer trotzdem an?": "Está tudo húmido. Mesmo assim conseguimos acender a fogueira?",
+  "Mit dem trockenen Zunder aus der Dose, ja. Brennholz liegt unter der Plane.": "Com a isca de lume seca da lata, sim. A lenha está debaixo do oleado.",
+  "Gut mitgedacht. Und der Windschutz steht auch schon.": "Bem pensado. E o resguardo do vento também já está montado.",
+  "Dann Wasser in den Topf. Der Proviant reicht noch für zwei Tage.": "Então água na panela. Os mantimentos ainda dão para dois dias.",
+  "Perfekt. Morgen füllen wir die Trinkflaschen an der Quelle auf.": "Perfeito. Amanhã enchemos os cantis na nascente.",
+  "Endlich oben. Die Almwiese ist ja schöner als jedes Foto.": "Finalmente lá em cima. O prado alpino é mais bonito do que qualquer foto.",
+  "Und die Sennhütte hat offen! Käse und Milch, direkt von hier.": "E a cabana de queijeiro está aberta! Queijo e leite, tirados aqui mesmo.",
+  "Danach der Abstieg durch den Nadelwald, am Wildbach entlang.": "Depois a descida pela floresta de resinosas, ao longo da torrente.",
+  "Im Naturschutzgebiet bleiben wir auf dem Weg, klar.": "Na reserva natural vamos pelo trilho, é claro.",
+  "Klar. Und unten im Weiher kühlen wir die Füße.": "Claro. E lá em baixo refrescamos os pés na lagoa.",
+  "Siehst du den großen Vogel über dem Hang? Ein Adler?": "Vês a ave grande por cima da encosta? Uma águia?",
+  "Ein Bussard, glaube ich. Und hör mal: ein Specht.": "Um bútio, acho eu. E ouve lá: um pica-pau.",
+  "Vorhin stand ein Murmeltier direkt am Weg.": "Há bocado estava uma marmota mesmo à beira do trilho.",
+  "Besser als eine Kreuzotter. Auf die Steine trete ich vorsichtig.": "Melhor do que uma víbora. Nas pedras piso com cuidado.",
+  "Gute Idee. Die Gams da oben interessiert das alles gar nicht.": "Boa ideia. À camurça lá em cima nada disto lhe interessa.",
+  "Der Aufwind wird kalt, und da hinten wird es schwarz.": "A corrente ascendente está a arrefecer, e ali atrás está a ficar negro.",
+  "Dann runter. Bei Gewitter hat man auf dem Grat nichts verloren.": "Então para baixo. Com trovoada não se tem nada que fazer na crista.",
+  "Die Hütte meldet Graupel und Böen. Lawinengefahr ist zum Glück keine.": "O refúgio avisa saraivo e golpes de vento. Perigo de avalanche, felizmente, não há.",
+  "Trotzdem: Steinschlag nach dem Regen. Helm auf.": "Mesmo assim: queda de pedras depois da chuva. Capacete na cabeça.",
+  "Und falls was passiert, hat die Bergrettung heute sowieso viel zu tun.": "E se acontecer alguma coisa, o salvamento em montanha hoje já tem muito que fazer.",
+  "Guten Tag, dieses Paket soll nach Polen. Was kostet das Porto?": "Boa tarde, esta encomenda vai para a Polónia. Quanto custam os portes?",
 };
