@@ -22,30 +22,57 @@ export const SENTENCE_PHASES = [
 ] as const;
 
 /**
- * The route asked for the same sentence to be written out nine times.
+ * This is the FULL route, and it is what missing the typing test costs.
  *
- * Type, Translate, then Type again and Translate again — the second pair
- * being the first pair verbatim — then the gap, then it from memory, then
- * three closed-book stages in a row, of which the third asks for both
- * languages the first two had just asked for one at a time.
+ * It asked for the same sentence to be written out nine times before: Type
+ * and Translate, then both again verbatim, then the gap, then from memory,
+ * then three closed-book stages of which the third asked for both languages
+ * the first two had just asked for one at a time. The two Again stages and
+ * the two single-direction recalls have gone — each was a question re-asked
+ * with nothing changed between the asks.
  *
- * Repetition is the point of the route; four of those were not repetition
- * but the same question re-asked with nothing changed between the asks, on a
- * sentence the learner had already produced correctly. So the two Again
- * stages have gone, and the two single-direction recalls give way to the one
- * that covers both. Five writing stages remain, each asking for something
- * the one before it did not.
- *
- * RecallTarget and RecallMeaning stay in the type: they are still the whole
- * route for material the learner already holds, where one direction at a
- * time is the right size of ask.
+ * Six writing stages remain here, which is still a lot; that is the point.
+ * Nobody meets this route by default any more. LEAN_SENTENCE_PHASES below is
+ * what a new phrase gets, and this is what it becomes when the one test in it
+ * is failed.
  */
-export type SentencePhase =
-  typeof SENTENCE_PHASES[number]
-  | "French"
-  | "Memory"
-  | "RecallTarget"
-  | "RecallMeaning";
+/**
+ * What a new phrase asks for when the one typing test is passed.
+ *
+ * The full route above writes the same sentence out six times: from audio,
+ * then copied off the screen, then translated, then half-copied into gaps,
+ * then from memory, then from memory again in both languages. Only the first
+ * of those is a test — after it, the answer has been produced once and the
+ * rest is transcription, and transcription is the slowest thing the app asks
+ * for. Time spent copying a phrase you have already written correctly is time
+ * not spent meeting the next one.
+ *
+ * So the typing stages come out and Hear & write stays, because it is the
+ * strongest single test there is: nothing on screen to copy, so passing it
+ * proves the sound, the spelling and the production together. Recognition is
+ * untouched — nothing here is replaced by a multiple choice, the choice
+ * stages are the ones that were always there.
+ *
+ * Closed-book recall moves to the review, where it is a real test. Asking for
+ * it ninety seconds after teaching the phrase was measuring the short-term
+ * memory of someone who had just read the answer four times.
+ */
+export const LEAN_SENTENCE_PHASES: readonly SentencePhase[] = [
+  "Read",
+  "MeaningSelect",
+  "ListenPick",
+  "MissingWord",
+  "Order",
+];
+
+/** The same bargain for a single word, which never had the gap or the order. */
+export const LEAN_WORD_PHASES: readonly SentencePhase[] = [
+  "Read",
+  "MeaningSelect",
+  "ListenPick",
+];
+
+export type SentencePhase = typeof SENTENCE_PHASES[number] | "French" | "Memory";
 
 export const BILINGUAL_SENTENCE_PHASES: readonly SentencePhase[] = [
   "Read",
@@ -57,9 +84,17 @@ export const BILINGUAL_SENTENCE_PHASES: readonly SentencePhase[] = [
   "Memory",
 ];
 
+/**
+ * A phrase the learner already holds: type both, closed book, once.
+ *
+ * This was three stages — recall the German, recall the meaning, then recall
+ * both — which is the same sentence typed out three times to answer one
+ * question. The third asks for everything the first two did, so it is the one
+ * that stayed. Getting it right is the fastest possible way through a phrase
+ * you know, which is the whole point of knowing it; getting it wrong puts the
+ * full route back, which is what the mistake is for.
+ */
 export const MASTERED_SENTENCE_PHASES: readonly SentencePhase[] = [
-  "RecallTarget",
-  "RecallMeaning",
   "RecallBoth",
 ];
 
@@ -77,10 +112,9 @@ export const WORD_PHASES: readonly SentencePhase[] = [
   "RecallBoth",
 ];
 
-/** A word the learner already holds: straight recall, both directions. */
+/** A word the learner already holds: both directions, in one answer. */
 export const MASTERED_WORD_PHASES: readonly SentencePhase[] = [
-  "RecallTarget",
-  "RecallMeaning",
+  "RecallBoth",
 ];
 
 /**
@@ -120,8 +154,16 @@ export interface SentencePhaseRouteOptions {
    *  route entirely rather than shown as a one-move formality. */
   orderable?: boolean;
   /** True when this sentence extends one taught earlier in the same sitting,
-   *  so the introduce-it-from-cold stages are already spent. */
+   *  so the introduce-from-cold stages are already spent. */
   chained?: boolean;
+  /**
+   * True once the learner has missed this phrase's typing test, or taken the
+   * options instead of typing it.
+   *
+   * That is the only thing that buys the writing stages back. They are not
+   * removed from the app — they are what a wrong answer is for.
+   */
+  typingFailed?: boolean;
 }
 
 export function buildSentencePhaseRoute({
@@ -131,16 +173,19 @@ export function buildSentencePhaseRoute({
   word = false,
   orderable = true,
   chained = false,
+  typingFailed = false,
 }: SentencePhaseRouteOptions): SentencePhase[] {
   const route: readonly SentencePhase[] = word
-    ? (mastered ? MASTERED_WORD_PHASES : WORD_PHASES)
+    ? (mastered ? MASTERED_WORD_PHASES : typingFailed ? WORD_PHASES : LEAN_WORD_PHASES)
     : mastered
     ? MASTERED_SENTENCE_PHASES
     : chained
       ? CHAINED_SENTENCE_PHASES
       : bilingual
         ? BILINGUAL_SENTENCE_PHASES
-        : SENTENCE_PHASES;
+        : typingFailed
+          ? SENTENCE_PHASES
+          : LEAN_SENTENCE_PHASES;
 
   return route.filter((phase) => {
     if (audioMuted && AUDIO_REQUIRED_PHASE_SET.has(phase)) return false;

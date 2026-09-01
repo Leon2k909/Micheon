@@ -37,6 +37,15 @@ export type GradeRecord = {
   declared?: boolean;
   /** last extra practice rep; does not move the spaced-review ladder */
   reinforcedAt?: string;
+  /**
+   * Credit earned by recalling this the same day it was learned, waiting to
+   * become a rung.
+   *
+   * Always below one: the moment it reaches a whole rung it is spent. Kept
+   * apart from `successes` because that number is the visible strength tier,
+   * and a tier that reads 1.5 is a tier nobody can act on.
+   */
+  partialSuccesses?: number;
   /** answer checks accumulated across completed/abandoned sentence routes */
   answerAttempts?: number;
   /** incorrect answer checks accumulated across sentence routes */
@@ -59,6 +68,21 @@ export type GradeRecord = {
  */
 export const REVIEW_INTERVALS_DAYS = [1, 3, 10, 30, 180];
 
+/**
+ * What recalling something the same day it was learned is worth.
+ *
+ * Half a rung. The ladder starts at a day because a recall an hour after the
+ * lesson is mostly short-term memory — you are remembering the answer, not
+ * the language. But it is not worth nothing: it is the difference between a
+ * phrase that stuck for an afternoon and one that never landed at all, and
+ * it is the only check that comes while the learner can still do something
+ * about the answer.
+ *
+ * So it banks, and two of them make the rung that one next-day recall makes
+ * on its own. Tomorrow counts for more, which is the point.
+ */
+export const SAME_DAY_SUCCESS_CREDIT = 0.5;
+
 /** Reviews mixed into a single session are capped so due backlogs never flood a lesson. */
 export const REVIEWS_PER_SESSION = 6;
 
@@ -79,7 +103,13 @@ function normalize(record: GradeRecord | undefined): Required<Pick<GradeRecord, 
 
 /** A successful recall: one rung up the ladder, next review scheduled. */
 export function recordSuccess(prior: GradeRecord | undefined, now = Date.now()): GradeRecord {
-  const successes = (prior?.lastGrade === "struggle" ? 0 : normalize(prior).successes) + 1;
+  const base = prior?.lastGrade === "struggle" ? 0 : normalize(prior).successes;
+  // Same-day credit banked since the last climb is spent here, so the checks
+  // a learner did in the afternoon shorten the road rather than vanishing.
+  // A struggle since then has already cleared the bank.
+  const banked = prior?.lastGrade === "struggle" ? 0 : Math.max(0, prior?.partialSuccesses ?? 0);
+  const earned = 1 + banked;
+  const successes = base + Math.floor(earned);
   const intervalDays = REVIEW_INTERVALS_DAYS[Math.min(successes - 1, REVIEW_INTERVALS_DAYS.length - 1)];
   return {
     ...prior,
@@ -89,6 +119,7 @@ export function recordSuccess(prior: GradeRecord | undefined, now = Date.now()):
     updatedAt: new Date(now).toISOString(),
     successes,
     intervalDays,
+    partialSuccesses: earned - Math.floor(earned),
     dueAt: new Date(now + intervalDays * DAY_MS).toISOString(),
   };
 }
@@ -132,6 +163,7 @@ export function recordStruggle(now = Date.now(), prior?: GradeRecord): GradeReco
     updatedAt: new Date(now).toISOString(),
     successes: 0,
     intervalDays: 0,
+    partialSuccesses: 0,
   };
 }
 
@@ -145,6 +177,52 @@ export function recordReinforcement(prior: GradeRecord, now = Date.now()): Grade
   return {
     ...prior,
     reinforcedAt: new Date(now).toISOString(),
+  };
+}
+
+/**
+ * Recalling a phrase the same day it was learned: half a rung, banked.
+ *
+ * The due date does NOT move. Tomorrow's review is the one that proves the
+ * phrase survived a night, and delaying it to reward an afternoon check would
+ * trade the better evidence for the weaker one. What the check buys is a
+ * shorter climb afterwards: bank half a rung now, and the next real recall
+ * spends it.
+ *
+ * Banking past a whole rung climbs immediately, which is what happens when a
+ * learner does the check on a phrase that already had credit waiting.
+ */
+export function recordSameDayCheck(prior: GradeRecord, now = Date.now()): GradeRecord {
+  const banked = Math.max(0, prior.partialSuccesses ?? 0) + SAME_DAY_SUCCESS_CREDIT;
+  const reinforced = { ...prior, reinforcedAt: new Date(now).toISOString() };
+  if (banked < 1) return { ...reinforced, partialSuccesses: banked };
+
+  const successes = normalize(prior).successes + Math.floor(banked);
+  const intervalDays = REVIEW_INTERVALS_DAYS[Math.min(successes - 1, REVIEW_INTERVALS_DAYS.length - 1)];
+  return {
+    ...reinforced,
+    successes,
+    intervalDays,
+    partialSuccesses: banked - Math.floor(banked),
+    dueAt: new Date(now + intervalDays * DAY_MS).toISOString(),
+  };
+}
+
+/**
+ * A same-day check that did not come back: the bank is cleared, and nothing
+ * else moves.
+ *
+ * Not a struggle. A struggle resets the whole ladder, and this is an OPTIONAL
+ * extra rep on a phrase whose real review has not come round yet — punishing
+ * it that hard would mean the safest thing a learner could do is skip the
+ * practice, which is the opposite of what it is for. Tomorrow's review still
+ * arrives on time and still decides.
+ */
+export function recordSameDayMiss(prior: GradeRecord, now = Date.now()): GradeRecord {
+  return {
+    ...prior,
+    reinforcedAt: new Date(now).toISOString(),
+    partialSuccesses: 0,
   };
 }
 

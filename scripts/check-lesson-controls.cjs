@@ -233,12 +233,50 @@ check(
     !guided.includes("TypeAgain") && !guided.includes("TranslateAgain"),
     "the stages still exist with no route reaching them, which is a screen nobody can get to"
   );
-  // The closed-book pair still runs for material the learner already holds,
-  // where one direction at a time is the right size of ask.
+  // Review is one typing test, not three. Recall the German, then the meaning,
+  // then both, was the same sentence written out three times to answer one
+  // question, and the third asks for everything the first two did.
   check(
-    "mastered material still recalls one direction at a time",
-    /MASTERED_WORD_PHASES[\s\S]{0,160}"RecallTarget"[\s\S]{0,60}"RecallMeaning"/.test(phases)
+    "a phrase already held is one closed-book answer, not three",
+    /MASTERED_SENTENCE_PHASES[\s\S]{0,400}?\[\s*"RecallBoth",\s*\]/.test(phases)
+      && /MASTERED_WORD_PHASES[\s\S]{0,200}?\[\s*"RecallBoth",\s*\]/.test(phases),
+    "a review sitting types the same sentence more than once"
   );
+  check(
+    "and the stages that asked for one direction are gone, not merely unrouted",
+    !phases.includes("RecallTarget") && !phases.includes("RecallMeaning")
+      && !guided.includes("RecallTarget") && !guided.includes("RecallMeaning"),
+    "two closed-book screens survive with no route reaching them"
+  );
+
+  // ── one typing test on a new phrase ────────────────────────────────────────
+  // Passing Hear & write is the evidence the writing stages existed to gather:
+  // the sound heard, the spelling right, the sentence produced with nothing on
+  // screen to copy from. Only missing it buys them back.
+  check(
+    "the route reads whether the typing test was missed",
+    guided.includes("const [typingFailed, setTypingFailed] = useState(false);")
+      && /chained: Boolean\(item\?\.chainedFromLesson\),\s*\n\s*typingFailed,/.test(guided)
+  );
+  for (const [name, pattern, why] of [
+    [
+      "a wrong answer sets it",
+      /setListeningMisses\(\(misses\) => misses \+ 1\);\s*\n\s*setTypingFailed\(true\);/,
+      "missing the one typing stage no longer earns the writing practice",
+    ],
+    [
+      "so does a near miss, because a spelling nudge is the stage doing its job",
+      /listeningTypeResult\.spellingNote \|\| listeningTypeResult\.capitalizationError\) \{\s*\n\s*setTypingFailed\(true\);/,
+      "an answer that needed a correction counts as having been produced cleanly",
+    ],
+    [
+      "and so does taking the four options, because picking one is recognition",
+      /setListeningMode\("pick"\);[\s\S]{0,140}?setTypingFailed\(true\);/,
+      "the options are a way round the one stage that has to be typed",
+    ],
+  ]) {
+    check(name, pattern.test(guided), why);
+  }
 }
 
 // ── how much course is left ──────────────────────────────────

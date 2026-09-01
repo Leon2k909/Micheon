@@ -466,8 +466,23 @@ const petQuestionSchedulerSource = petQuestionSchedulerStart >= 0 && petQuestion
   : "";
 check(
   "the app marks optional practice separately from successful scheduled recall",
-  labSource.includes("if (s.reinforcement) markReinforced(s.item.id, s.item.aliases);")
+  /if \(s\.reinforcement\) \{[\s\S]{0,200}?markReinforced\(s\.item\.id, s\.item\.aliases/.test(labSource)
+    && /else markKnown\(s\.item\.id, s\.item\.aliases\);/.test(labSource)
     && labSource.includes("setCanonicalGradeRecord(next, id, aliases, recordReinforcement(practised));")
+);
+// A phrase learned earlier today is offered back before the day is out, and
+// that is a third thing again: not a scheduled recall, and not the difficult
+// phrase getting an extra rep. It banks half a rung, and missing it clears
+// the bank rather than resetting the ladder — practice nobody had to do must
+// not be safer to skip.
+check(
+  "a same-day check is told apart from the other optional practice",
+  /markReinforced\(s\.item\.id, s\.item\.aliases, s\.reviewReason === "same-day"\)/.test(labSource)
+    && labSource.includes("clean ? recordSameDayCheck(practised) : recordSameDayMiss(practised)")
+);
+check(
+  "and it is the whole run that decides, not whichever answer came last",
+  labSource.includes("const clean = !performance || performance.mistakes === 0;")
 );
 check(
   "lesson completion does not bulk-grade skipped exercises",

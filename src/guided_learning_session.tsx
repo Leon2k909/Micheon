@@ -13,7 +13,7 @@ import { sentenceIdentityKey } from "@/lib/germanTextMatch";
 import { buildCatalog, buildSession, deriveImplicitChains, dialogueIsEarned, isReinforcementEligible, lessonMixForBacklog, orderWithChains, pickPreviewReplacement, rankReinforcementCandidates, resolveChainScores, selectContinueLearningMix, OLD_PER_LESSON } from "@/session";
 import { getLessonContent } from "@/lib/lessonContent";
 import { buildWordCatalog, buildWordSitting, rankWordCatalog } from "@/lib/wordSession";
-import { isDueForReview, isSnoozed, snoozeForDays, recordReinforcement, recordSuccess, recordStruggle, recordDeclaredKnown, recordPermanent, setStrengthLevel, type GradeRecord } from "@/lib/memoryStrength";
+import { isDueForReview, isSnoozed, snoozeForDays, recordReinforcement, recordSameDayCheck, recordSameDayMiss, recordSuccess, recordStruggle, recordDeclaredKnown, recordPermanent, setStrengthLevel, type GradeRecord } from "@/lib/memoryStrength";
 import { DIRECTION_CHANGE_EVENT, getLearningDirection, targetIsGerman } from "@/lib/direction";
 import { translationLanguagesNeeded } from "@/lib/courseLanguages";
 import { ensureTranslations } from "@/lib/translations";
@@ -751,7 +751,18 @@ export default function GuidedLearningSession() {
       // One climb per item per session: rechecks and dialogue lines repeat the
       // same id in the step list, and completion is a single recall event.
       const counted = new Set<string>();
-      const markReinforced = (id: string, aliases: string[] = []) => {
+      /**
+       * An optional extra rep, banked according to what it was.
+       *
+       * `sameDay` is a phrase learned earlier today, offered back to find out
+       * whether it stuck. Recalling it cleanly is worth half a rung — real
+       * evidence, but weaker than surviving a night, so two of them make what
+       * one next-day recall makes on its own. Missing it clears the banked
+       * credit and nothing else: this is practice the learner did not have to
+       * do, and resetting the ladder for it would make skipping the safer
+       * move. Tomorrow's review still arrives on time and still decides.
+       */
+      const markReinforced = (id: string, aliases: string[] = [], sameDay = false) => {
         if (!id || counted.has(id)) return;
         counted.add(id);
         const prior = progressEntryForId(next, id, aliases)?.record;
@@ -764,7 +775,19 @@ export default function GuidedLearningSession() {
           return;
         }
         const practised = recordAnswerPerformance(prior, performance);
-        setCanonicalGradeRecord(next, id, aliases, recordReinforcement(practised));
+        if (!sameDay) {
+          setCanonicalGradeRecord(next, id, aliases, recordReinforcement(practised));
+          return;
+        }
+        // A clean run through the stages is the check passing. Any mistake on
+        // the way means it had not stuck, whatever the last answer was.
+        const clean = !performance || performance.mistakes === 0;
+        setCanonicalGradeRecord(
+          next,
+          id,
+          aliases,
+          clean ? recordSameDayCheck(practised) : recordSameDayMiss(practised)
+        );
       };
       const markKnown = (id: string, aliases: string[] = []) => {
         if (!id || counted.has(id)) return;
@@ -794,7 +817,9 @@ export default function GuidedLearningSession() {
       };
       stepsToMark.forEach((s) => {
         if (s.type === "sentence" && s.item?.id) {
-          if (s.reinforcement) markReinforced(s.item.id, s.item.aliases);
+          if (s.reinforcement) {
+            markReinforced(s.item.id, s.item.aliases, s.reviewReason === "same-day");
+          }
           else markKnown(s.item.id, s.item.aliases);
         } else if (s.type === "dialogue" && Array.isArray(s.dialogue?.lines)) {
           // Completing a conversation means every line was practised — persist

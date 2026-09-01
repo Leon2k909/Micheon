@@ -256,14 +256,25 @@ assert.deepEqual(
   [...WORD_PHASES],
   ["Read", "MeaningSelect", "ListenPick", "Type", "Translate", "RecallBoth"]
 );
-assert.deepEqual([...MASTERED_WORD_PHASES], ["RecallTarget", "RecallMeaning"]);
+// One answer covers both directions, so a word already held is one stage.
+assert.deepEqual([...MASTERED_WORD_PHASES], ["RecallBoth"]);
 assert.deepEqual(
-  buildSentencePhaseRoute({ mastered: false, bilingual: true, audioMuted: false, word: true }),
+  buildSentencePhaseRoute({
+    mastered: false, bilingual: true, audioMuted: false, word: true, typingFailed: true,
+  }),
   [...WORD_PHASES],
   "a word item is being marched through the sentence route"
 );
+// Until it is failed, a word asks for the same single typing test a phrase does.
 assert.deepEqual(
-  buildSentencePhaseRoute({ mastered: false, bilingual: false, audioMuted: true, word: true }),
+  buildSentencePhaseRoute({ mastered: false, bilingual: true, audioMuted: false, word: true }),
+  ["Read", "MeaningSelect", "ListenPick"],
+  "a new word is being asked to write itself out more than once"
+);
+assert.deepEqual(
+  buildSentencePhaseRoute({
+    mastered: false, bilingual: false, audioMuted: true, word: true, typingFailed: true,
+  }),
   WORD_PHASES.filter((phase) => phase !== "ListenPick"),
   "muting audio removed more than the listening-only word stage"
 );

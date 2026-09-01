@@ -20,7 +20,14 @@ const root = path.join(__dirname, "..");
 
 const built = esbuild.buildSync({
   stdin: {
-    contents: `export { recallWeight, recordSuccess, recordStruggle } from "./src/lib/memoryStrength.ts";`,
+    contents: `
+      export {
+        recallWeight, recordSuccess, recordStruggle,
+        recordSameDayCheck, recordSameDayMiss, isDueForReview,
+        SAME_DAY_SUCCESS_CREDIT,
+      } from "./src/lib/memoryStrength.ts";
+      export { isSameDayCheckEligible } from "./src/lib/adaptivePractice.ts";
+    `,
     resolveDir: root,
     sourcefile: "decay-entry.ts",
   },
@@ -31,7 +38,10 @@ const built = esbuild.buildSync({
 const mod = new Module(path.join(root, "check-memory-decay.entry.cjs"), module);
 mod.paths = Module._nodeModulePaths(root);
 mod._compile(built.outputFiles[0].text, path.join(root, "check-memory-decay.entry.cjs"));
-const { recallWeight, recordSuccess } = mod.exports;
+const {
+  recallWeight, recordSuccess, recordSameDayCheck, recordSameDayMiss,
+  isDueForReview, isSameDayCheckEligible, SAME_DAY_SUCCESS_CREDIT,
+} = mod.exports;
 
 const DAY = 24 * 60 * 60 * 1000;
 const now = Date.now();
@@ -189,4 +199,69 @@ if (failures.length) {
   failures.forEach((line) => console.error("  " + line));
   process.exit(1);
 }
+
+/* ── the same-day check ────────────────────────────────────────
+ *
+ * The ladder starts at a day, so nothing learned today was due today and a
+ * first day could only ever be new material with nothing to test. A phrase
+ * learned this morning now comes back this afternoon as the closed-book
+ * check: worth something, worth less than surviving a night, and costing
+ * nothing when it goes wrong.
+ */
+{
+  const morning = Date.parse("2026-09-01T09:00:00Z");
+  const afternoon = morning + 6 * 60 * 60 * 1000;
+  const tomorrow = morning + DAY + 60 * 60 * 1000;
+  const learned = recordSuccess(undefined, morning);
+
+  if (isDueForReview(learned, afternoon)) {
+    failures.push("a phrase learned this morning counts as formally due this afternoon");
+  }
+  if (!isSameDayCheckEligible(learned, afternoon)) {
+    failures.push("a phrase learned this morning cannot be checked before the day is out");
+  }
+
+  const checked = recordSameDayCheck(learned, afternoon);
+  if (checked.partialSuccesses !== SAME_DAY_SUCCESS_CREDIT) {
+    failures.push("the same-day check banked something other than its credit");
+  }
+  if (checked.successes !== learned.successes) {
+    failures.push("a same-day check climbed a whole rung, so it counts as much as surviving a night");
+  }
+  if (checked.dueAt !== learned.dueAt) {
+    failures.push("the same-day check moved the due date, trading tomorrow's evidence for today's");
+  }
+  if (isSameDayCheckEligible(checked, afternoon + 60 * 60 * 1000)) {
+    failures.push("the same phrase can be checked twice in a day, which is drilling rather than spacing");
+  }
+
+  // Two of them make the rung that one next-day recall makes on its own.
+  const twice = recordSameDayCheck({ ...checked, reinforcedAt: undefined }, afternoon);
+  if (twice.successes !== learned.successes + 1) {
+    failures.push("two same-day checks did not add up to the rung they are each worth half of");
+  }
+
+  // Tomorrow lands where it always did, and carries the credit forward.
+  const night = recordSuccess(checked, tomorrow);
+  const plain = recordSuccess(learned, tomorrow);
+  if (night.intervalDays !== plain.intervalDays) {
+    failures.push("the afternoon check changed when tomorrow's review lands");
+  }
+  if (night.partialSuccesses !== SAME_DAY_SUCCESS_CREDIT) {
+    failures.push("the banked credit was thrown away by the next real recall instead of carrying");
+  }
+
+  // A miss is not a struggle: this is practice nobody had to do.
+  const missed = recordSameDayMiss(learned, afternoon);
+  if (missed.successes !== learned.successes) {
+    failures.push("missing an optional same-day check reset the ladder, so skipping it is safer");
+  }
+  if (missed.dueAt !== learned.dueAt) {
+    failures.push("missing the check moved the review it was not allowed to move");
+  }
+  if (missed.partialSuccesses !== 0) {
+    failures.push("a missed check kept its banked credit");
+  }
+}
+
 console.log(`check-memory-decay: fresh items count whole, a week late costs ${(1 - weekLate).toFixed(2)}, nothing falls below the floor, and one review restores full value`);
