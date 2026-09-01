@@ -21911,4 +21911,108 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Das Wort klingt deutsch, ist es aber nicht.": "A palavra soa a alemão, mas não é.",
   "Unten auf der Seite steht die Quelle.": "Ao fundo da página está a fonte.",
   "Diesen Ausdruck höre ich zum ersten Mal.": "É a primeira vez que ouço esta expressão.",
+
+  // ── Small words, and a browser misbehaving (part451) ────────────────────
+  //
+  // Auf Augenhöhe reden is falar de igual para igual, and die Augenhöhe itself
+  // is o pé de igualdade. Portuguese measures the equality by where the feet
+  // are standing rather than where the eyes are.
+  //
+  // The browser is European throughout: der Tab is o separador, der Download
+  // is a transferência, der Laptop is o portátil.
+  "gegenüber": "em frente de",
+  "raus": "para fora",
+  "verrückt": "doido",
+  "dafür": "a favor disso",
+  "daher": "por isso",
+  "darauf": "a isso",
+  "mehrere": "vários",
+  "verdoppeln": "duplicar",
+  "drängen": "pressionar",
+  "der Sprung": "o salto",
+  "die Augenhöhe": "o pé de igualdade",
+  "nahtlos": "sem emendas",
+  "landesweit": "à escala nacional",
+  "der Teamkollege": "o colega de equipa",
+  "das Zutun": "a intervenção",
+  "Ich bin gleich draußen.": "Estou já lá fora.",
+  "Kommst du kurz raus?": "Chegas cá fora um bocadinho?",
+  "Das ist doch verrückt.": "Isso é uma loucura.",
+  "Das hab ich noch nie gesehen.": "Nunca vi tal coisa.",
+  "Ich hab nichts gehört.": "Eu não ouvi nada.",
+  "Hast du was gehört?": "Ouviste alguma coisa?",
+  "Ich bin dafür.": "Eu sou a favor.",
+  "Darauf hab ich keine Lust.": "Não me apetece nada isso.",
+  "Wir brauchen weniger davon.": "Precisamos de menos disso.",
+  "Sei bitte etwas leiser.": "Faz menos barulho, se faz favor.",
+  "Wir reden auf Augenhöhe.": "Falamos de igual para igual.",
+  "Der Tab hängt, ich schließe ihn.": "O separador bloqueou, vou fechá-lo.",
+  "Zu viele Fenster sind offen, mein Laptop wird laut.": "Tenho janelas a mais abertas e o portátil começa a fazer barulho.",
+  "Diese Seite merkt sich mein Passwort nicht.": "Este site não guarda a minha palavra-passe.",
+  "Ich mache den Vollbildmodus an.": "Vou pôr em ecrã inteiro.",
+  "Der Download hängt bei neunzig Prozent.": "A transferência ficou presa nos noventa por cento.",
+  "Diesen Hinweis klicke ich immer sofort weg.": "Este aviso fecho-o sempre logo.",
+  "Im Lesemodus ist der Artikel viel angenehmer.": "No modo de leitura o artigo fica muito mais agradável.",
+  "Oben rechts ist das kleine Kreuz.": "No canto superior direito está a cruzinha.",
+
+  // ── Benchmarks, borders and resignations (part452) ──────────────────────
+  //
+  // Der Beamte is o funcionário público, and abschieben is expulsar do país —
+  // Portuguese names the country the person is put out of, because there is no
+  // one-word verb for it.
+  //
+  // Überfüllt takes superlotado, since a abarrotar already belongs to
+  // vollgepackt, and verkleinern takes diminuir, since reduzir belongs to
+  // einschränken.
+  "der Benchmark": "o teste de referência",
+  "die Punktzahl": "a pontuação",
+  "die Beschleunigung": "a aceleração",
+  "die Benutzung": "a utilização",
+  "die Beobachtung": "a observação",
+  "die Bildschirmgröße": "o tamanho do ecrã",
+  "die Rechenleistung": "a capacidade de cálculo",
+  "das Sicherheitsproblem": "o problema de segurança",
+  "die Einwanderung": "a imigração",
+  "der Einwanderer": "o imigrante",
+  "der Migrant": "o migrante",
+  "afghanisch": "afegão",
+  "der Beamte": "o funcionário público",
+  "der Kritiker": "o crítico",
+  "die Moderatorin": "a apresentadora",
+  "die Pressesprecherin": "a porta-voz",
+  "das Satellitenbild": "a imagem de satélite",
+  "der Tumor": "o tumor",
+  "die Umwandlung": "a conversão",
+  "die Unterbringung": "o alojamento",
+  "die Zeichnung": "o desenho",
+  "abschieben": "expulsar do país",
+  "abstoßen": "repelir",
+  "anziehen": "atrair",
+  "ausrollen": "implantar",
+  "hassen": "odiar",
+  "mithalten": "acompanhar o ritmo",
+  "überfüllt": "superlotado",
+  "unvollständig": "incompleto",
+  "verbleiben": "permanecer",
+  "verkabeln": "cablar",
+  "verkleinern": "diminuir",
+  "verzögern": "atrasar",
+  "zurückbleiben": "ficar para trás",
+  "zurücktreten": "demitir-se",
+  "zusammentreiben": "juntar à força",
+  "enttäuschend": "dececionante",
+  "naiv": "ingénuo",
+  "sonnig": "solarengo",
+  "Spanien": "a Espanha",
+  "initial": "inicial",
+  "einschließlich": "incluindo",
+  "mehrstufig": "faseado",
+  "selektiv": "seletivo",
+  "verbal": "verbal",
+  "Kannst du da mithalten?": "Consegues acompanhar o ritmo?",
+  "Das Update verzögert sich.": "A atualização está atrasada.",
+  "Der Zug ist völlig überfüllt.": "O comboio vai completamente cheio.",
+  "Die Angaben sind unvollständig.": "Os dados estão incompletos.",
+  "Er ist von seinem Amt zurückgetreten.": "Demitiu-se do cargo.",
+  "Das Ergebnis ist enttäuschend.": "O resultado é dececionante.",
 };
