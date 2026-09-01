@@ -3336,8 +3336,8 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Wie hieß das Restaurant noch mal?": "Como é que se chamava o restaurante?",
   // The name of the place stays German — it is what is written over the
   // door, and it is what somebody would say out loud in Lisbon too.
-  "War es irgendwas mit Linde?": "Era qualquer coisa com Linde?",
-  "Ah, jetzt fällt es mir wieder ein. Es hieß Zur Linde.": "Ah, agora já me lembro. Chamava-se Zur Linde.",
+  "War es irgendwas mit Linde?": "Era qualquer coisa com oliveira?",
+  "Ah, jetzt fällt es mir wieder ein. Es hieß Zur Linde.": "Ah, agora já me lembro. Chamava-se A Oliveira.",
   "Genau, das war es! Gehen wir wieder hin?": "Exatamente, era esse! Voltamos lá?",
   "Gerne. Das Essen war richtig gut.": "Com prazer. A comida era mesmo boa.",
   "Ich schaue, ob sie am Freitag aufhaben.": "Vou ver se estão abertos na sexta.",
@@ -4629,7 +4629,7 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Bis wann kann ich kostenlos stornieren?": "Até quando posso cancelar sem custos?",
   "Die Anzahlung wird bei der Buchung fällig.": "O sinal é pago no momento da reserva.",
   "Ich habe die Bestätigung per Mail bekommen.": "Recebi a confirmação por e-mail.",
-  "Wir haben reserviert, auf den Namen Weber.": "Temos reserva, em nome de Weber.",
+  "Wir haben reserviert, auf den Namen Weber.": "Temos reserva, em nome de Ferreira.",
   "Der Check-in ist ab fünfzehn Uhr.": "O check-in é a partir das três da tarde.",
   "Können wir das Gepäck schon mal abstellen?": "Podemos deixar já a bagagem?",
   "Hier ist Ihre Schlüsselkarte, Zimmer zweihundertvier.": "Aqui está o cartão do quarto, quarto duzentos e quatro.",
@@ -4651,7 +4651,7 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Beim nächsten Mal bleiben wir länger.": "Da próxima vez ficamos mais tempo.",
   "Guten Abend, wir haben ein Doppelzimmer reserviert.": "Boa noite, temos um quarto duplo reservado.",
   "Auf welchen Namen, bitte?": "Em que nome, se faz favor?",
-  "Weber. Zwei Nächte, mit Frühstück.": "Weber. Duas noites, com pequeno-almoço.",
+  "Weber. Zwei Nächte, mit Frühstück.": "Ferreira. Duas noites, com pequeno-almoço.",
   "Stimmt genau. Hier sind Ihre Schlüsselkarten, Zimmer vierzehn.": "Exatamente. Aqui estão os cartões do quarto, quarto catorze.",
   "Entschuldigung, unser Zimmer geht direkt zur Hauptstraße raus.": "Desculpe, o nosso quarto dá mesmo para a rua principal.",
   "Oh, das tut mir leid. Ich schaue, was frei ist.": "Ai, lamento. Vou ver o que está livre.",
@@ -5687,7 +5687,7 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Nehmen Sie im Wartezimmer Platz, Sie werden aufgerufen.": "Sente-se na sala de espera, vão chamá-lo.",
   "Im Wartezimmer läuft leise Radio, und alle blättern in alten Zeitschriften.": "Na sala de espera toca rádio baixinho e todos folheiam revistas velhas.",
   "Vor mir sind noch drei dran.": "Ainda vão três à minha frente.",
-  "Herr Weber, bitte — Zimmer zwei.": "Senhor Weber, se faz favor — sala dois.",
+  "Herr Weber, bitte — Zimmer zwei.": "Senhor Ferreira, se faz favor — sala dois.",
   "Was führt Sie zu mir?": "O que é que o traz cá?",
   "Machen Sie bitte den Oberkörper frei.": "Dispa a parte de cima, se faz favor.",
   "Tief durch den Mund atmen, bitte.": "Respire fundo pela boca, se faz favor.",
@@ -6427,7 +6427,7 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Wie angegossen. Das nimmst du mit.": "Nem feito à medida. Isso levas.",
   "Sie haben gestern eine Jacke für mich zurückgelegt.": "Ontem reservaram-me um casaco.",
   "Auf welchen Namen?": "Em que nome?",
-  "Weber. Die graue, Größe achtunddreißig.": "Weber. O cinzento, tamanho trinta e oito.",
+  "Weber. Die graue, Größe achtunddreißig.": "Ferreira. O cinzento, tamanho trinta e oito.",
   "Hier ist sie. Wollen Sie sie noch mal anprobieren?": "Aqui está. Quer voltar a experimentar?",
 
   // ── Hiking (part224) ────────────────────────────────────────────────────
