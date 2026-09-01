@@ -460,6 +460,14 @@ const RETIRED_NAMES = {
   Klein: "Costa",
   Krause: "Rocha",
   Meyer: "Baptista",
+  Jana: "Inês",
+  Miri: "Bia",
+  // A street, for the same reason as the people. Gartenstraße is an address
+  // being read out to an ambulance, so it becomes one an ambulance in Portugal
+  // could drive to. Goethestraße is NOT here: that card sits in the pack about
+  // German transport, next to the Schienenersatzverkehr and the connection at
+  // Hannover, and its street stays German with the rest of them.
+  Gartenstraße: "Rua do Jardim",
   // The colleague who offers his condolences has a Turkish surname in the
   // German, because that is who a German office holds. The Portuguese course
   // keeps the point and moves it: Semedo is as ordinary in Lisbon as Yilmaz is
