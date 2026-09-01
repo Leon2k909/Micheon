@@ -27682,4 +27682,78 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Na klar. Zu viel Stromstärke, der Widerstand macht das nicht mit.": "Pois claro. Intensidade de corrente a mais, a resistência não aguenta.",
   "Beim Schalter hat es sogar einen Funken gegeben. Das schaut sich ein Fachmann an.": "No interruptor até houve uma faísca. Isso vai ver um entendido.",
   "Mein Fahrrad ist voller Rost. Was mache ich dagegen?": "A minha bicicleta está cheia de ferrugem. O que é que faço?",
+
+  // ── The capstone conversations, fourth twelve ──────────────────────────
+  //
+  // Almost all of this stretch is at sea, and the word bank behind it was
+  // translated three releases ago — so every term here is the one those cards
+  // already teach, not a fresh choice. Das Steuerrad is o leme, der Lotse is o
+  // piloto da barra, die Anlegestelle is o cais de embarque, die
+  // Sauerstoffflasche is a garrafa de ar, der Neoprenanzug is o fato de
+  // mergulho, der Fliesenleger is o azulejador, and der Strandkorb is still
+  // said out as a cadeira de praia com capota, because Portugal has no such
+  // object to name.
+  //
+  // Kabeljau stays plain bacalhau: apanhados esta manhã in the same breath
+  // already says it is the fresh fish and not the salted one.
+  "Der Lack ist ab, und Wasser plus Sauerstoff macht den Rest.": "A tinta saltou, e a água mais o oxigénio fazem o resto.",
+  "Hilft die Flüssigkeit hier? Auf der Flasche steht was von Säure.": "Este líquido ajuda? Na garrafa fala-se de ácido.",
+  "Ja, aber vorsichtig — die Säure kann auch den Lack ätzen.": "Ajuda, mas com cuidado — o ácido também pode corroer a tinta.",
+  "Dann probiere ich das erst an einer kleinen Stelle am Rahmen aus.": "Então experimento primeiro num sítio pequeno do quadro.",
+  "Die Dokumentation gestern war stark. Es ging um die Nahrungskette im Wald.": "O documentário de ontem foi muito bom. Era sobre a cadeia alimentar da floresta.",
+  "Mit den Pilzen und Bakterien im Boden?": "Com os cogumelos e as bactérias do solo?",
+  "Genau. Ohne die läuft gar nichts, jeder Keim hat seine Aufgabe.": "Exatamente. Sem eles não funciona nada, cada micróbio tem a sua função.",
+  "Und die Photosynthese bringt die Energie für das Ganze.": "E a fotossíntese fornece a energia para tudo aquilo.",
+  "Am Ende hängt jedes Organ von jedem Blatt ab. Verrückt, oder?": "No fim, cada órgão depende de cada folha. É de doidos, não é?",
+  "Das Thermometer zeigt 38,5. Stimmt die Skala überhaupt?": "O termómetro marca 38,5. A escala está sequer certa?",
+  "Natürlich. Miss noch mal, vorhin war die Auswertung anders.": "Claro que está. Mede outra vez, há bocado a leitura foi outra.",
+  "Jetzt 38,7. Die Richtung ist klar, das ist Fieber.": "Agora 38,7. A tendência é clara, isto é febre.",
+  "Dann Tee, Bett und morgen der Arzt.": "Então chá, cama e amanhã o médico.",
+  "Und ich messe alle zwei Stunden nach, mit System.": "E eu volto a medir de duas em duas horas, com método.",
+  "Nächsten Monat gibt es eine Sonnenfinsternis, hast du das gelesen?": "No mês que vem há um eclipse do Sol, leste isso?",
+  "Ja! Und abends soll man sogar einen Kometen sehen können.": "Li! E à noite é suposto ver-se até um cometa.",
+  "Dafür fahre ich raus aus der Stadt, weg vom Licht.": "Para isso saio da cidade, para longe da luz.",
+  "Nimm mich mit. Seit dem Film über die Raumstation will ich mehr davon sehen.": "Leva-me contigo. Desde o filme sobre a estação espacial que quero ver mais disto.",
+  "Abgemacht. Vielleicht erwischen wir sogar die Galaxie nebenan.": "Fechado. Se calhar até apanhamos a galáxia aqui ao lado.",
+  "Willkommen an Bord! Ich zeige dir kurz alles.": "Bem-vinda a bordo! Vou mostrar-te tudo num instante.",
+  "Gern. Was ist vorne und was ist hinten?": "Boa. Qual é a parte da frente e qual é a de trás?",
+  "Vorne ist der Bug, hinten das Heck. Und das hier ist das Steuerrad.": "À frente é a proa, atrás é a popa. E isto aqui é o leme.",
+  "Und die Seiten? Da gab es doch diese Wörter.": "E os lados? Havia umas palavras para isso.",
+  "Steuerbord rechts, backbord links. Und halt dich an der Reling fest.": "Estibordo à direita, bombordo à esquerda. E agarra-te à amurada.",
+  "Der Mann am Steuer — ist das der Kapitän?": "O homem ao leme — é o capitão?",
+  "Nein, das ist der Steuermann. Der Kapitän spricht gerade mit dem Lotsen.": "Não, é o timoneiro. O capitão está a falar com o piloto da barra.",
+  "Wozu braucht ein Schiff hier einen Lotsen?": "Para que é que um navio precisa aqui de um piloto da barra?",
+  "Der kennt den Hafen. Ohne ihn fährt die Besatzung nicht rein.": "Ele conhece o porto. Sem ele a tripulação não entra.",
+  "Und der Matrose da vorne macht die Leinen los?": "E o marinheiro ali à frente larga as amarras?",
+  "Wo dürfen wir anlegen? Am Kai ist alles voll.": "Onde é que podemos atracar? O cais está cheio.",
+  "Der Hafenmeister hat uns die Anlegestelle hinter der Mole gegeben.": "O capitão do porto deu-nos o cais de embarque atrás do molhe.",
+  "Gut. Trag es ins Logbuch ein, mit Uhrzeit.": "Bom. Regista isso no diário de bordo, com a hora.",
+  "Mache ich. Die Zollkontrolle kommt übrigens um vier an Bord.": "Registo. Já agora, a alfândega vem a bordo às quatro.",
+  "Dann liegt bis dahin alles bereit. Nach der Verladung sind wir fertig.": "Então até lá está tudo a postos. Depois da carga estamos despachados.",
+  "Warum liegt das Boot auf einmal im Sand?": "Porque é que o barco está de repente na areia?",
+  "Gezeiten. Bei Ebbe zieht sich das Wasser hier weit zurück.": "As marés. Na maré baixa a água recua muito aqui.",
+  "Und wann kommt es wieder?": "E quando é que volta?",
+  "In sechs Stunden. Dann steht sogar die Brandung wieder am Deich.": "Daqui a seis horas. Aí a rebentação chega outra vez ao dique.",
+  "Die Nordsee macht, was sie will. Beeindruckend.": "O mar do Norte faz o que lhe apetece. Impressionante.",
+  "Was ist heute frisch?": "O que é que há de fresco hoje?",
+  "Kabeljau und Scholle, heute Morgen gefangen. Die Makrele ist aus dem Rauch.": "Bacalhau e solha, apanhados esta manhã. A cavala é fumada.",
+  "Dann zwei Stück Kabeljau. Ist jede Fischgräte schon raus?": "Então duas postas de bacalhau. Já tiraram todas as espinhas?",
+  "Bis auf die letzte Fischgräte. Dazu vielleicht Krabben aus der Region?": "Até à última espinha. E que tal camarão da nossa costa?",
+  "Gern. Aber die Auster hebe ich mir für den Urlaub auf.": "Pode ser. Mas as ostras guardo-as para as férias.",
+  "Morgen ist mein erster richtiger Tauchgang. Ich bin nervös.": "Amanhã é o meu primeiro mergulho a sério. Estou nervosa.",
+  "Alles halb so wild. Sitzt der Neoprenanzug?": "Não é nada de outro mundo. O fato de mergulho assenta bem?",
+  "Ja, und die Sauerstoffflasche ist geprüft.": "Assenta, e a garrafa de ar está verificada.",
+  "Dann fehlen nur Flossen und Ruhe. Atmen, langsam schauen, fertig.": "Então só faltam as barbatanas e calma. Respirar, olhar devagar e pronto.",
+  "Und danach erzähle ich dir, wie die Welt unten aussieht.": "E depois conto-te como é o mundo lá em baixo.",
+  "Was ist da draußen los? Überall Boote!": "O que é que se passa ali ao largo? Barcos por todo o lado!",
+  "Eine Übung der Seenotrettung. Die Küstenwache ist auch dabei.": "É um exercício de salvamento marítimo. A guarda costeira também está.",
+  "Deshalb der Funkspruch vorhin. Und das Rettungsboot am Strand?": "Daí a mensagem de rádio há bocado. E o bote salva-vidas na praia?",
+  "Gehört dazu. Sogar ein Wrack spielen sie durch, mit allem.": "Faz parte. Até simulam um naufrágio, com tudo.",
+  "Gut zu wissen, dass das geübt wird. Ich bleibe trotzdem im Strandkorb.": "Ainda bem que treinam isso. Mesmo assim fico na minha cadeira de praia com capota.",
+  "Das Bad ist fertig geplant. Wen brauchen wir jetzt alles?": "A casa de banho já está projetada. Agora de quem é que precisamos?",
+  "Zuerst den Installateur für Wasser und Heizung.": "Primeiro do canalizador, para a água e o aquecimento.",
+  "Dann den Fliesenleger. Und für die neue Tür?": "Depois do azulejador. E para a porta nova?",
+  "Den Schreiner. Das Glas oben macht der Glaser gleich mit.": "Do marceneiro. O vidro de cima fica logo a cargo do vidraceiro.",
+  "Drei Betriebe für ein kleines Bad. Gutes Handwerk hat seinen Preis.": "Três empresas para uma casa de banho pequena. O bom ofício custa o seu dinheiro.",
+  "Mein Neffe fängt im August seine Ausbildung an. Drei Jahre!": "O meu sobrinho começa a formação profissional em agosto. Três anos!",
 };
