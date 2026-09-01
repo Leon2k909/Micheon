@@ -53,10 +53,10 @@ const PET_VISIBLE_KEYS_KEY = "gl-codex-pet-visible-v1";
 const MAX_PET_HISTORY = 200;
 const PET_DUPLICATE_WINDOW_MS = 30 * 60 * 1000;
 
-export type CodexPetSpeechMood = "greeting" | "success" | "encourage" | "celebrate";
+type CodexPetSpeechMood = "greeting" | "success" | "encourage" | "celebrate";
 export type CodexPetVoiceLanguage = "de-DE" | "en-GB" | "en-US" | "fr-FR" | "pl-PL" | "es-ES" | "it-IT" | "pt-PT" | "ru-RU";
 
-export type CodexPetQuestion = {
+type CodexPetQuestion = {
   aliases?: string[];
   /** Which of the fields below the learner is being asked to produce. */
   answerLanguage: "de" | "en" | "fr" | "pl" | "es" | "pt";

@@ -50,10 +50,15 @@ check(
 // learner is now told they are a "New learner" on the banner badge, but is
 // not invited anywhere. The badge is still pinned; the missing invitation is
 // recorded here so it is not mistaken for something nobody noticed.
+// The "New learner" label this used to pin lived inside CourseHero, a
+// component nothing rendered: the check was proving a label on a screen no
+// one could reach. It went in the dead-code pass. What is live is that the
+// placement result is recorded — asserted here against the guided session.
+// Nothing on Home reads it back today, which is a gap worth knowing about
+// rather than a passing assertion worth keeping.
 check(
-  "unplaced profiles are still identified as such rather than shown a level they have not earned",
-  /loadScopedJson(?:<boolean>)?\("german-lab-placement-done", false, profile\) !== true/u.test(prototype)
-    && prototype.includes('needsStartingPoint ? ui("New learner") : uiFmt("Level {level}", { level: placementLevel[0] })'),
+  "the placement result is written where a screen could read it",
+  guided.includes('saveScopedJson("german-lab-placement-done", true, user)'),
 );
 
 const choiceStart = placement.indexOf('if (stage === "choice")');
@@ -81,10 +86,9 @@ check(
   guided.includes('saveScopedJson("german-lab-placement-result", key, user)')
     && guided.includes('saveScopedJson("german-lab-placement-done", true, user)'),
 );
-check(
-  "a total beginner returns to an A1 first-lesson home state",
-  prototype.includes('placementPart === "part1" ? ["A1", ui("Building the basics")]'),
-);
+// Same story: the A1 "Building the basics" home state was CourseHero's. The
+// live guarantee is the route — a total beginner is sent to the first
+// module — which the check above this one holds.
 check(
   "the beginner choice is translated for German-speaking English learners",
   translations.includes('"Are you completely new to English?": "Fängst du ganz neu mit Englisch an?"')

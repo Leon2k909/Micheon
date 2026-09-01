@@ -1,23 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import {
-  AlertTriangle,
-  ArrowDown,
-  ArrowLeft,
-  ArrowUp,
-  BookOpen,
-  ClipboardPaste,
-  Check,
-  Share2,
-  Database,
-  GripVertical,
-  CheckSquare,
-  Pencil,
-  Plus,
-  Square,
-  Search,
-  Trash2,
-  X,
-} from "lucide-react";
+import { AlertTriangle, ArrowDown, ArrowLeft, ArrowUp, BookOpen, ClipboardPaste, Check, Share2, Database, GripVertical, CheckSquare, Pencil, Plus, Square, Trash2, X } from "lucide-react";
 import { ui } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { CatalogueImport } from "@/components/create/CatalogueImport";

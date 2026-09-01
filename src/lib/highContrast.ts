@@ -1,6 +1,6 @@
 const KEY = "gl-high-contrast-v1";
 
-export const HIGH_CONTRAST_EVENT = "gl:high-contrast-change";
+const HIGH_CONTRAST_EVENT = "gl:high-contrast-change";
 
 export function getHighContrast(): boolean {
   if (typeof window === "undefined") return false;

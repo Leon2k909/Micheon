@@ -13,7 +13,7 @@ import {
   isAttemptedPracticeEligible,
 } from "@/lib/adaptivePractice";
 
-export const EX = {
+const EX = {
   SENTENCE: "sentence",   // read + listen + choose + type a full sentence
   DIALOGUE: "dialogue",   // line-by-line conversation practice
   COMPLETE: "complete",
@@ -59,7 +59,7 @@ function isKnownItem(reviewState: any, itemId: string, aliases: string[] = []) {
  * Every sentence is hand-written: vocab words appear only through their
  * predefined example sentences; phrases and dialogue lines are used as-is.
  */
-export function buildSession(part: any, studyItems: any[], reviewState: any, _reviewStep: number) {
+export function buildSession(part: any, _studyItems: any[], reviewState: any, _reviewStep: number) {
   const partKey = part.partKey ?? "part";
   const vocab: any[]     = part.vocab     ?? [];
   const phrases: any[]   = part.phrases   ?? [];
@@ -411,7 +411,7 @@ export function lessonMixForBacklog(dueCount: number): { reviewSlots: number; fr
 /** At most NEW_PER_LESSON brand-new phrases per lesson. */
 const NEW_PER_LESSON = 3;
 /** At most OLD_PER_LESSON due reviews per lesson. */
-export const OLD_PER_LESSON = 3;
+const OLD_PER_LESSON = 3;
 
 /**
  * A newly learned phrase may return in the familiar half before tomorrow's
@@ -931,7 +931,7 @@ const mergeAnswerAlternatives = (primary: string, duplicate: string): string => 
  * sentence/phrase/dialogue catalogue shared by the tracker, tests, games and
  * pet prompts.
  */
-export function dedupeCatalogItems(items: CatalogItem[]): CatalogItem[] {
+function dedupeCatalogItems(items: CatalogItem[]): CatalogItem[] {
   const out: CatalogItem[] = [];
   const byGerman = new Map<string, CatalogItem>();
 

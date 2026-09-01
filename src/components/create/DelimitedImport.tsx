@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { FileSpreadsheet, FileUp } from "lucide-react";
 import { ui } from "@/lib/i18n";
 import { cn } from "@/lib/utils";

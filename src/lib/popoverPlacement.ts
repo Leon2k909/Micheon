@@ -18,14 +18,14 @@ export const POPOVER_WIDTH = 190;
 /** How close to the window's edge the panel is allowed to come. */
 export const POPOVER_EDGE = 10;
 
-export type PopoverPlace = {
+type PopoverPlace = {
   /** Open downward, because there is not room above. */
   below: boolean;
   /** How far sideways to move it so it stays inside the window. */
   shift: number;
 };
 
-export type PopoverAnchor = { top: number; left: number; width: number };
+type PopoverAnchor = { top: number; left: number; width: number };
 
 /**
  * Upward unless the word is too near the top for the panel to fit, which

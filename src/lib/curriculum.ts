@@ -10,9 +10,9 @@ import { cefrOrder } from "@/lib/cefr";
 // every tier-1 pack is fully known, and tier-3 (niche/casual — always
 // labelled) only after that.
 
-export type PackTier = 1 | 2 | 3;
+type PackTier = 1 | 2 | 3;
 
-export type PackMeta = { tier: PackTier; note?: string };
+type PackMeta = { tier: PackTier; note?: string };
 
 /**
  * Continue-Learning order. Tier 1 = everyday core German every fluent

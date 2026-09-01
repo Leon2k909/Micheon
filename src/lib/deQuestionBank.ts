@@ -1,6 +1,5 @@
 import { lebenInDeutschlandCourse } from "@/lib/lebenInDeutschlandCourse";
-import type { CountryLevel, CountryQuestion } from "@/lib/countryStudies";
-
+import type { CountryQuestion } from "@/lib/countryStudies";
 /**
  * Der Übungspool für "Leben in Deutschland".
  *
@@ -2815,13 +2814,6 @@ export const DE_QUESTIONS: CountryQuestion[] = [
 ];
 
 /** Die drei Themenbereiche, in der Reihenfolge, in der der Kurs sie lehrt. */
-export function deChapters(): string[] {
-  const seen: string[] = [];
-  for (const lesson of lebenInDeutschlandCourse.lessons ?? []) {
-    if (!seen.includes(lesson.section)) seen.push(lesson.section);
-  }
-  return seen;
-}
 
 export function deCategories(): { id: string; title: string; chapter: string; count: number }[] {
   const lessons = lebenInDeutschlandCourse.lessons ?? [];
@@ -2833,24 +2825,4 @@ export function deCategories(): { id: string; title: string; chapter: string; co
   }));
 }
 
-export function deQuestionsForLesson(lessonId: string): CountryQuestion[] {
-  return DE_QUESTIONS.filter((question) => question.lesson === lessonId);
-}
-
-export function deQuestionsForChapter(chapter: string): CountryQuestion[] {
-  const lessonIds = new Set(
-    (lebenInDeutschlandCourse.lessons ?? []).filter((lesson) => lesson.section === chapter).map((lesson) => lesson.id)
-  );
-  return DE_QUESTIONS.filter((question) => lessonIds.has(question.lesson));
-}
-
-export function deQuestionById(id: string): CountryQuestion | undefined {
-  return DE_QUESTIONS.find((question) => question.id === id);
-}
-
-export function deLessonTitle(lessonId: string): string {
-  return (lebenInDeutschlandCourse.lessons ?? []).find((lesson) => lesson.id === lessonId)?.title ?? lessonId;
-}
-
 /** Die drei Stufen, in der Reihenfolge, in der die Übungsansicht sie anbietet. */
-export const DE_LEVELS: CountryLevel[] = ["easy", "medium", "hard"];

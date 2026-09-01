@@ -20,7 +20,7 @@ export type DataCategoryId =
   | "settings"
   | "other";
 
-export type DataCategory = {
+type DataCategory = {
   id: DataCategoryId;
   /** English, and a key into the interface dictionary — see ui(). */
   label: string;

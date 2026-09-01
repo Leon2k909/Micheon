@@ -18,11 +18,11 @@
  * is still a session — its player stays on screen — but a lesson may speak
  * over a pause without talking over anybody.
  */
-export const LISTEN_SESSION_EVENT = "micheon-listen-session";
+const LISTEN_SESSION_EVENT = "micheon-listen-session";
 
 const KEY = "gl-listen-session";
 
-export type ListenSessionState = {
+type ListenSessionState = {
   /** A session the learner has not closed. Its player belongs on screen. */
   live: boolean;
   /** Sound is coming out right now. */

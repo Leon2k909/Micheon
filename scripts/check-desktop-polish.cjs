@@ -65,8 +65,12 @@ check("immediate pet z-order recovery remains bounded", petReassertion.includes(
 check("game-visible pets never poll the foreground z-order", !electronMain.includes("PET_GAME_Z_ORDER_INTERVAL_MS") && !electronMain.includes("syncPetGameZOrderWatchdog") && !electronMain.includes("petGameZOrderTimer"));
 check("pet topmost levels only change when needed", electronMain.includes("const petSurfaceTopLevels = new WeakMap();") && electronMain.includes("configuredLevel !== level || !window.isAlwaysOnTop()") && electronMain.includes("petSurfaceTopLevels.set(window, level)"));
 
-check("course progress is exposed as a progressbar", prototype.includes('role="progressbar"') && prototype.includes("aria-valuenow={displayedProgress}"));
-check("course progress animates from empty", prototype.includes("<motion.span") && prototype.includes("scaleX: displayedProgress / 100") && prototype.includes("scaleX: 0"));
+// These two used to pin CourseHero's bar — displayedProgress, a motion.span
+// scaling from empty — on a component nothing rendered. It went in the
+// dead-code pass. The bars people see are the home choice cards': a real
+// progressbar role with its value bound, and a fill whose width IS the value.
+check("course progress is exposed as a progressbar", prototype.includes('role="progressbar"') && prototype.includes("aria-valuenow={percent}") && prototype.includes("aria-valuemax={100}"));
+check("the progress fill is the value, not a picture of one", prototype.includes("<span style={{ width: `${percent}%` }} />"));
 check("course progress respects reduced-motion preferences", prototype.includes("const reduceMotion = useReducedMotion();") && prototype.includes("initial={reduceMotion ? false"));
 check("search focus uses one clean outer ring", styles.includes(".np-search-field:focus-within") && styles.includes(".np-search-field input:focus-visible"));
 check("the search input suppresses the nested browser outline", styles.includes("outline: 0 !important;") && styles.includes("box-shadow: none !important;"));
@@ -74,7 +78,11 @@ check("keyboard focus uses one non-green Micheon ring", /\.new-ui-prototype butt
 check("test answers suppress the outer ring and keep their focused border", /\.new-ui-prototype \.test-answer-field:focus,[\s\S]*?outline:\s*none !important;[\s\S]*?box-shadow:\s*none !important;/s.test(appStyles) && testsView.includes("focus:border-[var(--accent)]"));
 check("lesson-library search uses one focused border", learnView.includes('className="learn-library-search ') && /learn-library-search:focus-visible\s*\{[^}]*outline:\s*0;/s.test(styles));
 check("light test cards define the yellow icon tile treatment", testsView.includes("bg-[var(--yellow-dim)]") && /\.np-feature-host\s*\{[^}]*--yellow-dim:\s*#fff1c7;[^}]*--yellow-ink:\s*#986000;/s.test(styles));
-check("the hero progress bar uses a labelled mint-on-green treatment", prototype.includes('"Level progress"') && styles.includes("#f5fff6 0%, #dff8e4 100%") && !styles.includes("#fff2a6 0%, #ffdc63 55%, #f6c746 100%") && styles.includes(".np-progress-track--hero > span::after"));
+// "Level progress" and the mint-on-green hero bar were CourseHero's, which
+// nothing rendered; the class np-progress-track--hero has no user in src/
+// at all. What is live is the course card's bar, and it says where you are
+// in words a screen reader can read, not just as a number.
+check("the course progress bar says where you are in words", prototype.includes('aria-label={uiFmt("{pct}% through {pack}"'));
 check("the mastery ring halo always has a valid radius", mastery.includes('r={dotR * 1.1}'));
 check("the mastery ring halo has a defined first animation frame", mastery.includes('initial={reduce ? false : { r: dotR * 1.1, opacity: 0.55 }}'));
 check("the mastery percentage uses its real progress ring on a light tile", /\.np-feature-host \.mastery-ring > svg\s*\{[^}]*display:\s*block;/s.test(styles) && /\.np-feature-host \.mastery-ring::after\s*\{[^}]*display:\s*none;/s.test(styles) && styles.includes("linear-gradient(145deg, #fdfff9 0%, #edf8e8 100%)"));

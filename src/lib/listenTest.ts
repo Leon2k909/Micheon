@@ -14,7 +14,7 @@ import type { ListenItem } from "@/lib/listenMode";
  * recognising a word and being able to produce it. A score here is a
  * measurement, not a promotion.
  */
-export type ListenTestQuestion = {
+type ListenTestQuestion = {
   id: string;
   /** The side the card leads with, which is the side you have been hearing. */
   prompt: string;

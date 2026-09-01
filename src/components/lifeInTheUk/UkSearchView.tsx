@@ -1,4 +1,4 @@
-import React, { useDeferredValue, useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import { BookOpen, CalendarClock, HelpCircle, Layers, Search } from "lucide-react";
 import { ui, uiFmt } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -9,7 +9,6 @@ import {
   searchCountry,
   type CountrySearchHit,
 } from "@/lib/countrySearch";
-
 
 const KIND_ICON = {
   event: CalendarClock,

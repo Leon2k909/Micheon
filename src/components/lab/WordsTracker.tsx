@@ -32,8 +32,8 @@ import {
   REVIEW_INTERVALS_DAYS,
   type GradeRecord,
 } from "@/lib/memoryStrength";
-import { frequencyInfo, synonymCommonality } from "@/lib/wordFrequency";
-import { packMeta, packNoteForWord } from "@/lib/curriculum";
+import { synonymCommonality } from "@/lib/wordFrequency";
+import { packNoteForWord } from "@/lib/curriculum";
 import { detectRegister, REGISTER_SHORT, REGISTER_TONE } from "@/lib/register";
 import { tts } from "@/lib/voice";
 import { targetLangTag } from "@/lib/direction";

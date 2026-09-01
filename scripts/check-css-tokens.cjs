@@ -54,7 +54,6 @@ for (const file of files) {
  * this change did not touch, so they are recorded rather than guessed at.
  */
 const KNOWN_MISSING = new Set([
-  "--accent-bg", "--accent-border", "--social-bg", "--text-h",
   "--accent-hover-rgb", "--accent-ink", "--accent-rgb",
   "--border-1", "--h", "--i",
 ]);

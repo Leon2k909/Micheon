@@ -1,8 +1,7 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ui } from "@/lib/i18n";
 import {
-  PAINTABLE_PARTS,
   partsPainting,
   toHexString,
   type PaintablePart,
@@ -185,4 +184,3 @@ export function ColourInspector({
 }
 
 /** Everything the picker can reach, for the list beside it. */
-export const INSPECTABLE_PARTS = PAINTABLE_PARTS;

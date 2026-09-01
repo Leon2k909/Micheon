@@ -14,7 +14,7 @@ import { loadScopedJson, saveScopedJson, type UserProfile } from "@/lib/profileS
  */
 const KEY = "gl-muted-packs-v1";
 
-export const MUTED_PACKS_EVENT = "gl:muted-packs-change";
+const MUTED_PACKS_EVENT = "gl:muted-packs-change";
 
 function normalise(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
@@ -24,10 +24,6 @@ function normalise(value: unknown): string[] {
 export function getMutedPacks(profile?: UserProfile | null): Set<string> {
   if (typeof window === "undefined") return new Set();
   return new Set(normalise(loadScopedJson<string[]>(KEY, [], profile)));
-}
-
-export function isPackMuted(partKey: string, muted: Set<string> = getMutedPacks()): boolean {
-  return muted.has(partKey);
 }
 
 export function setPackMuted(partKey: string, muted: boolean, profile?: UserProfile | null): Set<string> {

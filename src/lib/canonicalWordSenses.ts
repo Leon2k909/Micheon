@@ -9,7 +9,7 @@
  * they give Word mode, Listen, the tracker and Micheon Immersion one useful
  * everyday-first card while the original packs keep their precise meanings.
  */
-export type CanonicalWordSense = {
+type CanonicalWordSense = {
   de: string;
   en: string;
   use: string;

@@ -6,7 +6,7 @@ function clamp01(value: number) {
 }
 
 /** Root-mean-square energy from an AnalyserNode byte time-domain frame. */
-export function pcmRms(samples: ArrayLike<number>): number {
+function pcmRms(samples: ArrayLike<number>): number {
   if (!samples.length) return 0;
   let sumSquares = 0;
   for (let index = 0; index < samples.length; index += 1) {

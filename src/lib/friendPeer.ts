@@ -27,13 +27,13 @@ import { isFriend, recordFriendProfile } from "@/lib/friendStore";
  */
 
 /** Overridable so this can be pointed at a self-hosted broker later. */
-export const DEFAULT_BROKER = { host: "0.peerjs.com", port: 443, path: "/", secure: true } as const;
+const DEFAULT_BROKER = { host: "0.peerjs.com", port: 443, path: "/", secure: true } as const;
 
 export type PeerStatus = "idle" | "connecting" | "online" | "offline" | "error";
 
 export type PairRequest = { code: string; profile: FriendProfile };
 
-export type FriendPeerEvents = {
+type FriendPeerEvents = {
   onStatus?: (status: PeerStatus, detail?: string) => void;
   /** A stranger is asking. Nothing is stored until the app answers. */
   onPairRequest?: (request: PairRequest) => void;
@@ -112,7 +112,7 @@ function codeFromPeerId(id: string): string {
 }
 
 /** What an arriving message earns, given whether we already know the sender. */
-export type IncomingAction = "greet-back" | "ask-the-person" | "accept" | "ignore";
+type IncomingAction = "greet-back" | "ask-the-person" | "accept" | "ignore";
 
 /**
  * The whole of the trust rule, in one place with no I/O.
@@ -261,8 +261,4 @@ export function declinePair(code: string) {
 /** Push the current figures to everyone connected, after a lesson say. */
 export function broadcastProfile() {
   for (const connection of open.values()) send(connection, { type: "profile", profile: mine() });
-}
-
-export function connectedCodes(): string[] {
-  return [...open.keys()];
 }

@@ -72,7 +72,7 @@ export function buildMatcherQueue(
 export const MATCHER_BOARD_SIZE = 6;
 /** Ten is the most that still fits without the board becoming a scroll. */
 export const MATCHER_MAX_BOARD_SIZE = 10;
-export type MatcherBothCounts = { words: number; sentences: number };
+type MatcherBothCounts = { words: number; sentences: number };
 export const DEFAULT_MATCHER_BOTH_COUNTS: MatcherBothCounts = { words: 3, sentences: 3 };
 const MATCHER_BOTH_COUNTS_KEY = "gl-matcher-both-counts-v1";
 export function getMatcherBothCounts(direction: LearningDirection = getLearningDirection(), profile: UserProfile | null = getAuthUser()): MatcherBothCounts {
@@ -84,7 +84,7 @@ export function setMatcherBothCounts(counts: Partial<MatcherBothCounts>, directi
   return next;
 }
 
-export function normalizeMatcherBothCounts(value: Partial<MatcherBothCounts> | null | undefined): MatcherBothCounts {
+function normalizeMatcherBothCounts(value: Partial<MatcherBothCounts> | null | undefined): MatcherBothCounts {
   const words = Number.isFinite(value?.words) ? Math.max(1, Math.min(MATCHER_MAX_BOARD_SIZE - 1, Math.round(value?.words as number))) : DEFAULT_MATCHER_BOTH_COUNTS.words;
   const sentences = Number.isFinite(value?.sentences) ? Math.max(1, Math.min(MATCHER_MAX_BOARD_SIZE - words, Math.round(value?.sentences as number))) : DEFAULT_MATCHER_BOTH_COUNTS.sentences;
   return { words, sentences };
@@ -183,7 +183,7 @@ export function setMatcherKind(
   return kind;
 }
 
-export type MatcherCursor = { ids: string[]; approx: number };
+type MatcherCursor = { ids: string[]; approx: number };
 
 /**
  * Each list is a different queue, and each course has its own.

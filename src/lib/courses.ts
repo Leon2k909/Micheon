@@ -16,7 +16,7 @@ export type Block =
   | { type: "cta"; title: string; sub: string };
 
 export type CalloutVariant = "why" | "warn" | "sbox" | "python" | "analogy";
-export type ColCard = { lang: string; code: string };
+type ColCard = { lang: string; code: string };
 export type QuizOption = { text: string; correct: boolean };
 
 export type Lesson = {
@@ -60,7 +60,7 @@ export function resolveLessonForBackground(lesson: Lesson, bg: CodeBackground | 
   return { ...lesson, blocks };
 }
 
-export type CourseKind = "language" | "programming" | "citizenship";
+type CourseKind = "language" | "programming" | "citizenship";
 
 export type Course = {
   id: string;
@@ -74,8 +74,8 @@ export type Course = {
 };
 
 // ── Active-course persistence ─────────────────────────────────
-export const ACTIVE_COURSE_KEY = "active-course";
-export const COURSE_PROGRESS_PREFIX = "course-progress";
+const ACTIVE_COURSE_KEY = "active-course";
+const COURSE_PROGRESS_PREFIX = "course-progress";
 
 export function getActiveCourseId(profile: UserProfile | null = getAuthUser()): string {
   return loadScopedJson<string>(ACTIVE_COURSE_KEY, "german", profile) || "german";

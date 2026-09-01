@@ -14,7 +14,7 @@ import { syncLocalStorageItem } from "@/lib/profileStorage";
  * open a scene is its own kind of noise. It is stored the way the app's other
  * small preferences are, which is what carries it between devices.
  */
-export const CONVERSATION_TRANSLATION_HIDDEN_KEY = "gl-conversation-translation-hidden-v1";
+const CONVERSATION_TRANSLATION_HIDDEN_KEY = "gl-conversation-translation-hidden-v1";
 export const CONVERSATION_TRANSLATION_EVENT = "conversation-translation-changed";
 
 export function getConversationTranslationHidden(): boolean {

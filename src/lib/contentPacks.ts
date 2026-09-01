@@ -24,7 +24,7 @@
  * no packs installed and no connection still has the course they had before.
  */
 
-export type ContentLevelPack = {
+type ContentLevelPack = {
   id: string;
   url: string;
   parts: number;
@@ -32,7 +32,7 @@ export type ContentLevelPack = {
   bytes: number;
 };
 
-export type ContentLanguagePack = {
+type ContentLanguagePack = {
   id: string;
   name: string;
   url: string;
@@ -40,7 +40,7 @@ export type ContentLanguagePack = {
   bytes: number;
 };
 
-export type ContentManifest = {
+type ContentManifest = {
   version: number;
   levels: ContentLevelPack[];
   languages: ContentLanguagePack[];
@@ -99,7 +99,7 @@ export async function loadContentManifest(): Promise<ContentManifest | null> {
 }
 
 /** Which pack urls are already on this device. */
-export async function installedPackUrls(): Promise<string[]> {
+async function installedPackUrls(): Promise<string[]> {
   const manifest = await loadContentManifest();
   if (!manifest) return [];
   const cache = await openCache(manifest.version);
@@ -177,15 +177,6 @@ export async function readPack<T>(url: string): Promise<T | null> {
 }
 
 /** Total bytes of everything installed, for the settings screen. */
-export async function installedBytes(): Promise<number> {
-  const manifest = await loadContentManifest();
-  if (!manifest) return 0;
-  const installed = await installedPackUrls();
-  const all = [...manifest.levels, ...manifest.languages];
-  return all
-    .filter((pack) => installed.some((entry) => entry.endsWith(pack.url)))
-    .reduce((sum, pack) => sum + pack.bytes, 0);
-}
 
 /** Everything on offer, level packs and language packs together. */
 export async function availablePacks(): Promise<{
@@ -203,17 +194,5 @@ export async function availablePacks(): Promise<{
 }
 
 /** Only for tests and for the settings screen's "clear downloads". */
-export async function clearInstalledPacks(): Promise<void> {
-  if (!cachesAvailable()) return;
-  try {
-    const names = await caches.keys();
-    await Promise.all(names.filter((name) => name.startsWith(CACHE_PREFIX)).map((name) => caches.delete(name)));
-  } catch {
-    // Nothing to do — the caller's next read falls back to the network.
-  }
-}
 
 /** Test seam: forget the cached manifest promise. */
-export function resetContentManifestCache(): void {
-  manifestPromise = null;
-}

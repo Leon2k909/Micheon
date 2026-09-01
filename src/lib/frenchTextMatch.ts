@@ -25,7 +25,7 @@
  * are what the lesson is for.
  */
 
-export type FrenchMatch = {
+type FrenchMatch = {
   ok: boolean;
   spellingNote: boolean;
   capitalizationError?: boolean;
@@ -46,7 +46,7 @@ const THIN_SPACES = /[    ]/g;
  * an inversion ("est-ce que" / "est ce que", "va-t-il" / "va t il") and a
  * learner cannot be expected to place them.
  */
-export function normalizeFrenchInput(text: string): string {
+function normalizeFrenchInput(text: string): string {
   return String(text ?? "")
     .replace(THIN_SPACES, " ")
     .replace(APOSTROPHES, "'")
@@ -59,7 +59,7 @@ export function normalizeFrenchInput(text: string): string {
 }
 
 /** Accents, ligatures and the apostrophe folded away — a spelling slip, not a mistake. */
-export function normalizeFrenchLenient(text: string): string {
+function normalizeFrenchLenient(text: string): string {
   return normalizeFrenchInput(text)
     .toLocaleLowerCase("fr-FR")
     .replace(/œ/g, "oe")
@@ -197,7 +197,7 @@ export const matchFrenchSentence = matchFrenchPhrase;
  * A vocabulary card names several equally right senses ("le but / l'objectif",
  * "grand, gros"). They are choices, not a phrase to reproduce in full.
  */
-export function frenchMeaningAlternatives(value: string): string[] {
+function frenchMeaningAlternatives(value: string): string[] {
   const original = String(value ?? "").trim();
   if (!original) return [];
   const parts = original
@@ -205,10 +205,6 @@ export function frenchMeaningAlternatives(value: string): string[] {
     .map((part) => part.trim())
     .filter(Boolean);
   return parts.length ? parts : [original];
-}
-
-export function primaryFrenchMeaning(value: string): string {
-  return frenchMeaningAlternatives(value)[0] ?? "";
 }
 
 export function matchFrenchMeaning(input: string, target: string): FrenchMatch {

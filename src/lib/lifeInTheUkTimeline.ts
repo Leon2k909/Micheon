@@ -36,7 +36,7 @@ export type UkTimelineEvent = {
   tags: string[];
 };
 
-export type UkEra =
+type UkEra =
   | "prehistory"
   | "roman"
   | "medieval"
@@ -295,15 +295,4 @@ const sortYear = (entry: UkTimelineEvent) => entry.endYear ?? entry.year;
 
 export function ukTimelineSorted(): UkTimelineEvent[] {
   return [...UK_TIMELINE].sort((a, b) => sortYear(a) - sortYear(b) || a.year - b.year);
-}
-
-export function ukTimelineByEra(): { era: UkEra; label: string; events: UkTimelineEvent[] }[] {
-  const sorted = ukTimelineSorted();
-  return UK_ERA_ORDER
-    .map((era) => ({
-      era,
-      label: UK_ERA_LABELS[era],
-      events: sorted.filter((entry) => entry.era === era),
-    }))
-    .filter((group) => group.events.length > 0);
 }

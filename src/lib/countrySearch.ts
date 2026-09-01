@@ -18,7 +18,7 @@ import { packChapters, packLessonTitle } from "@/lib/countryPacks";
  * repeat on each keystroke.
  */
 
-export type CountrySearchKind = "event" | "question" | "lesson" | "category" | "term";
+type CountrySearchKind = "event" | "question" | "lesson" | "category" | "term";
 
 export type CountrySearchHit = {
   id: string;
@@ -36,7 +36,7 @@ export type CountrySearchHit = {
   lessonId?: string;
 };
 
-export type CountrySearchResult = {
+type CountrySearchResult = {
   hits: CountrySearchHit[];
   matchedTags: string[];
 };
@@ -150,16 +150,6 @@ function built(pack: CountryPack): Built {
 }
 
 /** Every distinct tag in a country's course, which is what makes term search work. */
-export function countryAllTags(pack: CountryPack): string[] {
-  const { hits } = built(pack);
-  const tags = new Set<string>();
-  for (const hit of hits) hit.tags.forEach((tag) => tags.add(tag));
-  return [...tags].sort((a, b) => a.localeCompare(b));
-}
-
-export function countrySearchIndex(pack: CountryPack): CountrySearchHit[] {
-  return built(pack).hits;
-}
 
 function haystackFor(hit: CountrySearchHit): string {
   return fold([hit.title, hit.subtitle, hit.detail ?? "", hit.displayYear ?? "", ...hit.tags].join(" "));

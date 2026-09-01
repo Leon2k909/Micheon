@@ -2,7 +2,7 @@ import { syncLocalStorageItem } from "@/lib/profileStorage";
 
 export const CODEX_PET_PREFERENCE_KEY = "gl-codex-pet";
 
-export type CodexPetAnimation = {
+type CodexPetAnimation = {
   frames: number[];
   fps: number;
   loop: boolean;
@@ -25,7 +25,7 @@ export type CodexPet = {
   spritesheetUrl: string;
 };
 
-export type CodexPetCatalog = {
+type CodexPetCatalog = {
   pets: CodexPet[];
   selectedPetKey: string | null;
   source: "micheon-and-codex";

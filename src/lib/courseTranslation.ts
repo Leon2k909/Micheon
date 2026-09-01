@@ -47,13 +47,13 @@ import type { Block, Course, Lesson } from "@/lib/courses";
  */
 
 const KEY = "gl-course-translation";
-export const COURSE_TRANSLATION_CHANGE_EVENT = "gl-course-translation-change";
+const COURSE_TRANSLATION_CHANGE_EVENT = "gl-course-translation-change";
 
 /** "off" means cards are not tappable and nothing is offered. */
 export type TranslationLanguage = "off" | "de" | "en" | "pl" | "fr";
 
 /** The language a course is written in, which decides what can be offered. */
-export type ContentLanguage = "en" | "de" | "fr" | "pl";
+type ContentLanguage = "en" | "de" | "fr" | "pl";
 
 export const TRANSLATION_LANGUAGES: Array<{
   id: TranslationLanguage;
@@ -142,11 +142,6 @@ export function translateCourseText(english: string, language: TranslationLangua
   return table[english.trim()] ?? null;
 }
 
-export function translationCoverage(language: TranslationLanguage): number {
-  const table = TRANSLATIONS[language];
-  return table ? Object.keys(table).length : 0;
-}
-
 function subscribe(onStoreChange: () => void) {
   if (typeof window === "undefined") return () => {};
   const onChange = () => onStoreChange();
@@ -222,7 +217,7 @@ function readAs(text: string, language: TranslationLanguage): string {
  * `code` never passes through here. Translating an identifier would leave the
  * lesson telling the reader to write something the compiler rejects.
  */
-export function localiseLesson(lesson: Lesson, language: TranslationLanguage): Lesson {
+function localiseLesson(lesson: Lesson, language: TranslationLanguage): Lesson {
   if (language === "off") return lesson;
   const blocks: Block[] = lesson.blocks.map((block) => {
     switch (block.type) {

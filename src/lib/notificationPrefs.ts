@@ -75,7 +75,7 @@ const STATUS_KEY = "gl-notification-status-v1";
 /** Ids fall out of storage once they can no longer be produced again. */
 const MAX_TRACKED_IDS = 120;
 
-export interface NotificationStatus {
+interface NotificationStatus {
   dismissed: string[];
   read: string[];
 }

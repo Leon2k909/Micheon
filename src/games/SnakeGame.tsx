@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, RotateCcw, Trophy, Volume2, Settings, X, Check, Maximize, Minimize } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, RotateCcw, Trophy, Volume2, Settings, X, Maximize, Minimize } from "lucide-react";
 import { speakGerman } from "@/lib/tts";
 import { allPartBlueprints, entryFallbacks } from "@/lib/data";
 import {

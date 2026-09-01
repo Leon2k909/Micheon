@@ -206,7 +206,6 @@ export default function VocabMinesweeper() {
       }
       setTimeout(() => {
         const { cells, score } = stateRef.current;
-        const idx = stateRef.current.cells.findIndex((_, i) => i === quizCell?.idx);
         const qIdx = quizCell?.idx ?? -1;
         if (qIdx < 0) return;
 

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, ChevronRight, Globe, Landmark, Scale, Star, Users, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Course } from "@/lib/courses";

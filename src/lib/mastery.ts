@@ -26,7 +26,7 @@ export function recordWordMastery(word: string) {
   }
 }
 
-export function getMasteredWords(): string[] {
+function getMasteredWords(): string[] {
   try {
     const data = localStorage.getItem(MASTERY_STORAGE_KEY);
     return data ? JSON.parse(data) : [];

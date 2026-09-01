@@ -45,33 +45,3 @@ export function matchRussianSentence(input: string, target: string): RussianMatc
 }
 
 /** Sentences and phrases go through the same comparison — one entry, two names. */
-export const matchRussianPhrase = matchRussianSentence;
-
-/**
- * A vocabulary card names several equally right senses. They are choices, not
- * a phrase to reproduce in full — the same rule the Polish matcher applies,
- * with Russian's own "или" beside the comma.
- */
-export function russianMeaningAlternatives(value: string): string[] {
-  const original = String(value ?? "").trim();
-  if (!original) return [];
-  const parts = original
-    .split(/\s+\/\s+|[,;]|\s+или\s+/iu)
-    .map((part) => part.trim())
-    .filter(Boolean);
-  return parts.length ? parts : [original];
-}
-
-export function primaryRussianMeaning(value: string): string {
-  return russianMeaningAlternatives(value)[0] ?? "";
-}
-
-export function matchRussianMeaning(input: string, target: string): RussianMatch {
-  const whole = matchRussianSentence(input, target);
-  if (whole.ok) return whole;
-  for (const alternative of russianMeaningAlternatives(target)) {
-    const result = matchRussianSentence(input, alternative);
-    if (result.ok) return result;
-  }
-  return whole;
-}

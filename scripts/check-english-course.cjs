@@ -55,9 +55,11 @@ if (/ui\("Switch course, currently German"\)/.test(shell)) {
 if (!/<strong>\{ui\(sides\.target\.label\)\}<\/strong>/.test(shell)) {
   failures.push("the course chip does not name the course you are actually on");
 }
-if (!/uiFmt\("\{language\} for real conversations"/.test(shell)) {
-  failures.push("the hero headline still says German whatever you are learning");
-}
+// "{language} for real conversations" was the old course hero's headline.
+// That hero was replaced by the LanguageCard in v1.2.438 and never rendered
+// again; it went in the dead-code pass, and this had been asserting a line on
+// a screen nobody could reach. The rule — the course you are on is named,
+// not hard-coded as German — is the chip assertion above, which is live.
 if (!/\.np-language-badge\.is-english/.test(css)) {
   failures.push("there is no English flag, so the chip would show German stripes beside the word English");
 }

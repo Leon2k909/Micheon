@@ -15,14 +15,14 @@ function stripComments(code: string): string {
     .join("\n");
 }
 
-export function normalizeCode(code: string): string {
+function normalizeCode(code: string): string {
   return stripComments(code)
     .replace(/\s+/g, " ")   // collapse all whitespace
     .replace(/\s*([{}();,=<>+\-*/.])\s*/g, "$1") // tighten around punctuation
     .trim();
 }
 
-export type CodeCheck = {
+type CodeCheck = {
   ok: boolean;
   missingPunctuation: boolean;
   caseMismatch: boolean;
@@ -31,7 +31,7 @@ export type CodeCheck = {
 };
 
 function editDistance(a: string, b: string): number {
-  const dp = Array.from({ length: a.length + 1 }, (_, i) => Array(b.length + 1).fill(0));
+  const dp = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
   for (let i = 0; i <= a.length; i++) dp[i][0] = i;
   for (let j = 0; j <= b.length; j++) dp[0][j] = j;
   for (let i = 1; i <= a.length; i++) {
@@ -92,8 +92,8 @@ export function checkCode(input: string, target: string): CodeCheck {
 }
 
 // ── Lesson → guided steps ─────────────────────────────────────
-export type ConceptStep = { type: "concept"; title: string; blocks: Block[] };
-export type CodeStep = { type: "code"; prompt: string; target: string; hintComments: string[] };
+type ConceptStep = { type: "concept"; title: string; blocks: Block[] };
+type CodeStep = { type: "code"; prompt: string; target: string; hintComments: string[] };
 export type QuizStep = {
   type: "quiz";
   q: string;
@@ -106,7 +106,7 @@ export type QuizStep = {
    */
   questionId?: string;
 };
-export type CompleteStep = { type: "complete" };
+type CompleteStep = { type: "complete" };
 export type SessionStep = ConceptStep | CodeStep | QuizStep | CompleteStep;
 
 // Extract the comment hints from a code block so we can show them as guidance.

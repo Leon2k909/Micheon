@@ -167,9 +167,6 @@ export function ensureTranslations(language: TranslationLanguage): Promise<Trans
 }
 
 /** Every table at once — for build scripts and checks, never for the app. */
-export async function ensureAllTranslations(): Promise<void> {
-  await Promise.all(TRANSLATION_LANGUAGES.map(ensureTranslations));
-}
 
 /**
  * Hand a table straight in, for the build scripts and the gate.

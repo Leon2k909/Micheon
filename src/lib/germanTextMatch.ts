@@ -28,7 +28,7 @@ function splitMeaningAlternatives(value: string, separator: RegExp): string[] {
   return alternatives.length ? alternatives : [original];
 }
 
-export function englishMeaningAlternatives(value: string): string[] {
+function englishMeaningAlternatives(value: string): string[] {
   return splitMeaningAlternatives(value, /\s+\/\s+|[,;]|\s+or\s+/iu);
 }
 
@@ -95,7 +95,7 @@ export function matchGermanMeaning(input: string, target: string) {
   return whole;
 }
 
-export type MatchingPair = { german: string; english: string };
+type MatchingPair = { german: string; english: string };
 
 /**
  * The matching screen shows only primaryAnswer(), so its collision key must do
@@ -263,7 +263,7 @@ export function normalizeGermanInputCaseSensitive(t: string) {
     .trim();
 }
 
-export function normalizeGermanLenientCaseSensitive(t: string) {
+function normalizeGermanLenientCaseSensitive(t: string) {
   return normalizeGermanInputCaseSensitive(t)
     .replace(/ß/g, "ss")
     .replace(/œ/g, "oe")
@@ -1608,7 +1608,7 @@ function countNegations(text: string) {
   return matches ? matches.length : 0;
 }
 
-export type ParagraphMatch = {
+type ParagraphMatch = {
   ok: boolean;
   spellingNote: boolean;
   phrasingNote?: boolean;

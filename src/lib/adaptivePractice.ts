@@ -14,7 +14,7 @@ export type AnswerPerformance = {
   mistakes: number;
 };
 
-export type AdaptivePracticeFields = {
+type AdaptivePracticeFields = {
   /** Answer checks made while practising this sentence. */
   answerAttempts?: number;
   /** Incorrect checks made while practising this sentence. */
@@ -45,7 +45,7 @@ type SentenceDifficultyInput = {
 const MINUTE_MS = 60_000;
 const DAY_MS = 24 * 60 * MINUTE_MS;
 export const ADAPTIVE_REPEAT_COOLDOWN_MS = 10 * MINUTE_MS;
-export const ADAPTIVE_REPEAT_THRESHOLD = 0.48;
+const ADAPTIVE_REPEAT_THRESHOLD = 0.48;
 
 const ADVANCED_WORDS = new Set([
   // English connectors and high-value abstract vocabulary.

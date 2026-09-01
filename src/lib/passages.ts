@@ -22,7 +22,7 @@
 
 import { foldEnglishSynonyms } from "@/lib/englishSynonyms";
 
-export type PassageLine = {
+type PassageLine = {
   de: string;
   /** A natural English rendering, not a word-for-word crib. */
   en: string;
@@ -413,7 +413,7 @@ const shapesOf = (word: string): Set<string> => {
   return shapes;
 };
 
-export type IdeaCoverage = {
+type IdeaCoverage = {
   /** Content words of the reference that the attempt mentions. */
   covered: string[];
   /** Content words it does not. */
@@ -434,7 +434,7 @@ export type IdeaCoverage = {
  * catches reliably is the clause somebody skipped, which is the mistake worth
  * catching.
  */
-export type AttemptVerdict = "got" | "close" | "missed";
+type AttemptVerdict = "got" | "close" | "missed";
 
 export function judgeAttempt(reference: string, attempt: string): { verdict: AttemptVerdict; coverage: IdeaCoverage } {
   const coverage = coverIdeas(reference, attempt);

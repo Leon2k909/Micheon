@@ -26,9 +26,9 @@ import { lifeInTheUkCourse } from "@/lib/lifeInTheUkCourse";
  * it.
  */
 
-export type UkSearchKind = "event" | "question" | "lesson" | "category" | "term";
+type UkSearchKind = "event" | "question" | "lesson" | "category" | "term";
 
-export type UkSearchHit = {
+type UkSearchHit = {
   id: string;
   kind: UkSearchKind;
   title: string;
@@ -74,12 +74,6 @@ export function questionTags(question: UkQuestion): string[] {
 }
 
 /** Every distinct tag in the course, which is what makes term search work. */
-export function ukAllTags(): string[] {
-  const tags = new Set<string>();
-  for (const entry of UK_TIMELINE) entry.tags.forEach((tag) => tags.add(tag));
-  for (const question of UK_QUESTIONS) questionTags(question).forEach((tag) => tags.add(tag));
-  return [...tags].sort((a, b) => a.localeCompare(b));
-}
 
 function eventHit(entry: UkTimelineEvent): UkSearchHit {
   return {
@@ -163,7 +157,7 @@ function haystackFor(hit: UkSearchHit): string {
   return fold([hit.title, hit.subtitle, hit.detail ?? "", hit.displayYear ?? "", ...hit.tags].join(" "));
 }
 
-export type UkSearchResult = {
+type UkSearchResult = {
   hits: UkSearchHit[];
   /** Tags the query matched, so the UI can show the chain it followed. */
   matchedTags: string[];
@@ -216,13 +210,3 @@ export function searchLifeInTheUk(query: string, limit = 40): UkSearchResult {
 }
 
 /** Suggestions for an empty box — the kinds of thing that work. */
-export const UK_SEARCH_EXAMPLES = [
-  "1066",
-  "Churchill",
-  "Magna Carta",
-  "Stonehenge",
-  "NHS",
-  "devolution",
-  "Scotland",
-  "suffrage",
-];

@@ -11,16 +11,16 @@ import type { Part, Phrase } from "@/lib/types";
  * those needing to know it came from the learner.
  */
 
-export const CUSTOM_CONTENT_KEY = "gl-custom-content-v1";
+const CUSTOM_CONTENT_KEY = "gl-custom-content-v1";
 export const CUSTOM_CONTENT_EVENT = "custom-content-changed";
 
 /** Custom pack keys are prefixed so they are recognisable anywhere they surface. */
-export const CUSTOM_PACK_PREFIX = "mine-";
+const CUSTOM_PACK_PREFIX = "mine-";
 
-export const MAX_CUSTOM_TEXT = 300;
+const MAX_CUSTOM_TEXT = 300;
 export const MAX_CUSTOM_ENTRIES = 5000;
 
-export type CustomEntry = {
+type CustomEntry = {
   de: string;
   en: string;
   use?: string;
@@ -86,10 +86,6 @@ function write(store: CustomStore) {
 
 export function getCustomPacks(): CustomPack[] {
   return read().packs;
-}
-
-export function customEntryCount(): number {
-  return read().packs.reduce((total, pack) => total + pack.entries.length, 0);
 }
 
 export function createCustomPack(name: string, level = "A1-A2"): CustomPack {
@@ -214,7 +210,7 @@ export function parseBulkEntries(text: string): {
  * deleting one entry does not hand every entry after it somebody else's
  * progress — and re-adding a word you deleted picks its own history back up.
  */
-export function customEntryId(packId: string, de: string): string {
+function customEntryId(packId: string, de: string): string {
   const slug = de
     .trim()
     .toLocaleLowerCase("de-DE")

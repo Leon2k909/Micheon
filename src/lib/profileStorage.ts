@@ -85,7 +85,7 @@ export interface UserProfile {
   externalWordsLearned: number;
 }
 
-export function slugify(value: string) {
+function slugify(value: string) {
   return String(value ?? "")
     .trim()
     .toLowerCase()
@@ -352,7 +352,6 @@ export async function hydrateLocalStorageFromSharedStorage() {
   }
 }
 
-
 export function setAuthUser(user: UserProfile | null) {
   if (typeof window === "undefined") return;
   if (!user) {
@@ -522,17 +521,4 @@ export function saveScopedJson<T>(key: string, value: T, profile: UserProfile | 
   syncSharedItems({ [scopedKey]: raw });
 }
 
-const debounceTimers = new Map<string, any>();
-
 /** Batched writes for high-churn keys. */
-export function scheduleSaveScopedJson<T>(key: string, value: T, profile: UserProfile | null = getAuthUser(), delayMs = 400) {
-  if (typeof window === "undefined") return;
-  const scopedKey = getScopedKey(key, profile);
-  const prev = debounceTimers.get(scopedKey);
-  if (prev) clearTimeout(prev);
-  const id = setTimeout(() => {
-    debounceTimers.delete(scopedKey);
-    saveScopedJson(key, value, profile);
-  }, delayMs);
-  debounceTimers.set(scopedKey, id);
-}

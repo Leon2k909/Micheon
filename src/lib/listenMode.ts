@@ -21,7 +21,7 @@ import {
   setStrengthLevel,
   snoozeForDays,
 } from "@/lib/memoryStrength";
-import { frequencyInfo, synonymCommonality } from "@/lib/wordFrequency";
+import { synonymCommonality } from "@/lib/wordFrequency";
 import { meaningLanguageFor, targetLanguage, type CourseLanguage } from "@/lib/courseLanguages";
 import { frenchFor } from "@/lib/frenchCourse";
 import { polishFor } from "@/lib/polishCourse";
@@ -41,7 +41,7 @@ import {
 } from "@/lib/conversationPriority";
 import { cefrRung, cefrRungLabel, cefrStep, cefrStepLabel, CEFR_STEPS, type CefrStep } from "@/lib/cefr";
 import { withoutMutedPacks } from "@/lib/mutedPacks";
-import { packMeta, packNoteForWord } from "@/lib/curriculum";
+import { packNoteForWord } from "@/lib/curriculum";
 import {
   getAuthUser,
   loadScopedJson,
@@ -118,9 +118,9 @@ const MAX_LANGUAGE_GAP_MS = 30_000;
 export const DEFAULT_TARGET_REPEATS = 2;
 export const DEFAULT_MEANING_REPEATS = 1;
 export const DEFAULT_LISTEN_LOOP_ITEMS = 3;
-export type ListenMixedCounts = { words: number; sentences: number };
+type ListenMixedCounts = { words: number; sentences: number };
 export const DEFAULT_LISTEN_MIXED_COUNTS: ListenMixedCounts = { words: 1, sentences: 2 };
-export function normalizeListenMixedCounts(value: Partial<ListenMixedCounts> | null | undefined): ListenMixedCounts {
+function normalizeListenMixedCounts(value: Partial<ListenMixedCounts> | null | undefined): ListenMixedCounts {
   const words = Number.isFinite(value?.words) ? Math.max(1, Math.min(11, Math.round(value?.words as number))) : DEFAULT_LISTEN_MIXED_COUNTS.words;
   const sentences = Number.isFinite(value?.sentences) ? Math.max(1, Math.min(12 - words, Math.round(value?.sentences as number))) : DEFAULT_LISTEN_MIXED_COUNTS.sentences;
   return { words, sentences };
@@ -171,10 +171,8 @@ export const LISTEN_DIALOGUE_VOICES: Readonly<Record<"a" | "b", string>> = {
  * for all of them, a bare kind is a set of one, and anything newer is written
  * as the kinds joined by "+".
  */
-export type ListenContentSource = ListenContentKind | "mixed";
+type ListenContentSource = ListenContentKind | "mixed";
 export type ListenQueueOrder = "common" | "learning" | "least-heard" | "newest" | "level" | "longest";
-export type ListenLevelFilter = "all" | CefrStep;
-export type ListenUsefulnessFilter = "all" | ConversationUsefulness;
 export const LISTEN_QUEUE_ORDERS: ListenQueueOrder[] = ["level", "common", "learning", "least-heard", "newest", "longest"];
 
 /**
@@ -287,7 +285,7 @@ export const LISTEN_RETURN_SCOPES: ListenReturnScope[] = ["both", "words", "sent
 export const DEFAULT_LISTEN_RETURN_SCOPE: ListenReturnScope = "both";
 
 /** The order that leaves no ties to break, so nothing can be asked second. */
-export const LISTEN_QUEUE_ORDERS_WITHOUT_GROUPS: ListenQueueOrder[] = ["common"];
+const LISTEN_QUEUE_ORDERS_WITHOUT_GROUPS: ListenQueueOrder[] = ["common"];
 /** Commonality, which is what the single-key order always used. */
 export const DEFAULT_LISTEN_QUEUE_WITHIN: ListenQueueWithin = "common";
 export const DEFAULT_LISTEN_CONTENT_SOURCE: ListenContentSource = "mixed";
@@ -726,7 +724,7 @@ export function setListenLanguageGapMs(gapMs: number): number {
 }
 
 /** One thing the player says, in order. `side` is which face of the card it is. */
-export type ListenSpeechClip = {
+type ListenSpeechClip = {
   text: string;
   rate: number;
   lang: string;
@@ -1237,7 +1235,7 @@ export function formatListenPetCaption(
   return `${item.de}\n\n${item.en}`;
 }
 
-export type ListenQueueOptions = {
+type ListenQueueOptions = {
   /** Which bodies of material to draw from. A single kind still reads. */
   contentSource?: ListenContentSource | readonly ListenContentKind[];
   direction?: LearningDirection;
@@ -1893,7 +1891,7 @@ export function buildListenQueue(
     .map((entry) => entry.item);
 }
 
-export type ListenGrade = "know" | "difficult";
+type ListenGrade = "know" | "difficult";
 export type ListenReviewLevel = "new" | "struggle" | "permanent" | 1 | 2 | 3 | 4 | 5;
 export type ListenReviewChange = {
   entries: Array<{ key: string; record: GradeRecord | null }>;

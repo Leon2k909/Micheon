@@ -216,9 +216,14 @@ for (const [code, binding] of [
     "the scene drawn for " + code + " has fallen out of PLANNED_CARD_ART, so that course would open wearing the German picture"
   );
 }
+// Counted as "every course picture draws languageCardArt", not as a fixed
+// two. The two it used to count were the live card and one inside CourseHero
+// — a component nothing rendered, removed in the dead-code pass — so half of
+// what this asserted was never on screen.
+const courseArtImages = (shell.match(/className="np-course-art"/g) || []).length;
 assert.ok(
-  (shell.match(/src=\{languageCardArt\(/g) || []).length === 2,
-  "both language cards should draw languageCardArt — one of them has gone back to a fixed picture"
+  courseArtImages >= 1 && (shell.match(/src=\{languageCardArt\(/g) || []).length === courseArtImages,
+  "a course picture has gone back to a fixed image instead of languageCardArt"
 );
 
 /**
@@ -293,7 +298,8 @@ const order = ["<HomeBanner />", "np-home-question", "np-home-choices", "<Fluenc
 // the next-lesson strip ("du kannst diese beiden dinge vollständig
 // entfernen"), and the lesson path ("entfern das vorerst"). Pinned as
 // absences so none of them drifts back without her asking. The LessonPath
-// component itself is left in the file — vorerst — so restoring it is a line.
+// component was kept in the file for a while so restoring it was a line; it
+// went in the dead-code pass, and restoring it is a git show away instead.
 assert.ok(
   !home.includes("<HomeStats") && !home.includes("np-course-launch") && !home.includes("<LessonPath"),
   "none of the removed sections comes back without her asking"

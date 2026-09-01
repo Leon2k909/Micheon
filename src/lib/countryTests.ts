@@ -25,7 +25,7 @@ export type CountryTestMode =
   | "favourites"
   | "quick";
 
-export type CountryTestModeSpec = {
+type CountryTestModeSpec = {
   mode: CountryTestMode;
   title: string;
   /**
@@ -52,7 +52,7 @@ export type CountryTest = {
   passMark: number;
 };
 
-export type CountryExamAnswer = {
+type CountryExamAnswer = {
   questionId: string;
   /** null when left unanswered — the exam allows that, and marks it wrong. */
   chosen: number | null;
@@ -96,7 +96,7 @@ export function countryPassPercent(pack: CountryPack): number {
   return Math.round(passRatio(pack) * 100);
 }
 
-export function countryTestModes(pack: CountryPack): CountryTestModeSpec[] {
+function countryTestModes(pack: CountryPack): CountryTestModeSpec[] {
   const { questionCount, passMark } = pack.exam;
   const minutes = Math.round(pack.exam.durationMs / 60000);
   return [
@@ -124,7 +124,7 @@ export function countryTestModes(pack: CountryPack): CountryTestModeSpec[] {
   ];
 }
 
-export function countryModeTitle(pack: CountryPack, mode: CountryTestMode): string {
+function countryModeTitle(pack: CountryPack, mode: CountryTestMode): string {
   return countryTestModes(pack).find((entry) => entry.mode === mode)?.title ?? mode;
 }
 

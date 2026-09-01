@@ -13,7 +13,7 @@ import { getAuthUser, loadScopedJson, saveScopedJson, type UserProfile } from "@
  * still reachable by search, by a direct link, and by unhiding it, which is
  * why this can be a display preference rather than a feature switch.
  */
-export const HIDDEN_NAV_KEY = "nav-hidden-v1";
+const HIDDEN_NAV_KEY = "nav-hidden-v1";
 export const HIDDEN_NAV_EVENT = "gl-nav-hidden-changed";
 
 /**
@@ -78,13 +78,10 @@ export function canHideNavItem(id: string): boolean {
  * the restore list all keep working on one list without knowing the
  * difference.
  */
-export const NAV_SECTION_PREFIX = "section:";
-export const NAV_ROW_PREFIX = "row:";
+const NAV_SECTION_PREFIX = "section:";
+const NAV_ROW_PREFIX = "row:";
 
 /** The whole heading and everything folded under it. */
 export const navSectionId = (section: string) => `${NAV_SECTION_PREFIX}${section}`;
 /** One row that is not a nav destination: a tab, a preview, a scroll target. */
 export const navRowId = (row: string) => `${NAV_ROW_PREFIX}${row}`;
-
-export const isNavSectionId = (id: string) => id.startsWith(NAV_SECTION_PREFIX);
-export const isNavRowId = (id: string) => id.startsWith(NAV_ROW_PREFIX);

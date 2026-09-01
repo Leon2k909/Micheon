@@ -3,7 +3,7 @@ import { syncLocalStorageItem } from "@/lib/profileStorage";
 const LEGACY_MUTE_KEY = "gl-audio-muted";
 const SETTINGS_KEY = "gl-audio-settings-v1";
 
-export const AUDIO_MUTE_EVENT = "gl-audio-mute-changed";
+const AUDIO_MUTE_EVENT = "gl-audio-mute-changed";
 export const AUDIO_SETTINGS_EVENT = AUDIO_MUTE_EVENT;
 
 // Every language the app can speak has its own mute, volume and speed. French
@@ -171,7 +171,7 @@ export function isMasterAudioSilent(settings: AudioSettings = getAudioSettings()
 }
 
 /** Global app-audio mute: silences TTS voices and game-feel sounds. */
-export function isAudioMuted(): boolean {
+function isAudioMuted(): boolean {
   if (typeof window === "undefined") return false;
   try { return window.localStorage.getItem(LEGACY_MUTE_KEY) === "1"; }
   catch { return false; }
@@ -195,10 +195,6 @@ export function toggleAudioMuted(): boolean {
 }
 
 /** Effective volume for non-language-specific app sounds. */
-export function getMasterAudioVolume(): number {
-  const settings = getAudioSettings();
-  return settings.muted ? 0 : settings.masterVolume;
-}
 
 export function setMasterAudioVolume(volume: number) {
   const stored = readStoredSettings();
@@ -209,12 +205,12 @@ export function setMasterAudioVolume(volume: number) {
   emitAudioSettingsChanged();
 }
 
-export function isSfxMuted(): boolean {
+function isSfxMuted(): boolean {
   const settings = readStoredSettings();
   return settings.sfxMuted || settings.sfxVolume <= 0;
 }
 
-export function setSfxMuted(muted: boolean) {
+function setSfxMuted(muted: boolean) {
   const stored = readStoredSettings();
   writeStoredSettings({
     ...stored,

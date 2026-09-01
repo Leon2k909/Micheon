@@ -37,13 +37,6 @@ export type CountryQuestion = {
   explanation: string;
 };
 
-export type CountryCategory = {
-  id: string;
-  title: string;
-  chapter: string;
-  count: number;
-};
-
 /**
  * A dated entry on a country's timeline.
  *

@@ -7,7 +7,7 @@ import {
 
 export const CODEX_PET_RECALL_KEY = "gl-codex-pet-recall-v1";
 export const PET_RECALL_FOCUS_CHANCE = 0.75;
-export const PET_RECALL_REINFORCEMENT_CHANCE = 0.35;
+const PET_RECALL_REINFORCEMENT_CHANCE = 0.35;
 
 const MAX_TRACKED_ITEMS = 40;
 const MAX_OTHER_QUESTIONS_BEFORE_FOCUS = 2;
@@ -21,13 +21,13 @@ const REINFORCEMENT_GAPS = [3, 8] as const;
  */
 const MISSES_BEFORE_HANDOVER = 2;
 
-export type PetRecallQuestionIdentity = {
+type PetRecallQuestionIdentity = {
   aliases?: string[];
   itemId: string;
   recallSequence?: number;
 };
 
-export type PetRecallEntry = {
+type PetRecallEntry = {
   aliases: string[];
   dueQuestion: number;
   firstMissQuestion: number;
@@ -39,19 +39,19 @@ export type PetRecallEntry = {
   updatedAt: number;
 };
 
-export type PetRecallState = {
+type PetRecallState = {
   entries: PetRecallEntry[];
   questionCount: number;
 };
 
-export type PetRecallAnswerOutcome =
+type PetRecallAnswerOutcome =
   | "focused"
   | "handed-over"
   | "reinforcement"
   | "retired"
   | "unchanged";
 
-export type PetRecallCandidate = {
+type PetRecallCandidate = {
   aliases?: string[];
   id: string;
 };

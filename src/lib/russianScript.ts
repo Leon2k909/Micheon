@@ -16,10 +16,10 @@ import { loadScopedJson, saveScopedJson, type UserProfile } from "@/lib/profileS
  * ONLY CYRILLIC IS EVER STORED. The Latin form is computed here, every time,
  * and never written down. Two tables would drift; one cannot.
  */
-export type RussianScript = "auto" | "cyrillic" | "latin";
-export type ResolvedRussianScript = "cyrillic" | "latin";
+type RussianScript = "auto" | "cyrillic" | "latin";
+type ResolvedRussianScript = "cyrillic" | "latin";
 
-export const RUSSIAN_SCRIPT_KEY = "russian-script";
+const RUSSIAN_SCRIPT_KEY = "russian-script";
 
 /** Interface languages whose devices already read Cyrillic day to day. */
 const CYRILLIC_LOCALES = new Set(["ru", "uk", "be", "bg", "sr", "mk", "kk", "ky", "tg", "mn"]);
@@ -32,7 +32,7 @@ const CYRILLIC_LOCALES = new Set(["ru", "uk", "be", "bg", "sr", "mk", "kk", "ky"
  * starts on the Latin crutch, because the first lesson is unreadable
  * otherwise, and the switch is one tap away on the typing prompt.
  */
-export function detectRussianScript(): ResolvedRussianScript {
+function detectRussianScript(): ResolvedRussianScript {
   if (typeof navigator === "undefined") return "latin";
 
   const languages = [navigator.language, ...(navigator.languages ?? [])]
@@ -399,7 +399,7 @@ const TABLES: Record<ResolvedInterfaceLanguage, ScriptTable> = {
 };
 
 /** The five tables, named — for the sample sheet and the build gate. */
-export const RUSSIAN_SCRIPT_LANGUAGES: ReadonlyArray<ResolvedInterfaceLanguage> = ["de", "en", "fr", "pl", "es"];
+const RUSSIAN_SCRIPT_LANGUAGES: ReadonlyArray<ResolvedInterfaceLanguage> = ["de", "en", "fr", "pl", "es"];
 
 function isCyrillicLetter(char: string): boolean {
   return char !== "" && /[Ѐ-ӿ]/.test(char);
@@ -548,7 +548,7 @@ const AMBIGUOUS: Record<ResolvedInterfaceLanguage, Set<string>> = {
 };
 
 /** Whether a Cyrillic answer has a Latin form that reads back more than one way. */
-export function russianTranscriptionIsAmbiguous(
+function russianTranscriptionIsAmbiguous(
   targetCyrillic: string,
   language: ResolvedInterfaceLanguage
 ): boolean {

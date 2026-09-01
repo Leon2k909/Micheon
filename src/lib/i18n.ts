@@ -121,7 +121,7 @@ export function uiFmt(pattern: string, values: Record<string, string | number>):
   return ui(pattern).replace(/\{(\w+)\}/g, (_, key) => String(values[key] ?? ""));
 }
 
-export type UiPart = { kind: "text"; value: string } | { kind: "slot"; name: string };
+type UiPart = { kind: "text"; value: string } | { kind: "slot"; name: string };
 
 /**
  * A translated sentence, broken at its slots so markup can go inside it.

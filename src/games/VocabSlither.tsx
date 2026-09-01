@@ -262,7 +262,6 @@ export default function VocabSlither() {
     length: INITIAL_LENGTH
   });
 
-  const mouseRef = useRef<Point>({ x: 0, y: 0 });
   const foodRef = useRef<Food[]>([]);
   const requestRef = useRef<number>(null);
   const isBoostingRef = useRef(false);

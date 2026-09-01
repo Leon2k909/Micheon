@@ -14,6 +14,11 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
+    /* Unused code is a compile error, not a habit. 103 unused symbols, four
+       dead components and five unreferenced packages had accumulated with
+       these off; with them on, the next one fails the typecheck instead. */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
     // "Bundler" matches how Vite actually resolves. The old "Node" (node10)

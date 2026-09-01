@@ -16,7 +16,7 @@ import type { GradeStore } from "@/lib/activity";
 
 export type AbilityBand = "easy" | "medium" | "hard" | "expert";
 
-export type Ability = {
+type Ability = {
   /** 0-1. Blends how much has been graded, how much stuck, and how deeply. */
   score: number;
   band: AbilityBand;
@@ -32,7 +32,7 @@ export type Ability = {
  * their first six answers right is not a C1 candidate, and promoting them there
  * would bury the basics they have not met yet.
  */
-export const ABILITY_MIN_GRADED = 40;
+const ABILITY_MIN_GRADED = 40;
 
 /** Interval at which an item counts as fully mastered for scoring purposes. */
 const STRONG_INTERVAL_DAYS = 30;
@@ -72,7 +72,7 @@ export function computeAbility(grades: GradeStore): Ability {
   };
 }
 
-export function bandForScore(score: number): AbilityBand {
+function bandForScore(score: number): AbilityBand {
   if (score >= 0.78) return "expert";
   if (score >= 0.58) return "hard";
   if (score >= 0.34) return "medium";
@@ -82,24 +82,6 @@ export function bandForScore(score: number): AbilityBand {
 const BAND_ORDER: AbilityBand[] = ["easy", "medium", "hard", "expert"];
 
 /** Which band a pack's CEFR label belongs to. */
-export function bandForLevel(level: string | undefined): AbilityBand {
-  const text = String(level ?? "");
-  if (/C[12]/i.test(text)) return "expert";
-  if (/B2/i.test(text)) return "hard";
-  if (/B1/i.test(text)) return "medium";
-  return "easy";
-}
-
-/**
- * How well a pack suits this learner. Lower sorts first.
- *
- * Overshooting is penalised harder than undershooting: serving a beginner C1
- * material is a worse mistake than serving a strong learner something easy,
- * which merely feels quick.
- */
-export function packAffinity(ability: AbilityBand, level: string | undefined): number {
-  return bandDistance(ability, bandForLevel(level));
-}
 
 /**
  * How badly one difficulty band suits a learner at another. 0 is a perfect fit.
@@ -108,11 +90,10 @@ export function packAffinity(ability: AbilityBand, level: string | undefined): n
  * below them costs, because being out of your depth stops you dead and being
  * under-stretched only wastes a little time.
  */
-export function bandDistance(ability: AbilityBand, item: AbilityBand): number {
+function bandDistance(ability: AbilityBand, item: AbilityBand): number {
   const gap = BAND_ORDER.indexOf(item) - BAND_ORDER.indexOf(ability);
   return gap >= 0 ? gap * 2 : -gap;
 }
-
 
 /**
  * The difficulty of one sentence, rather than of the pack it happens to sit in.
@@ -156,7 +137,7 @@ export function itemDifficulty(level: string | undefined, wordCount: number): Ab
  * phrase in has already said they want it. Big enough to clear the long tail,
  * small enough that the true everyday basics still come first.
  */
-export const OWN_MATERIAL_BONUS = 0.35;
+const OWN_MATERIAL_BONUS = 0.35;
 
 export function itemPriority(input: {
   /** From sentenceCommonality — roughly 300 (everyday) to 5000 (rare). */
@@ -181,12 +162,3 @@ export function itemPriority(input: {
 }
 
 /** Short, honest description of what the app is doing, for the UI. */
-export function abilityLabel(ability: Ability): string {
-  if (ability.provisional) return "Still learning what suits you";
-  switch (ability.band) {
-    case "expert": return "Serving your hardest material first";
-    case "hard": return "Serving harder material first";
-    case "medium": return "Stepping up the difficulty";
-    default: return "Building the basics first";
-  }
-}

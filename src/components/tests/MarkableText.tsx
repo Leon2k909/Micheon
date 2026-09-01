@@ -19,7 +19,7 @@ function tokenize(text: string) {
   return String(text ?? "").split(/([\p{L}\p{N}]+(?:[-'’][\p{L}\p{N}]+)*)/u).filter((part) => part !== "");
 }
 
-export function isWordToken(token: string) {
+function isWordToken(token: string) {
   return /^[\p{L}\p{N}]/u.test(token);
 }
 

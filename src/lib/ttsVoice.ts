@@ -12,10 +12,10 @@ import { syncLocalStorageItem } from "@/lib/profileStorage";
  * language", so someone who never opens this hears exactly what they heard
  * before.
  */
-export const TTS_VOICE_KEY = "gl-tts-voice-v1";
+const TTS_VOICE_KEY = "gl-tts-voice-v1";
 export const TTS_VOICE_EVENT = "tts-voice-changed";
 
-export type VoiceChoice = { id: string; label: string; note: string };
+type VoiceChoice = { id: string; label: string; note: string };
 export type VoiceCatalog = {
   choices: Record<string, VoiceChoice[]>;
   defaults: Record<string, string>;
@@ -36,10 +36,6 @@ function read(): VoiceMap {
   } catch {
     return {};
   }
-}
-
-export function getVoiceChoices(): VoiceMap {
-  return read();
 }
 
 /**

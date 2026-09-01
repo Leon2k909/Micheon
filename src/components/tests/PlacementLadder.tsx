@@ -1,6 +1,6 @@
-import React, { useCallback, useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import { ArrowRight, Check, Gauge, TrendingUp, X } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
+
+import { ArrowRight, Gauge, TrendingUp, X } from "lucide-react";
 import { ui, uiFmt } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { getAuthUser, saveScopedJson } from "@/lib/profileStorage";

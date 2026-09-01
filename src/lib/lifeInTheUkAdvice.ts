@@ -13,7 +13,7 @@ import { UK_PASS_PERCENT } from "@/lib/lifeInTheUkTests";
  * Built on the existing per-topic strength rather than a second tally, so what
  * the advice says and what the progress screen shows can never disagree.
  */
-export type UkAdvice = {
+type UkAdvice = {
   id: string;
   tone: "praise" | "warn" | "info";
   text: string;

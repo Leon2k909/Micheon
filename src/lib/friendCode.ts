@@ -12,7 +12,7 @@ import { syncLocalStorageItem } from "@/lib/profileStorage";
  * them. Changing it silently would leave them holding an address that answers
  * to nobody, and the app would have no way to tell them why.
  */
-export const FRIEND_CODE_KEY = "gl-friend-code-v1";
+const FRIEND_CODE_KEY = "gl-friend-code-v1";
 
 /** How the code is shown and typed: five groups of four, case-insensitive. */
 const GROUP = 4;

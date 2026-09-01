@@ -1,5 +1,5 @@
 import { ui, uiFmt } from "@/lib/i18n";
-import React from "react";
+
 import { ArrowRight, BookOpen, Check, Code2, Landmark, Trophy } from "lucide-react";
 import type { Course } from "@/lib/courses";
 import { loadCourseProgress } from "@/lib/courses";

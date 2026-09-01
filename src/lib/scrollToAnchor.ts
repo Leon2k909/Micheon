@@ -11,7 +11,7 @@
  * target that never appears means the view failed to load or the id was
  * wrong, and neither is improved by a callback still running a minute later.
  */
-export type ScrollToAnchorOptions = {
+type ScrollToAnchorOptions = {
   /** Frames to keep looking. Roughly a second at 60fps, which covers a lazy chunk. */
   attempts?: number;
   /** Injectable for the gate, which has neither a document nor a screen. */

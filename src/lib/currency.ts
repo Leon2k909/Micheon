@@ -56,7 +56,7 @@ const CURRENCIES: CurrencyEntry[] = [
 
 export const CURRENCY_CODES: CurrencyCode[] = CURRENCIES.map((entry) => entry.code);
 export const DEFAULT_CURRENCY: CurrencyCode = "GBP";
-export const CURRENCY_KEY = "shop-currency";
+const CURRENCY_KEY = "shop-currency";
 /** Stored when the learner has not chosen — so a later default change reaches them. */
 export const CURRENCY_AUTO = "auto";
 
@@ -145,6 +145,3 @@ export function premiumPrice(code: CurrencyCode, locale?: string): string {
 }
 
 /** Amounts, unformatted — for checks and for a future real checkout. */
-export function packAmount(tier: PriceTier, code: CurrencyCode): number {
-  return currencyEntry(code).packs[tier];
-}

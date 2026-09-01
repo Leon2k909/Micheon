@@ -22,7 +22,7 @@ export type CourseLanguage = "de" | "en" | "fr" | "pl" | "es" | "it" | "pt" | "r
 /** Every BCP-47 tag the app asks a voice for. */
 export type VoiceTag = "de-DE" | "en-GB" | "en-US" | "fr-FR" | "pl-PL" | "es-ES" | "it-IT" | "pt-PT" | "ru-RU";
 
-export type CourseSide = {
+type CourseSide = {
   code: CourseLanguage;
   /** English label, passed through ui() by the caller that shows it. */
   label: string;

@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Check, Eye, Star } from "lucide-react";
 import { ui, uiFmt } from "@/lib/i18n";

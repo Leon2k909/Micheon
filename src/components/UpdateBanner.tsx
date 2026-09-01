@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, CircleCheck, Download, Power } from "lucide-react";
+import { ArrowRight, CircleCheck, Power } from "lucide-react";
 import {
   UPDATE_INSTALL_REQUEST_EVENT,
   updatePanelIsUseful,

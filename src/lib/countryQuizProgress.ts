@@ -26,7 +26,7 @@ import { packCategories } from "@/lib/countryPacks";
  * user is in CEST is a bug the user experiences as the app forgetting a streak.
  */
 
-export type CountryAnswerStat = {
+type CountryAnswerStat = {
   correct: number;
   wrong: number;
   lastSeen: number;
@@ -35,7 +35,7 @@ export type CountryAnswerStat = {
   lastWrongChoice: number;
 };
 
-export type CountryTestResult = {
+type CountryTestResult = {
   at: number;
   score: number;
   total: number;
@@ -48,7 +48,7 @@ export type CountryTestResult = {
   answers?: { questionId: string; chosen: number | null; correct: boolean }[];
 };
 
-export type CountryDailyState = {
+type CountryDailyState = {
   day: string;
   ids: string[];
   answered: Record<string, boolean>;
@@ -65,16 +65,16 @@ export type CountryQuizState = {
   dailyGoal: number;
 };
 
-export const COUNTRY_DAILY_SIZE = 10;
+const COUNTRY_DAILY_SIZE = 10;
 
-export type CountryMistake = {
+type CountryMistake = {
   question: CountryQuestion;
   yourAnswer: number;
   wrongCount: number;
   lastWrong: number;
 };
 
-export type CountryPickOptions = {
+type CountryPickOptions = {
   lesson?: string;
   chapter?: string;
   levels?: CountryLevel[];
@@ -84,7 +84,7 @@ export type CountryPickOptions = {
   exclude?: string[];
 };
 
-export type CountryCategoryStrength = {
+type CountryCategoryStrength = {
   id: string;
   title: string;
   chapter: string;
@@ -96,7 +96,7 @@ export type CountryCategoryStrength = {
   percent: number;
 };
 
-export type CountryProgressSummary = {
+type CountryProgressSummary = {
   overallPercent: number;
   questionsSeen: number;
   questionsTotal: number;
@@ -131,7 +131,7 @@ function emptyState(): CountryQuizState {
 }
 
 /** Local calendar day, not UTC. See the note at the top of the file. */
-export function countryToday(now: Date = new Date()): string {
+function countryToday(now: Date = new Date()): string {
   const y = now.getFullYear();
   const m = String(now.getMonth() + 1).padStart(2, "0");
   const d = String(now.getDate()).padStart(2, "0");
@@ -185,7 +185,7 @@ function normalise(raw: unknown): CountryQuizState {
  * drifts back up so the pool keeps circulating rather than narrowing to a
  * favourite few. The numbers match ukQuestionWeight exactly.
  */
-export function countryQuestionWeight(stat: CountryAnswerStat, now: number = Date.now()): number {
+function countryQuestionWeight(stat: CountryAnswerStat, now: number = Date.now()): number {
   let weight = 10;
   weight += stat.wrong * 12;
   weight -= Math.min(stat.correct, 6) * 3;
@@ -583,5 +583,3 @@ export function countryProgress(pack: CountryPack) {
     setDailyGoal,
   };
 }
-
-export type CountryProgress = ReturnType<typeof countryProgress>;

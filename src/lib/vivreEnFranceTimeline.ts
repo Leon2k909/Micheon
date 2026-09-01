@@ -13,7 +13,7 @@ import type { CountryTimelineEvent } from "@/lib/countryStudies";
  * républiques et les guerres, la Ve République.
  */
 
-export type FrEra =
+type FrEra =
   | "ancien-regime"
   | "revolution"
   | "xixe"
@@ -244,13 +244,4 @@ const sortYear = (entry: CountryTimelineEvent) => entry.endYear ?? entry.year;
  */
 export function frTimelineSorted(): CountryTimelineEvent[] {
   return [...FR_TIMELINE].sort((a, b) => sortYear(a) - sortYear(b) || a.year - b.year);
-}
-
-export function frTimelineByEra(): { era: FrEra; label: string; events: CountryTimelineEvent[] }[] {
-  const sorted = frTimelineSorted();
-  return FR_ERA_ORDER.map((era) => ({
-    era,
-    label: FR_ERA_LABELS[era],
-    events: sorted.filter((entry) => entry.era === era),
-  })).filter((group) => group.events.length > 0);
 }

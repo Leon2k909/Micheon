@@ -1,5 +1,5 @@
 import { meaningLanguageFor } from "@/lib/courseLanguages";
-import { getLearningDirection } from "@/lib/direction";
+
 import { russianOwnParts } from "@/lib/russianOwnCards";
 import { translate } from "@/lib/translations";
 import type { Dialogue, Part, Phrase, VocabItem } from "@/lib/types";
@@ -41,7 +41,7 @@ export function russianFor(german: string): string | null {
   return value && value.trim() ? value.trim() : null;
 }
 
-export function hasRussian(entry: { de?: string } | null | undefined): boolean {
+function hasRussian(entry: { de?: string } | null | undefined): boolean {
   if (!entry?.de) return false;
   return russianFor(entry.de) !== null;
 }
@@ -96,7 +96,7 @@ function russianDialogue(dialogue: Dialogue): Dialogue | null {
   return lines.length >= 2 ? { ...dialogue, lines } : null;
 }
 
-export function russianPart<T extends Part>(part: T): T | null {
+function russianPart<T extends Part>(part: T): T | null {
   const vocab = (part.vocab ?? []).filter((word: VocabItem) => hasRussian(word)).map((word) => (
     hasRussian({ de: word.example })
       ? word
@@ -156,8 +156,4 @@ export function russianParts<T extends Part>(parts: Record<string, T>): Record<s
   for (const [key, part] of Object.entries(own)) out[key] = part;
 
   return out;
-}
-
-export function russianCourseActive(): boolean {
-  return getLearningDirection() === "learn-ru";
 }

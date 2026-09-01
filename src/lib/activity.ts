@@ -1,7 +1,7 @@
 import { getAuthUser, getScopedKey, loadScopedJson, saveScopedJson, type UserProfile } from "@/lib/profileStorage";
 import { recordDeclaredKnown, recordStruggle } from "@/lib/memoryStrength";
 
-export const ACTIVITY_LOG_KEY = "activity-log";
+const ACTIVITY_LOG_KEY = "activity-log";
 export const COMPLETED_KEY = "session-completed";
 
 export type ActivitySession = {
@@ -251,7 +251,7 @@ export function setItemsStatus(
 }
 
 
-export type DayBucket = { dayStart: number; minutes: number; items: number; listened: number };
+type DayBucket = { dayStart: number; minutes: number; items: number; listened: number };
 
 export function summarizeActivity(
   sessions: ActivitySession[],

@@ -28,7 +28,7 @@
  * German, so it cannot drift out of step with the content.
  */
 
-export type SpeechSegment = { text: string; lang: string };
+type SpeechSegment = { text: string; lang: string };
 
 const WORD = /[\p{L}][\p{L}\p{M}]*/gu;
 

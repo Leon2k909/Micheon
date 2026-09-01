@@ -1,9 +1,9 @@
 import { loadScopedJson, saveScopedJson, type UserProfile } from "@/lib/profileStorage";
 
 export type EnglishVariant = "auto" | "british" | "american";
-export type ResolvedEnglishVariant = "british" | "american";
+type ResolvedEnglishVariant = "british" | "american";
 
-export const ENGLISH_VARIANT_KEY = "english-variant";
+const ENGLISH_VARIANT_KEY = "english-variant";
 
 const BRITISH_REGIONS = new Set(["gb", "uk", "ie", "au", "nz", "za"]);
 
@@ -47,19 +47,6 @@ export function setEnglishVariant(value: EnglishVariant, profile?: UserProfile |
 
 export function resolveEnglishVariant(value: EnglishVariant): ResolvedEnglishVariant {
   return value === "auto" ? detectEnglishVariant() : value;
-}
-
-/**
- * The BCP-47 tag to speak English with, honouring the learner's choice.
- *
- * This exists because "en-US" was hardcoded at roughly ten call sites — the
- * lesson voice, the games, the mascot — so a German learner who picked British
- * English still heard an American voice everywhere except the flashcard. There
- * is no separate British "voice model" to install: the platform picks a voice
- * from the language tag, so getting the tag right IS the fix.
- */
-export function englishVoiceLang(profile?: UserProfile | null): "en-GB" | "en-US" {
-  return resolveEnglishVariant(getEnglishVariant(profile)) === "british" ? "en-GB" : "en-US";
 }
 
 /** Human name for a variant, for labels like "Auto-detect (British English)". */

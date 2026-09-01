@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { RotateCcw, Trophy, Volume2 } from "lucide-react";
+import { RotateCcw, Trophy } from "lucide-react";
 import { speakGerman } from "@/lib/tts";
-import { englishVoiceLang } from "@/lib/englishVariant";
+
 import { useGameContent } from "@/games/gameContent";
 import { recordWordMastery } from "@/lib/mastery";
 import { ui, uiFmt } from "@/lib/i18n";
@@ -304,7 +304,6 @@ export default function VerbShooter() {
   useEffect(() => { stateRef.current = { invaders, bullets, cannonCol, verb, phase, score, streak }; });
 
   const loopRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const spawnRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const spawnWave = useCallback((v: typeof verb) => {
     const options = shuffle([v.correct, ...v.wrong.slice(0, 3)]);
@@ -434,7 +433,7 @@ export default function VerbShooter() {
       if (e.key === "ArrowRight") { e.preventDefault(); setCannonCol(c => Math.min(COLS - 1, c + 1)); }
       if (e.key === " " || e.key === "ArrowUp") {
         e.preventDefault();
-        const { cannonCol, invaders } = stateRef.current;
+        const { cannonCol } = stateRef.current;
         // Only fire if no bullet already in that col
         setBullets(prev => {
           if (prev.some(b => b.col === cannonCol)) return prev;

@@ -1,6 +1,6 @@
-export type VisibleWordToken = { text: string };
+type VisibleWordToken = { text: string };
 
-export function sentenceOrderWords(sentence: string): string[] {
+function sentenceOrderWords(sentence: string): string[] {
   return String(sentence ?? "").trim().split(/\s+/).filter(Boolean);
 }
 

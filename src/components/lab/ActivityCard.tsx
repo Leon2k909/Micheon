@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BookOpen, CalendarDays, CheckCircle2, ChevronDown, Headphones, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { loadActivitySessions, loadGradeStore, summarizeActivity } from "@/lib/activity";

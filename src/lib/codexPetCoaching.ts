@@ -13,7 +13,7 @@ export const CODEX_PET_COACHING_FREQUENCY_EVENT = "codex-pet-coaching-frequency-
 export type CodexPetCoachingKind = "questions" | "tips" | "praise";
 export type CodexPetFrequency = "off" | "low" | "normal" | "high" | "custom";
 
-export type CodexPetCadence = {
+type CodexPetCadence = {
   initialDelayMs: number;
   intervalMs: number;
 };
@@ -110,7 +110,7 @@ export function getCodexPetCadence(
 // or maddening, and one person's right is another's maddening. So both are
 // settable outright.
 
-export const CODEX_PET_TIMINGS_KEY = "gl-codex-pet-timings-v1";
+const CODEX_PET_TIMINGS_KEY = "gl-codex-pet-timings-v1";
 
 export type CodexPetTimings = {
   /** Seconds a plain remark stays on screen. */
@@ -183,8 +183,4 @@ export function setCodexPetTimings(next: Partial<CodexPetTimings>) {
   window.dispatchEvent(new CustomEvent(CODEX_PET_COACHING_FREQUENCY_EVENT, {
     detail: { kind: "timings" },
   }));
-}
-
-export function resetCodexPetTimings() {
-  setCodexPetTimings(DEFAULT_TIMINGS);
 }

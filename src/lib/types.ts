@@ -23,7 +23,7 @@ export interface VocabSeed {
   core?: boolean;
 }
 
-export interface DialogueLine {
+interface DialogueLine {
   speaker: string;
   /** Same dial as Phrase.lessonPriority, and already read by the session
    *  builder: positive values demote a line in pack and queue order.
@@ -123,7 +123,7 @@ export interface VocabItem {
   core?: boolean;
 }
 
-export interface ArticleQuestion {
+interface ArticleQuestion {
   word: string;
   correct: string;
   hint: string;
@@ -151,16 +151,6 @@ export interface Part {
   learningDirections?: LearningDirection[];
   /** Preserve target-language coaching when a lesson is direction-swapped. */
   coachingLanguage?: "de" | "en" | "both";
-}
-
-export interface ReviewStats {
-  ease: number;
-  interval: number;
-  due: number;
-  seen: number;
-  lapses: number;
-  streak: number;
-  lastGrade: string;
 }
 
 export interface Profile {

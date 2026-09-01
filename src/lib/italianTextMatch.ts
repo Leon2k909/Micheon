@@ -51,7 +51,7 @@
  * wrong word. Those are what the lesson is for.
  */
 
-export type ItalianMatch = {
+type ItalianMatch = {
   ok: boolean;
   spellingNote: boolean;
   capitalizationError?: boolean;
@@ -70,7 +70,7 @@ const THIN_SPACES = /[    ]/g;
  * onto it rather than away, so a learner whose keyboard produces ’ is not
  * marked down for it.
  */
-export function normalizeItalianInput(text: string): string {
+function normalizeItalianInput(text: string): string {
   return String(text ?? "")
     .replace(THIN_SPACES, " ")
     .replace(APOSTROPHES, "'")
@@ -121,7 +121,7 @@ function foldAccents(word: string): string {
  * Lower case, accents folded — except on the words in ACCENT_PAIRS, which keep
  * theirs so that the two sides of each pair stay two words.
  */
-export function normalizeItalianLenient(text: string): string {
+function normalizeItalianLenient(text: string): string {
   return normalizeItalianInput(text)
     .toLocaleLowerCase("it-IT")
     .split(" ")
@@ -200,7 +200,7 @@ export const matchItalianSentence = matchItalianPhrase;
  * A vocabulary card names several equally right senses ("la casa, l'abitazione").
  * They are choices, not a phrase to reproduce in full.
  */
-export function italianMeaningAlternatives(value: string): string[] {
+function italianMeaningAlternatives(value: string): string[] {
   const original = String(value ?? "").trim();
   if (!original) return [];
   const parts = original
@@ -208,10 +208,6 @@ export function italianMeaningAlternatives(value: string): string[] {
     .map((part) => part.trim())
     .filter(Boolean);
   return parts.length ? parts : [original];
-}
-
-export function primaryItalianMeaning(value: string): string {
-  return italianMeaningAlternatives(value)[0] ?? "";
 }
 
 export function matchItalianMeaning(input: string, target: string): ItalianMatch {

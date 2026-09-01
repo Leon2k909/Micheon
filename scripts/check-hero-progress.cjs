@@ -73,17 +73,20 @@ const proto = fs.readFileSync(path.join(root, "src/prototype/NewUiPrototype.tsx"
 if (!/activePackProgress\(apiParts, profile\)/.test(proto)) {
   failures.push("nothing computes the pack progress, so the hero has nothing to show");
 }
-if (!/packProgress\.sittingsLeft/.test(proto) || !/packProgress\.total/.test(proto)) {
-  failures.push("the hero never says how many phrases or sittings are left");
+// The three checks that used to follow here pinned the old course hero —
+// its sittings-left line, its `percent : pct` fallback to XP, its "of N XP"
+// text. That hero was replaced by the LanguageCard in v1.2.438 and never
+// rendered again; the component went in the dead-code pass, and these
+// assertions had been passing against a screen nobody could reach.
+//
+// What is live is the card. It takes its title and its bar from the pack,
+// and before the catalogue loads it falls back to a name and an empty bar
+// rather than to XP — which is the rule this file exists for, kept.
+if (!/const percent = packProgress \? packProgress\.percent : 0;/.test(proto)) {
+  failures.push("the card's bar no longer fills from the pack — or falls back to XP again before the catalogue loads");
 }
-if (!/packProgress\s*\?\s*packProgress\.percent\s*:\s*pct/.test(proto)) {
-  failures.push("the bar still fills from XP rather than from the pack");
-}
-// The fallback has to survive: before the catalogue loads there is no pack.
-// Formatted through uiNumber now — a bare toLocaleString followed the
-// machine's locale, so an English dashboard wrote its totals the German way.
-if (!/of \$\{uiNumber\(needed\)\} XP/.test(proto)) {
-  failures.push("the XP fallback was removed, so the hero shows nothing at all before the catalogue loads");
+if (!/packProgress \? ui\(packProgress\.title\) : ui\("Everyday essentials"\)/.test(proto)) {
+  failures.push("the card no longer names the pack being worked through, or shows nothing before the catalogue loads");
 }
 
 if (failures.length) {
@@ -91,4 +94,4 @@ if (failures.length) {
   failures.forEach((line) => console.error("  " + line));
   process.exit(1);
 }
-console.log(`check-hero-progress: the hero names the pack in progress and counts down in phrases and sittings (${fresh.total} phrases -> ${fresh.sittingsLeft} sittings), with the XP line kept only as a fallback`);
+console.log(`check-hero-progress: pack progress counts in phrases and sittings (${fresh.total} phrases -> ${fresh.sittingsLeft} sittings), and the course card names the pack and fills its bar from it, never from XP`);

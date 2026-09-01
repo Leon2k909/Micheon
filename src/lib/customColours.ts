@@ -20,10 +20,10 @@ import { normaliseHex } from "@/lib/accentColour";
  * at any time, so light and dark keep separate books.
  */
 
-export const CUSTOM_COLOURS_KEY = "gl-custom-colours";
+const CUSTOM_COLOURS_KEY = "gl-custom-colours";
 export const CUSTOM_COLOURS_CHANGE_EVENT = "gl-custom-colours-changed";
 
-export type PaintKind = "background" | "border" | "text";
+type PaintKind = "background" | "border" | "text";
 
 export interface PaintablePart {
   /** The CSS variable this part is painted from. */
@@ -114,9 +114,9 @@ export const PAINTABLE_PARTS: PaintablePart[] = [
 
 export const PAINTABLE_BY_TOKEN = new Map(PAINTABLE_PARTS.map((part) => [part.token, part]));
 
-export type ThemeName = "dark" | "light";
-export type ColourOverrides = Partial<Record<string, string>>;
-export type StoredOverrides = Record<ThemeName, ColourOverrides>;
+type ThemeName = "dark" | "light";
+type ColourOverrides = Partial<Record<string, string>>;
+type StoredOverrides = Record<ThemeName, ColourOverrides>;
 
 const EMPTY: StoredOverrides = { dark: {}, light: {} };
 
@@ -152,11 +152,6 @@ function readStored(): StoredOverrides {
 
 export function getCustomColours(theme: ThemeName = currentThemeName()): ColourOverrides {
   return readStored()[theme] ?? {};
-}
-
-export function hasCustomColours(): boolean {
-  const stored = readStored();
-  return Object.keys(stored.dark).length > 0 || Object.keys(stored.light).length > 0;
 }
 
 /**

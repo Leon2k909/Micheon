@@ -20,7 +20,7 @@ import {
 export const SILENCED_PLAYBACK_EVENT = "gl-audio-silenced-playback";
 
 /** Which control is holding the sound back. Order matters: outermost first. */
-export type SilencedReason = "master-muted" | "master-volume" | "language-muted" | "language-volume";
+type SilencedReason = "master-muted" | "master-volume" | "language-muted" | "language-volume";
 
 export interface SilencedPlayback {
   /** null for a language the app has no separate control for. */
@@ -31,7 +31,7 @@ export interface SilencedPlayback {
 }
 
 /** Everything currently silencing this language, or null if it would be heard. */
-export function describeSilencedPlayback(lang: string): SilencedPlayback | null {
+function describeSilencedPlayback(lang: string): SilencedPlayback | null {
   const settings = getAudioSettings();
   const language = audioLanguageFromTag(lang);
   const reasons: SilencedReason[] = [];

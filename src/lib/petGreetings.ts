@@ -15,8 +15,8 @@ import { syncLocalStorageItem } from "@/lib/profileStorage";
  * Stored per pet key, on this side rather than in the pet's manifest, since a
  * manifest is shared by everyone who installs that pet.
  */
-export const PET_GREETINGS_KEY = "gl-codex-pet-greetings-v1";
-export const PET_GREETINGS_EVENT = "codex-pet-greetings-changed";
+const PET_GREETINGS_KEY = "gl-codex-pet-greetings-v1";
+const PET_GREETINGS_EVENT = "codex-pet-greetings-changed";
 
 /** Long enough for a real phrase, short enough not to swamp the bubble. */
 export const MAX_GREETING = 120;
@@ -25,7 +25,7 @@ export const MAX_GREETING_LINES = 8;
 /** Used on every message unless the learner turns it down. */
 export const DEFAULT_PREFIX_CHANCE = 100;
 
-export type PetGreeting = {
+type PetGreeting = {
   /** Catchphrases. One is picked per message; a single entry never varies. */
   prefixes?: string[];
   /** 0–100. How often a message gets a catchphrase at all. */
@@ -127,18 +127,8 @@ export function getPetGreeting(petKey: string): PetGreeting {
 }
 
 /** The catchphrases in use, built-in or the learner's own. */
-export function petPrefixes(petKey: string): string[] {
-  return getPetGreeting(petKey).prefixes ?? [];
-}
 
 /** How often this pet uses one, as a percentage. */
-export function petPrefixChance(petKey: string): number {
-  return getPetGreeting(petKey).prefixChance ?? DEFAULT_PREFIX_CHANCE;
-}
-
-export function getAllPetGreetings(): GreetingStore {
-  return read();
-}
 
 export function setPetGreeting(petKey: string, greeting: PetGreeting) {
   if (typeof window === "undefined") return;
@@ -204,7 +194,7 @@ export function resetPetGreeting(petKey: string) {
 const lastPrefix = new Map<string, string>();
 
 /** Choose a catchphrase for this message, or "" for none this time. */
-export function pickPetPrefix(petKey: string, random: () => number = Math.random): string {
+function pickPetPrefix(petKey: string, random: () => number = Math.random): string {
   const greeting = getPetGreeting(petKey);
   const prefixes = greeting.prefixes ?? [];
   if (!prefixes.length) return "";

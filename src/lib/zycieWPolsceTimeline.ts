@@ -14,7 +14,7 @@ import type { CountryTimelineEvent } from "@/lib/countryStudies";
  * tak, jak Polska sama dzieli swoją historię, bez nakładania podziałów obcych.
  */
 
-export type PlEra =
+type PlEra =
   | "poczatki"
   | "jagiellonowie"
   | "rozbiory"

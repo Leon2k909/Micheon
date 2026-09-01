@@ -1,5 +1,5 @@
 import { meaningLanguageFor } from "@/lib/courseLanguages";
-import { getLearningDirection } from "@/lib/direction";
+
 import { translate } from "@/lib/translations";
 import type { Dialogue, Part, Phrase, VocabItem } from "@/lib/types";
 
@@ -230,6 +230,3 @@ export function italianParts<T extends Part>(parts: Record<string, T>): Record<s
 }
 
 /** True when the Italian course is the one being studied right now. */
-export function italianCourseActive(): boolean {
-  return getLearningDirection() === "learn-it";
-}

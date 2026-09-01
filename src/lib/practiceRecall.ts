@@ -5,7 +5,7 @@ import {
   type UserProfile,
 } from "@/lib/profileStorage";
 
-export const PRACTICE_RECALL_KEY = "gl-practice-recall-v1";
+const PRACTICE_RECALL_KEY = "gl-practice-recall-v1";
 
 /**
  * How long a phrase waits before the practice card asks it again.
@@ -34,7 +34,7 @@ export const PRACTICE_MAX_GAP = 120;
  */
 const MAX_TRACKED_ITEMS = 600;
 
-export type PracticeRecallEntry = {
+type PracticeRecallEntry = {
   /** Question number this phrase is allowed to come back at. */
   dueQuestion: number;
   itemId: string;
@@ -60,7 +60,7 @@ function nonNegativeInteger(value: unknown, fallback = 0) {
   return Number.isFinite(number) && number >= 0 ? Math.trunc(number) : fallback;
 }
 
-export function normalizePracticeRecallState(value: unknown): PracticeRecallState {
+function normalizePracticeRecallState(value: unknown): PracticeRecallState {
   if (!value || typeof value !== "object") return createPracticeRecallState();
   const raw = value as Partial<PracticeRecallState>;
   const questionCount = nonNegativeInteger(raw.questionCount);
@@ -87,7 +87,7 @@ export function normalizePracticeRecallState(value: unknown): PracticeRecallStat
 }
 
 /** The gap a right answer earns, given how well the phrase is known. */
-export function practiceRightGap(successes: number, hadMisses: boolean) {
+function practiceRightGap(successes: number, hadMisses: boolean) {
   if (hadMisses) return PRACTICE_RECOVERY_GAP;
   const index = Math.min(Math.max(0, successes - 1), PRACTICE_RIGHT_GAPS.length - 1);
   return Math.min(PRACTICE_MAX_GAP, PRACTICE_RIGHT_GAPS[index]);

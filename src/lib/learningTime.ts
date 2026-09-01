@@ -16,7 +16,7 @@ const MAX_SESSION_MS = 2 * 60 * 60 * 1000;
 const MIN_SESSION_MS = 1_000;
 const MAX_PROGRESS_PER_LESSON = 250;
 
-export type LearningTimeSample = {
+type LearningTimeSample = {
   completedAt: number;
   activeMs: number;
   progressBefore: number;
@@ -25,7 +25,7 @@ export type LearningTimeSample = {
   lessonId?: string;
 };
 
-export type LearningTimeStats = {
+type LearningTimeStats = {
   version: 1;
   totalActiveMs: number;
   completedLessons: number;
@@ -33,7 +33,7 @@ export type LearningTimeStats = {
   samples: LearningTimeSample[];
 };
 
-export type CompletedLearningSession = {
+type CompletedLearningSession = {
   activeMs: number;
   progressBefore: number;
   progressAfter: number;
@@ -43,7 +43,7 @@ export type CompletedLearningSession = {
   dialogues?: number;
 };
 
-export type FluencyTimeEstimate = {
+type FluencyTimeEstimate = {
   /** Rounded up deliberately: this is a planning estimate, not a countdown. */
   hoursRemaining: number;
   unitsPerHour: number;
@@ -54,7 +54,7 @@ export type FluencyTimeEstimate = {
   confidence: "baseline" | "developing" | "personalized";
 };
 
-export type FluencyEstimateOptions = {
+type FluencyEstimateOptions = {
   /** Conservative starting pace while the learner builds their own history. */
   baselineUnitsPerHour?: number;
   minUnitsPerHour?: number;
@@ -325,7 +325,7 @@ export function estimateFluencyHours(
 
 type TimerHandle = ReturnType<typeof globalThis.setTimeout>;
 
-export type ActiveStudyTimerEnvironment = {
+type ActiveStudyTimerEnvironment = {
   now?: () => number;
   windowTarget?: EventTarget | null;
   documentTarget?: Document | null;
@@ -333,7 +333,7 @@ export type ActiveStudyTimerEnvironment = {
   clearTimeoutFn?: (handle: TimerHandle) => void;
 };
 
-export type ActiveStudyTimerOptions = ActiveStudyTimerEnvironment & {
+type ActiveStudyTimerOptions = ActiveStudyTimerEnvironment & {
   idleAfterMs?: number;
 };
 

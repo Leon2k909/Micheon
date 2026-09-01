@@ -31,10 +31,6 @@ function read(): PetNames {
   }
 }
 
-export function getPetNames(): PetNames {
-  return read();
-}
-
 /** The name to show: the learner's own if they set one, else the pet's. */
 export function petDisplayName(petKey: string, fallback: string): string {
   const custom = read()[petKey];

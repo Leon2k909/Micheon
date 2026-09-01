@@ -1,5 +1,5 @@
 import { meaningLanguageFor } from "@/lib/courseLanguages";
-import { getLearningDirection } from "@/lib/direction";
+
 import { translate } from "@/lib/translations";
 import type { Dialogue, Part, Phrase, VocabItem } from "@/lib/types";
 
@@ -15,7 +15,7 @@ export function portugueseFor(german: string): string | null {
   return value && value.trim() ? value.trim() : null;
 }
 
-export function hasPortuguese(entry: { de?: string } | null | undefined): boolean {
+function hasPortuguese(entry: { de?: string } | null | undefined): boolean {
   if (!entry?.de) return false;
   return portugueseFor(entry.de) !== null;
 }
@@ -70,7 +70,7 @@ function portugueseDialogue(dialogue: Dialogue): Dialogue | null {
   return lines.length >= 2 ? { ...dialogue, lines } : null;
 }
 
-export function portuguesePart<T extends Part>(part: T): T | null {
+function portuguesePart<T extends Part>(part: T): T | null {
   const vocab = (part.vocab ?? []).filter((word: VocabItem) => hasPortuguese(word)).map((word) => (
     hasPortuguese({ de: word.example })
       ? word
@@ -120,8 +120,4 @@ export function portugueseParts<T extends Part>(parts: Record<string, T>): Recor
     if (narrowed) out[key] = narrowed;
   }
   return out;
-}
-
-export function portugueseCourseActive(): boolean {
-  return getLearningDirection() === "learn-pt";
 }

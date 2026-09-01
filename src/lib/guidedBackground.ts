@@ -3,8 +3,8 @@ import { syncLocalStorageItem } from "@/lib/profileStorage";
 /** Visual backdrop used behind the focused guided lesson. */
 export type GuidedBackground = "monkey" | "garden" | "bubbles" | "atlas" | "dawn" | "plain" | "custom";
 
-export const GUIDED_BACKGROUND_KEY = "micheon-guided-background-v1";
-export const GUIDED_CUSTOM_BACKGROUND_KEY = "micheon-guided-custom-background-v1";
+const GUIDED_BACKGROUND_KEY = "micheon-guided-background-v1";
+const GUIDED_CUSTOM_BACKGROUND_KEY = "micheon-guided-custom-background-v1";
 export const GUIDED_BACKGROUND_EVENT = "guided-background-changed";
 const MAX_SOURCE_IMAGE_BYTES = 15 * 1024 * 1024;
 const CUSTOM_BACKGROUND_MAX_EDGE = 1600;

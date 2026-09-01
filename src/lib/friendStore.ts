@@ -13,7 +13,7 @@ import { readFriendProfile, type FriendProfile } from "@/lib/friendProfile";
  * than useless, because it reads as "you have no friends" rather than "nobody
  * is online".
  */
-export const FRIENDS_KEY = "gl-friends-v1";
+const FRIENDS_KEY = "gl-friends-v1";
 export const FRIENDS_EVENT = "micheon-friends-changed";
 
 export type StoredFriend = {
@@ -111,7 +111,7 @@ export function recordFriendProfile(profile: FriendProfile, now = Date.now()): b
 }
 
 /** How recently they were heard from, in the words the Friends list uses. */
-export type FriendPresence = "online" | "today" | "recent" | "away";
+type FriendPresence = "online" | "today" | "recent" | "away";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 

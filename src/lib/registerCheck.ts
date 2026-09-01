@@ -18,7 +18,7 @@ import { detectRegister } from "@/lib/register";
 export type Register = "formal" | "informal";
 export { detectRegister };
 
-export interface RegisterQuestion {
+interface RegisterQuestion {
   id: string;
   register: Register;
   /** The situation. Kept concrete — abstract "which is polite?" teaches nothing. */
@@ -29,7 +29,7 @@ export interface RegisterQuestion {
   explain: string;
 }
 
-export const REGISTER_QUESTIONS: RegisterQuestion[] = [
+const REGISTER_QUESTIONS: RegisterQuestion[] = [
   {
     id: "boss",
     register: "formal",

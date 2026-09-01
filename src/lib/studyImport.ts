@@ -18,7 +18,7 @@ import { statusForId, type GradeStore } from "@/lib/activity";
  * what turn this into "give me the A1 nouns" or "the 200 most common verbs".
  */
 
-export type ImportKind = "word" | "phrase";
+type ImportKind = "word" | "phrase";
 
 export type ImportItem = {
   id: string;

@@ -8,7 +8,7 @@ import type { LearningDirection } from "./direction";
  * checked, natural sentences a German actually uses day to day — the fully
  * offline, hand-defined core of the app. No content is pulled from APIs.
  */
-export interface CuratedTopic {
+interface CuratedTopic {
   id: string;          // becomes the part key, e.g. "cb-greetings"
   label: string;
   level: string;       // A1 / A2 / B1

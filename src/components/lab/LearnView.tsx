@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, BookOpen, Check, CheckCircle2, Clock3, Headphones, List, Minus, PauseCircle, PlayCircle, Route, Search, SquareCheck, TrendingDown, X } from "lucide-react";
 import { Part } from "@/lib/types";

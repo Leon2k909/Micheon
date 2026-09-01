@@ -23,7 +23,7 @@ import type { LearningDirection } from "@/lib/direction";
  */
 
 export type Cefr = "A1" | "A2" | "B1" | "B2" | "C1";
-export type PlacementDirection = LearningDirection;
+type PlacementDirection = LearningDirection;
 
 export const PLACEMENT_LEVELS: Cefr[] = ["A1", "A2", "B1", "B2", "C1"];
 

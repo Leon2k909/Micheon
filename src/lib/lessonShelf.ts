@@ -70,7 +70,7 @@ export function isFinishedLesson(progress: LessonProgress): boolean {
 }
 
 /** Finished, but its memory has started to go — so it is worth seeing again. */
-export function isFadingLesson(progress: LessonProgress): boolean {
+function isFadingLesson(progress: LessonProgress): boolean {
   return progress.fading > 0;
 }
 

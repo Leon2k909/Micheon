@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from "react";
-import { AlertTriangle, Download, HardDrive, RefreshCw, Trash2, Upload } from "lucide-react";
+import { AlertTriangle, Download, RefreshCw, Trash2, Upload } from "lucide-react";
 import { availablePacks, removePack } from "@/lib/contentPacks";
 import { ui, uiFmt } from "@/lib/i18n";
 import {
@@ -387,5 +387,3 @@ function Figure({
     </div>
   );
 }
-
-export const DATA_STORAGE_ICON = HardDrive;

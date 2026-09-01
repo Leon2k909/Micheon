@@ -7,7 +7,7 @@ import { recallWeight, type GradeRecord } from "@/lib/memoryStrength";
 // actually recalled successfully. May also be stored as a plain array of ids.
 const REVIEW_KEY = "session-completed";
 
-export type FluencyStage = { label: string; min: number; blurb: string };
+type FluencyStage = { label: string; min: number; blurb: string };
 
 /**
  * Honest ability milestones, keyed to the number of DISTINCT items a learner
@@ -31,7 +31,7 @@ export const FLUENCY_STAGES: FluencyStage[] = [
   { label: "Fluent", min: 10000, blurb: "Keeping up with real natives at full speed." },
 ];
 
-export const FLUENT_TARGET = FLUENCY_STAGES[FLUENCY_STAGES.length - 1].min;
+const FLUENT_TARGET = FLUENCY_STAGES[FLUENCY_STAGES.length - 1].min;
 
 /**
  * The 10,000-item Fluent target, split into what it is actually made of.

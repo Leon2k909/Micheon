@@ -41,7 +41,7 @@ export function translationLanguageFor(
 const DIRECTIONS: LearningDirection[] = ["learn-de", "learn-en", "learn-fr", "learn-pl", "learn-es", "learn-it", "learn-pt", "learn-ru"];
 
 /** Read a stored value as a direction, defaulting to the original mode. */
-export function asLearningDirection(value: unknown): LearningDirection {
+function asLearningDirection(value: unknown): LearningDirection {
   return DIRECTIONS.includes(value as LearningDirection)
     ? (value as LearningDirection)
     : "learn-de";
@@ -84,10 +84,6 @@ export function learningSpanish(): boolean {
 
 export function learningItalian(): boolean {
   return getLearningDirection() === "learn-it";
-}
-
-export function learningRussian(): boolean {
-  return getLearningDirection() === "learn-ru";
 }
 
 export function learningPortuguese(): boolean {

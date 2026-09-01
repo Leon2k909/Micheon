@@ -1,6 +1,6 @@
 import { makeCard, type StudyCard } from "@/lib/studySets";
 
-export type Delimiter = "," | "\t";
+type Delimiter = "," | "\t";
 
 export type DelimitedTable = {
   delimiter: Delimiter;
@@ -49,7 +49,7 @@ const normaliseHeader = (value: string) => value
   .replace(/[^\p{L}\p{N}]+/gu, "");
 
 /** Pick the file's separator without counting commas inside quoted fields. */
-export function detectDelimiter(text: string, fileName = ""): Delimiter {
+function detectDelimiter(text: string, fileName = ""): Delimiter {
   const extension = fileName.trim().toLocaleLowerCase();
   if (extension.endsWith(".tsv")) return "\t";
   if (extension.endsWith(".csv")) return ",";

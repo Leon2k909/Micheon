@@ -14,7 +14,7 @@ import {
 import { audioLanguagesInPlay } from "@/lib/audioLanguagesInPlay";
 import { ui } from "@/lib/i18n";
 
-export type TtsSpeechScope = "master" | TtsAudioLanguage;
+type TtsSpeechScope = "master" | TtsAudioLanguage;
 
 const SCOPES: Array<{ value: TtsSpeechScope; label: string }> = [
   { value: "master", label: "Master" },

@@ -32,7 +32,7 @@
 import { buildCatalog } from "@/session";
 import type { WordItem } from "@/lib/wordSession";
 
-export type WordExample = {
+type WordExample = {
   /** The reviewed German sentence containing the word. */
   de: string;
   /** Its authored English translation. */
@@ -70,9 +70,9 @@ const NOMINALIZATION_TRIGGERS = new Set([
   "mit", "nach", "vor", "durch", "für", "gegen", "übers", "ums", "aufs",
 ]);
 
-export const CASE_LOWER = 1;
-export const CASE_CAP_INITIAL = 2;
-export const CASE_CAP_MID = 4;
+const CASE_LOWER = 1;
+const CASE_CAP_INITIAL = 2;
+const CASE_CAP_MID = 4;
 /** Mid-sentence capital directly after a nominalization trigger. */
 export const CASE_CAP_NOMINALIZED = 8;
 
@@ -249,7 +249,7 @@ const better = (a: Candidate, b: Candidate): boolean => {
   return a.order < b.order;
 };
 
-export type WordExampleIndex = {
+type WordExampleIndex = {
   exampleFor(word: Pick<WordItem, "de" | "en" | "lookup">): WordExample | undefined;
 };
 

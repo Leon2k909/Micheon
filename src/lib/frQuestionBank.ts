@@ -1,6 +1,5 @@
 import { vivreEnFranceCourse } from "@/lib/vivreEnFranceCourse";
-import type { CountryLevel, CountryQuestion } from "@/lib/countryStudies";
-
+import type { CountryQuestion } from "@/lib/countryStudies";
 /**
  * Le pool d'entraînement de « Vivre en France ».
  *
@@ -2920,24 +2919,4 @@ export function frCategories(): { id: string; title: string; chapter: string; co
   }));
 }
 
-export function frQuestionsForLesson(lessonId: string): CountryQuestion[] {
-  return FR_QUESTIONS.filter((question) => question.lesson === lessonId);
-}
-
-export function frQuestionsForChapter(chapter: string): CountryQuestion[] {
-  const lessonIds = new Set(
-    (vivreEnFranceCourse.lessons ?? []).filter((lesson) => lesson.section === chapter).map((lesson) => lesson.id)
-  );
-  return FR_QUESTIONS.filter((question) => lessonIds.has(question.lesson));
-}
-
-export function frQuestionById(id: string): CountryQuestion | undefined {
-  return FR_QUESTIONS.find((question) => question.id === id);
-}
-
-export function frLessonTitle(lessonId: string): string {
-  return (vivreEnFranceCourse.lessons ?? []).find((lesson) => lesson.id === lessonId)?.title ?? lessonId;
-}
-
 /** Les trois niveaux, dans l'ordre où la vue d'entraînement les propose. */
-export const FR_LEVELS: CountryLevel[] = ["easy", "medium", "hard"];

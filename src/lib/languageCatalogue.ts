@@ -11,7 +11,7 @@
  * "espanol", "nihongo" or "farsi" finds the right row. Written without
  * diacritics on purpose: search folds the query the same way.
  */
-export type LanguageEntry = {
+type LanguageEntry = {
   /** Course id; must stay stable, progress and settings key off it. */
   id: string;
   /** Flag or script emoji shown in the row. */

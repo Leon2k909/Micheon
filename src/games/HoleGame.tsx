@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Clock, Maximize, Minimize, RotateCcw, Trophy } from "lucide-react";
 import { recordWordMastery } from "@/lib/mastery";

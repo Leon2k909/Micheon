@@ -10,7 +10,7 @@ import { allPartBlueprints } from "@/lib/data";
 import { getAuthUser, getScopedKey, loadScopedJson, saveScopedJson } from "@/lib/profileStorage";
 import { Blueprint, Part } from "@/lib/types";
 import { sentenceIdentityKey } from "@/lib/germanTextMatch";
-import { buildCatalog, buildSession, deriveImplicitChains, dialogueIsEarned, isReinforcementEligible, lessonMixForBacklog, orderWithChains, pickPreviewReplacement, rankReinforcementCandidates, resolveChainScores, selectContinueLearningMix, OLD_PER_LESSON } from "@/session";
+import { buildCatalog, buildSession, deriveImplicitChains, dialogueIsEarned, isReinforcementEligible, lessonMixForBacklog, orderWithChains, pickPreviewReplacement, rankReinforcementCandidates, resolveChainScores, selectContinueLearningMix } from "@/session";
 import { getLessonContent } from "@/lib/lessonContent";
 import { buildWordCatalog, buildWordSitting, rankWordCatalog } from "@/lib/wordSession";
 import { isDueForReview, isSnoozed, snoozeForDays, recordReinforcement, recordSameDayCheck, recordSameDayMiss, recordSuccess, recordStruggle, recordDeclaredKnown, recordPermanent, setStrengthLevel, type GradeRecord } from "@/lib/memoryStrength";
@@ -27,7 +27,7 @@ import {
   type Register, type RegisterState,
 } from "@/lib/registerCheck";
 import { computeAbility, itemDifficulty, itemPriority } from "@/lib/ability";
-import { getMutedPacks, withoutMutedPacks } from "@/lib/mutedPacks";
+import { withoutMutedPacks } from "@/lib/mutedPacks";
 import { buildCorpusIndex, sentenceCommonality } from "@/lib/corpusFrequency";
 import { conversationPriorityScore, nextFastTrackPart } from "@/lib/conversationPriority";
 
@@ -43,7 +43,7 @@ import { conversationPriorityScore, nextFastTrackPart } from "@/lib/conversation
 const PACK_MATE_SCORE_MARGIN = 1_200_000;
 
 const NEW_PER_LESSON_TARGET = 3;
-import { COMPLETED_KEY, loadGradeStore, progressEntryForId, saveGradeStore, setCanonicalGradeRecord, statusForId } from "@/lib/activity";
+import { loadGradeStore, progressEntryForId, saveGradeStore, setCanonicalGradeRecord, statusForId } from "@/lib/activity";
 import { getStreak, recordStreakDay } from "@/lib/streak";
 import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
 import { useCodexPetCoaching } from "@/components/codexPets/useCodexPetCoaching";

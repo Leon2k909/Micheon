@@ -16,8 +16,6 @@ const verb = (de: string, en: string): VocabSeed =>
   ({ de, lookup: de.replace(/^sich /, ""), fallbackEn: en, tip: "verb" });
 const adjective = (de: string, en: string): VocabSeed =>
   ({ de, lookup: de, fallbackEn: en, tip: "adjective" });
-const adverb = (de: string, en: string): VocabSeed =>
-  ({ de, lookup: de, fallbackEn: en, tip: "adverb" });
 
 const pack = (label: string, level: string, theme: string, description: string, seeds: VocabSeed[]): Blueprint =>
   ({ label, level, theme, description, focus, seeds, dialogues: [], phrases: [] });

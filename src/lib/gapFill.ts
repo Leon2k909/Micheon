@@ -12,7 +12,7 @@ export function spokenWord(token: string): string {
     .replace(/[^\p{L}\p{N}]+$/gu, "");
 }
 
-export type GapPrompt = {
+type GapPrompt = {
   display: string;
   words: string[];
 };

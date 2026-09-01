@@ -35,9 +35,6 @@ export function resolveTheme(preference: ThemePreference = getThemePreference())
 }
 
 /** The theme actually on screen. Callers that only paint want this one. */
-export function getTheme(): Theme {
-  return resolveTheme();
-}
 
 /**
  * Dark becomes the default.

@@ -15,7 +15,7 @@
 const KEY = "gl-crash-reports";
 const LIMIT = 20;
 
-export type CrashReport = {
+type CrashReport = {
   at: string;
   kind: "render" | "error" | "rejection";
   message: string;

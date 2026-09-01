@@ -25,7 +25,7 @@ const SLOW_FRAME_MS = 32;
 /** Proportion of slow frames that means "this is not smooth". */
 const SLOW_FRAME_SHARE = 0.28;
 
-export interface FrameReport {
+interface FrameReport {
   frames: number;
   slowFrames: number;
   slowShare: number;

@@ -8,8 +8,8 @@ import {
   type UserProfile,
 } from "@/lib/profileStorage";
 
-export const DATA_EXPORT_FORMAT = "micheon-data-export";
-export const DATA_EXPORT_SCHEMA_VERSION = 1 as const;
+const DATA_EXPORT_FORMAT = "micheon-data-export";
+const DATA_EXPORT_SCHEMA_VERSION = 1 as const;
 // Pet spritesheets are carried as base64 in the JSON archive. Keep this large
 // enough for several normal custom pets while the server enforces tighter
 // per-file and total sprite limits.
@@ -54,12 +54,12 @@ const EXCLUDED_KEYS = new Set([
   "gl-crash-reports",
 ]);
 
-export type DataExportItem = {
+type DataExportItem = {
   key: string;
   value: string;
 };
 
-export type DataExportProfile = Pick<
+type DataExportProfile = Pick<
   UserProfile,
   "id" | "name" | "email" | "joinedAt" | "avatar" | "externalWordsLearned"
 >;
@@ -72,7 +72,7 @@ export type PortablePetBundle = {
   spritesheetBase64: string;
 };
 
-export type DataExportArchive = {
+type DataExportArchive = {
   format: typeof DATA_EXPORT_FORMAT;
   schemaVersion: typeof DATA_EXPORT_SCHEMA_VERSION;
   exportedAt: string;
@@ -83,7 +83,7 @@ export type DataExportArchive = {
   pets: PortablePetBundle[];
 };
 
-export type DataImportSummary = {
+type DataImportSummary = {
   profileItems: number;
   globalItems: number;
 };

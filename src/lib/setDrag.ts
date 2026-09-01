@@ -22,7 +22,7 @@
 export const SET_DRAG_TYPE = "application/x-micheon-study-set";
 
 /** Which list the row was picked up from. */
-export type SetDragOrigin = "folder" | "unfiled";
+type SetDragOrigin = "folder" | "unfiled";
 
 const ORIGIN_TYPE: Record<SetDragOrigin, string> = {
   folder: "application/x-micheon-study-set-from-folder",

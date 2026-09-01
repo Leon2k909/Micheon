@@ -22,7 +22,7 @@ import { cefrRung } from "@/lib/cefr";
 import { frequencyRank, speechPrefers } from "@/lib/wordFrequency";
 import { spokenFrequencyRank, type NounEvidence } from "@/lib/spokenFrequency";
 import { getLearningMode, type LearningMode } from "@/lib/learningMode";
-import { packMeta, packNoteForWord } from "@/lib/curriculum";
+import { packNoteForWord } from "@/lib/curriculum";
 import { corpusIgnores, corpusReach, corpusUses, wordCommonality, type CorpusIndex } from "@/lib/corpusFrequency";
 import functionWords from "@/data/functionWords.json";
 import { isDueForReview, isSnoozed, overdueBy, type GradeRecord } from "@/lib/memoryStrength";
@@ -922,7 +922,7 @@ export function learnerWordRung(
   return Math.max(1, Math.min(6, 1 + Math.floor(score / 5)));
 }
 
-export type WordStep = {
+type WordStep = {
   type: "sentence";
   review?: boolean;
   reviewReason?: "struggle" | "due";

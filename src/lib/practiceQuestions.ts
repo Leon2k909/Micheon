@@ -15,7 +15,7 @@ import type { CatalogItem } from "@/session";
  * are built from the same catalogue the lessons
  * are served from, so the supply is the whole course rather than three.
  */
-export type PracticeOption = {
+type PracticeOption = {
   correct: boolean;
   /** The same phrase in the language the learner already has. */
   meaning: string;

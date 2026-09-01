@@ -13,9 +13,9 @@
  * as you zoom out.
  */
 
-export type HoleTier = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+type HoleTier = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
-export type PropKind =
+type PropKind =
   | "bottle" | "can" | "cone" | "litter"
   | "bin" | "bench" | "lamp" | "postbox" | "sign" | "hydrant"
   | "person" | "bike" | "scooter"
@@ -24,7 +24,7 @@ export type PropKind =
   | "house" | "shop"
   | "tower";
 
-export type PropSpec = {
+type PropSpec = {
   kind: PropKind;
   /** World units across. Everything is compared against the hole's radius. */
   size: number;
@@ -77,7 +77,7 @@ export const PROP_SPECS: PropSpec[] = [
   { kind: "tower", size: 230, tier: 7, color: "#6366f1", roof: "#3730a3", de: "das Hochhaus", en: "tower block", fr: "la tour", place: "block" },
 ];
 
-export function specsForPlace(place: PropSpec["place"]): PropSpec[] {
+function specsForPlace(place: PropSpec["place"]): PropSpec[] {
   return PROP_SPECS.filter((spec) => spec.place === place);
 }
 
@@ -105,7 +105,7 @@ export type CityProp = {
   spin: number;
 };
 
-export type CityLayout = {
+type CityLayout = {
   size: number;
   roadStep: number;
   roadWidth: number;
@@ -122,7 +122,7 @@ export function makeRandom(seed: number): () => number {
 }
 
 /** Distance from a coordinate to the centre line of the nearest road. */
-export function distanceToRoad(value: number, roadStep: number): number {
+function distanceToRoad(value: number, roadStep: number): number {
   const offset = ((value % roadStep) + roadStep) % roadStep;
   return Math.min(offset, roadStep - offset);
 }

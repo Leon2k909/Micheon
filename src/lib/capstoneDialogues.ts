@@ -32,7 +32,7 @@ import type { Blueprint, Dialogue } from "./types";
  * rule in place, and every pack touched here is walked the same way that
  * gate walks its sample, so a scene that would never run does not ship.
  */
-export const CAPSTONE_DIALOGUES: Record<string, Dialogue[]> = {
+const CAPSTONE_DIALOGUES: Record<string, Dialogue[]> = {
   // Keys are quoted so check-catalog-duplicates does not read this record as
   // a second DECLARATION of each pack — the packs live in data.ts alone.
   "part84": [

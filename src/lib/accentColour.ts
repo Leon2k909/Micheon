@@ -11,13 +11,13 @@ import { syncLocalStorageItem } from "@/lib/profileStorage";
  * only the base and computing the rest is what keeps a hand-picked colour
  * from producing white text on yellow.
  */
-export const ACCENT_KEY = "gl-accent-colour";
+const ACCENT_KEY = "gl-accent-colour";
 export const ACCENT_CHANGE_EVENT = "gl-accent-changed";
 
 /** Micheon green. Matches --accent in the light theme. */
 export const DEFAULT_ACCENT = "#43b84c";
 
-export interface AccentPreset {
+interface AccentPreset {
   hex: string;
   name: string;
 }
@@ -105,7 +105,7 @@ function shift(hex: string, { lightness = 0, saturation = 0 }: { lightness?: num
   }));
 }
 
-export function relativeLuminance(hex: string): number {
+function relativeLuminance(hex: string): number {
   const { r, g, b } = toRgb(hex);
   const lin = [r, g, b].map((c) => {
     const v = c / 255;
@@ -131,7 +131,7 @@ export function inkOn(hex: string): string {
   return contrastRatio(hex, "#ffffff") >= contrastRatio(hex, "#0b0e13") ? "#ffffff" : "#0b0e13";
 }
 
-export interface AccentShades {
+interface AccentShades {
   accent: string;
   accentDim: string;
   accentHover: string;

@@ -49,10 +49,6 @@ export function getFavouriteCourses(profile: UserProfile | null = getAuthUser())
   return Array.isArray(raw) ? raw.filter((id): id is string => typeof id === "string" && id.length > 0) : [];
 }
 
-export function isFavouriteCourse(id: string, profile: UserProfile | null = getAuthUser()): boolean {
-  return getFavouriteCourses(profile).includes(id);
-}
-
 /** Star or unstar one course, and return the list as it now stands. */
 export function toggleFavouriteCourse(id: string, profile: UserProfile | null = getAuthUser()): string[] {
   const current = getFavouriteCourses(profile);

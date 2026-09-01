@@ -2599,11 +2599,6 @@ export const FRENCH_BY_GERMAN: Record<string, string> = {
   "vereinigen": "unir",
   "anzeigen": "afficher",
 
-
-
-
-
-
   // ── From the coverage sweep: the untranslated words the course teaches most ──
   // Chosen by measurement rather than by browsing: every one of these is a
   // German string the packs teach and French had no answer for, ordered by
@@ -21778,21 +21773,3 @@ export const FRENCH_BY_GERMAN: Record<string, string> = {
 };
 
 /** How many German entries this file alone answers for. */
-export const FRENCH_TRANSLATION_COUNT = Object.keys(FRENCH_BY_GERMAN).length;
-
-/**
- * The French for a German entry, preferring whatever the pack already carries.
- *
- * The inline `fr:` fields were written against a specific sentence in a
- * specific lesson, so they win: the map is keyed by German text alone and
- * cannot know which of two contexts it is answering for.
- */
-export function resolveFrench(german: string, inlineFrench?: string | null): string | null {
-  if (inlineFrench && inlineFrench.trim()) return inlineFrench.trim();
-  const direct = FRENCH_BY_GERMAN[german];
-  if (direct) return direct;
-  // Nouns are stored with their article in the packs; the map keys the bare
-  // noun where the article adds nothing to the French.
-  const bare = german.replace(/^(der|die|das)\s+/i, "");
-  return FRENCH_BY_GERMAN[bare] ?? null;
-}

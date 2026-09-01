@@ -35,7 +35,6 @@ import {
 import { preloadTts, tts, stopTts } from "@/lib/voice";
 import { MuteButton } from "@/components/MuteButton";
 import { AUDIO_SETTINGS_EVENT } from "@/lib/audioMute";
-import { getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
 import { courseSides } from "@/lib/courseLanguages";
 import type { UserProfile } from "@/lib/profileStorage";
 
@@ -97,7 +96,6 @@ export function MatcherView({
   const [jumpBox, setJumpBox] = useState("");
   const [notice, setNotice] = useState<MatcherNotice | null>(null);
 
-  const englishLang = resolveEnglishVariant(getEnglishVariant()) === "american" ? "en-US" : "en-GB";
   // The left column is whatever is being learned and the right is what it
   // means. Both used to be spelled out as German and English, which put a
   // German voice on the French board.

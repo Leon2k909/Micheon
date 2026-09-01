@@ -48,7 +48,7 @@ import type { ResolvedInterfaceLanguage } from "@/lib/interfaceLanguage";
  * out did not keep Italian honest; it stopped the project compiling, and main
  * was red from v1.2.807 until this line.
  */
-export type MotivationQuote = {
+type MotivationQuote = {
   en: string;
   de?: string;
   fr?: string;
@@ -58,7 +58,7 @@ export type MotivationQuote = {
   pt?: string;
 };
 
-export const MOTIVATION_QUOTES: MotivationQuote[] = [
+const MOTIVATION_QUOTES: MotivationQuote[] = [
   // 1
   { de: "Du schaffst das.", en: "You've got this.", fr: "Tu vas y arriver.", pl: "Dasz radę.", es: "Tú puedes.", it: "Ce la fai.", pt: "Tu consegues." },
   // 2
@@ -801,14 +801,14 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  * give or take the hour a daylight-saving change adds or removes. Rounding
  * absorbs that; flooring would lose a day for half the year.
  */
-export function dayOfYear(now: Date = new Date()): number {
+function dayOfYear(now: Date = new Date()): number {
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const newYear = new Date(now.getFullYear(), 0, 1);
   return Math.round((today.getTime() - newYear.getTime()) / DAY_MS) + 1;
 }
 
 /** The line for a given day, in a given language, English if that one is missing. */
-export function motivationQuoteForDay(day: number, language: ResolvedInterfaceLanguage): string {
+function motivationQuoteForDay(day: number, language: ResolvedInterfaceLanguage): string {
   const count = MOTIVATION_QUOTES.length;
   if (!count) return "";
   // Two modulos rather than one: the second brings a nonsense negative day

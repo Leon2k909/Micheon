@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
 import { ui, uiFmt, uiNumber } from "@/lib/i18n";
 import { cn } from "@/lib/utils";

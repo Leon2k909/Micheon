@@ -8,7 +8,6 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { englishVoiceLang } from "@/lib/englishVariant";
 
 import {
   DIRECTION_CHANGE_EVENT,
@@ -308,7 +307,7 @@ function shuffle<T>(values: T[]) {
   return next;
 }
 
-export type GameDeckMode = "all" | "letters" | "sentences" | "words";
+type GameDeckMode = "all" | "letters" | "sentences" | "words";
 
 export function useGameDeck(mode: GameDeckMode = "all") {
   const { entries, learningDirection } = useGameContent();

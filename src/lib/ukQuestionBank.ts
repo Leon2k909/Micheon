@@ -39,14 +39,6 @@ export type UkQuestion = {
   explanation: string;
 };
 
-export const UK_LEVELS: UkLevel[] = ["easy", "medium", "hard"];
-
-export const UK_LEVEL_LABEL: Record<UkLevel, string> = {
-  easy: "Easy",
-  medium: "Medium",
-  hard: "Hard",
-};
-
 export const UK_QUESTIONS: UkQuestion[] = [
   // ── British Values & Principles ────────────────────────────────────────
   // bv-1, bv-2, bv-7, bv-8, bv-10 and bv-11 used to ask about exam procedure —
@@ -1123,7 +1115,7 @@ export const UK_QUESTIONS: UkQuestion[] = [
 // becomes a filterable category here for free, and check-uk-questions fails if
 // a question ever names a lesson that does not exist.
 
-export type UkCategory = {
+type UkCategory = {
   /** The lesson id — also the value stored in UkQuestion.lesson. */
   id: string;
   title: string;

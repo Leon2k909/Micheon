@@ -23,7 +23,7 @@ export const STUDY_PROGRESS_PREFIX = "study-progress:v1";
 /** Folders live beside the sets rather than inside them — see StudyFolder. */
 export const STUDY_FOLDERS_KEY = "study-folders:v1";
 
-export type StudyCardSource = "manual" | "catalogue" | "paste" | "file";
+type StudyCardSource = "manual" | "catalogue" | "paste" | "file";
 
 export type StudyCard = {
   id: string;
@@ -125,7 +125,7 @@ export const ALL_STAGES: StudyStage[] = ["flashcard", "choice", "typed", "revers
 export const MASTERY_TARGET = 2;
 
 /** How many cards a Learn round asks about, when a set says nothing. */
-export const DEFAULT_ROUND_SIZE = 10;
+const DEFAULT_ROUND_SIZE = 10;
 
 /** The ends of each dial, so the editor and the loader agree on them. */
 export const MASTERY_TARGET_RANGE = { min: 1, max: 5 } as const;
@@ -143,7 +143,7 @@ const clampRoundSize = (value: unknown): number => {
   return Math.min(100, Math.max(3, number));
 };
 
-export type StudyCardProgress = {
+type StudyCardProgress = {
   /** Consecutive correct answers at the current stage. */
   streak: number;
   correct: number;
@@ -393,7 +393,7 @@ export function parsePastedCards(text: string, now = 0): StudyCard[] {
  * own set: how many right answers promote it, and whether a miss knocks it
  * back, are settings its set was given deliberately.
  */
-export const COMBINED_ID_PREFIX = "combined";
+const COMBINED_ID_PREFIX = "combined";
 const OWNER_SEPARATOR = "::";
 
 export type CombinedStudy = {
@@ -531,7 +531,7 @@ export function emptyProgress(): StudyCardProgress {
   return { streak: 0, correct: 0, wrong: 0, stage: 0, mastered: false };
 }
 
-export type StudySummary = {
+type StudySummary = {
   total: number;
   mastered: number;
   learning: number;
@@ -559,7 +559,7 @@ export function summariseProgress(set: StudySet, progress: StudySetProgress): St
   };
 }
 
-export type StudySetLibraryStatus = "incomplete" | "learning" | "mastered";
+type StudySetLibraryStatus = "incomplete" | "learning" | "mastered";
 
 /** A single library status, so filters do not overlap or leave a set behind. */
 export function studySetLibraryStatus(
@@ -712,7 +712,7 @@ export function exportSetToText(set: StudySet): string {
   return lines.join("\n");
 }
 
-export type ImportedSet = { title: string | null; description: string | null; cards: StudyCard[]; stages: StudyStage[] | null };
+type ImportedSet = { title: string | null; description: string | null; cards: StudyCard[]; stages: StudyStage[] | null };
 
 /**
  * Read back what exportSetToText wrote — and anything close enough.

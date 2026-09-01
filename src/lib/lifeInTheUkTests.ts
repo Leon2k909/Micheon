@@ -23,7 +23,7 @@ import {
  * Only the exam is timed. A clock on a ten-question warm-up teaches panic
  * rather than citizenship.
  */
-export type UkTestMode =
+type UkTestMode =
   | "exam"
   | "category"
   | "mixed"
@@ -55,7 +55,7 @@ export const UK_TEST_MODES: {
   { mode: "favourites", title: "Favourites test", blurb: "The questions you starred to come back to.", count: null, timed: false },
 ];
 
-export type UkTest = {
+type UkTest = {
   mode: UkTestMode;
   /** One of the five official chapters, or null for a spread. */
   chapter: string | null;
@@ -66,14 +66,14 @@ export type UkTest = {
   passMark: number;
 };
 
-export type UkExamAnswer = {
+type UkExamAnswer = {
   questionId: string;
   /** null when left unanswered — the exam allows that, and marks it wrong. */
   chosen: number | null;
   correct: boolean;
 };
 
-export type UkExamOutcome = {
+type UkExamOutcome = {
   mode: UkTestMode;
   chapter: string | null;
   at: number;
@@ -245,8 +245,4 @@ export function scoreUkTest(
     answers,
     elapsedMs: meta.elapsedMs,
   };
-}
-
-export function ukModeTitle(mode: UkTestMode): string {
-  return UK_TEST_MODES.find((entry) => entry.mode === mode)?.title ?? mode;
 }

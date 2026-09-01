@@ -87,9 +87,8 @@ import {
   setCustomColour,
 } from "@/lib/customColours";
 import { ColourInspector } from "@/components/settings/ColourInspector";
-import { getEffects, setEffects, type Effects } from "@/lib/effects";
-import { getCompanion, setCompanion, type Companion } from "@/lib/companion";
-import { getLearningDirection, setLearningDirection, type LearningDirection } from "@/lib/direction";
+import { getEffects, type Effects } from "@/lib/effects";
+import { getLearningDirection, type LearningDirection } from "@/lib/direction";
 import { getInterfaceLanguage, setInterfaceLanguage, type InterfaceLanguage } from "@/lib/interfaceLanguage";
 import { VoicePicker } from "@/components/VoicePicker";
 import { UpdateStatusCard } from "@/components/UpdateStatusCard";
@@ -464,21 +463,6 @@ export function getLevelInfo(xp: number) {
   return { cur, nxt, pct, into, needed };
 }
 
-export function XpBar({ totalXp, streak }: { totalXp: number; streak: number }) {
-  const { cur, pct } = getLevelInfo(totalXp);
-  return (
-    <div className="flex items-center gap-2 rounded-full bg-[var(--surface)] px-3 py-2 text-xs font-black text-[var(--text-1)]">
-      <Flame className="h-4 w-4 text-[var(--orange)]" />
-      <span>{streak}</span>
-      <span className="h-1 w-1 rounded-full bg-[var(--border-2)]" />
-      <span>Lv {cur.level}</span>
-      <div className="h-1.5 w-16 rounded-full bg-[var(--surface-3)]">
-        <div className="h-full rounded-full bg-[var(--accent)]" style={{ width: `${pct}%` }} />
-      </div>
-    </div>
-  );
-}
-
 function StatCard({ icon: Icon, label, value, color }: {
   icon: React.ElementType;
   label: string;
@@ -497,7 +481,6 @@ function StatCard({ icon: Icon, label, value, color }: {
     </div>
   );
 }
-
 
 /**
  * What lives inside each settings category.
@@ -529,20 +512,12 @@ function foldSearch(value: string) {
 
 function ProgressSummaryCard({
   cur,
-  nxt,
-  pct,
-  into,
-  needed,
   stats,
   words,
   earned,
   vocab,
 }: {
   cur: Level;
-  nxt: Level | null;
-  pct: number;
-  into: number;
-  needed: number;
   stats: Stats;
   words: number;
   earned: number;
@@ -815,8 +790,7 @@ export default function GamificationPanel({
   const [newName, setNewName] = useState(user.name);
   const [effects, setEffects] = useState<Effects>(getEffects);
   const [highContrast, setHighContrastState] = useState<boolean>(getHighContrast);
-  const [companion, setCompanionState] = useState<Companion>(getCompanion);
-  const [direction, setDirectionState] = useState<LearningDirection>(getLearningDirection);
+  const [direction] = useState<LearningDirection>(getLearningDirection);
   const [interfaceLanguage, setInterfaceLanguageState] = useState<InterfaceLanguage>(getInterfaceLanguage);
   const [learningMode, setLearningModeState] = useState<LearningMode>(getLearningMode);
   const [flashcardMode, setFlashcardModeState] = useState<FlashcardMode>(() => getFlashcardMode());
@@ -919,7 +893,7 @@ export default function GamificationPanel({
     setAuthUser({ ...user, avatar: undefined });
     window.location.reload();
   };
-  const { cur, nxt, pct, into, needed } = getLevelInfo(stats.totalXp ?? 0);
+  const { cur } = getLevelInfo(stats.totalXp ?? 0);
   const vocab = countKnownVocab(user, stats.externalWords || 0);
   const earned = MILESTONES.filter((item) => item.check(stats)).length;
   const catalogueReady = Object.keys(apiParts).length > 0;
@@ -995,12 +969,6 @@ export default function GamificationPanel({
     const next = !highContrast;
     applyHighContrast(next);
     setHighContrastState(next);
-  };
-
-  const toggleCompanion = () => {
-    const next: Companion = companion === "fr" ? "none" : "fr";
-    setCompanion(next);
-    setCompanionState(next);
   };
 
   const updateEnglishVariant = (value: EnglishVariant) => {
@@ -1148,7 +1116,7 @@ export default function GamificationPanel({
           user={user}
         >
           <div className="grid gap-4 md:grid-cols-2">
-            <ProgressSummaryCard cur={cur} earned={earned} into={into} needed={needed} nxt={nxt} pct={pct} stats={stats} words={vocab} vocab={vocab} />
+            <ProgressSummaryCard cur={cur} earned={earned} stats={stats} words={vocab} vocab={vocab} />
             <ActivitySidePanel earned={earned} user={user} words={vocab} />
           </div>
         </ProfileFold>
@@ -1820,7 +1788,6 @@ export default function GamificationPanel({
                   </div>
                 </SettingsCategory>
 
-
                 <SettingsCategory
                   description={ui("English spelling, app language, and the speaking voice.")}
                   forceOpen={settingsTerms.length > 0}
@@ -1961,7 +1928,7 @@ export default function GamificationPanel({
     <div className="space-y-4">
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_280px]">
         <ActivityCard className="min-w-0" progressStats={stats} />
-        <ProgressSummaryCard cur={cur} earned={earned} into={into} needed={needed} nxt={nxt} pct={pct} stats={stats} words={vocab} vocab={vocab} />
+        <ProgressSummaryCard cur={cur} earned={earned} stats={stats} words={vocab} vocab={vocab} />
         <ActivitySidePanel earned={earned} user={user} words={vocab} />
       </section>
 

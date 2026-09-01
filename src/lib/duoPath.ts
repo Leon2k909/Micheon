@@ -35,9 +35,9 @@ import { getAuthUser, type UserProfile } from "@/lib/profileStorage";
  * somebody who wants the restaurant unit before the doctor unit is not
  * cheating.
  */
-export type DuoNodeState = "done" | "current" | "available";
+type DuoNodeState = "done" | "current" | "available";
 
-export type DuoNode = {
+type DuoNode = {
   /** The pack key — part17, everydayWords12, and so on. */
   key: string;
   title: string;
@@ -49,7 +49,7 @@ export type DuoNode = {
   state: DuoNodeState;
 };
 
-export type DuoUnit = {
+type DuoUnit = {
   /** 1-based, for "Unit 3". */
   number: number;
   title: string;
@@ -79,20 +79,8 @@ export type DuoPath = {
 };
 
 /** Nodes per unit. Duolingo's own units run to roughly this. */
-export const DUO_UNIT_SIZE = 5;
+const DUO_UNIT_SIZE = 5;
 
-/**
- * Kept at its old value, and no longer used to lock anything.
- *
- * It used to be the runway: two packs past the current one stayed open and
- * everything beyond was greyed out. Nothing is locked now, so this decides
- * nothing — it is exported because other code imports it, and removing an
- * export is a separate change from removing a rule.
- *
- * @deprecated The path does not lock. Nothing should read this to decide
- * whether a pack can be opened.
- */
-export const DUO_LOOKAHEAD = 2;
 
 function packTitle(part: unknown, key: string): string {
   const record = part as { theme?: unknown; label?: unknown } | undefined;

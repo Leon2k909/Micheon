@@ -1,4 +1,4 @@
-export type PortugueseMatch = {
+type PortugueseMatch = {
   ok: boolean;
   spellingNote: boolean;
   capitalizationError?: boolean;
@@ -9,7 +9,7 @@ const APOSTROPHES = /[’ʼ'`´‘]/g;
 const PUNCTUATION = /[.!?,;:"()\[\]{}“”„«»…¿¡]/g;
 const THIN_SPACES = /[    ]/g;
 
-export function normalizePortugueseInput(text: string): string {
+function normalizePortugueseInput(text: string): string {
   return String(text ?? "")
     .replace(THIN_SPACES, " ")
     .replace(APOSTROPHES, "")
@@ -19,7 +19,7 @@ export function normalizePortugueseInput(text: string): string {
     .trim();
 }
 
-export function normalizePortugueseLenient(text: string): string {
+function normalizePortugueseLenient(text: string): string {
   return normalizePortugueseInput(text)
     .toLocaleLowerCase("pt-PT")
     .normalize("NFD")
@@ -60,7 +60,7 @@ export function matchPortuguesePhrase(input: string, target: string): Portuguese
 
 export const matchPortugueseSentence = matchPortuguesePhrase;
 
-export function portugueseMeaningAlternatives(value: string): string[] {
+function portugueseMeaningAlternatives(value: string): string[] {
   const original = String(value ?? "").trim();
   if (!original) return [];
   const parts = original

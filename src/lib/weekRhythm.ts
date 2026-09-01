@@ -27,7 +27,7 @@ export type WeekDay = {
   isFuture: boolean;
 };
 
-export type WeekRhythm = {
+type WeekRhythm = {
   /** Local midnight of this week's Monday. */
   weekStart: number;
   days: WeekDay[];
@@ -116,7 +116,6 @@ export function weekRhythm(sessions: ActivitySession[], now: number = Date.now()
 }
 
 /** Mon…Sun, as translation keys so each language names its own days. */
-export const WEEKDAY_KEYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
 const DAY_MS_EXPORT = DAY_MS;
 export { DAY_MS_EXPORT as WEEK_DAY_MS };

@@ -2,68 +2,7 @@ import { ui, uiFmt, uiLocale, uiNumber } from "@/lib/i18n";
 import type { CountryId, CountryPack } from "@/lib/countryStudies";
 import { COUNTRY_PACKS, countryPack } from "@/lib/countryPacks";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import {
-  ArrowLeft,
-
-  ArrowRight,
-  BarChart3,
-  Bell,
-  BellOff,
-  BookOpen,
-  Check,
-  CheckCheck,
-  CheckCircle2,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  CircleUserRound,
-  ClipboardCheck,
-  Clock3,
-  Coins,
-  Crown,
-  Flag,
-  MessageCircle,
-  RefreshCw,
-  Sun,
-  Users,
-  Gamepad2,
-  Route,
-  EyeOff,
-  Eye,
-  GraduationCap,
-  Headphones,
-  Home,
-  Landmark,
-  Layers,
-  Languages,
-  WholeWord,
-  Leaf,
-  LockKeyhole,
-  Medal,
-  LogOut,
-  Menu,
-  MessageCircleMore,
-  PawPrint,
-  Pencil,
-  MessageSquareText,
-  Play,
-  Search,
-  RotateCcw,
-  SlidersHorizontal,
-  Trash2,
-  Settings2,
-  ShoppingBag,
-  Swords,
-  Target,
-  Trophy,
-  UserPlus,
-  UserRound,
-  UsersRound,
-  Volume2,
-  X,
-  MessagesSquare,
-  FlaskConical,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, BarChart3, Bell, BellOff, BookOpen, Check, CheckCheck, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, CircleUserRound, ClipboardCheck, Clock3, Coins, Crown, Flag, MessageCircle, RefreshCw, Sun, Users, Gamepad2, Route, EyeOff, Eye, GraduationCap, Headphones, Home, Landmark, Layers, Languages, WholeWord, Leaf, LockKeyhole, Medal, LogOut, Menu, MessageCircleMore, PawPrint, Pencil, MessageSquareText, Search, RotateCcw, SlidersHorizontal, Trash2, Settings2, ShoppingBag, Target, Trophy, UserPlus, UserRound, UsersRound, Volume2, X, MessagesSquare, FlaskConical } from "lucide-react";
 import {
   lazy,
   Fragment,
@@ -104,7 +43,6 @@ import {
 } from "@/lib/practiceRecall";
 import { requestVocabFilter, requestVocabLibraryFirst, requestVocabLibraryOpen, takeVocabLibraryFirst } from "@/lib/vocabFilterRequest";
 
-import { getMasteredCount } from "@/lib/mastery";
 import { getAuthUser, loadScopedJson, saveScopedJson, setAuthUser, type UserProfile } from "@/lib/profileStorage";
 import { getStreak, recordStreakDay } from "@/lib/streak";
 import { getLevelInfo, MILESTONES, type GamificationStats } from "@/lib/gamificationProgress";
@@ -148,7 +86,7 @@ import {
 } from "@/lib/currency";
 import { countLearningDays, loadActivitySessions } from "@/lib/activity";
 import { countFadingVocab, countKnownSplit, countKnownVocab, FLUENCY_STAGES, FLUENT_PHRASE_TARGET, FLUENT_WORD_TARGET, getFluency } from "@/lib/fluency";
-import { activePackProgress, upcomingPackProgress, type PackProgress } from "@/lib/packProgress";
+import { activePackProgress, type PackProgress } from "@/lib/packProgress";
 import { useSlideSelect } from "@/lib/slideSelect";
 import {
   NOTIFICATION_KINDS,
@@ -327,7 +265,6 @@ const ALL_NAV_ITEMS: NavigationItem[] = [
   SOCIAL_NAVIGATION_ITEM,
   SHOP_NAVIGATION_ITEM,
 ];
-
 
 /** Which half of the Life in the UK course a nav row opens. */
 type UkTab = "learn" | "practice" | "exam" | "timeline" | "search";
@@ -852,7 +789,6 @@ function Sidebar({
   width: number;
 }) {
   const resizeCleanupRef = useRef<(() => void) | null>(null);
-
 
   /**
    * Destinations the learner has put away.
@@ -2009,119 +1945,6 @@ function Header({
     </header>
   );
 }
-
-function CourseHero({
-  packProgress,
-  needsStartingPoint,
-  onSwitchCourse,
-  placementPart,
-  stats,
-}: {
-  packProgress: PackProgress | null;
-  needsStartingPoint: boolean;
-  onSwitchCourse: () => void;
-  placementPart: string | null;
-  stats: PrototypeStats;
-}) {
-  const reduceMotion = useReducedMotion();
-  const { nxt, pct, into, needed } = getLevelInfo(stats.totalXp);
-  const displayedProgress = needsStartingPoint ? 0 : packProgress ? packProgress.percent : pct;
-  const placementLevel = placementPart === "part1" ? ["A1", ui("Building the basics")]
-    : placementPart === "part3" ? ["A1-A2", ui("Building confidence")]
-      : placementPart === "part5" ? ["A2", ui("Everyday foundations")]
-        : placementPart === "part8" ? ["A2-B1", ui("Independent learner")]
-          : placementPart === "part11" ? ["B1", ui("Independent speaker")]
-            : ["A2", ui("Everyday speaker")];
-
-  const sides = courseSides();
-  const learnsEnglish = sides.target.code === "en";
-  // The learner's chosen English variant decides the flag: a US-English
-  // course must not wear a Union Jack.
-  const englishVariant = learnsEnglish ? resolveEnglishVariant(getEnglishVariant()) : null;
-  // German is three <i> bands; English, French, Polish and Spanish are drawn
-  // in CSS.
-  const badgeClass = learnsEnglish
-    ? ` is-english is-${englishVariant}`
-    : sides.target.code === "fr" ? " is-french"
-    : sides.target.code === "pl" ? " is-polish"
-    : sides.target.code === "es" ? " is-spanish" : "";
-  return (
-    <div className="np-course-hero-frame">
-      <section className="np-course-hero">
-        <img alt="" className="np-course-art" data-course={sides.target.code} decoding="async" fetchPriority="high" height={833} loading="eager" src={languageCardArt(sides.target.code, englishVariant)} width={1200} />
-        <div aria-hidden="true" className="np-course-shade" />
-        <div className="np-course-copy">
-          <div className="np-course-meta-row">
-            <span className="np-course-kicker">{ui("Language learning")}</span>
-            {/* The chip was hardcoded to German, so someone learning English
-                was told their active course was German on every visit. */}
-            <button aria-label={uiFmt("Switch course, currently {course}", { course: ui(sides.target.label) })} className="np-course-language-chip" onClick={onSwitchCourse} type="button">
-              <span aria-hidden="true" className={"np-language-badge" + badgeClass}>
-                {badgeClass ? null : <><i /><i /><i /></>}
-              </span>
-              <strong>{ui(sides.target.label)}</strong>
-              <ChevronDown />
-            </button>
-          </div>
-          <div className="np-course-title-row">
-            <h1>{uiFmt("{language} for real conversations", { language: ui(sides.target.label) })}</h1>
-          </div>
-          <div className="np-level-line">
-            <strong>{needsStartingPoint ? ui("New learner") : uiFmt("Level {level}", { level: placementLevel[0] })}</strong>
-            <span>{needsStartingPoint ? ui("Choose where to begin") : placementLevel[1]}</span>
-          </div>
-          <div className="np-course-progress-row">
-            <div className="np-course-progress-label">
-              {/* Not XP: the right rail already shows total XP twice, and "how
-                  much longer on this one?" is the question actually being
-                  asked. Falls back to the level bar only when there is no pack
-                  in progress to report on. */}
-              <span>
-                {needsStartingPoint ? ui("Starting point") : packProgress ? ui(packProgress.title) : ui("Level progress")}
-              </span>
-              <small>
-                {needsStartingPoint
-                  ? ui("One quick choice before your first lesson")
-                  : packProgress
-                    ? uiFmt(
-                      packProgress.sittingsLeft === 1
-                        ? "{done} of {total} phrases · about 1 more sitting to finish"
-                        : "{done} of {total} phrases · about {sittings} more sittings to finish",
-                      {
-                        done: uiNumber(packProgress.done),
-                        sittings: uiNumber(packProgress.sittingsLeft),
-                        total: uiNumber(packProgress.total),
-                      }
-                    )
-                    : nxt ? `${uiNumber(into)} of ${uiNumber(needed)} XP` : ui("Maximum level")}
-              </small>
-            </div>
-            <div
-              aria-label={needsStartingPoint
-        ? ui("Starting point not chosen")
-        : packProgress
-          ? uiFmt("{pct}% through {pack}", { pct: packProgress.percent, pack: ui(packProgress.title) })
-          : uiFmt("{pct}% progress to the next level", { pct })}
-              aria-valuemax={100}
-              aria-valuemin={0}
-              aria-valuenow={displayedProgress}
-              className="np-progress-track np-progress-track--hero"
-              role="progressbar"
-            >
-              <motion.span
-                animate={{ scaleX: displayedProgress / 100 }}
-                initial={reduceMotion ? false : { scaleX: 0 }}
-                style={{ transformOrigin: "left center" }}
-                transition={{ delay: 0.22, duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
-  );
-}
-
 /**
  * The motivational banner: her skyline behind, the mascot in front of it.
  *
@@ -2841,76 +2664,6 @@ function PracticeHub({
  * packs with their real names and real progress, and View all opens the
  * lessons library where the rest of them live.
  */
-const LESSON_ROW_TONES = ["mint", "violet", "blue"] as const;
-const LESSON_ROW_REWARDS = ["heart", "star", "trophy"] as const;
-
-function LessonPath({
-  onOpenLesson,
-  onViewAll,
-  packs,
-  ready,
-}: {
-  onOpenLesson: () => void;
-  onViewAll: () => void;
-  packs: PackProgress[];
-  /** False until the catalogue has loaded — "finished" and "still loading"
-   *  must never look the same. */
-  ready: boolean;
-}) {
-  return (
-    <section className="np-lesson-path">
-      <div className="np-list-heading">
-        <div>
-          <h2>{ui("Your lesson path")}</h2>
-          <p>{ui("Common sentences and phrases come first.")}</p>
-        </div>
-        <button onClick={onViewAll} type="button">{ui("View all")} <ChevronRight /></button>
-      </div>
-      <div className="np-lesson-list">
-        {!ready ? (
-          [0, 1, 2].map((row) => (
-            <div className="np-lesson-row np-lesson-row--loading" key={row}>
-              <span className="np-lesson-illustration skeleton" />
-              <span className="np-lesson-copy">
-                <span className="skeleton np-lesson-skeleton-line" />
-                <span className="skeleton np-lesson-skeleton-line np-lesson-skeleton-line--short" />
-              </span>
-            </div>
-          ))
-        ) : packs.length === 0 ? (
-          <p className="np-lesson-empty">{ui("Every pack is finished. Reviews keep it all fresh.")}</p>
-        ) : packs.map((pack, index) => (
-          <button
-            className={`np-lesson-row np-lesson-row--${LESSON_ROW_TONES[index % LESSON_ROW_TONES.length]}`}
-            key={pack.key}
-            onClick={onOpenLesson}
-            type="button"
-          >
-            <span className="np-lesson-illustration"><RewardIcon kind={LESSON_ROW_REWARDS[index % LESSON_ROW_REWARDS.length]} /></span>
-            <span className="np-lesson-number">{pack.percent}%</span>
-            <span className="np-lesson-copy">
-              <strong>{ui(pack.title)}</strong>
-              <small>
-                {uiFmt(
-                  pack.sittingsLeft === 1
-                    ? "{done} of {total} learned · 1 sitting left"
-                    : "{done} of {total} learned · {sittings} sittings left",
-                  {
-                    done: uiNumber(pack.done),
-                    total: uiNumber(pack.total),
-                    sittings: uiNumber(pack.sittingsLeft),
-                  }
-                )}
-              </small>
-            </span>
-            <ChevronRight className="np-lesson-chevron" />
-          </button>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 function FluencyOutlook({ onOpenFading, profile, vocab }: {
   /** Opens the vocabulary library on the fading items. */
   onOpenFading: () => void;
@@ -3383,7 +3136,6 @@ function HomeView({
   onOpenFading,
   onPractice,
   onRequestCatalogue,
-  onViewAllLessons,
   profile,
   onSwitchCourse,
   stats,
@@ -3400,7 +3152,6 @@ function HomeView({
   onOpenFading: () => void;
   onPractice: () => void;
   onRequestCatalogue: () => void;
-  onViewAllLessons: () => void;
   profile: UserProfile | null;
   onSwitchCourse: () => void;
   stats: PrototypeStats;
@@ -3461,11 +3212,6 @@ function HomeView({
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [contentMenuOpen]);
-  const needsStartingPoint = Boolean(profile)
-    && loadScopedJson<boolean>("german-lab-placement-done", false, profile) !== true;
-  const placementPart = profile
-    ? loadScopedJson<string | null>("german-lab-placement-result", null, profile)
-    : null;
 
   return (
     <div className="np-home-view">
@@ -4168,14 +3914,13 @@ function usePrototypeParts(requested: boolean) {
     let removeListeners = () => {};
 
     const load = async () => {
-      const [api, curriculum, contentBank, customContent, data, translations, direction] = await Promise.all([
+      const [api, curriculum, contentBank, customContent, data, translations] = await Promise.all([
         import("@/lib/api"),
         import("@/lib/curriculum"),
         import("@/lib/contentBank"),
         import("@/lib/customContent"),
         import("@/lib/data"),
         import("@/lib/translations"),
-        import("@/lib/direction"),
       ]);
       if (!active) return;
 
@@ -4822,7 +4567,6 @@ export default function NewUiPrototype({
         }}
         onPractice={openGuidedSession}
         onRequestCatalogue={requestParts}
-        onViewAllLessons={() => navigate("learn")}
         profile={profile}
         onChangeCountry={() => openCourseSwitcher("country")}
         onSwitchCourse={() => openCourseSwitcher("all")}

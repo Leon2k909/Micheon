@@ -44,7 +44,7 @@
  * wrong word. Those are what the lesson is for.
  */
 
-export type SpanishMatch = {
+type SpanishMatch = {
   ok: boolean;
   spellingNote: boolean;
   capitalizationError?: boolean;
@@ -56,7 +56,7 @@ const PUNCTUATION = /[.!?¡¿,;:"()\[\]{}“”„«»…]/g;
 const THIN_SPACES = /[    ]/g;
 
 /** Case-preserving normalisation: the form every tier below compares. */
-export function normalizeSpanishInput(text: string): string {
+function normalizeSpanishInput(text: string): string {
   return String(text ?? "")
     .replace(THIN_SPACES, " ")
     .replace(APOSTROPHES, "")
@@ -82,7 +82,7 @@ const ACCENTS: Array<[RegExp, string]> = [
   [/ü/g, "u"],
 ];
 
-export function normalizeSpanishLenient(text: string): string {
+function normalizeSpanishLenient(text: string): string {
   let value = normalizeSpanishInput(text).toLocaleLowerCase("es-ES");
   for (const [pattern, replacement] of ACCENTS) value = value.replace(pattern, replacement);
   return value;
@@ -160,7 +160,7 @@ export const matchSpanishSentence = matchSpanishPhrase;
  * A vocabulary card names several equally right senses ("la casa, el hogar").
  * They are choices, not a phrase to reproduce in full.
  */
-export function spanishMeaningAlternatives(value: string): string[] {
+function spanishMeaningAlternatives(value: string): string[] {
   const original = String(value ?? "").trim();
   if (!original) return [];
   const parts = original
@@ -168,10 +168,6 @@ export function spanishMeaningAlternatives(value: string): string[] {
     .map((part) => part.trim())
     .filter(Boolean);
   return parts.length ? parts : [original];
-}
-
-export function primarySpanishMeaning(value: string): string {
-  return spanishMeaningAlternatives(value)[0] ?? "";
 }
 
 export function matchSpanishMeaning(input: string, target: string): SpanishMatch {

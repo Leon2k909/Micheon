@@ -33,7 +33,7 @@
  * are what the lesson is for.
  */
 
-export type PolishMatch = {
+type PolishMatch = {
   ok: boolean;
   spellingNote: boolean;
   capitalizationError?: boolean;
@@ -45,7 +45,7 @@ const PUNCTUATION = /[.!?,;:"()\[\]{}“”„«»…]/g;
 const THIN_SPACES = /[    ]/g;
 
 /** Case-preserving normalisation: the form every tier below compares. */
-export function normalizePolishInput(text: string): string {
+function normalizePolishInput(text: string): string {
   return String(text ?? "")
     .replace(THIN_SPACES, " ")
     .replace(APOSTROPHES, "")
@@ -74,7 +74,7 @@ const DIACRITICS: Array<[RegExp, string]> = [
   [/ż/g, "z"],
 ];
 
-export function normalizePolishLenient(text: string): string {
+function normalizePolishLenient(text: string): string {
   let value = normalizePolishInput(text).toLocaleLowerCase("pl-PL");
   for (const [pattern, replacement] of DIACRITICS) value = value.replace(pattern, replacement);
   return value;
@@ -144,7 +144,7 @@ export const matchPolishSentence = matchPolishPhrase;
  * A vocabulary card names several equally right senses ("dom, mieszkanie").
  * They are choices, not a phrase to reproduce in full.
  */
-export function polishMeaningAlternatives(value: string): string[] {
+function polishMeaningAlternatives(value: string): string[] {
   const original = String(value ?? "").trim();
   if (!original) return [];
   const parts = original
@@ -152,10 +152,6 @@ export function polishMeaningAlternatives(value: string): string[] {
     .map((part) => part.trim())
     .filter(Boolean);
   return parts.length ? parts : [original];
-}
-
-export function primaryPolishMeaning(value: string): string {
-  return polishMeaningAlternatives(value)[0] ?? "";
 }
 
 export function matchPolishMeaning(input: string, target: string): PolishMatch {

@@ -1,6 +1,6 @@
 import React, { useCallback, useDeferredValue, useEffect, useMemo, useState } from "react";
 import { Check, CheckSquare, Layers, Plus, Search, SlidersHorizontal, Square, X } from "lucide-react";
-import { ui, uiFmt, uiNumber } from "@/lib/i18n";
+import { ui, uiNumber } from "@/lib/i18n";
 import { loadGradeStore } from "@/lib/activity";
 import { cn } from "@/lib/utils";
 import { ListPager, LongListChoice, ScrollJump, ShowMore } from "@/components/create/LongList";

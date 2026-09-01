@@ -13,8 +13,6 @@ import { sheetWordPartBlueprints } from "./sheetWordPacks";
 import { fieldWordPartBlueprints } from "./fieldWordPacks";
 import { withCapstoneDialogues } from "./capstoneDialogues";
 
-export const GERMAN_SPECIAL_CHARACTERS = ["Ä", "ä", "É", "é", "Ö", "ö", "Ü", "ü", "ß"];
-
 export const VOCAB_MILESTONES = [
   {
     value: 500,
@@ -66,13 +64,6 @@ export const VOCAB_MILESTONES = [
     color: "#f97316",
   },
 ];
-
-export const REMOTE_GERMAN_WORD_LIST_URLS = [
-  "https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2016/de/de_50k.txt",
-  "https://raw.githubusercontent.com/Jonny-exe/German-Words-Library/master/German-words-5000-words.json",
-];
-
-export const REMOTE_CATALOG_MAX_STORED = 2500;
 
 const partBlueprintsBase: Record<string, Blueprint> = {
   part1: {
@@ -8837,33 +8828,6 @@ const partBlueprintsBase: Record<string, Blueprint> = {
 // that block after block of them lands in capstoneDialogues.ts instead of
 // rewriting this file — see the comment atop that file for the rules.
 export const allPartBlueprints: Record<string, Blueprint> = withCapstoneDialogues(partBlueprintsBase);
-
-export const verbConjugations: Record<string, Record<string, string>> = {
-  sein:     { ich: "bin",    du: "bist",    er: "ist",    wir: "sind",    ihr: "seid",    sie: "sind" },
-  haben:    { ich: "habe",   du: "hast",    er: "hat",    wir: "haben",   ihr: "habt",    sie: "haben" },
-  gehen:    { ich: "gehe",   du: "gehst",   er: "geht",   wir: "gehen",   ihr: "geht",    sie: "gehen" },
-  sprechen: { ich: "spreche",du: "sprichst",er: "spricht",wir: "sprechen",ihr: "sprecht", sie: "sprechen" },
-  lernen:   { ich: "lerne",  du: "lernst",  er: "lernt",  wir: "lernen",  ihr: "lernt",   sie: "lernen" },
-  kochen:   { ich: "koche",  du: "kochst",  er: "kocht",  wir: "kochen",  ihr: "kocht",   sie: "kochen" },
-  kaufen:   { ich: "kaufe",  du: "kaufst",  er: "kauft",  wir: "kaufen",  ihr: "kauft",   sie: "kaufen" },
-  brauchen: { ich: "brauche",du: "brauchst",er: "braucht",wir: "brauchen",ihr: "braucht", sie: "brauchen" },
-  treffen:  { ich: "treffe", du: "triffst", er: "trifft", wir: "treffen", ihr: "trefft",  sie: "treffen" },
-  planen:   { ich: "plane",  du: "planst",  er: "plant",  wir: "planen",  ihr: "plant",   sie: "planen" },
-  helfen:   { ich: "helfe",  du: "hilfst",  er: "hilft",  wir: "helfen",  ihr: "helft",   sie: "helfen" },
-  fahren:   { ich: "fahre",  du: "fährst", er: "fährt", wir: "fahren",  ihr: "fahrt",   sie: "fahren" },
-  warten:   { ich: "warte",  du: "wartest", er: "wartet", wir: "warten",  ihr: "wartet",  sie: "warten" },
-  machen:   { ich: "mache",  du: "machst",  er: "macht",  wir: "machen",  ihr: "macht",   sie: "machen" },
-  geben:    { ich: "gebe",   du: "gibst",   er: "gibt",   wir: "geben",   ihr: "gebt",    sie: "geben" },
-  nehmen:   { ich: "nehme",  du: "nimmst",  er: "nimmt",  wir: "nehmen",  ihr: "nehmt",   sie: "nehmen" },
-  wissen:   { ich: "weiß",  du: "weißt",  er: "weiß",  wir: "wissen",  ihr: "wisst",   sie: "wissen" },
-};
-
-export const separableVerbs = [
-  { verb: "aufstehen",  example: "Ich stehe früh auf.",          en: "to get up" },
-  { verb: "anrufen",    example: "Ich rufe dich später an.",     en: "to call" },
-  { verb: "einkaufen",  example: "Wir kaufen heute ein.",         en: "to shop" },
-  { verb: "mitbringen", example: "Kannst du Brot mitbringen?",    en: "to bring along" },
-];
 
 export const entryFallbacks: Record<string, any> = {
   haus:       { word: "Haus",       pos: "noun",      glosses: ["house", "home"],              formsCount: 2, examples: ["Das Haus ist groß."],              exampleTranslations: ["The house is big."], exampleTranslationsFr: ["La maison est grande."] },

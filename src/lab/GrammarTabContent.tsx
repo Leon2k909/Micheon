@@ -1,4 +1,4 @@
-import React from "react";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { GrammarTab } from "@/ClozeGrammar";
 import { ui } from "@/lib/i18n";

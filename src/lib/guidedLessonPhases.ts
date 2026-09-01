@@ -76,7 +76,7 @@ export const LEAN_SENTENCE_PHASES: readonly SentencePhase[] = [
 ];
 
 /** The same bargain for a single word, which never had the gap or the order. */
-export const LEAN_WORD_PHASES: readonly SentencePhase[] = [
+const LEAN_WORD_PHASES: readonly SentencePhase[] = [
   "Read",
   "MeaningSelect",
   "MeaningFirst",
@@ -172,7 +172,7 @@ export const AUDIO_REQUIRED_SENTENCE_PHASES: readonly SentencePhase[] = [
 
 const AUDIO_REQUIRED_PHASE_SET = new Set<SentencePhase>(AUDIO_REQUIRED_SENTENCE_PHASES);
 
-export interface SentencePhaseRouteOptions {
+interface SentencePhaseRouteOptions {
   mastered: boolean;
   bilingual: boolean;
   audioMuted: boolean;

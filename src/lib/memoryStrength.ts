@@ -84,7 +84,6 @@ export const REVIEW_INTERVALS_DAYS = [1, 3, 10, 30, 180];
 export const SAME_DAY_SUCCESS_CREDIT = 0.5;
 
 /** Reviews mixed into a single session are capped so due backlogs never flood a lesson. */
-export const REVIEWS_PER_SESSION = 6;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -296,7 +295,7 @@ export function recallWeight(record: GradeRecord | undefined, now = Date.now()):
   return floor + (1 - floor) * Math.pow(0.5, overdueDays / halfLife);
 }
 
-export type RecallDetail = {
+type RecallDetail = {
   /** how much of the item still counts, 0-1 */
   weight: number;
   /** worth less than a whole item, and not exempt */
@@ -360,7 +359,7 @@ export function overdueBy(record: GradeRecord | undefined, now = Date.now()): nu
   return dueAtMs == null ? 0 : now - dueAtMs;
 }
 
-export type StrengthInfo = {
+type StrengthInfo = {
   /** 0..5 rungs on the ladder */
   level: number;
   label: string;

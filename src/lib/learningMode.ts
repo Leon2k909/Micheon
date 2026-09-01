@@ -4,7 +4,7 @@ import { toSpokenGerman, toTextedGerman } from "@/lib/spokenGerman";
 import { syncLocalStorageItem } from "@/lib/profileStorage";
 
 const KEY = "gl-learning-mode";
-export const LEARNING_MODE_CHANGE_EVENT = "gl-learning-mode-change";
+const LEARNING_MODE_CHANGE_EVENT = "gl-learning-mode-change";
 
 export type LearningMode = "conversation" | "exam";
 

@@ -143,8 +143,6 @@ const ITEM_TYPE_FILTERS: { key: ItemTypeFilter; label: string }[] = [
   { key: "vocab", label: "Vocabulary in context" },
 ];
 
-
-
 function speak(text: string) {
   tts(text, 0.9, targetLangTag());
 }
@@ -420,7 +418,6 @@ function StrengthMeter({
  */
 function HowCountingWorks({ fading, onShowFading }: { fading: number; onShowFading: () => void }) {
   const [open, setOpen] = useState(false);
-  const ladder = REVIEW_INTERVALS_DAYS.join(" → ");
   return (
     <div className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] p-4">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">

@@ -1,4 +1,4 @@
-import React from "react";
+
 import { ChevronRight, MessagesSquare, Play, Rocket } from "lucide-react";
 import { ui, uiFmt } from "@/lib/i18n";
 

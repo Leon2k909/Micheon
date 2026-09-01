@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, BookOpen, Check, Code2, Landmark, Sparkles } from "lucide-react";
 import type { Course } from "@/lib/courses";

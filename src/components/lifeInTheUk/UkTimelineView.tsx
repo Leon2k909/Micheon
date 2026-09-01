@@ -1,11 +1,10 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { ui } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import type { CountryPack } from "@/lib/countryStudies";
 import { UK_PACK, packTimelineSorted } from "@/lib/countryPacks";
-
 
 /**
  * British history as a line, because that is the shape the test asks about.

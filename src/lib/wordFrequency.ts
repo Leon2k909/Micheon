@@ -15,7 +15,7 @@ const rankByWord = new Map<string, number>();
   if (bare && !rankByWord.has(bare)) rankByWord.set(bare, i + 1);
 });
 
-export type FrequencyInfo = { rank: number; label: string; hint: string } | null;
+type FrequencyInfo = { rank: number; label: string; hint: string } | null;
 
 /**
  * Frequency rank for a word (1 = most common). Accepts "Gegner" or
@@ -58,7 +58,7 @@ const SYNONYM_PAIRS: { common: string; rare: string; context?: string }[] = [
   { common: "schnell", rare: "rasch" },
 ];
 
-export type SynonymNote = { kind: "common" | "rare" | "also"; label: string; hint: string } | null;
+type SynonymNote = { kind: "common" | "rare" | "also"; label: string; hint: string } | null;
 
 /**
  * How common a folded-in synonym is COMPARED WITH the word leading its card.
@@ -83,7 +83,7 @@ export type SynonymNote = { kind: "common" | "rare" | "also"; label: string; hin
  * words are unranked without being rare — the bank simply does not carry
  * them — so silence is the honest answer rather than a guess.
  */
-export type SynonymCommonality = { label: string; hint: string } | null;
+type SynonymCommonality = { label: string; hint: string } | null;
 
 /**
  * Pairs where the bank is right about writing and wrong about speech.
@@ -148,18 +148,8 @@ export function speechPrefers(
 }
 
 /** Is this the spoken side of any documented written/spoken pair? */
-export function isSpokenForm(word: string | undefined): boolean {
-  const name = bare(String(word ?? ""));
-  if (!name) return false;
-  return SPOKEN_PREFERENCE.some((pair) => bare(pair.spoken) === name);
-}
 
 /** And the written side, which Conversation mode should hold back. */
-export function isWrittenForm(word: string | undefined): boolean {
-  const name = bare(String(word ?? ""));
-  if (!name) return false;
-  return SPOKEN_PREFERENCE.some((pair) => bare(pair.written) === name);
-}
 
 export function synonymCommonality(
   faceWord: string | undefined,

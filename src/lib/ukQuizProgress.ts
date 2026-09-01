@@ -1,12 +1,9 @@
 import { loadScopedJson, saveScopedJson, getAuthUser, type UserProfile } from "@/lib/profileStorage";
-import { loadCourseProgress } from "@/lib/courses";
-import { lifeInTheUkCourse } from "@/lib/lifeInTheUkCourse";
+
 import {
-  UK_QUESTIONS,
   ukCategories,
   ukQuestionById,
   ukQuestionsForLesson,
-  type UkLevel,
   type UkQuestion,
 } from "@/lib/ukQuestionBank";
 
@@ -25,7 +22,7 @@ import {
 
 const STORE_KEY = "uk-quiz-v1";
 
-export type UkAnswerStat = {
+type UkAnswerStat = {
   /** Times answered correctly, ever. */
   correct: number;
   /** Times answered wrongly, ever. */
@@ -38,7 +35,7 @@ export type UkAnswerStat = {
   lastWrongChoice: number;
 };
 
-export type UkTestResult = {
+type UkTestResult = {
   at: number;
   score: number;
   total: number;
@@ -63,7 +60,7 @@ export type UkTestResult = {
   answers?: { questionId: string; chosen: number | null; correct: boolean }[];
 };
 
-export type UkDailyState = {
+type UkDailyState = {
   /** Local YYYY-MM-DD the current set was generated for. */
   day: string;
   ids: string[];
@@ -86,7 +83,7 @@ export type UkQuizState = {
   dailyGoal: number;
 };
 
-export const UK_DAILY_SIZE = 10;
+const UK_DAILY_SIZE = 10;
 
 function emptyState(): UkQuizState {
   return {
@@ -101,12 +98,6 @@ function emptyState(): UkQuizState {
 }
 
 /** Local calendar day, not UTC. See the note at the top of the file. */
-export function ukToday(now: Date = new Date()): string {
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const d = String(now.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
 
 function normalise(raw: unknown): UkQuizState {
   const base = emptyState();
@@ -146,15 +137,15 @@ function normalise(raw: unknown): UkQuizState {
   };
 }
 
-export function loadUkQuiz(profile: UserProfile | null = getAuthUser()): UkQuizState {
+function loadUkQuiz(profile: UserProfile | null = getAuthUser()): UkQuizState {
   return normalise(loadScopedJson<unknown>(STORE_KEY, null, profile));
 }
 
-export function saveUkQuiz(state: UkQuizState, profile: UserProfile | null = getAuthUser()) {
+function saveUkQuiz(state: UkQuizState, profile: UserProfile | null = getAuthUser()) {
   saveScopedJson(STORE_KEY, state, profile);
 }
 
-export function ukStatFor(state: UkQuizState, id: string): UkAnswerStat {
+function ukStatFor(state: UkQuizState, id: string): UkAnswerStat {
   return state.stats[id] ?? { correct: 0, wrong: 0, lastSeen: 0, lastWrong: 0, lastWrongChoice: -1 };
 }
 
@@ -190,33 +181,9 @@ export function recordUkAnswer(
   return next;
 }
 
-export function toggleUkFavourite(
-  questionId: string,
-  profile: UserProfile | null = getAuthUser(),
-  state: UkQuizState = loadUkQuiz(profile)
-): UkQuizState {
-  const has = state.favourites.includes(questionId);
-  const next: UkQuizState = {
-    ...state,
-    favourites: has ? state.favourites.filter((id) => id !== questionId) : [...state.favourites, questionId],
-  };
-  saveUkQuiz(next, profile);
-  return next;
-}
-
-export function recordUkTest(
-  result: UkTestResult,
-  profile: UserProfile | null = getAuthUser(),
-  state: UkQuizState = loadUkQuiz(profile)
-): UkQuizState {
-  const next: UkQuizState = { ...state, tests: [...state.tests, result].slice(-200) };
-  saveUkQuiz(next, profile);
-  return next;
-}
-
 // ── Mistakes ──────────────────────────────────────────────────────────────
 
-export type UkMistake = {
+type UkMistake = {
   question: UkQuestion;
   /** The option index chosen the last time it was wrong; -1 if unknown. */
   yourAnswer: number;
@@ -270,109 +237,9 @@ export function ukQuestionWeight(stat: UkAnswerStat, now: number = Date.now()): 
   return Math.max(1, weight);
 }
 
-function weightedSample(pool: UkQuestion[], count: number, state: UkQuizState, now: number): UkQuestion[] {
-  const remaining = [...pool];
-  const picked: UkQuestion[] = [];
-  while (picked.length < count && remaining.length > 0) {
-    const weights = remaining.map((q) => ukQuestionWeight(ukStatFor(state, q.id), now));
-    const total = weights.reduce((sum, w) => sum + w, 0);
-    let roll = Math.random() * total;
-    let index = 0;
-    for (; index < remaining.length - 1; index += 1) {
-      roll -= weights[index];
-      if (roll <= 0) break;
-    }
-    picked.push(remaining[index]);
-    remaining.splice(index, 1);
-  }
-  return picked;
-}
-
-export type UkPickOptions = {
-  /** Restrict to one lesson id. */
-  lesson?: string;
-  /** Restrict to one of the five chapters. */
-  chapter?: string;
-  levels?: UkLevel[];
-  count?: number;
-  /** Only questions the learner has got wrong at least once. */
-  mistakesOnly?: boolean;
-  /** Only favourites. */
-  favouritesOnly?: boolean;
-  /** Ids to leave out — used by the daily quiz to avoid yesterday's set. */
-  exclude?: string[];
-};
-
-export function ukPickQuestions(
-  options: UkPickOptions,
-  state: UkQuizState,
-  now: number = Date.now()
-): UkQuestion[] {
-  const chapterLessons = options.chapter
-    ? new Set((lifeInTheUkCourse.lessons ?? []).filter((l) => l.section === options.chapter).map((l) => l.id))
-    : null;
-  const exclude = new Set(options.exclude ?? []);
-  const favourites = new Set(state.favourites);
-
-  let pool = UK_QUESTIONS.filter((question) => {
-    if (exclude.has(question.id)) return false;
-    if (options.lesson && question.lesson !== options.lesson) return false;
-    if (chapterLessons && !chapterLessons.has(question.lesson)) return false;
-    if (options.levels && options.levels.length > 0 && !options.levels.includes(question.level)) return false;
-    if (options.favouritesOnly && !favourites.has(question.id)) return false;
-    if (options.mistakesOnly && ukStatFor(state, question.id).wrong <= 0) return false;
-    return true;
-  });
-
-  // Excluding yesterday's questions must never leave someone with nothing to
-  // do. If the filter emptied the pool, drop the exclusion rather than the quiz.
-  if (pool.length === 0 && exclude.size > 0) {
-    pool = ukPickQuestions({ ...options, exclude: [] }, state, now);
-  }
-
-  const count = Math.min(options.count ?? 10, pool.length);
-  return weightedSample(pool, count, state, now);
-}
-
-/**
- * The review queue, in the priority the learner asked for:
- * often wrong, then recently wrong, then weak categories, then longest unseen.
- */
-export function ukReviewQueue(state: UkQuizState, count = 15, now: number = Date.now()): UkQuestion[] {
-  const weak = new Set(
-    ukCategoryStrength(state)
-      .filter((row) => row.answered >= 3 && row.percent < 70)
-      .map((row) => row.id)
-  );
-  const scored = UK_QUESTIONS.map((question) => {
-    const stat = ukStatFor(state, question.id);
-    let score = 0;
-    // 1. often wrong
-    score += stat.wrong * 1000;
-    // 2. recently wrong
-    if (stat.lastWrong > 0) {
-      const days = (now - stat.lastWrong) / 86_400_000;
-      score += Math.max(0, 500 - days * 10);
-    }
-    // 3. from a weak category
-    if (weak.has(question.lesson)) score += 200;
-    // 4. longest since last seen
-    const daysSinceSeen = stat.lastSeen === 0 ? 60 : (now - stat.lastSeen) / 86_400_000;
-    score += Math.min(daysSinceSeen, 60);
-    return { question, score };
-  })
-    .filter((row) => row.score > 60) // untouched-and-never-wrong questions are not "review"
-    .sort((a, b) => b.score - a.score);
-
-  const queue = scored.slice(0, count).map((row) => row.question);
-  // A learner with a clean record still deserves a review session.
-  if (queue.length === 0) return ukPickQuestions({ count }, state, now);
-  return queue;
-}
-
 // ── Analysis ──────────────────────────────────────────────────────────────
 
-export type UkCategoryStrength = {
+type UkCategoryStrength = {
   id: string;
   title: string;
   chapter: string;
@@ -415,158 +282,5 @@ export function ukCategoryStrength(state: UkQuizState): UkCategoryStrength[] {
 }
 
 /** The categories worth revising, weakest first. Only ones with real evidence. */
-export function ukWeakCategories(state: UkQuizState, threshold = 75): UkCategoryStrength[] {
-  return ukCategoryStrength(state)
-    .filter((row) => row.answered >= 3 && row.percent < threshold)
-    .sort((a, b) => a.percent - b.percent);
-}
-
-export type UkProgressSummary = {
-  /** Percentage of the whole bank answered correctly at least once. */
-  overallPercent: number;
-  questionsSeen: number;
-  questionsTotal: number;
-  questionsMastered: number;
-  totalCorrect: number;
-  totalWrong: number;
-  totalAnswered: number;
-  successRate: number;
-  lessonsDone: number;
-  lessonsTotal: number;
-  categoriesComplete: number;
-  categoriesTotal: number;
-  testsTaken: number;
-  bestTestPercent: number;
-  averageTestPercent: number;
-  mistakeCount: number;
-  favouriteCount: number;
-  streak: number;
-  dailyGoal: number;
-};
-
-export function ukProgressSummary(
-  state: UkQuizState,
-  profile: UserProfile | null = getAuthUser()
-): UkProgressSummary {
-  let seen = 0;
-  let mastered = 0;
-  let correct = 0;
-  let wrong = 0;
-  for (const question of UK_QUESTIONS) {
-    const stat = ukStatFor(state, question.id);
-    correct += stat.correct;
-    wrong += stat.wrong;
-    if (stat.lastSeen > 0) seen += 1;
-    // "Mastered" needs evidence, not one lucky guess.
-    if (stat.correct >= 2 && stat.correct > stat.wrong) mastered += 1;
-  }
-  const answered = correct + wrong;
-  const strengths = ukCategoryStrength(state);
-  const lessons = lifeInTheUkCourse.lessons ?? [];
-  const done = loadCourseProgress(lifeInTheUkCourse.id, profile);
-  const percents = state.tests.map((t) => (t.total > 0 ? Math.round((t.score / t.total) * 100) : 0));
-
-  return {
-    overallPercent: UK_QUESTIONS.length > 0 ? Math.round((mastered / UK_QUESTIONS.length) * 100) : 0,
-    questionsSeen: seen,
-    questionsTotal: UK_QUESTIONS.length,
-    questionsMastered: mastered,
-    totalCorrect: correct,
-    totalWrong: wrong,
-    totalAnswered: answered,
-    successRate: answered > 0 ? Math.round((correct / answered) * 100) : 0,
-    lessonsDone: lessons.filter((lesson) => done.includes(lesson.id)).length,
-    lessonsTotal: lessons.length,
-    categoriesComplete: strengths.filter((row) => row.total > 0 && row.seen === row.total && row.percent >= 75).length,
-    categoriesTotal: strengths.length,
-    testsTaken: state.tests.length,
-    bestTestPercent: percents.length > 0 ? Math.max(...percents) : 0,
-    averageTestPercent: percents.length > 0 ? Math.round(percents.reduce((a, b) => a + b, 0) / percents.length) : 0,
-    mistakeCount: ukMistakes(state).length,
-    favouriteCount: ukFavouriteQuestions(state).length,
-    streak: state.streak,
-    dailyGoal: state.dailyGoal,
-  };
-}
 
 // ── Daily quiz ────────────────────────────────────────────────────────────
-
-/**
- * Today's set, generated once and then stable for the rest of the day.
- *
- * Regenerating on every render would mean the questions changed underneath
- * someone who left the page and came back, and the "answered" record would
- * stop lining up with the set it belongs to.
- */
-export function ukEnsureDaily(
-  state: UkQuizState,
-  profile: UserProfile | null = getAuthUser(),
-  now: Date = new Date()
-): UkQuizState {
-  const today = ukToday(now);
-  if (state.daily.day === today && state.daily.ids.length > 0) return state;
-
-  const picked = ukPickQuestions(
-    { count: UK_DAILY_SIZE, exclude: state.daily.ids },
-    state,
-    now.getTime()
-  );
-  const next: UkQuizState = {
-    ...state,
-    daily: {
-      day: today,
-      ids: picked.map((question) => question.id),
-      answered: {},
-      previousIds: state.daily.ids,
-    },
-  };
-  saveUkQuiz(next, profile);
-  return next;
-}
-
-export function ukRecordDailyAnswer(
-  questionId: string,
-  chosenIndex: number,
-  correct: boolean,
-  profile: UserProfile | null = getAuthUser(),
-  state: UkQuizState = loadUkQuiz(profile),
-  now: Date = new Date()
-): UkQuizState {
-  const afterAnswer = recordUkAnswer(questionId, chosenIndex, correct, profile, state);
-  const daily: UkDailyState = {
-    ...afterAnswer.daily,
-    answered: { ...afterAnswer.daily.answered, [questionId]: correct },
-  };
-  let streak = afterAnswer.streak;
-  let streakDay = afterAnswer.streakDay;
-
-  const finished = daily.ids.length > 0 && daily.ids.every((id) => id in daily.answered);
-  const today = ukToday(now);
-  if (finished && streakDay !== today) {
-    const yesterday = ukToday(new Date(now.getTime() - 86_400_000));
-    streak = streakDay === yesterday ? streak + 1 : 1;
-    streakDay = today;
-  }
-
-  const next: UkQuizState = { ...afterAnswer, daily, streak, streakDay };
-  saveUkQuiz(next, profile);
-  return next;
-}
-
-export function ukDailyQuestions(state: UkQuizState): UkQuestion[] {
-  return state.daily.ids.map(ukQuestionById).filter((q): q is UkQuestion => Boolean(q));
-}
-
-export function ukDailyComplete(state: UkQuizState): boolean {
-  return state.daily.ids.length > 0 && state.daily.ids.every((id) => id in state.daily.answered);
-}
-
-export function ukSetDailyGoal(
-  goal: number,
-  profile: UserProfile | null = getAuthUser(),
-  state: UkQuizState = loadUkQuiz(profile)
-): UkQuizState {
-  const next: UkQuizState = { ...state, dailyGoal: Math.max(1, Math.min(50, Math.round(goal))) };
-  saveUkQuiz(next, profile);
-  return next;
-}

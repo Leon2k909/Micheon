@@ -1,11 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState, useMemo, useSyncExternalStore } from "react";
+import React, { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { recordCrash } from "@/lib/crashReport";
 import { AnimatePresence, motion, useReducedMotion, useAnimationControls } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
+
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
   matchGermanPhrase as match,
@@ -48,7 +47,7 @@ import {
   type GuidedBackground,
 } from "@/lib/guidedBackground";
 import { getCompanion } from "@/lib/companion";
-import { getLearningDirection, learningEnglish } from "@/lib/direction";
+import { getLearningDirection } from "@/lib/direction";
 import { courseSides } from "@/lib/courseLanguages";
 import { frenchMeaningLanguage } from "@/lib/frenchCourse";
 import { polishMeaningLanguage } from "@/lib/polishCourse";
@@ -62,16 +61,8 @@ import { portugueseMeaningLanguage } from "@/lib/portugueseCourse";
 import { matchPortugueseSentence, PORTUGUESE_SPECIAL_CHARACTERS } from "@/lib/portugueseTextMatch";
 import { matchRussianSentence } from "@/lib/russianTextMatch";
 import { INTERFACE_LANGUAGE_CHANGE_EVENT } from "@/lib/interfaceLanguage";
-import {
-  formatRussianText,
-  getRussianScript,
-  resolveRussianScript,
-  russianScriptLabel,
-  RUSSIAN_SCRIPT_EVENT,
-  RUSSIAN_SPECIAL_CHARACTERS,
-  setRussianScript,
-} from "@/lib/russianScript";
-import { isElectronApp } from "@/lib/platform";
+import { getRussianScript, resolveRussianScript, russianScriptLabel, RUSSIAN_SCRIPT_EVENT, RUSSIAN_SPECIAL_CHARACTERS, setRussianScript } from "@/lib/russianScript";
+
 import {
   AUDIO_SETTINGS_EVENT,
   getSfxAudioVolume,
@@ -92,12 +83,11 @@ import { MuteButton } from "@/components/MuteButton";
 import { TtsWaveform } from "@/components/TtsWaveform";
 import { useCodexPets } from "@/components/codexPets/CodexPetProvider";
 import { detectRegister, REGISTER_LABEL } from "@/lib/register";
-import { frequencyInfo, synonymCommonality, synonymNote } from "@/lib/wordFrequency";
+import { synonymCommonality, synonymNote } from "@/lib/wordFrequency";
 import { germanWordGloss } from "@/lib/germanWordGloss";
 import { englishWordGloss } from "@/lib/englishWordGloss";
-import { addCustomEntries, getCustomPacks } from "@/lib/customContent";
 import { getCodexPetFrequency } from "@/lib/codexPetCoaching";
-import { pronounNote } from "@/lib/pronounNotes";
+
 import { TappableSentence } from "@/components/shared/TappableSentence";
 import { toSpokenGerman } from "@/lib/spokenGerman";
 import { tts, ttsSequence, TTS_SPEAKING_EVENT } from "@/lib/voice";
@@ -124,13 +114,7 @@ function lessonSpeak(text: string, rate: number, lang: string): Promise<void> {
 }
 import { ui, uiOr, uiFmt, uiNumber } from "@/lib/i18n";
 import { cefrBadgeLabel } from "@/lib/cefr";
-import {
-  Volume2, Mic2, ChevronLeft, ChevronRight, ChevronDown, CheckCircle2, X,
-  BookOpen, ArrowRight,
-  MessageSquareQuote, RotateCcw, Languages, GripVertical, ArrowLeftRight,
-  Eye, EyeOff, Lightbulb, Keyboard, ListChecks, MousePointerClick, SkipForward, Square, Download, LoaderCircle
-} from "lucide-react";
-
+import { Volume2, ChevronLeft, ChevronRight, ChevronDown, CheckCircle2, X, BookOpen, ArrowRight, MessageSquareQuote, RotateCcw, Languages, GripVertical, Eye, EyeOff, Lightbulb, Keyboard, ListChecks, MousePointerClick, SkipForward } from "lucide-react";
 // TTS now runs through the /api/tts server (premium Microsoft voices in every
 // browser) with an automatic fall back to the browser's built-in speechSynthesis.
 // See src/lib/voice.ts.
@@ -766,38 +750,7 @@ function buildMissingWordChoices(answer: string, pool: string[], limit = 3): str
     .sort((a, b) => choiceHash(`missing-position|${answer}|${a}`) - choiceHash(`missing-position|${answer}|${b}`));
 }
 
-// In French companion mode the flow tests the two target languages (German +
-// French) and uses English only as the shown meaning, so the English-typing
-// "Translate" step is replaced by the French step. "Memory" is a final recall
-// phase where no sentence is shown — the learner types both from memory.
-// "Type" is the German-typing step; label it "German" in bilingual mode so the
-// two language steps read clearly as German / French. The second-round steps
-// get short labels of their own.
-// Underline the item's key word (its dictionary lookup form) in the sentence,
-// like the mockup's highlighted word. Plain text when the word isn't found.
-function renderKeyWord(sentence: string, lookup?: string) {
-  if (!lookup || lookup.length < 3) return sentence;
-  const i = sentence.toLowerCase().indexOf(lookup.toLowerCase());
-  if (i < 0) return sentence;
-  return (
-    <>
-      {sentence.slice(0, i)}
-      <span className="word-key">{sentence.slice(i, i + lookup.length)}</span>
-      {sentence.slice(i + lookup.length)}
-    </>
-  );
-}
-
-// The short label on a stage square, one per language. Written out rather
-// than built from the name so the two-letter code is a real word in the
-// translations rather than a fragment.
-const RECALL_STAGE_LABEL: Record<string, string> = {
-  German: "Recall DE",
-  English: "Recall EN",
-  French: "Recall FR",
-};
-
-function phaseLabel(p: Phase, withFrench: boolean, targetLabel = "German", meaningLabel = "English") {
+function phaseLabel(p: Phase, withFrench: boolean) {
   if (withFrench && p === "Type") return "German";
   if (p === "MeaningSelect") return "Select";
   if (p === "MeaningFirst") return "Meaning first";
@@ -811,7 +764,7 @@ function phaseLabel(p: Phase, withFrench: boolean, targetLabel = "German", meani
 }
 
 // Big stage title for the lesson heading ("Build the sentence" style).
-function phaseHeading(p: Phase, withFrench: boolean, targetLabel = "German", meaningLabel = "English"): string {
+function phaseHeading(p: Phase, withFrench: boolean): string {
   switch (p) {
     case "Read": return "Read & listen";
     case "MeaningSelect": return "Select the correct meaning";
@@ -851,11 +804,9 @@ function phaseHeading(p: Phase, withFrench: boolean, targetLabel = "German", mea
  * The structure notes sit beside it because the beta chooses sentences BY
  * their grammar, so saying which grammar is the point.
  */
-function StageRoute({ current, withFrench = false, targetLabel = "German", meaningLabel = "English", locked = false, onClickPhase, phases }: {
+function StageRoute({ current, withFrench = false, locked = false, onClickPhase, phases }: {
   current: Phase;
   withFrench?: boolean;
-  targetLabel?: string;
-  meaningLabel?: string;
   locked?: boolean;
   onClickPhase?: (p: Phase) => void;
   /** Overrides the default route, for a phrase taking the short mastered path. */
@@ -913,7 +864,7 @@ function StageRoute({ current, withFrench = false, targetLabel = "German", meani
       <div className="fs-stagemeta">
         <div>
           <span>{ui("Stage")} {idx + 1} {ui("of")} {n}</span>
-          <strong>{ui(phaseLabel(current, withFrench, targetLabel, meaningLabel))}</strong>
+          <strong>{ui(phaseLabel(current, withFrench))}</strong>
         </div>
         <div className="fs-stage-tools" ref={shortcutMenuRef}>
           <button
@@ -1023,7 +974,7 @@ function StageRoute({ current, withFrench = false, targetLabel = "German", meani
           </div>
           {allPhases.map((p, i) => {
             const stageShortcut = shortcutForStage(i);
-            const stageName = ui(phaseLabel(p, withFrench, targetLabel, meaningLabel));
+            const stageName = ui(phaseLabel(p, withFrench));
             return (
               <button
                 key={p}
@@ -1757,12 +1708,11 @@ function CefrBadge({ level }: { level: unknown }) {
   );
 }
 
-function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [], onNext, onSkip, onGradeItem, onReviewLevel, onSnooze, onAnswer, manualReviewNotice, onUndoManualReview, onDismissManualReview, onHoldManualReview, onReleaseManualReview, markedLevel = null, onClearMark }: {
+function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [], onNext, onGradeItem, onReviewLevel, onSnooze, onAnswer, manualReviewNotice, onUndoManualReview, onDismissManualReview, onHoldManualReview, onReleaseManualReview, markedLevel = null, onClearMark }: {
   item: any;
   listeningChoicePool: string[];
   translationChoicePool: string[];
   onNext: () => void;
-  onSkip?: () => void;
   onGradeItem?: (itemId: string, grade: "know" | "struggle") => void;
   onReviewLevel?: (level: GuidedReviewLevel) => void;
   onSnooze?: (days: number) => void;
@@ -1866,10 +1816,8 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   }, []);
   const [input, setInput] = useState("");
   const [checked, setChecked] = useState(false);
-  const [attempts, setAttempts] = useState(0);
   const [enInput, setEnInput] = useState("");
   const [enChecked, setEnChecked] = useState(false);
-  const [enAttempts, setEnAttempts] = useState(0);
   const [translationMode, setTranslationMode] = useState<"bank" | "type">("type");
   const [translationPicked, setTranslationPicked] = useState<OrderToken[]>([]);
   /**
@@ -1947,7 +1895,6 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const recallAdvanceTokenRef = useRef(0);
   const [frInput, setFrInput] = useState("");
   const [frChecked, setFrChecked] = useState(false);
-  const [frAttempts, setFrAttempts] = useState(0);
   const [memDeInput, setMemDeInput] = useState("");
   const [memDeChecked, setMemDeChecked] = useState(false);
   const [memFrInput, setMemFrInput] = useState("");
@@ -2191,9 +2138,6 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     () => matchMeaning(recallBothMeaningInput),
     [recallBothMeaningInput, matchMeaning]
   );
-  const meaningLang = meaningIsGerman
-    ? "de-DE"
-    : resolveEnglishVariant(englishVariant) === "american" ? "en-US" : "en-GB";
   // Gap stage: the typed answer just needs to contain each missing word
   // (order-free, ß/case tolerant), so a single blank accepts the one word and
   // two blanks accept both in either order.
@@ -2246,7 +2190,6 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     setPhase(route[0]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, masteredRoute, hasFr, audioMuted]);
-
 
   // Play lesson audio automatically on first exposure and listening checks.
   // TTS is a no-op while muted, so the global mute still applies.
@@ -2345,7 +2288,6 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     if (phase === "Translate") {
       setEnInput("");
       setEnChecked(false);
-      setEnAttempts(0);
       setTranslationPicked([]);
       setTranslationMode("type");
     }
@@ -2666,7 +2608,6 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     if (result.ok) {
       setTimeout(advance, 900);
     } else {
-      setAttempts(a => a + 1);
     }
   };
 
@@ -2697,7 +2638,6 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     if (enResult.ok) {
       setTimeout(advanceOrFinish, 900);
     } else {
-      setEnAttempts(a => a + 1);
     }
   };
 
@@ -3209,7 +3149,6 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     if (frResult.ok) {
       setTimeout(hasFr ? advance : onNext, 900);
     } else {
-      setFrAttempts(a => a + 1);
     }
   };
 
@@ -3282,8 +3221,6 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
         current={phase}
         phases={phaseRoute()}
         withFrench={hasFr}
-        targetLabel={targetLabel}
-        meaningLabel={meaningLabel}
         locked={recallTransitionPending || recallCompletionScheduledRef.current}
         onClickPhase={goToPhase}
       />
@@ -3299,7 +3236,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   ? `Write this in ${meaningLabel}`
                   : phase === "Read" && audioMuted
                     ? "Read the sentence"
-                    : phaseHeading(phase, hasFr, targetLabel, meaningLabel)
+                    : phaseHeading(phase, hasFr)
               )}
             </h1>
             <p className="fs-sub">
@@ -3631,7 +3568,6 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             </motion.div>
           )}
         </AnimatePresence>
-
 
       {/* Phase-specific controls */}
       <AnimatePresence mode="wait">
@@ -5033,7 +4969,6 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
   const [lineIdx, setLineIdx] = useState(0);
   const [input, setInput] = useState("");
   const [checked, setChecked] = useState(false);
-  const [grade, setGrade] = useState<"know" | "struggle" | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const missingLineHandled = useRef(false);
   const line = lines[lineIdx];
@@ -5102,7 +5037,6 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
     setLineIdx(i => i + 1);
     setInput("");
     setChecked(false);
-    setGrade(null);
   };
 
   useEffect(() => {
@@ -5112,7 +5046,6 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
 
   const lineGradeId = line?.id ?? `dialogue-${dialogue?.title ?? "line"}-${lineIdx}-${line?.de ?? ""}`;
   const markKnown = () => {
-    setGrade("know");
     onGradeItem?.(lineGradeId, "know");
     nextLine();
   };
@@ -5121,11 +5054,9 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
   const isStruggling = markedLevels?.[lineGradeId] === "struggle";
   const markStruggle = () => {
     if (isStruggling) {
-      setGrade(null);
       onClearMark?.(lineGradeId);
       return;
     }
-    setGrade("struggle");
     onGradeItem?.(lineGradeId, "struggle");
   };
   const skipLine = () => {
@@ -5516,124 +5447,6 @@ function CompleteScreen({ onNext }: { onNext: () => void }) {
           Finish <ArrowRight className="ml-2 h-5 w-5" />
         </Button>
       </motion.div>
-    </motion.div>
-  );
-}
-
-// Section
-const JOURNAL_STORAGE_KEY = "german-lab-journal";
-
-function saveJournalEntry(entry: object) {
-  try {
-    const raw = localStorage.getItem(JOURNAL_STORAGE_KEY);
-    const log = raw ? JSON.parse(raw) : [];
-    log.unshift(entry);
-    localStorage.setItem(JOURNAL_STORAGE_KEY, JSON.stringify(log.slice(0, 100)));
-  } catch {}
-}
-
-function SessionJournal({ stepsCompleted, totalSteps, onDone }: {
-  stepsCompleted: number; totalSteps: number; onDone: () => void;
-}) {
-  const [wentWell, setWentWell]       = useState("");
-  const [struggling, setStruggling]   = useState("");
-  const [mood, setMood]               = useState<string | null>(null);
-  const [saved, setSaved]             = useState(false);
-
-  const moods = [
-    { emoji: "High", label: "On fire" },
-    { emoji: "Good", label: "Good" },
-    { emoji: "Okay", label: "Okay" },
-    { emoji: "Tough", label: "Tough" },
-  ];
-
-  const save = () => {
-    saveJournalEntry({
-      date: new Date().toISOString(),
-      stepsCompleted,
-      totalSteps,
-      mood,
-      wentWell: wentWell.trim(),
-      struggling: struggling.trim(),
-    });
-    setSaved(true);
-    setTimeout(onDone, 800);
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.97 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="app-overlay fixed inset-0 z-[600] flex items-center justify-center bg-zinc-50/95 p-6 backdrop-blur-sm"
-    >
-      <Card className="w-full max-w-lg space-y-6 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
-        <div className="text-center space-y-1">
-          <div className="text-2xl"></div>
-          <div className="text-xl font-semibold text-zinc-950">{ui("Quick reflection")}</div>
-          <div className="text-xs text-zinc-500">
-            {uiFmt("{done} of {total} steps done · takes 30 seconds", { done: stepsCompleted, total: totalSteps })}
-          </div>
-        </div>
-
-        {/* Mood */}
-        <div className="space-y-2">
-          <div className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">{ui("How did it feel?")}</div>
-          <div className="flex gap-2">
-            {moods.map(m => (
-              <motion.button key={m.label} whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}
-                onClick={() => setMood(m.label)}
-                className={cn(
-                  "flex-1 py-3 rounded-2xl border text-center transition-all",
-                  mood === m.label
-                    ? "border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent)]"
-                    : "border-zinc-200 bg-white text-zinc-500 hover:bg-zinc-50"
-                )}>
-                <div className="text-xl">{m.emoji}</div>
-                <div className="text-[9px] font-semibold uppercase tracking-wide mt-0.5">{ui(m.label)}</div>
-              </motion.button>
-            ))}
-          </div>
-        </div>
-
-        {/* What went well */}
-        <div className="space-y-2">
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">
-            {ui("What clicked today?")}
-          </label>
-          <textarea
-            value={wentWell}
-            onChange={e => setWentWell(e.target.value)}
-            placeholder={ui("e.g. the cafe dialogue felt natural, articles are making more sense...")}
-            rows={2}
-            className="w-full resize-none rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-950 placeholder:text-zinc-400 transition-colors focus:border-[var(--accent)] focus:outline-none"
-          />
-        </div>
-
-        {/* Struggling */}
-        <div className="space-y-2">
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">
-            {ui("Any words or phrases giving you trouble?")}
-          </label>
-          <textarea
-            value={struggling}
-            onChange={e => setStruggling(e.target.value)}
-            placeholder={ui("e.g. Wochenende, verbs that split in two, der/die/das...")}
-            rows={2}
-            className="w-full resize-none rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-950 placeholder:text-zinc-400 transition-colors focus:border-[var(--accent)] focus:outline-none"
-          />
-        </div>
-
-        <div className="flex gap-3">
-          <Button onClick={onDone} variant="ghost"
-            className="app-skip-button h-12 flex-1 rounded-lg text-xs font-semibold uppercase">
-            {ui("Skip")}
-          </Button>
-          <Button onClick={save} disabled={saved}
-            className="h-12 flex-1 rounded-lg bg-zinc-950 text-sm font-semibold text-white hover:bg-zinc-800">
-            {ui(saved ? "Saved" : "Save & exit")}
-          </Button>
-        </div>
-      </Card>
     </motion.div>
   );
 }
@@ -6030,8 +5843,7 @@ function SessionFlashcardPreview({
 }
 
 export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem, onSetItemStrength, onSetItemPermanent, onUndoGradeItem, onPreviewKnown, onPreviewSwap, onSnoozeItem, onAdvance, onRegisterAnswer, unseenPhrases = 0 }: any) {
-  const { speak: petSpeak, selectedKey, selectedPet } = useCodexPets();
-  const petEnabled = Boolean(selectedPet && selectedKey !== "off");
+  const { speak: petSpeak } = useCodexPets();
   const reduceMotion = useReducedMotion() || effectsReduced();
   const [guidedBackground, setGuidedBackground] = useState<GuidedBackground>(() => getGuidedBackground());
   const [guidedCustomBackground, setGuidedCustomBackground] = useState<string | null>(() => getGuidedCustomBackground());
@@ -6089,7 +5901,6 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
    * had gone. This is what the button reads, and what pressing it again clears.
    */
   const [manualMarks, setManualMarks] = useState<Record<string, GuidedReviewLevel>>({});
-  const [gradeResetNonce, setGradeResetNonce] = useState(0);
   useEffect(() => {
     const syncGuidedBackground = () => {
       setGuidedBackground(getGuidedBackground());
@@ -6670,8 +6481,8 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
                   />
                 ) : (
                   <>
-                    {kind === "sentence"  && <SentenceExercise key={`sentence-${index}-${gradeResetNonce}`} item={step.item} listeningChoicePool={listeningChoicePool} translationChoicePool={translationChoicePool} onGradeItem={gradeItem} onReviewLevel={(level) => applyReviewLevelFromPicker([String(step.item?.id ?? "")], level)} onSnooze={(days) => applyManualSnooze([String(step.item?.id ?? "")], days)} onNext={next} onSkip={skipStep} onAnswer={(ok) => registerAnswer(ok, step.item?.id)} manualReviewNotice={manualNoticeInline ? lastManualReviewChange : null} onUndoManualReview={undoLastManualReviewChange} onDismissManualReview={() => setLastManualReviewChange(null)} onHoldManualReview={holdReviewNotice} onReleaseManualReview={releaseReviewNotice} markedLevel={manualMarks[String(step.item?.id ?? "")] ?? null} onClearMark={() => clearManualMark(String(step.item?.id ?? ""))} />}
-                    {kind === "dialogue"  && <div className="fs-card-body flex flex-col items-center"><DialogueExercise key={`dialogue-${index}-${gradeResetNonce}`} dialogue={step.dialogue} onGradeItem={gradeItem} onReviewLevel={(itemId, level) => applyReviewLevelFromPicker([itemId], level)} onSnooze={(itemId, days) => applyManualSnooze([itemId], days)} onNext={next} onAnswer={registerAnswer} markedLevels={manualMarks} onClearMark={clearManualMark} /></div>}
+                    {kind === "sentence"  && <SentenceExercise key={`sentence-${index}`} item={step.item} listeningChoicePool={listeningChoicePool} translationChoicePool={translationChoicePool} onGradeItem={gradeItem} onReviewLevel={(level) => applyReviewLevelFromPicker([String(step.item?.id ?? "")], level)} onSnooze={(days) => applyManualSnooze([String(step.item?.id ?? "")], days)} onNext={next} onAnswer={(ok) => registerAnswer(ok, step.item?.id)} manualReviewNotice={manualNoticeInline ? lastManualReviewChange : null} onUndoManualReview={undoLastManualReviewChange} onDismissManualReview={() => setLastManualReviewChange(null)} onHoldManualReview={holdReviewNotice} onReleaseManualReview={releaseReviewNotice} markedLevel={manualMarks[String(step.item?.id ?? "")] ?? null} onClearMark={() => clearManualMark(String(step.item?.id ?? ""))} />}
+                    {kind === "dialogue"  && <div className="fs-card-body flex flex-col items-center"><DialogueExercise key={`dialogue-${index}`} dialogue={step.dialogue} onGradeItem={gradeItem} onReviewLevel={(itemId, level) => applyReviewLevelFromPicker([itemId], level)} onSnooze={(itemId, days) => applyManualSnooze([itemId], days)} onNext={next} onAnswer={registerAnswer} markedLevels={manualMarks} onClearMark={clearManualMark} /></div>}
                     {kind === "register"  && <RegisterCheck question={step.question} onAnswer={registerRegisterAnswer} onNext={next} />}
                     {kind === "complete"  && (
                       <div className="fs-card-body flex flex-col items-center">
@@ -6740,5 +6551,4 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
     </div>
   );
 }
-
 

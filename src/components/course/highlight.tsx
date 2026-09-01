@@ -1,4 +1,3 @@
-import React from "react";
 
 // Minimal C# tokenizer → colored spans. Not a full parser, but enough to
 // give an IDE-like feel: keywords, types, strings, comments, numbers, methods.
@@ -36,7 +35,7 @@ const COLORS: Record<string, string> = {
   plain: "text-[var(--text-1)]",
 };
 
-export function tokenizeCSharp(code: string): Tok[] {
+function tokenizeCSharp(code: string): Tok[] {
   const tokens: Tok[] = [];
   let i = 0;
   const n = code.length;

@@ -1,10 +1,9 @@
-import React, { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { AlertCircle, ArrowLeft, Check, ChevronRight, Eye, RotateCcw, ScrollText } from "lucide-react";
 import { ui, uiFmt, uiNumber } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { TappableSentence } from "@/components/shared/TappableSentence";
-import { judgeAttempt, coverIdeas, PASSAGES, type Passage } from "@/lib/passages";
-
+import { judgeAttempt, PASSAGES, type Passage } from "@/lib/passages";
 /**
  * Read a paragraph of real German and say what it means.
  *
@@ -93,7 +92,6 @@ function PassageRun({ passage, onBack }: { passage: Passage; onBack: () => void 
     () => (revealed && line ? judgeAttempt(line.en, attempt) : null),
     [revealed, line, attempt]
   );
-  const coverage = judged?.coverage ?? null;
 
   const commit = useCallback(() => {
     setAnswers((current) => ({ ...current, [index]: attempt }));

@@ -19,7 +19,7 @@ import { countryPassPercent } from "@/lib/countryTests";
  * of the logic that decides when to say it.
  */
 
-export type CountryAdvice = {
+type CountryAdvice = {
   id: string;
   tone: "praise" | "warn" | "info";
   /**

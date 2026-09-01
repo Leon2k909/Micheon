@@ -29,7 +29,7 @@ function saveBucket(bucket: CacheBucket) {
   }
 }
 
-export function getCachedDictionaryEntry(normalizedKey: string): unknown | null {
+function getCachedDictionaryEntry(normalizedKey: string): unknown | null {
   if (!normalizedKey) return null;
   const bucket = loadBucket();
   const row = bucket[normalizedKey];
@@ -42,7 +42,7 @@ export function getCachedDictionaryEntry(normalizedKey: string): unknown | null 
   return row.entry;
 }
 
-export function setCachedDictionaryEntry(normalizedKey: string, entry: unknown) {
+function setCachedDictionaryEntry(normalizedKey: string, entry: unknown) {
   if (!normalizedKey || !entry) return;
   const bucket = loadBucket();
   bucket[normalizedKey] = { entry, ts: Date.now() };

@@ -3,13 +3,12 @@ import { curatedTopics } from "./phrasebank";
 import { normalize } from "./api";
 import tatoebaRaw from "./tatoeba.de-en.json";
 import { getLearningDirection, type LearningDirection } from "./direction";
-import { frenchParts, hasFrench } from "./frenchCourse";
-import { hasPolish, polishParts } from "./polishCourse";
-import { hasPortuguese, portugueseParts } from "./portugueseCourse";
-import { hasRussian, russianParts } from "./russianCourse";
-import { hasSpanish, spanishParts } from "./spanishCourse";
-import { hasItalian, italianParts } from "./italianCourse";
-
+import { frenchParts } from "./frenchCourse";
+import { polishParts } from "./polishCourse";
+import { portugueseParts } from "./portugueseCourse";
+import { russianParts } from "./russianCourse";
+import { spanishParts } from "./spanishCourse";
+import { italianParts } from "./italianCourse";
 /**
  * Bundled, always-available content.
  *
@@ -693,21 +692,5 @@ export function filterPartsForLearningDirection<T extends Part>(
 }
 
 /** Flat pool of every bundled sentence (curated only) for games / review. */
-export function getAllBundledSentences(direction: LearningDirection = getLearningDirection()): Phrase[] {
-  const phrases = curatedTopics
-    .filter((topic) => !topic.learningDirections || topic.learningDirections.includes(direction))
-    .flatMap((topic) => topic.phrases);
-  // Games and review draw straight from this pool, so it has to answer for the
-  // course being studied rather than for the catalogue as a whole.
-  if (direction === "learn-fr") return phrases.filter(hasFrench);
-  if (direction === "learn-pl") return phrases.filter(hasPolish);
-  if (direction === "learn-es") return phrases.filter(hasSpanish);
-  if (direction === "learn-it") return phrases.filter(hasItalian);
-  if (direction === "learn-pt") return phrases.filter(hasPortuguese);
-  if (direction === "learn-ru") return phrases.filter(hasRussian);
-  return phrases;
-}
 
 /** Count of bundled sentences, for stats/labels. */
-export const BUNDLED_SENTENCE_COUNT =
-  curatedTopics.reduce((n, t) => n + t.phrases.length, 0);
