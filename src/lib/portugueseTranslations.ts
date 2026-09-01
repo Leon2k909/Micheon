@@ -27532,4 +27532,77 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Steht das wirklich in der Hausordnung?": "Isso está mesmo no regulamento do prédio?",
   "Ja, und noch mehr: sonntags wird nicht gebohrt.": "Está, e mais: ao domingo não se pega no berbequim.",
   "Gut zu wissen. Der Hausmeister meinte auch noch: Stoßlüften, nicht kippen.": "Bom saber. O porteiro ainda disse: abrir de par em par uns minutos, não deixar a janela encostada.",
+
+  // ── The capstone conversations, second twelve ──────────────────────────
+  //
+  // Das steht auf einem anderen Blatt is isso são outros quinhentos — the
+  // Portuguese for a matter that belongs to a different discussion, and one of
+  // the few idioms in this course that is funnier in Portuguese than in German.
+  //
+  // The vocabulary keeps what it was given: Starthilfe is still as pinças, der
+  // Ohrwurm is still uma música presa na cabeça, die Leiter is still o
+  // escadote, der Automat is still o multibanco, echtes Leder is still cabedal
+  // verdadeiro. Der TÜV keeps its name.
+  //
+  // Nämlich becomes é que, as everywhere else in this table.
+  "Leise, sie ist gerade eingeschlafen.": "Baixinho, ela acabou de adormecer.",
+  "Endlich. Hat er auch durchgeschlafen?": "Finalmente. E ele dormiu a noite toda seguida?",
+  "Bis fünf. Dann hat er geschrien, und die Windel war natürlich voll.": "Até às cinco. Depois berrou, e a fralda estava cheia, claro.",
+  "Ich übernehme morgen früh. Du bringst sie in die Kita, ich wickle ihn.": "Amanhã de manhã fico eu. Tu levas a menina ao infantário, eu mudo-lhe a fralda.",
+  "Abgemacht. Und der Kinderwagen muss unten bleiben, er passt nicht in den Aufzug.": "Fechado. E o carrinho tem de ficar em baixo, não cabe no elevador.",
+  "Der Wagen springt nicht an. Ich glaube, die Batterie ist leer.": "O carro não pega. Acho que a bateria está descarregada.",
+  "Schon wieder? Kannst du mal Starthilfe geben lassen?": "Outra vez? Consegues que te ajudem a arrancar com as pinças?",
+  "Der Nachbar hilft gleich. Aber der Motor macht auch ein komisches Geräusch.": "O vizinho ajuda já. Mas o motor também faz um barulho estranho.",
+  "Dann bring den Wagen diese Woche in die Werkstatt. Der TÜV ist eh bald fällig.": "Então leva o carro à oficina esta semana. O TÜV está a chegar de qualquer maneira.",
+  "Stimmt. Und tanken muss ich auch noch. Das Auto frisst gerade nur Geld.": "É verdade. E ainda tenho de meter combustível. Neste momento o carro só come dinheiro.",
+  "Du wirkst gestresst. Alles okay bei dir?": "Pareces stressada. Está tudo bem contigo?",
+  "Ehrlich? Ich bin gerade etwas überfordert. Das ist mir alles zu viel.": "Sinceramente? Neste momento estou um bocado sobrecarregada. Isto tudo é de mais para mim.",
+  "Das verstehe ich. Mich nervt die Woche auch langsam.": "Compreendo. A mim esta semana também já me começa a chatear.",
+  "Wie bleibt deine Schwester eigentlich immer so gelassen?": "Afinal como é que a tua irmã se mantém sempre tão calma?",
+  "Keine Ahnung. Aber ich bin froh, dass du so ehrlich bist.": "Não faço ideia. Mas ainda bem que és tão franca.",
+  "Wir lassen den Kleinen im Frühling taufen.": "Vamos batizar o pequeno na primavera.",
+  "Wie schön! In eurer Gemeinde?": "Que bonito! Na vossa paróquia?",
+  "Ja, der Gottesdienst fängt um zehn an, danach feiern wir im Garten.": "Sim, a missa começa às dez e depois festejamos no jardim.",
+  "Der Pfarrer hat bei eurer Hochzeit damals so schön gesprochen.": "Na altura, no vosso casamento, o padre falou tão bem.",
+  "Genau der macht es wieder. Mein Glaube ist mir wichtig, das weißt du ja.": "É esse mesmo outra vez. A minha fé é importante para mim, como sabes.",
+  "Kommst du morgen joggen? Wir wollten doch dreimal die Woche trainieren.": "Vens correr amanhã? Nós íamos treinar três vezes por semana.",
+  "Ich kann nicht, ich habe mir den Knöchel verstaucht.": "Não posso, torci o tornozelo.",
+  "Autsch. Beim Schwimmen gestern?": "Ai. Ontem a nadar?",
+  "Nein, auf der Treppe. Es tut vor allem beim Laufen weh.": "Não, nas escadas. Dói sobretudo a correr.",
+  "Dann mach diese Woche Pause. Ich wärme mich ab jetzt für zwei auf.": "Então esta semana descansa. Daqui em diante aqueço por dois.",
+  "Ich habe seit Tagen einen Ohrwurm von deinem Lied.": "Há dias que tenho a tua música presa na cabeça.",
+  "Welches denn? Das, das wir im Chor proben?": "Qual delas? Aquela que ensaiamos no coro?",
+  "Genau das. Ich kenne den Text inzwischen besser als du.": "Essa mesma. Entretanto já sei a letra melhor do que tu.",
+  "Dann sing doch mit! Wir proben jeden Donnerstag.": "Então canta também, à vontade! Ensaiamos todas as quintas.",
+  "Mal sehen. Euer letzter Auftritt war jedenfalls richtig gut.": "Veremos. De qualquer maneira a vossa última atuação foi mesmo boa.",
+  "Was steht heute an? Der Rasen?": "O que é que há para fazer hoje? A relva?",
+  "Mähen, ja. Und im Beet wächst nur noch Unkraut.": "Cortar, sim. E no canteiro já só cresce erva daninha.",
+  "Ich übernehme das Beet, und danach hältst du mir die Leiter fest.": "Eu fico com o canteiro e depois seguras-me o escadote.",
+  "Für den Baum? Der muss wirklich geschnitten werden.": "Para a árvore? Essa precisa mesmo de ser podada.",
+  "Genau. Und abends gießen wir die Blumen und sind fertig.": "Exatamente. E à noite regamos as flores e está feito.",
+  "Entschuldigung, ist dieses Abteil noch frei?": "Desculpe, este compartimento ainda está livre?",
+  "Ja, kommen Sie rein. Müssen Sie auch umsteigen?": "Está, faça favor de entrar. Também tem de mudar?",
+  "Einmal, aber der Anschlusszug wartet. Wir wollen an die Küste, zelten.": "Uma vez, mas o comboio de ligação espera. Vamos para a costa, acampar.",
+  "Schön! Die Wellen sollen dieses Wochenende ziemlich hoch sein.": "Que bom! Este fim de semana é suposto as ondas estarem bastante altas.",
+  "Perfekt für die Kinder. Zelt, Lagerfeuer, grillen — mehr brauchen wir nicht.": "Perfeito para os miúdos. Tenda, fogueira, churrasco — não precisamos de mais.",
+  "Und, was hältst du von seinem Vorschlag?": "Então, que achas da proposta dele?",
+  "Ich will dir nicht zu nahe treten, aber der Text kam doch von euch.": "Não te quero ofender, mas o texto veio de vocês.",
+  "Da würde ich stark differenzieren wollen: am ersten Teil, nicht am zweiten.": "Aí eu queria distinguir bem: na primeira parte, não na segunda.",
+  "Na gut. Das steht ohnehin auf einem anderen Blatt.": "Está bem. De qualquer maneira isso são outros quinhentos.",
+  "Bist du bald fertig im Bad? Ich muss mir noch die Zähne putzen.": "Falta muito na casa de banho? Ainda tenho de lavar os dentes.",
+  "Fünf Minuten! Ich föhne mir nur kurz die Haare.": "Cinco minutos! Vou só secar o cabelo num instante.",
+  "Dann hebe ich unterwegs Geld ab. Der Automat an der Ecke geht wieder.": "Então levanto dinheiro pelo caminho. O multibanco da esquina já voltou a funcionar.",
+  "Gut. Steht Milch eigentlich schon auf der Liste?": "Está bem. Afinal o leite já está na lista?",
+  "Ja, und alle Zutaten für morgen. Ich warte unten.": "Está, e todos os ingredientes para amanhã. Espero por ti lá em baixo.",
+  "Ich glaube, wir sind falsch. Da vorne ist eine Umleitung.": "Acho que nos enganámos no caminho. Ali à frente há um desvio.",
+  "Nein, das passt. Fahr im Kreisverkehr die zweite Ausfahrt.": "Não, está certo. Na rotunda sai na segunda saída.",
+  "Und dann? An der Kreuzung links abbiegen?": "E depois? No cruzamento virar à esquerda?",
+  "Erst an der zweiten Ampel. Das Haus liegt direkt gegenüber der Post.": "Só no segundo semáforo. A casa é mesmo em frente aos correios.",
+  "Hoffentlich. Die Straße danach ist nämlich eine Einbahnstraße.": "Tomara. É que a rua a seguir é de sentido único.",
+  "Schau mal, der Tisch! Ist der aus massivem Holz?": "Olha só a mesa! É de madeira maciça?",
+  "Ja, und die Stühle sind aus echtem Leder.": "É, e as cadeiras são de cabedal verdadeiro.",
+  "Passt der überhaupt? Das sind bestimmt zwei Meter.": "Mas cabe? Isso de certeza que tem dois metros.",
+  "Knapp. Und die Verpackung ist leider komplett aus Plastik.": "À justa. E infelizmente a embalagem é toda de plástico.",
+  "Egal, wir nehmen ihn. Vorsicht beim Tragen, das Holz ist empfindlich.": "Tanto faz, levamos. Cuidado a transportar, a madeira é delicada.",
+  "Welche Note hast du in der Klassenarbeit bekommen?": "Que nota é que tiveste no teste?",
 };
