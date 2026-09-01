@@ -27906,4 +27906,78 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Zum Logopäden. Und der Apotheker hat sicher noch Tee für dich.": "Ao terapeuta da fala. E o farmacêutico de certeza que ainda tem um chá para ti.",
   "Drei Profis für einen Menschen. Na dann, der Reihe nach.": "Três profissionais para uma pessoa só. Pronto, então por ordem.",
   "Hinter uns: Blaulicht und Martinshorn. Alle fahren zur Seite.": "Atrás de nós: luz azul rotativa e sirene. Toda a gente encosta.",
+
+  // ── The capstone conversations, seventh twelve ─────────────────────────
+  //
+  // Die Betreuung is the one word here that does not take its own card's
+  // answer. As a school word it is o prolongamento, the after-hours care a
+  // Portuguese school runs; in this conversation it is an old man being looked
+  // after in his own home, so the line says apoio em casa. Same German word,
+  // two different things, and the sentence gets the one it means.
+  //
+  // Der Kassenpatient is o doente do sistema público and der Privatpatient o
+  // doente particular, as their own cards have it: neither is the name of an
+  // institution, so neither stays German.
+  //
+  // Der Gips had no card and is o gesso.
+  "Rettungsgasse! Du nach rechts, die linke Spur nach links.": "Corredor de emergência! Tu para a direita, a faixa da esquerda para a esquerda.",
+  "Geschafft. Der Krankenwagen ist durch.": "Conseguimos. A ambulância passou.",
+  "Bei einem Notfall zählt jede Minute bis zur Notaufnahme.": "Numa emergência, cada minuto até às urgências conta.",
+  "Genau deshalb übt man das. Gut gemacht, alle hier.": "É precisamente por isso que se treina. Muito bem, toda a gente.",
+  "Oma kommt nach der Operation nach Hause. Was braucht sie?": "A avó volta para casa depois da operação. Do que é que ela precisa?",
+  "Einen Treppenlift für den ersten Stock. Der Antrag läuft schon.": "De um elevador de escadas para o primeiro andar. O pedido já está a andar.",
+  "Und die Wundnaht? Wer schaut danach?": "E os pontos? Quem é que os vai ver?",
+  "Der Pflegedienst, zweimal die Woche. Die Gehhilfe steht auch bereit.": "O serviço de apoio domiciliário, duas vezes por semana. O auxiliar de marcha também já está pronto.",
+  "Dann fehlt nur noch ihre neue Brille — und ihr Sessel am Fenster.": "Então só faltam os óculos novos dela — e a poltrona à janela.",
+  "Diese Augentropfen — wie oft darf ich die nehmen?": "Estas gotas para os olhos — quantas vezes é que as posso pôr?",
+  "Steht in der Packungsbeilage: dreimal täglich, ein Tropfen.": "Está no folheto informativo: três vezes por dia, uma gota.",
+  "Und wenn ich mal einen vergesse?": "E se me esquecer de uma?",
+  "Dann einfach normal weiter. Bloß nicht doppelt — eine Überdosis hilft niemandem.": "Continua normalmente. Nunca a dobrar — uma overdose não ajuda ninguém.",
+  "Verstanden. Die Rezeptgebühr zahle ich vorne an der Kasse?": "Percebido. A taxa da receita pago ali à frente na caixa?",
+  "Der Gips ist ab! Und jetzt?": "Já tirei o gesso! E agora?",
+  "Jetzt kommt die Genesung: erst Dehnung, dann Muskelaufbau.": "Agora vem a convalescença: primeiro alongamento, depois ganho de massa muscular.",
+  "Ich gehe noch ziemlich langsam und schief.": "Ainda ando bastante devagar e torto.",
+  "Normal. Die Beweglichkeit kommt in Wochen zurück, nicht in Tagen.": "É normal. A agilidade dos movimentos volta em semanas, não em dias.",
+  "Und bis dahin Schonkost fürs Bein: Spazieren statt Fußball.": "E até lá dieta leve para a perna: passear em vez de futebol.",
+  "Opa stürzt in letzter Zeit öfter. Ich mache mir Sorgen.": "O avô ultimamente cai mais vezes. Estou preocupada.",
+  "Die Sturzgefahr in der Wohnung lässt sich senken: mehr Licht, Teppiche weg.": "O risco de queda em casa pode reduzir-se: mais luz, tapetes fora.",
+  "Und wenn das nicht mehr reicht? Seniorenheim?": "E quando isso já não chegar? Lar de idosos?",
+  "Erst mal Betreuung zu Hause. Und die Vorsorgevollmacht sollte er jetzt regeln.": "Primeiro apoio em casa. E a procuração para cuidados de saúde é agora que ele a deve tratar.",
+  "Stimmt. Das Gespräch führen wir am Sonntag, in Ruhe.": "É verdade. Essa conversa temo-la no domingo, com calma.",
+  "Zwei Wochen auf einen Termin! Als Privatpatient ginge es morgen.": "Duas semanas à espera de uma consulta! Como doente particular era amanhã.",
+  "Als Kassenpatient zahlst du dafür keinen Eigenanteil für das Meiste.": "Em contrapartida, como doente do sistema público não pagas franquia na maior parte das coisas.",
+  "Und diese Wahlleistungen im Krankenhaus, lohnt sich das?": "E esses serviços opcionais no hospital, valem a pena?",
+  "Kommt drauf an. Das Zweibettzimmer ja, der Rest selten.": "Depende. O quarto de duas camas vale, o resto raramente.",
+  "Na gut. Hauptsache, jemand hat Nachtdienst, wenn es ernst wird.": "Pronto. O principal é que haja alguém no turno da noite quando a coisa fica séria.",
+  "Hast du das Update gesehen? Der Mehrspielermodus ist endlich da.": "Viste a atualização? O modo multijogador finalmente chegou.",
+  "Ja! Das Kampfsystem fühlt sich auf der Konsole viel besser an.": "Vi! O sistema de combate na consola sabe muito melhor.",
+  "Bei mir hakt noch das Startprogramm, jedes Mal eine Korrektur.": "A mim ainda me emperra o lançador, de cada vez uma correção.",
+  "Installier das Plug-in neu, danach lief es bei mir.": "Reinstala o plug-in, depois disso a mim funcionou.",
+  "Mach ich heute Abend. Der Aufschwung kam für das Spiel genau rechtzeitig.": "Faço isso logo à noite. A retoma chegou mesmo a tempo para o jogo.",
+  "Schau, was ich beim Aufräumen gefunden habe: eine alte Landkarte.": "Olha o que eu encontrei a arrumar: um mapa antigo.",
+  "Von deiner Großtante? Der Anblick ist wirklich etwas Besonderes.": "Da tua tia-avó? A vista é mesmo uma coisa especial.",
+  "Mein Kumpel meint, so etwas gehört mit Rahmen an die Wand.": "O meu compincha diz que uma coisa destas é para pôr na parede com moldura.",
+  "Recht hat er. Besser als jedes Diagramm im Arbeitszimmer.": "E tem razão. Melhor do que qualquer gráfico no escritório.",
+  "Dann hängt sie ab morgen über dem Tisch — beim Abendessen schauen alle drauf.": "Então a partir de amanhã fica pendurado por cima da mesa — ao jantar toda a gente olha para ele.",
+  "Eilmeldung auf dem Handy: eine Festnahme in der Innenstadt.": "Notícia de última hora no telemóvel: uma detenção no centro.",
+  "Schon wieder? Gestern war es noch der Börsengang, heute ein Verdächtiger.": "Outra vez? Ontem era a entrada em bolsa, hoje é um suspeito.",
+  "Die Empörung im Netz ist jedenfalls riesig.": "De qualquer maneira a indignação na internet é enorme.",
+  "Wie immer. Ich warte lieber auf die Ankündigung der Polizei.": "Como sempre. Eu prefiro esperar pelo anúncio da polícia.",
+  "Vernünftig. Erst die Fakten, dann die Meinung.": "Sensato. Primeiro os factos, depois a opinião.",
+  "Mein Nachbar glaubt an eine große Verschwörung. Wegen der Lampen an der Straße.": "O meu vizinho acredita numa grande conspiração. Por causa dos candeeiros da rua.",
+  "Was für ein Blödsinn. Und woher hat er das?": "Que disparate. E onde é que ele foi buscar isso?",
+  "Aus dem Internet. Er will jetzt sogar als Demonstrant auf die Straße.": "À internet. Agora até quer ir para a rua como manifestante.",
+  "Dann leih ihm lieber ein gutes Lehrbuch.": "Então é melhor emprestares-lhe um bom manual escolar.",
+  "Mache ich. Das kann er dann gern durchsuchen — Seite für Seite.": "Faço isso. Depois pode revistá-lo à vontade — página a página.",
+  "Tausend Dateien, alle heißen Dokument eins bis Dokument tausend.": "Mil ficheiros, todos chamados Documento um até Documento mil.",
+  "Dann bitte alle umbenennen. Und die Hälfte fliegt raus.": "Então muda o nome a todos, se faz favor. E metade vai fora.",
+  "Ich horte so etwas eben. Man weiß ja nie.": "É que eu acumulo estas coisas. Nunca se sabe.",
+  "Erwäge es wenigstens. Halbieren wäre schon fantastisch.": "Pondera lá isso pelo menos. Reduzir a metade já era fantástico.",
+  "Na gut. Aber die Fotos bleiben — unbedingt alle.": "Está bem. Mas as fotografias ficam — todas, sem exceção.",
+  "Das neue Sofa kommt Freitag. Nur: wie kommt es in die dritte Etage?": "O sofá novo chega na sexta. Só que: como é que sobe ao terceiro andar?",
+  "Der Aufzug ist zu klein. Bleibt die Treppe.": "O elevador é pequeno de mais. Restam as escadas.",
+  "Durch den Flur passt es, das habe ich gemessen.": "Pelo corredor passa, isso já medi.",
+  "Dann tragen wir es zu viert. Danach gibt es Kaffee aus der neuen Kaffeemaschine.": "Então levamo-lo os quatro. Depois há café da máquina nova.",
+  "Abgemacht. Und das alte Sofa stellen wir in die Garage.": "Fechado. E o sofá velho pomo-lo na garagem.",
+  "Mist, mein Ausweis liegt zu Hause. Nur der Führerschein ist dabei.": "Bolas, o meu cartão de cidadão ficou em casa. Só trago a carta de condução.",
 };
