@@ -40,32 +40,79 @@ const INSTITUTIONS = [
   "Schufa", "Elster", "BAföG", "Deutschlandticket", "BahnCard",
   "IGeL", "GmbH", "Azubi", "ZKB", "eVB", "Anlage N",
   "Schultüte", "Gelben Sack", "Gelbe Sack", "Flensburg",
+  // The inspection translates — техосмотр — but the organisation does not, and
+  // "Sie arbeitet beim TÜV" is about the organisation.
+  "TÜV", "Siemens", "Zur Linde", "mit Linde",
+  // German paediatric check-ups are numbered U1 to U9; nothing is called that
+  // in Russia. And VB in a small ad is Verhandlungsbasis, a German shorthand.
+  "der U7", "Euro VB",
 ];
 
-/** German transport that is a name rather than a kind of vehicle. */
-const TRANSPORT = ["ICE", "S-Bahn", "Hbf", "Deutsche Bahn"];
+/**
+ * German transport that is a name rather than a kind of vehicle. The Autobahn
+ * numbers are named individually rather than matched as A + digits, because
+ * A4 is also a sheet of paper and A2 is also a language level.
+ */
+const TRANSPORT = [
+  "ICE", "S-Bahn", "Hbf", "Deutsche Bahn",
+  "A7 Richtung", "auf der A3", "Auf der A3",
+];
 
 /** German holidays with no counterpart in the Russian calendar. */
 const HOLIDAYS = ["Fronleichnam", "Buß- und Bettag", "Christi Himmelfahrt"];
 
-/** The German language taught as its own subject. */
+/**
+ * The German language taught as its own subject.
+ *
+ * The plain word Deutsch has to be a PATTERN rather than a substring, because
+ * "Deutschland" contains it and a card about the country is not a card about
+ * the language. \b…\b keeps «Dein Deutsch ist echt gut» and lets
+ * «Ich bin zum ersten Mal in Deutschland» through.
+ */
 const LANGUAGE = [
+  /\bDeutsch\b/, /\bDeutschlernen\b/,
   "Hochdeutsch", "Bayrisch", "bayerisch", "Plattdeutsch", "Sächsisch",
   "Schweizerdeutsch", "Umlaut", "scharfem S", "scharfes S",
-  "Alt plus", "der, die oder das", "Der, nicht das",
+  // German has dialects that stop comprehension; Russian does not in the same
+  // way, and these cards mean the German ones.
+  "Dialekt", "Tastatur fehlt das ü",
+  "Alt plus", /der, die oder das/i, "Der, nicht das", "Der Kühlschrank.",
   "Zertifikat B1", "Kurs, B2", "bei A2",
-  "auf Deutsch", "Deutsch lernen", "Deutschlernen",
+  /\bArtikel\b.{0,30}(verwechsle|durcheinander)/, /(verwechsle|durcheinander).{0,30}\bArtikel\b/,
+  "mit e-y oder mit a-i", "mit ha oder ohne", "ae, oe, ue und ss",
+  "schreib ich einfach ue", "Punkt de", "gemütlich auf Englisch",
+  "heißt wörtlich", "heißt übersetzt", "unübersetzbares Wort",
+  "Handschuh ist einfach", "Fernweh ist Heimweh", "Gemütlich ist so ein",
+  "become werden heißt", "Bekommen heißt nicht become",
+  "Und Chef ist der Boss", "das Wort selbst?", "Wort für privacy",
+  "Durchwachsen heißt beim Fleisch", "Halb und halb heißt",
+  "Eventuell heißt vielleicht", "Stimmt so heißt",
+  "Im Süden sagt man Geldbeutel", "Ich hab ein Gift für dich",
+  "Ein Gift?!",
 ];
 
 /** German letter and reference conventions. */
 const FORMULAS = [
   "Mit freundlichen Grüßen", "Sehr geehrte Damen und Herren", "Viele Grüße reicht",
-  "Mit besten Grüßen", "z. Hd.", "Zu Händen", "stets bemüht",
-  "zu unserer Zufriedenheit", "Anbei sende ich Ihnen",
+  "Mit besten Grüßen", "z. Hd.", "Zu Händen", "stets bemüht", "Stets bemüht",
+  "zu unserer Zufriedenheit", "zu unserer vollsten Zufriedenheit",
+  "zu unserer vollen Zufriedenheit", "Anbei sende ich Ihnen",
+  "Schreiben Sie einfach: Alles Liebe",
+];
+
+/**
+ * "In Germany one does it this way." True, and no use to somebody learning to
+ * speak Russian in a place where it is done differently or not at all.
+ */
+const CUSTOMS = [
+  /In Deutschland (zahlt|isst|macht)/, "Mülltrennung ist in Deutschland",
+  "Halb Deutschland macht es", "Frag zehn Deutsche",
+  "ich mach was Deutsches", "Willkommen in Deutschland",
+  "Abendbrot",
 ];
 
 const GERMAN_ONLY = [
-  ...INSTITUTIONS, ...TRANSPORT, ...HOLIDAYS, ...LANGUAGE, ...FORMULAS,
+  ...INSTITUTIONS, ...TRANSPORT, ...HOLIDAYS, ...LANGUAGE, ...FORMULAS, ...CUSTOMS,
 ];
 
 /**
@@ -77,10 +124,22 @@ const INTERNATIONAL = [
   "eSIM", "DSL", "QR", "Mario Kart", "Wi-Fi", "WLAN",
 ];
 
-/** Which German-only name a card carries, or null when it carries none. */
+/**
+ * Which German-only name a card carries, or null when it carries none.
+ * Entries are substrings unless they are patterns — see LANGUAGE for why the
+ * bare word Deutsch cannot be a substring.
+ */
 function germanOnlyName(german) {
   const text = String(german ?? "");
-  return GERMAN_ONLY.find((name) => text.includes(name)) ?? null;
+  for (const entry of GERMAN_ONLY) {
+    if (entry instanceof RegExp) {
+      const hit = text.match(entry);
+      if (hit) return hit[0];
+    } else if (text.includes(entry)) {
+      return entry;
+    }
+  }
+  return null;
 }
 
 module.exports = { GERMAN_ONLY, INTERNATIONAL, germanOnlyName };
