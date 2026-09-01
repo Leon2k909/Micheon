@@ -433,7 +433,12 @@ part625: pack("Part 625", "B1", "Up the mountain", "Climbing words, from the rop
     { de: "die Felswand", lookup: "Felswand", fallbackEn: "rock face", tip: "noun", article: "die" },
     { de: "der Überhang", lookup: "Überhang", fallbackEn: "overhang", tip: "noun", article: "der" },
     { de: "der Grat", lookup: "Grat", fallbackEn: "ridge", tip: "noun", article: "der" },
-    { de: "der Pass", lookup: "Pass", fallbackEn: "mountain pass", tip: "noun", article: "der", use: "the road over a mountain; der Reisepass is the document" },
+    // Passport first. Every one of the course's own sentences with this word
+    // means the document — "Ohne Pass geht am Flughafen gar nichts" — and the
+    // frequency that ranks the card comes from those sentences, so a card
+    // glossed as the road over a mountain arrived early and taught the sense
+    // nobody was saying. The mountain stays as the second meaning.
+    { de: "der Pass", lookup: "Pass", fallbackEn: "passport, mountain pass", tip: "noun", article: "der", use: "the document at the border or airport (der Reisepass in full); also the road over a mountain" },
     { de: "die Hochebene", lookup: "Hochebene", fallbackEn: "plateau", tip: "noun", article: "die" },
     { de: "die Steigung", lookup: "Steigung", fallbackEn: "gradient, incline", tip: "noun", article: "die" },
     { de: "die Schlucht", lookup: "Schlucht", fallbackEn: "gorge, ravine", tip: "noun", article: "die" },

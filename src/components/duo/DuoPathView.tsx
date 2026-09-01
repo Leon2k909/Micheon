@@ -1,9 +1,9 @@
 import React from "react";
-import { ChevronRight, MessagesSquare, Play, Rocket } from "lucide-react";
+import { ChevronRight, Layers, MessagesSquare, Play, Rocket } from "lucide-react";
 import { ui, uiFmt } from "@/lib/i18n";
 
 /**
- * Three ways to start, side by side.
+ * Four ways to start, side by side.
  *
  * Continue learning hands you the next thing you should see. It is efficient
  * and it is opaque — you cannot tell where you are, what this unit is called,
@@ -24,6 +24,7 @@ export function DuoPathView({
   onGuidedSession,
   onFastTrack,
   onConversation,
+  onTopicRound,
   lessonsCompleted,
 }: {
   onGuidedSession: () => void;
@@ -37,6 +38,11 @@ export function DuoPathView({
    * than keeping a second copy of it inside Learn.
    */
   onConversation: () => void;
+  /**
+   * Opens the topic round, which stays inside Learn: it is one of the ways
+   * in rather than a destination, so it needs no row in the sidebar.
+   */
+  onTopicRound: () => void;
   lessonsCompleted: number;
 }) {
   return (
@@ -44,13 +50,15 @@ export function DuoPathView({
       {/*
         The ways in, side by side.
 
-        Three of them now: the quick path came out for being a second teacher
-        of one course, the fast track went in beside Continue learning, and the
+        Four of them now: the quick path came out for being a second teacher
+        of one course, the fast track went in beside Continue learning, the
         Matcher moved to Games — it grades nothing, so sitting among the ways
-        to LEARN overstated what it does. The widest row has to seat them all,
+        to LEARN overstated what it does — and the topic round came in, which
+        asks the one question none of the others do: not what a phrase means,
+        but what you have for a subject. The widest row has to seat them all,
         or whichever was added last sits alone underneath.
       */}
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <button
           type="button"
           onClick={onGuidedSession}
@@ -132,6 +140,38 @@ export function DuoPathView({
             </strong>
             <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">
               {ui("A shop, a station, a doctor — they speak, you choose your reply, one turn at a time.")}
+            </span>
+          </span>
+          <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-black text-[var(--accent)]">
+            {ui("Start")} <ChevronRight className="h-3.5 w-3.5" />
+          </span>
+        </button>
+
+        {/*
+          The fourth asks the question the other way round. Every other way in
+          hands you a phrase and asks about it; a conversation hands you a
+          SUBJECT and asks what you have for it. A board of the language goes
+          up under a subject like family or food, half of it belonging and
+          half from somewhere else, and you pick out what you would use.
+          Nothing typed, nothing graded — a board a minute.
+        */}
+        <button
+          type="button"
+          onClick={onTopicRound}
+          className="card card-hover flex flex-col items-start gap-3 p-5 text-left"
+        >
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--accent-dim)] text-[var(--accent)]">
+            <Layers className="h-5 w-5" />
+          </span>
+          <span>
+            <span className="block text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
+              {ui("Topic round")}
+            </span>
+            <strong className="mt-1 block text-lg font-black tracking-tight text-[var(--text-1)]">
+              {ui("Words for a subject")}
+            </strong>
+            <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--text-3)]">
+              {ui("A subject like family or food — pick every word and phrase you'd use for it, then see what you missed.")}
             </span>
           </span>
           <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-black text-[var(--accent)]">

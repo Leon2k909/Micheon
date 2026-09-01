@@ -4732,6 +4732,174 @@ html[data-theme="dark"][data-accent="custom"] .np-achievement.is-locked .np-achi
   margin-top: 19px;
 }
 
+/* Topic round: a subject, a board of the language under it, pick what fits.
+   Inside .np-feature-host so the palette tokens follow the theme, and the
+   states read off the same tokens the Matcher's tiles use. */
+.np-topic {
+  display: grid;
+  gap: 18px;
+}
+
+.np-topic-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.np-topic-kicker {
+  display: block;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.np-topic-head h2 {
+  margin: 4px 0 0;
+  font-size: clamp(24px, 2.6vw, 34px);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--text-1);
+}
+
+.np-topic-ask {
+  margin: 8px 0 0;
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--text-2);
+}
+
+.np-topic-hint {
+  margin: 2px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-3);
+}
+
+.np-topic-where {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-3);
+}
+
+.np-topic-board {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px;
+}
+
+.np-topic-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-height: 76px;
+  padding: 14px 40px 14px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface-2);
+  color: var(--text-1);
+  text-align: left;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.3;
+  transition: background 140ms, border-color 140ms, color 140ms, transform 100ms;
+}
+
+.np-topic-card:hover { background: var(--surface-3); }
+.np-topic-card:active { transform: scale(0.985); }
+
+.np-topic-card.is-picked {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.np-topic-card.is-found {
+  border-color: transparent;
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+/* Belonged and was not picked: the one state that teaches something, so it
+   is the one that is not green and not red. */
+.np-topic-card.is-missed {
+  border-color: var(--yellow);
+  background: var(--yellow-dim);
+  color: var(--yellow-ink);
+}
+
+.np-topic-card.is-wrong {
+  border-color: var(--danger-border, var(--danger-text));
+  background: var(--danger-bg);
+  color: var(--danger-text);
+}
+
+.np-topic-card.is-quiet { opacity: 0.55; }
+
+.np-topic-card-en {
+  font-size: 12px;
+  font-weight: 650;
+  opacity: 0.85;
+}
+
+.np-topic-card-tag {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.np-topic-card-speaker {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: 16px;
+  height: 16px;
+  opacity: 0.7;
+}
+
+.np-topic-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.np-topic-count {
+  font-size: 13px;
+  font-weight: 750;
+  color: var(--text-2);
+}
+
+.np-topic-result {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-1);
+}
+
+.np-topic-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.np-topic-loading {
+  padding: 40px 0;
+  text-align: center;
+  font-weight: 700;
+  color: var(--text-3);
+}
+
 .np-feature-host .card {
   border-color: var(--border);
   border-radius: 25px;

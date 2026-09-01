@@ -138,7 +138,7 @@ check("the fast track card is on the home row", /onClick=\{onFastTrack\}/.test(v
  * is asserted is the part that was asked for and cannot be inferred: Continue
  * learning first, the fast track immediately after it.
  */
-const CANDIDATES = ["Guided session", "Fast track", "Quick path", "Matcher", "Conversation"];
+const CANDIDATES = ["Guided session", "Fast track", "Quick path", "Matcher", "Conversation", "Topic round"];
 const labels = CANDIDATES
   .map((label) => ({ label, at: view.indexOf(`ui("${label}")`) }))
   .filter((entry) => entry.at >= 0)

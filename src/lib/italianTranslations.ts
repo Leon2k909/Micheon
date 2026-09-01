@@ -868,7 +868,7 @@ export const ITALIAN_BY_GERMAN: Record<string, string> = {
   "Formular": "il modulo",
   "Antrag": "la domanda scritta",
   "Ausweis": "la carta d'identità",
-  "Pass": "il passo di montagna",
+  "Pass": "il passaporto / il passo di montagna",
   "Amt": "l'ente pubblico",
   "Anmeldung": "l'iscrizione",
   "Unterschrift": "la firma",
