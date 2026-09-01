@@ -1409,6 +1409,7 @@ export const ES: Record<string, string> = {
   "Building your path": "Construyendo tu ruta",
   "The course catalogue is still loading.": "El catálogo del curso todavía se está cargando.",
   "Your path": "Tu ruta",
+  "{count} finished put away — show them": "{count} terminadas guardadas — mostrarlas",
   "{done} of {total} units complete": "{done} de {total} unidades terminadas",
   "Flashcards": "Tarjetas",
   "How today's phrases are shown before sentence practice.": "Cómo se muestran las frases de hoy antes de practicar frases.",

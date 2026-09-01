@@ -104,9 +104,27 @@ export function shelfCounts(all: LessonProgress[]): { finished: number; returned
   return { finished, returned };
 }
 
+/**
+ * On by default.
+ *
+ * The shelf used to be off until asked for, which meant the first thing a
+ * learner met was every lesson they had already finished, in front of the
+ * ones they had not. The list is 500-odd packs and grows every week; the part
+ * of it worth looking at is the part still to do.
+ *
+ * Turning it on by default is only safe because of the second rule above: a
+ * finished lesson whose words have started to fade comes back on its own. So
+ * the default hides work that is genuinely done and nothing that is quietly
+ * slipping — and the control that hides them carries its count, so the shelf
+ * always says how much it is holding.
+ *
+ * "0" is stored rather than the key being removed, because absence now means
+ * the default rather than off. A preference someone has turned off has to
+ * survive being read back.
+ */
 export function getHideFinishedLessons(): boolean {
   try {
-    return window.localStorage.getItem(KEY) === "1";
+    return window.localStorage.getItem(KEY) !== "0";
   } catch {
     // Storage blocked: show everything rather than hide work behind a
     // preference that cannot be read back or turned off.
@@ -116,8 +134,7 @@ export function getHideFinishedLessons(): boolean {
 
 export function setHideFinishedLessons(hide: boolean): boolean {
   try {
-    if (hide) window.localStorage.setItem(KEY, "1");
-    else window.localStorage.removeItem(KEY);
+    window.localStorage.setItem(KEY, hide ? "1" : "0");
   } catch {
     // Keep the library usable; the choice just does not outlive the session.
   }

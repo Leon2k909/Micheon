@@ -227,6 +227,16 @@ export function LearnView({
   const terms = useMemo(() => normalizeCatalogSearchText(query).split(" ").filter(Boolean), [query]);
 
   const visible = useMemo(() => parts.filter(([key, part]) => {
+    /**
+     * A pack with nothing in it is not a lesson.
+     *
+     * The catalogue carries 129 reserved keys with no phrases and no words —
+     * "Part 401", and so on up. The path has always dropped them, because it
+     * builds from catalogue items and they produce none; the list showed them
+     * all, so the two views of one course disagreed by 129 rows and clicking
+     * one opened a lesson with nothing to teach.
+     */
+    if (partItemCount(part) === 0) return false;
     if (kindFilter === "core" && isBulkPartKey(key)) return false;
     if (kindFilter === "wordbank" && !isBulkPartKey(key)) return false;
     if (levelFilter !== "all" && cefrTier(part.level) !== levelFilter) return false;
@@ -308,7 +318,12 @@ export function LearnView({
     return (
       <div className="space-y-4">
         <LessonsViewChoice value={view} onChange={setView} />
-        <DuoPath apiParts={apiParts} onOpenLesson={onOpenLesson} />
+        <DuoPath
+          apiParts={apiParts}
+          hideFinished={hideFinished}
+          onOpenLesson={onOpenLesson}
+          onShowFinished={() => setHideFinished(setHideFinishedLessons(false))}
+        />
       </div>
     );
   }

@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Check, Star } from "lucide-react";
+import { Check, Eye, Star } from "lucide-react";
 import { ui, uiFmt } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { buildDuoPath } from "@/lib/duoPath";
@@ -22,11 +22,23 @@ import { duoUnitAnchorId } from "@/lib/scrollToAnchor";
 export function DuoPath({
   apiParts,
   onOpenLesson,
+  hideFinished,
+  onShowFinished,
 }: {
   apiParts: Record<string, unknown>;
   onOpenLesson: (packKey: string) => void;
+  /** The lesson list's shelf, applied here so one course has one answer. */
+  hideFinished: boolean;
+  /** Takes the shelf off, for the row that says how much it is holding. */
+  onShowFinished: () => void;
 }) {
-  const path = useMemo(() => buildDuoPath(apiParts), [apiParts]);
+  const path = useMemo(
+    () => buildDuoPath(apiParts, undefined, { hideFinished }),
+    [apiParts, hideFinished]
+  );
+  // Counted by the build itself, so the number and the path it describes come
+  // from one pass over the catalogue and cannot disagree.
+  const shelved = path.shelvedNodes;
 
   return (
     <div className="space-y-4">
@@ -50,6 +62,25 @@ export function DuoPath({
             {path.totalNodes === 0 ? 0 : Math.round((path.doneNodes / path.totalNodes) * 100)}%
           </span>
         </section>
+
+        {/*
+          What the shelf is holding, and the way back out of it.
+
+          The same promise the lesson list makes: nothing is deleted, the
+          control that put them away carries the count, and it is a visible
+          button rather than a setting somewhere else — a path that quietly
+          drops four hundred units is a path that gets blamed for losing them.
+        */}
+        {shelved > 0 && (
+          <button
+            className="inline-flex items-center gap-2 self-start rounded-xl bg-[var(--surface-2)] px-3.5 py-2 text-xs font-black text-[var(--text-2)] transition-colors hover:bg-[var(--surface-3)] hover:text-[var(--text-1)]"
+            onClick={onShowFinished}
+            type="button"
+          >
+            <Eye className="h-3.5 w-3.5" />
+            {uiFmt("{count} finished put away — show them", { count: shelved })}
+          </button>
+        )}
 
         {path.units.map((unit) => (
           // The id is what search scrolls to. scroll-margin keeps the unit's

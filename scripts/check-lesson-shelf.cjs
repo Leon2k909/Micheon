@@ -143,7 +143,29 @@ global.window = {
     removeItem: (key) => store.delete(key),
   },
 };
-assert.strictEqual(M.getHideFinishedLessons(), false, "the shelf starts switched on, hiding work nobody asked to hide");
+/**
+ * On until it is turned off.
+ *
+ * This asserted the opposite, and the reasoning was sound while the list was
+ * the only view: a preference that hides things should not be switched on for
+ * somebody who never asked for it. What changed is the size of the library —
+ * five hundred packs and growing weekly — so the default put every lesson a
+ * learner had already finished in front of the ones they had not.
+ *
+ * It is safe to default on only because of the rule above: a finished lesson
+ * whose words have started to fade comes back on its own. The shelf hides work
+ * that is genuinely done and nothing that is quietly slipping, and the control
+ * carries its count, so it always says how much it is holding.
+ *
+ * Absence of the key now means the default, so OFF has to be stored rather
+ * than the key removed — the two assertions after this one are what stops that
+ * being forgotten.
+ */
+assert.strictEqual(M.getHideFinishedLessons(), true,
+  "the shelf starts switched off, so a learner meets every lesson they have already finished before the ones they have not");
+M.setHideFinishedLessons(false);
+assert.strictEqual(M.getHideFinishedLessons(), false,
+  "turning the shelf off does not survive a reload — off is being stored as an absent key, which now reads back as the default");
 M.setHideFinishedLessons(true);
 assert.strictEqual(M.getHideFinishedLessons(), true, "the choice does not survive a reload");
 M.setHideFinishedLessons(false);

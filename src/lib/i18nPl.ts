@@ -2822,6 +2822,7 @@ export const PL: Record<string, string> = {
   "Building your path": "Budujemy twoją ścieżkę",
   "The course catalogue is still loading.": "Katalog kursu jeszcze się wczytuje.",
   "Your path": "Twoja ścieżka",
+  "{count} finished put away — show them": "{count} ukończonych schowanych — pokaż je",
   "{done} of {total} units complete": "Ukończonych jednostek: {done} z {total}",
   "Unit {n}": "Jednostka {n}",
   "Save": "Zapisz",

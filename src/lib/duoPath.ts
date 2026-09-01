@@ -1,5 +1,7 @@
 import { buildCatalog, type CatalogItem } from "@/session";
 import { loadGradeStore, statusForId, type GradeStore } from "@/lib/activity";
+import { recallDetail } from "@/lib/memoryStrength";
+import { getHideFinishedLessons, passesFinishedShelf } from "@/lib/lessonShelf";
 import { orderParts } from "@/lib/curriculum";
 import { getAuthUser, type UserProfile } from "@/lib/profileStorage";
 
@@ -65,6 +67,15 @@ export type DuoPath = {
   current: DuoNode | null;
   totalNodes: number;
   doneNodes: number;
+  /**
+   * Packs the shelf is holding — finished, not fading, and off the path.
+   *
+   * Returned from the build rather than worked out by the caller, because the
+   * only other way to know it is to build the whole path a second time with
+   * the shelf off, and that is a catalogue pass over six hundred packs to
+   * produce one integer.
+   */
+  shelvedNodes: number;
 };
 
 /** Nodes per unit. Duolingo's own units run to roughly this. */
@@ -103,14 +114,27 @@ function packLevel(part: unknown): string | null {
  */
 export function duoPackCounts(
   catalog: CatalogItem[],
-  grades: GradeStore
-): Map<string, { done: number; total: number }> {
-  const counts = new Map<string, { done: number; total: number }>();
+  grades: GradeStore,
+  now = Date.now()
+): Map<string, { done: number; total: number; fading: number }> {
+  const counts = new Map<string, { done: number; total: number; fading: number }>();
   for (const item of catalog) {
     if (!item.partKey) continue;
-    const row = counts.get(item.partKey) ?? { done: 0, total: 0 };
+    const row = counts.get(item.partKey) ?? { done: 0, total: 0, fading: 0 };
     row.total += 1;
-    if (statusForId(grades, item.id, item.aliases) === "known") row.done += 1;
+    if (statusForId(grades, item.id, item.aliases) === "known") {
+      row.done += 1;
+      /**
+       * Counted here so the path can put finished packs away on the same rule
+       * the lesson list uses — and bring back the ones that have started to
+       * go. Read off the record the status came from, aliases included: look
+       * the two up differently and a pack can be "done" against one id and
+       * "fading" against another, which is how a shelf ends up hiding exactly
+       * the lesson that needed reviewing.
+       */
+      const key = [item.id, ...(item.aliases ?? [])].find((alias) => grades?.[alias]);
+      if (key && recallDetail(grades[key], now).fading) row.fading += 1;
+    }
     counts.set(item.partKey, row);
   }
   return counts;
@@ -119,22 +143,59 @@ export function duoPackCounts(
 export function buildDuoPath(
   apiParts: Record<string, unknown>,
   user: UserProfile | null = getAuthUser(),
-  options: { maxUnits?: number } = {}
+  options: {
+    maxUnits?: number;
+    hideFinished?: boolean;
+    /**
+     * The grades to build against, instead of the signed-in learner's.
+     *
+     * Only the gate passes this. Without it the shelf cannot be tested end to
+     * end: loadGradeStore has no storage to read outside a browser, so a check
+     * builds a path where nothing is finished, nothing is ever hidden, and
+     * every assertion about hiding passes whatever the code does. Two
+     * injections that broke the shelf outright went unnoticed that way.
+     */
+    grades?: GradeStore;
+  } = {}
 ): DuoPath {
-  const empty: DuoPath = { units: [], current: null, totalNodes: 0, doneNodes: 0 };
+  const empty: DuoPath = { units: [], current: null, totalNodes: 0, doneNodes: 0, shelvedNodes: 0 };
   try {
     if (!apiParts || Object.keys(apiParts).length === 0) return empty;
     const catalog = buildCatalog(apiParts as Record<string, any>);
     if (catalog.length === 0) return empty;
 
-    const grades = loadGradeStore(user);
+    const grades = options.grades ?? loadGradeStore(user);
     const counts = duoPackCounts(catalog, grades);
 
     // Curriculum order, so "next" on the path is the same pack the guided
     // session would have served. Two modes disagreeing about what comes next
     // would be worse than having only one.
-    const ordered = Object.keys(orderParts(apiParts as Record<string, any>))
+    /**
+     * The shelf, applied to the path.
+     *
+     * The same rule the lesson list runs, from the same module: a pack whose
+     * every item is known goes away, and comes back the moment any of it
+     * starts to fade. Without this the two views of one course disagreed about
+     * what was worth showing — the list put four hundred finished packs away
+     * and the path walked you through every one of them.
+     *
+     * Applied BEFORE the nodes are numbered, so "Unit 3" means the third unit
+     * you can see rather than the third that exists. The percentages below are
+     * counted from the same visible set for the same reason: a path that says
+     * 12% while showing you only what is left has answered a question nobody
+     * asked.
+     */
+    const hideFinished = options.hideFinished ?? getHideFinishedLessons();
+    const taught = Object.keys(orderParts(apiParts as Record<string, any>))
       .filter((key) => (counts.get(key)?.total ?? 0) > 0);
+    const ordered = taught.filter((key) => {
+      const row = counts.get(key)!;
+      return passesFinishedShelf(
+        { done: row.done, total: row.total, fading: row.fading },
+        { hideFinished, askedForFinished: false }
+      );
+    });
+    const shelvedNodes = taught.length - ordered.length;
 
     const nodes: DuoNode[] = ordered.map((key, index) => {
       const row = counts.get(key)!;
@@ -183,6 +244,7 @@ export function buildDuoPath(
       current: currentIndex >= 0 ? nodes[currentIndex] : null,
       totalNodes: nodes.length,
       doneNodes: nodes.filter((node) => node.state === "done").length,
+      shelvedNodes,
     };
   } catch {
     return empty;

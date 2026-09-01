@@ -50,8 +50,12 @@ const lessons = read("src/components/lab/LearnView.tsx");
 check("Lessons imports the one path component rather than drawing its own",
   lessons.includes('import { DuoPath } from "@/components/duo/DuoPath"'),
   "Lessons builds a second picture of the course");
+// Matched across the whole element rather than as one line: this was written
+// when DuoPath took two props and pinned their exact spelling on a single
+// line, so giving the path the shelf — which is a prop — broke a check about
+// who opens lessons. What matters is that both views open them the same way.
 check("the path view hands it the same opener the lesson list uses",
-  /<DuoPath apiParts=\{apiParts\} onOpenLesson=\{onOpenLesson\} \/>/.test(lessons),
+  /<DuoPath[\s\S]{0,320}?apiParts=\{apiParts\}[\s\S]{0,320}?onOpenLesson=\{onOpenLesson\}/u.test(lessons),
   "the two views of one screen open lessons differently, which is two teachers again");
 
 check("the choice is a labelled control, not a hidden mode",

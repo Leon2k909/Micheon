@@ -495,8 +495,19 @@ export function isBulkPartKey(key: string) {
 }
 
 /** Items a part contributes to study (words + sentences), for honest UI counts. */
+/**
+ * How much a pack actually teaches.
+ *
+ * Dialogue lines count. Sixty-nine packs hold their whole content as
+ * dialogues and carry no phrases or vocab at all, and this said they had none
+ * — so the lesson list printed "0 items" on packs that teach five lines each,
+ * and anything filtering on this dropped them as empty. The catalogue has
+ * always built cards from those lines; this is the count catching up with it.
+ */
 export function partItemCount(part: Part) {
-  return (part.vocab?.length ?? 0) + (part.phrases?.length ?? 0);
+  const dialogueLines = (part.dialogues ?? [])
+    .reduce((sum, dialogue) => sum + ((dialogue as { lines?: unknown[] })?.lines?.length ?? 0), 0);
+  return (part.vocab?.length ?? 0) + (part.phrases?.length ?? 0) + dialogueLines;
 }
 
 interface PartMeta {

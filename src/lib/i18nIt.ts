@@ -548,6 +548,7 @@ export const IT: Record<string, string> = {
   "Building your path": "Costruisco il tuo percorso",
   "The course catalogue is still loading.": "Il catalogo del corso si sta ancora caricando.",
   "Your path": "Il tuo percorso",
+  "{count} finished put away — show them": "{count} completate messe da parte — mostrale",
   "{done} of {total} units complete": "{done} unità completate su {total}",
   "Unit {n}": "Unità {n}",
   "Flashcards": "Schede",
