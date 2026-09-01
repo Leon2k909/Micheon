@@ -28297,4 +28297,87 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Alle. Auch der Cousin aus Hamburg, den du noch nie getroffen hast.": "Todos. Também o primo de Faro, que ainda nunca conheceste.",
   "Der, der dir so ähnlich sieht?": "Aquele que é tão parecido contigo?",
   "Genau der. Mama sagt, wir sind wie aus dem Gesicht geschnitten.": "Esse mesmo. A mãe diz que somos a cara chapada um do outro.",
+
+  // ── The capstone conversations, the last thirteen ──────────────────────
+  //
+  // With these the course is finished: every card the German curriculum
+  // teaches has a Portuguese answer, except the three packs and the handful of
+  // single cards the build refuses by name.
+  //
+  // Die Leine is a trela here, on a dog, and o fio de estender on its own card,
+  // where the washing hangs on it.
+  //
+  // Jemanden zusammenfalten is dar uma descompostura, which is what a
+  // Portuguese boss does to somebody in front of everybody. Dampf ablassen
+  // stays descarregar and der Kragen platzt stays estar quase a rebentar, as
+  // their cards have them.
+  //
+  // Der Bäcker am Markt is a padaria do mercado and die Tankstelle an der Ecke
+  // is a bomba de gasolina da esquina: on a Sunday afternoon in Portugal that
+  // really is where the bread comes from.
+  "Sag ehrlich: Wie viel Grad hat deine Bude gerade?": "Diz lá a verdade: quantos graus é que a tua casa tem neste momento?",
+  "Dreißig, mindestens. Ich habe die Rollläden den ganzen Tag unten gelassen.": "Trinta, no mínimo. Deixei os estores em baixo o dia todo.",
+  "Hilft das denn wirklich?": "E isso ajuda mesmo?",
+  "Ein bisschen. Abends mache ich dann alle Fenster auf.": "Um bocado. À noite abro depois todas as janelas.",
+  "Morgen soll ein Gewitter kommen, dann kühlt es endlich ab.": "Amanhã é suposto vir uma trovoada, aí arrefece finalmente.",
+  "Ich habe noch Schulden bei dir von gestern Abend.": "Ainda te devo dinheiro de ontem à noite.",
+  "Ach ja, stimmt. Zwölf Euro, glaube ich.": "Ah pois é, é verdade. Doze euros, acho eu.",
+  "Geht das per Überweisung? Dann brauche ich deine IBAN.": "Pode ser por transferência? Então preciso do teu IBAN.",
+  "Mach dir keinen Stress, das hat Zeit bis zum Wochenende.": "Não te stresses, isso tem tempo até ao fim de semana.",
+  "Nein, nein, sonst vergesse ich es wieder. Halbe-halbe beim nächsten Mal?": "Não, não, senão volto a esquecer-me. Para a próxima vamos a meias?",
+  "Guten Tag. Mein Hund frisst seit zwei Tagen kaum etwas.": "Boa tarde. Há dois dias que o meu cão quase não come.",
+  "Dann schauen wir mal. Zieht er an der Leine noch wie immer?": "Então vamos lá ver. Ainda puxa a trela como de costume?",
+  "Nein, er ist viel ruhiger als sonst.": "Não, está muito mais calmo do que o habitual.",
+  "Ich untersuche ihn kurz. Halten Sie ihn bitte gut fest.": "Vou observá-lo um momento. Segure-o bem, se faz favor.",
+  "Kein Problem, er tut nichts. Er ist nur ein bisschen ängstlich.": "Não há problema, ele não faz mal. É só um bocado medroso.",
+  "Mist, ich habe einen Fleck auf dem Hemd. Kriegt man den noch raus?": "Bolas, tenho uma nódoa na camisa. Ainda sai?",
+  "Zeig mal. Oh je, das ist Fett — das geht so schnell nicht raus.": "Mostra lá. Ai ai, isso é gordura — não sai assim tão depressa.",
+  "Das war mein letztes sauberes Hemd.": "Era a minha última camisa lavada.",
+  "Dann nimm den Pulli, der ist frisch gewaschen.": "Então leva a camisola, essa está acabada de lavar.",
+  "Der ist beim Waschen eingelaufen, der passt mir nicht mehr.": "Essa encolheu na lavagem, já não me serve.",
+  "Schuhe an, wir sind spät dran!": "Calça os sapatos, estamos atrasados!",
+  "Ich finde meine Brotdose nicht.": "Não encontro a minha lancheira.",
+  "Die steht schon in deinem Rucksack. Und bitte nicht trödeln.": "Já está dentro da tua mochila. E não remanches, se faz favor.",
+  "Krieg ich heute Nachmittag Zeit am Tablet?": "Hoje à tarde dás-me tempo no tablet?",
+  "Zehn Minuten nach den Hausaufgaben. Und jetzt los, ich zähle bis drei.": "Dez minutos depois dos trabalhos de casa. E agora vamos, conto até três.",
+  "Kannst du mich heute Abend abfragen? Morgen ist die Klausur.": "Logo à noite podes tomar-me a lição? Amanhã é o teste escrito.",
+  "Klar. Wie läuft es mit dem Lernen?": "Claro. Como é que vai o estudo?",
+  "Ich bin seit Tagen dran, aber ich trete auf der Stelle.": "Há dias que ando nisto, mas não saio do sítio.",
+  "Du schaffst das. Letztes Mal hast du auch bestanden.": "Tu és capaz. Da última vez também passaste.",
+  "Stimmt. Und diesmal lerne ich nicht erst auf den letzten Drücker.": "É verdade. E desta vez não estudo só em cima da hora.",
+  "Guten Tag, beim Fahren klappert hinten irgendwas.": "Boa tarde, quando ando alguma coisa chocalha atrás.",
+  "Wann können Sie das Auto vorbeibringen?": "Quando é que pode trazer o carro?",
+  "Geht Donnerstag? Der TÜV ist auch bald fällig.": "Pode ser na quinta? O TÜV também está a chegar.",
+  "Donnerstag passt. Die Werkstatt ist ab sieben besetzt, kommen Sie einfach vorbei.": "Quinta serve. A oficina tem gente a partir das sete, apareça sem mais.",
+  "Und die Winterreifen? Können Sie die gleich mit draufmachen?": "E os pneus de inverno? Consegue pô-los logo também?",
+  "Schlechte Nachricht: Das Brot ist alle, und alles hat zu.": "Má notícia: acabou-se o pão e está tudo fechado.",
+  "Der Bäcker am Markt hat sonntags vormittags auf.": "A padaria do mercado abre ao domingo de manhã.",
+  "Es ist schon halb eins.": "Já é meio-dia e meia.",
+  "Dann bleibt wohl wieder nur die Tankstelle an der Ecke.": "Então parece que outra vez só resta a bomba de gasolina da esquina.",
+  "Na gut. Aber danach geht es zurück auf die Couch.": "Pronto. Mas depois disso é voltar para o sofá.",
+  "Und? Wie fandest du den Film?": "Então? Que achaste do filme?",
+  "Ehrlich? Den Hype verstehe ich nicht.": "Sinceramente? Não percebo o alarido.",
+  "Was? Am Ende habe ich fast geheult.": "O quê? No fim quase chorei.",
+  "Na ja. Allein der Soundtrack war ganz gut.": "Pois. Só a banda sonora é que era bastante boa.",
+  "Siehst du! Lies danach das Buch, das ist noch besser.": "Estás a ver! Lê depois o livro, esse é ainda melhor.",
+  "Hast du kurz Zeit? Ich muss mal Dampf ablassen.": "Tens um bocadinho? Preciso de descarregar.",
+  "Klar, immer. Wer hat dir denn den Tag versaut?": "Claro, sempre. Quem é que te estragou o dia?",
+  "Der Chef hat mich heute vor allen zusammengefaltet.": "Hoje o chefe deu-me uma descompostura à frente de toda a gente.",
+  "Wie bitte? Das hast du nicht verdient.": "Como? Isso tu não merecias.",
+  "Danke. Jetzt platzt mir wenigstens nicht mehr gleich der Kragen.": "Obrigada. Pelo menos agora já não estou quase a rebentar.",
+  "Die neue App lädt bei mir ewig und geht dann einfach nicht auf.": "A aplicação nova demora uma eternidade a carregar e depois simplesmente não abre.",
+  "Hast du das Update schon installiert?": "Já instalaste a atualização?",
+  "Nein, mein Speicher ist voll. Ich muss erst Dateien löschen.": "Não, tenho a memória cheia. Primeiro tenho de apagar ficheiros.",
+  "Sichere sie vorher irgendwo, sonst sind sie weg.": "Guarda-os antes nalgum sítio, senão perdem-se.",
+  "Gute Idee. Danach erstelle ich das Konto neu und sichere alles doppelt.": "Boa ideia. Depois disso crio a conta de novo e guardo tudo em duplicado.",
+  "Was machen wir am Samstag, bevor die Gäste kommen?": "O que é que fazemos no sábado, antes de os convidados chegarem?",
+  "Im Museum läuft noch die Ausstellung, die du sehen wolltest.": "No museu ainda está a exposição que querias ver.",
+  "Gute Idee. Ist der Eintritt für Schüler ermäßigt? Dann kommt dein Bruder mit.": "Boa ideia. A entrada para alunos é reduzida? Então o teu irmão vem connosco.",
+  "Ja, aber für die Führung muss man sich vorher anmelden.": "É, mas para a visita guiada é preciso inscrever-se antes.",
+  "Das mache ich gleich online. Sonst ist am Ende alles voll.": "Faço isso já pela internet. Senão no fim está tudo cheio.",
+  "Entschuldigung, ist in der Vorspeise Sahne drin? Ich bin allergisch.": "Desculpe, a entrada leva natas? Sou alérgica.",
+  "In der Suppe ja, aber die Küche macht sie gern ohne Sahne.": "Na sopa leva, mas a cozinha faz de bom grado sem natas.",
+  "Sehr gut. Gibt es das Tagesgericht auch vegetarisch?": "Muito bem. O prato do dia também há vegetariano?",
+  "Ja, mit extra Beilagen statt Fleisch. Soll ich das so bestellen?": "Há, com acompanhamentos a mais em vez da carne. Quer que peça assim?",
+  "Gern. Den Nachtisch suchen wir später von der Speisekarte aus.": "Por favor. A sobremesa escolhemos depois da ementa.",
 };
