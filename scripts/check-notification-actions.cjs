@@ -127,11 +127,18 @@ if (!/\.settings-row \{[^}]*border:[^;]*--card-edge/.test(settingsCss)) {
     failures.push("the dark theme no longer names a card edge");
   } else {
     // The darkest and lightest surfaces a card sits on in the dark theme.
+    // The range moved down. 3:1 was the WCAG figure for a boundary you must
+    // be able to find, and it is right for a control; a card on a dark page
+    // is found by its surface, and at 3:1 every card in Settings read as
+    // outlined in white — which is what was asked to go, everywhere. So the
+    // edge is a whisper now: present, so the card does not dissolve into the
+    // page on the one surface that matches it, and never loud enough to be
+    // the first thing seen.
     const ratios = ["#0c1017", "#1b1f2a"].map((bg) => contrast(dark[1], bg));
-    if (Math.min(...ratios) < 3) {
-      failures.push(`the dark card edge is ${Math.min(...ratios).toFixed(2)}:1, under the 3:1 a boundary needs`);
+    if (Math.min(...ratios) < 1.15) {
+      failures.push(`the dark card edge is ${Math.min(...ratios).toFixed(2)}:1, gone entirely rather than quiet`);
     }
-    if (Math.max(...ratios) > 4.2) {
+    if (Math.max(...ratios) > 2) {
       failures.push(`the dark card edge is ${Math.max(...ratios).toFixed(2)}:1, loud enough to read as a white outline`);
     }
   }
