@@ -531,14 +531,30 @@ const ONE_ANSWER = [
    * other one is called Raio de Sol.
    */
   { german: "Kita", answer: /creche/, unless: {} },
+  /**
+   * Glückwunsch was a felicitação on its own card and os parabéns in all
+   * fourteen sentences that use it, which is the right way round: nobody says
+   * felicitação out loud. It could not simply take os parabéns, because das
+   * Ständchen had it — in Portugal the birthday song IS os parabéns — so
+   * Ständchen moved to a serenata and the everyday word went to the everyday
+   * German word.
+   */
+  { german: "Glückwunsch", answer: /parabéns/, unless: {} },
+  // And the spelling of the thing itself: piza on the card, pizza in all eight
+  // sentences, and pizza on every box in Portugal.
+  { german: "Pizza", answer: /pizza/, unless: {} },
   { german: "Radler", answer: /panaché/, unless: {} },
   { german: "Apfelschorle", answer: /sumo de maçã com água com gás/, unless: {} },
 ];
 const twoAnswers = [];
 for (const { german, answer, unless } of ONE_ANSWER) {
+  // Case-insensitively: the answer is a word, and a word at the start of a
+  // sentence is capitalised. Parabéns! opens fourteen of its own cards, and a
+  // case-sensitive test called every one of them a second answer.
+  const answers = new RegExp(answer.source, answer.flags.includes("i") ? answer.flags : answer.flags + "i");
   for (const row of pairs) {
     if (!edge(german).test(row.german)) continue;
-    if (unless[row.german] || answer.test(row.portuguese)) continue;
+    if (unless[row.german] || answers.test(row.portuguese)) continue;
     twoAnswers.push(`${german} is not ${answer.source} here — ${row.german}`);
   }
 }
