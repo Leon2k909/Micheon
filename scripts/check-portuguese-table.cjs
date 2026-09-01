@@ -77,9 +77,11 @@ check(`no card has an empty Portuguese side${blank.length ? ` — ${blank[0].ger
  * An umlaut or an ß on the Portuguese side almost always means a line was
  * never translated. Two things are allowed to carry one.
  *
- * Names, because Portuguese does not respell them — Herr Müller stays Herr
- * Müller — and the offices keep the name written on the door, since that is
- * the word somebody has to say at the counter.
+ * Names, where one survives — see the retired names further down, which is
+ * where the question of WHICH name a card should use is settled. This list
+ * only says that a name is allowed to carry an umlaut; it does not say the
+ * name belongs there. And the offices keep the name written on the door, since
+ * that is the word somebody has to say at the counter.
  *
  * And the regional greetings, which the card is ABOUT: the pack teaches that
  * the north says Moin and Bavaria says Servus, so a line that translated them
@@ -453,6 +455,16 @@ const RETIRED_NAMES = {
   Julia: "Joana",
   Berger: "Bernardes",
   Weber: "Ferreira",
+  Müller: "Silva",
+  Wagner: "Almeida",
+  Klein: "Costa",
+  Krause: "Rocha",
+  Meyer: "Baptista",
+  // The colleague who offers his condolences has a Turkish surname in the
+  // German, because that is who a German office holds. The Portuguese course
+  // keeps the point and moves it: Semedo is as ordinary in Lisbon as Yilmaz is
+  // in Cologne.
+  Yilmaz: "Semedo",
 };
 /**
  * Except in the cards that teach how a German letter is addressed. There the
