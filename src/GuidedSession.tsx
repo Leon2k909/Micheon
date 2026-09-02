@@ -6494,10 +6494,10 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
         >
           <div
             aria-label={ui("How Continue learning is put together")}
-            className="max-h-[calc(100vh-6rem)] w-full max-w-md overflow-y-auto rounded-3xl border border-[var(--border)] bg-[var(--surface-1)] p-2 shadow-2xl"
+            className="max-h-[calc(100vh-6rem)] w-full max-w-lg overflow-y-auto rounded-3xl border border-[var(--border)] bg-[var(--surface-1)] p-1.5 shadow-2xl"
             role="dialog"
           >
-            <div className="flex items-center justify-between px-3 pt-2">
+            <div className="flex items-center justify-between px-3 pt-1.5">
               <p className="text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
                 {ui("Changes apply from your next sitting.")}
               </p>
