@@ -3168,4 +3168,7 @@ export const PT: Record<string, string> = {
   "Toasts": "Os brindes",
   "The suburban train": "O comboio suburbano",
   "Supporting a team": "Torcer por uma equipa",
+  "Renting a flat": "Arrendar um apartamento",
+  "Nursery school": "O infantário",
+  "Getting seen by a doctor": "Conseguir consulta médica",
 };

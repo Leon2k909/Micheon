@@ -2798,4 +2798,7 @@ export const IT: Record<string, string> = {
   "Toasts": "I brindisi",
   "The suburban train": "Il treno locale",
   "Supporting a team": "Fare il tifo",
+  "Renting a flat": "Affittare un appartamento",
+  "Nursery school": "L'asilo",
+  "Getting seen by a doctor": "Ottenere una visita medica",
 };

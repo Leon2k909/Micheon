@@ -2817,4 +2817,7 @@ export const ES: Record<string, string> = {
   "Toasts": "Los brindis",
   "The suburban train": "El tren de cercanías",
   "Supporting a team": "Animar a un equipo",
+  "Renting a flat": "Alquilar un piso",
+  "Nursery school": "La guardería",
+  "Getting seen by a doctor": "Conseguir cita médica",
 };
