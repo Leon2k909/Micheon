@@ -28631,4 +28631,44 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Silvester für Anfänger": "Passagem de ano para principiantes",
   "Am Pfandautomaten": "Na máquina do depósito",
   "Das erste Mal Sauna": "A primeira vez na sauna",
+
+  // ── The last of the German headings ────────────────────────────────────
+  //
+  // Found by widening the test: the first version asked whether a title began
+  // with an article, so In der Hausarztpraxis and Klatsch und Tratsch beim
+  // Kaffee walked straight past it. A German function word anywhere is the
+  // better question, and safe here because a source title is English or
+  // German, never Portuguese — so das colliding with a Portuguese preposition
+  // does not arise.
+  //
+  // Alaaf and Helau keep their spelling: the conversation is about which of
+  // the two you shout, and in which city.
+  "Keine Ahnung": "Não faço ideia",
+  "In der Hausarztpraxis: Symptome schildern": "No médico de família: descrever os sintomas",
+  "In der Apotheke: Rezept und Nebenwirkungen": "Na farmácia: receita e efeitos secundários",
+  "Kurzes Status-Update im Meeting": "Ponto de situação rápido na reunião",
+  "In der Sprechstunde": "Na consulta",
+  "Kuschelabend auf dem Sofa": "Serão de miminhos no sofá",
+  "Grenzen und Safeword": "Limites e palavra de segurança",
+  "Banter unter Freunden (what's safe with friends — and the law)": "Gozar com os amigos (o que é seguro entre amigos — e o que diz a lei)",
+  "Streit um den Abwasch": "Discussão por causa da loiça",
+  "Nachts um halb eins: Sind wir okay?": "À meia-noite e meia: estamos bem?",
+  "Den Ex analysieren": "Analisar o ex",
+  "Therapie ist normal": "A terapia é normal",
+  "Warst du gern in der Schule?": "Gostavas de andar na escola?",
+  "Er ist total abgedriftet": "Ele foi completamente à deriva",
+  "Faktencheck in der Kaffeepause": "Verificação de factos na pausa para o café",
+  "Wir haben uns verlobt!": "Ficámos noivos!",
+  "Kurz vor der Runde noch umbauen": "Mudar a configuração mesmo antes da partida",
+  "Hast du wieder Claude gefragt?": "Voltaste a perguntar ao Claude?",
+  "Echt oder KI-generiert?": "Verdadeiro ou gerado por IA?",
+  "Steam-Sale im Discord-Call": "Saldos da Steam na chamada do Discord",
+  "Klatsch und Tratsch beim Kaffee": "Mexericos ao café",
+  "Empfehlen ohne zu spoilern (Recommending without spoilers)": "Recomendar sem estragar (recomendar sem spoilers)",
+  "Zeig mal dein Spiel": "Mostra lá o teu jogo",
+  "Tor oder Abseits? Spiel in der Kneipe": "Golo ou fora de jogo? O jogo no bar",
+  "Kaufen oder mieten?": "Comprar ou arrendar?",
+  "Oma ist gestorben (comforting your partner)": "A avó morreu (consolar quem amas)",
+  "In der Umkleidekabine": "No gabinete de provas",
+  "Alaaf oder Helau?": "Alaaf ou Helau?",
 };

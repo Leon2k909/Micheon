@@ -686,6 +686,30 @@ check(
  * apart from a word card, and the lines of one conversation are consecutive.
  */
 const SPOKEN = /\{\s*speaker:\s*"[^"]*",\s*de:\s*"((?:[^"\\]|\\.)*)"/g;
+
+/**
+ * Is this conversation's name German?
+ *
+ * The first version of this asked whether the title STARTED with an article,
+ * and so passed In der Hausarztpraxis, Klatsch und Tratsch beim Kaffee and a
+ * dozen more straight through. A German function word anywhere is the better
+ * test, and it is safe here because the string being judged is the SOURCE
+ * title: English or German, never Portuguese, so das and de colliding with
+ * Portuguese prepositions does not arise.
+ *
+ * Words that are also English are left out — war, am, in, on, be — because an
+ * English title containing one would be asked for a Portuguese name it does
+ * not need.
+ */
+const GERMAN_TITLE = new RegExp(
+  "[ÄÖÜäöüß]|(?<![\\p{L}])(?:"
+  + "der|die|das|dem|den|des|und|ist|sind|bist|warst|wurde|hast|habe|haben|"
+  + "wir|ihr|sich|nicht|kein|keine|beim|vom|zum|zur|im|für|noch|wieder|"
+  + "oder|eine|einen|einem|mit|schon|doch|wenn|dass|nach|vor|über|unter|ohne|"
+  + "gegen|mal|wie|wer|wo|willst|kannst|geht"
+  + ")(?![\\p{L}])",
+  "iu"
+);
 const answered = new Set(pairs.map((row) => row.german));
 const halfDone = [];
 const germanTitles = [];
@@ -719,8 +743,7 @@ for (const file of fs.readdirSync(path.join(root, "src/lib"))) {
      * Portuguese name for the one conversation this course refuses whole.
      */
     const carried = lines.filter((l) => answered.has(l)).length;
-    const german = /[ÄÖÜäöüß]|^(?:Der|Die|Das|Ein|Eine|Im|Am|Beim|Vom|Zum|Zur|Nach|Vor|Nur|Erst|Kein|Wer|Was|Wie|Wo)\b/.test(title);
-    if (german && carried >= 2 && !answered.has(title) && !excluded.has(title)) {
+    if (carried >= 2 && GERMAN_TITLE.test(title) && !answered.has(title) && !excluded.has(title)) {
       germanTitles.push(title);
     }
   }
