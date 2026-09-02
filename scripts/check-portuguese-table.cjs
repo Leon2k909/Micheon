@@ -656,6 +656,48 @@ check(
   stalePlaces.length === 0
 );
 
+/**
+ * EVERY LINE SOMEBODY SPEAKS HAS A PORTUGUESE ANSWER.
+ *
+ * A dialogue is carried whole or not at all — the note beside the excluded
+ * packs says so — but nothing enforced it, and one line of a five-line
+ * conversation went out in German for weeks. Nobody reading the app would
+ * report it as a hole; it reads as one German line in a Portuguese
+ * conversation, which looks like a card that happens to be in German.
+ *
+ * It survived because the tool that lists untranslated work paired a card with
+ * its article-less form, so "der Hafen" and "Hafen" counted as one. Applied to
+ * a sentence that starts with an article, "Das ist, gelinde gesagt,
+ * unglücklich formuliert." and "Der ist, gelinde gesagt, unglücklich
+ * formuliert." collapse onto the same string, and the translated one vouched
+ * for the untranslated one. A tool that can be wrong is exactly why this
+ * belongs in the build instead.
+ *
+ * A dialogue line is written with a speaker beside it, which is what tells it
+ * apart from a word card. The packs this course leaves out are skipped, since
+ * their lines are refused above rather than translated.
+ */
+const spokenFiles = fs
+  .readdirSync(path.join(root, "src/lib"))
+  .filter((f) => f.endsWith(".ts") && !/Translations|i18n/.test(f));
+const SPOKEN = /\{\s*speaker:\s*"[^"]*",\s*de:\s*"((?:[^"\\]|\\.)*)"/g;
+const answered = new Set(pairs.map((row) => row.german));
+const silent = [];
+let spokenCount = 0;
+for (const file of spokenFiles) {
+  const text = fs.readFileSync(path.join(root, "src/lib", file), "utf8");
+  for (const m of text.matchAll(SPOKEN)) {
+    spokenCount++;
+    if (answered.has(m[1]) || excluded.has(m[1])) continue;
+    silent.push(m[1]);
+  }
+}
+check(`the course has dialogue to check (${spokenCount.toLocaleString("en-GB")} spoken lines)`, spokenCount > 3000);
+check(
+  `every line somebody speaks has Portuguese${silent.length ? ` — ${silent[0]}` : ""}`,
+  silent.length === 0
+);
+
 if (failures.length) {
   console.error(`\n${failures.length} Portuguese table problem${failures.length === 1 ? "" : "s"}`);
   process.exit(1);

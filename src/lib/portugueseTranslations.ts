@@ -28380,4 +28380,19 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Sehr gut. Gibt es das Tagesgericht auch vegetarisch?": "Muito bem. O prato do dia também há vegetariano?",
   "Ja, mit extra Beilagen statt Fleisch. Soll ich das so bestellen?": "Há, com acompanhamentos a mais em vez da carne. Quer que peça assim?",
   "Gern. Den Nachtisch suchen wir später von der Speisekarte aus.": "Por favor. A sobremesa escolhemos depois da ementa.",
+
+  // ── Two the work list had been hiding ──────────────────────────────────
+  //
+  // The list paired a word card with its article-less form so that der Hafen
+  // and Hafen counted as the same card. It did that to every string starting
+  // with an article, so "Das ist, gelinde gesagt, unglücklich formuliert."
+  // and "Der ist, gelinde gesagt, unglücklich formuliert." collapsed onto one
+  // string and the translated one vouched for the untranslated one. It is the
+  // second line of a five-line conversation, and it has been showing German.
+  // Der Vorschlag is a proposta here, so the participle agrees with it.
+  //
+  // And das erste Mal, whose card in the table had been written without its
+  // article and was matched by the same collapse.
+  "Der ist, gelinde gesagt, unglücklich formuliert.": "Está, para dizer o mínimo, mal formulada.",
+  "das erste Mal": "a primeira vez",
 };
