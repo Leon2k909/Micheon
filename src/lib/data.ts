@@ -2296,7 +2296,7 @@ const partBlueprintsBase: Record<string, Blueprint> = {
     ],
     phrases: [
       { de: "Ich geh heute noch ins Fitnessstudio.", en: "I'm still going to the gym today.", use: "neutral, works with anyone; 'ins Gym' is just as common among younger people", fr: "Je compte passer à la salle aujourd'hui." , say: "sounds like: ish gay HOY-tuh noch ins FIT-ness-SHTOO-dee-oh — the -studio half starts 'sht', not 'st'" },
-      { de: "Kommst du mit in die Muckibude?", en: "Coming to the gym with me?", use: "very casual, friends only; 'Muckibude' (muscle shack) is jokey-affectionate gym slang", fr: "Tu viens pousser à la salle avec moi ?" },
+      { de: "Kommst du mit in die Muckibude?", en: "Coming to the gym with me?", use: "very casual, friends only; 'Muckibude' (muscle shack) is jokey-affectionate gym slang — 'Fitnessstudio' is the neutral word for it", fr: "Tu viens pousser à la salle avec moi ?" },
       { de: "Ich hab so einen Muskelkater!", en: "I'm so sore!", use: "THE day-after-workout sentence; said to everyone, always with feeling", fr: "J'ai trop de courbatures !" },
       { de: "Heute ist Beintag.", en: "Today is leg day.", use: "universal gym talk; said with either dread or pride, never neutrally", fr: "Aujourd'hui, c'est leg day." },
       { de: "Beintag auslassen? Niemals.", en: "Skip leg day? Never.", use: "the classic gym joke; skipping leg day is the standard tease among lifters", fr: "Sauter le leg day ? Jamais.", when: "When a gym friend suggests skipping legs and doing arms again instead." },
@@ -2500,7 +2500,7 @@ const partBlueprintsBase: Record<string, Blueprint> = {
     dialogues: [
       { title: "Warst du gern in der Schule?", lines: [
         { speaker: "A", de: "Warst du eigentlich gern in der Schule?", en: "So, did you actually like school?", fr: "Au fait, tu aimais l'école, toi ?" },
-        { speaker: "B", de: "Geht so. Ich war auf der Realschule, und Mathe war eine Katastrophe.", en: "So-so. I went to a Realschule, and maths was a disaster.", fr: "Bof. J'étais en Realschule, et les maths, c'était la catastrophe." },
+        { speaker: "B", de: "Geht so. Ich war auf der Realschule, und Mathe war eine Katastrophe.", en: "Could be better. I went to a Realschule, and maths was a disaster.", fr: "Bof. J'étais en Realschule, et les maths, c'était la catastrophe." },
         { speaker: "A", de: "Ich war ein totaler Streber – fast nur Einsen im Zeugnis.", en: "I was a total swot — almost nothing but top grades on my report card.", fr: "Moi, j'étais un vrai intello – quasiment que des super notes sur le bulletin." },
         { speaker: "B", de: "Und geschwänzt hast du nie?", en: "And you never skipped school?", fr: "Et tu n'as jamais séché ?" },
         { speaker: "A", de: "Doch, ein einziges Mal – und genau da hat mich mein Vater gesehen.", en: "I did, exactly once — and that's precisely when my dad saw me.", fr: "Si, une seule fois – et c'est pile là que mon père m'a vu." },

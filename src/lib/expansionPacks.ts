@@ -4988,7 +4988,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "Entschuldigung für die Verspätung. — Passt schon.", en: "Sorry I'm late. — It's fine.", use: "'Passt schon' — it fits already: relaxed forgiveness in two words. Very southern, understood everywhere.", group: "danke-und-bitte" },
       { de: "Tut mir leid wegen gestern. — Kein Thema.", en: "Sorry about yesterday. — No problem at all.", use: "'Kein Thema' — not a topic: it doesn't even need discussing. Friendship in two words.", group: "danke-und-bitte" },
       { de: "Danke fürs Warten. — Schon okay.", en: "Thanks for waiting. — It's okay.", use: "'Schon okay' — the schon soothes: it was never a problem to begin with.", group: "danke-und-bitte" },
-      { de: "Wie geht's? — Geht so.", en: "How are you? — So-so.", use: "'Geht so' — the honest middle answer between gut and schlecht. Germans respect it.", group: "gruesse-zurueck" },
+      { de: "Wie geht's? — Geht so.", en: "How are you? — Could be better.", use: "'Geht so' — the honest middle answer between gut and schlecht. Germans respect it.", group: "gruesse-zurueck" },
       { de: "Und sonst so? — Alles beim Alten.", en: "And otherwise? — Same as ever.", use: "'Alles beim Alten' — everything with the old: nothing new, comfortably so.", group: "gruesse-zurueck" },
       { de: "Was macht die Arbeit? — Muss ja.", en: "How's work? — It has to, doesn't it.", use: "'Muss ja' — it must, so it does. Resigned, stoic, deeply German. A complete answer.", group: "gruesse-zurueck" },
       { de: "Danke der Nachfrage, schon viel besser.", en: "Thanks for asking — much better already.", use: "'Danke der Nachfrage' — the polite acknowledgement that someone remembered to ask.", group: "gruesse-zurueck" },
