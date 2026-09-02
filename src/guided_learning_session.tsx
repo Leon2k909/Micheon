@@ -5,7 +5,7 @@ import GuidedSession from "@/GuidedSession";
 import { buildApiPartFromResolved } from "@/lib/api";
 import { orderParts } from "@/lib/curriculum";
 import { getSittingLevelFilters, getSittingOrder, passesSittingLevel, similarMates, sittingComparator } from "@/lib/sittingOrder";
-import { buildExchangeIndex, exchangeChain, exchangeKey } from "@/lib/exchanges";
+import { buildExchangeIndex, exchangeChain, exchangeKey, exchangePlace } from "@/lib/exchanges";
 import { buildBundledParts, buildTatoebaParts, filterPartsForLearningDirection } from "@/lib/contentBank";
 import { buildCustomParts, isCustomPartKey, CUSTOM_CONTENT_EVENT } from "@/lib/customContent";
 import { allPartBlueprints } from "@/lib/data";
@@ -1341,6 +1341,23 @@ export default function GuidedLearningSession() {
       if (mixedWords.length > 0) {
         sentenceSlots.freshSlots = Math.max(1, (6 - mixedWords.length) - sentenceSlots.reviewSlots);
       }
+      // An exchange, or a run of similar sentences, is the point of its
+      // order, so it is not cut to fit: the fresh slots hold the lead and
+      // its mates, and reviews give way (sittingRoom below trims them), the
+      // way they already give way to words. A backlog of ten due reviews
+      // used to leave one fresh slot — the question and never its reply;
+      // with words in the sitting it did so from four.
+      const mates = sittingOrder === "conversation" ? exchangeMates : sittingOrder === "similar" ? patternMates : [];
+      if (mates.length > 0) {
+        sentenceSlots.freshSlots = Math.max(sentenceSlots.freshSlots, Math.min(NEW_PER_LESSON_TARGET, 1 + mates.length));
+      }
+      // Reviews that belong to the conversation the fresh exchange is from
+      // are preferred over weaker ones, and later sit in dialogue order
+      // around it. A preference: when nothing due fits, the sitting is as
+      // it always was.
+      const leadDialogue = exchanges && lead ? exchangePlace(lead.de, exchanges)?.dialogue ?? null : null;
+      const fitsConversation = (step: any): boolean =>
+        Boolean(leadDialogue) && exchangePlace(step?.item?.de, exchanges!)?.dialogue === leadDialogue;
       const { fresh, reviews } = selectContinueLearningMix(
         rankedCandidates.map((candidate) => candidate.step),
         requiredReviews,
@@ -1350,7 +1367,8 @@ export default function GuidedLearningSession() {
         reinforcementReviews,
         // The steps here are still un-swapped, so the target sits in `en` only
         // for the English course. French reads its text off the German too.
-        getLearningDirection() === "learn-en" ? "en" : "de"
+        getLearningDirection() === "learn-en" ? "en" : "de",
+        fitsConversation
       );
       // Every base served gets its extension in the very next slot.
       //
@@ -1418,7 +1436,26 @@ export default function GuidedLearningSession() {
         // New material first, then the word slots when "Both" is chosen,
         // then reviews — words sit between so a mixed sitting reads as one
         // lesson rather than two stapled together.
-        let steps = stepsForLearningDirection([...freshSteps, ...mixedWords, ...reviews]);
+        // Conversation order: the lines of the lead's dialogue — fresh and
+        // review alike — play in the order the dialogue has them, as one
+        // block; then the rest of the fresh cards, the words, the other
+        // reviews. A review that is the answer to a fresh question sits right
+        // after it instead of at the end of the sitting.
+        let dealt = [...freshSteps, ...mixedWords, ...reviews];
+        if (leadDialogue) {
+          const lineOf = (step: any) => step?.type === "sentence" ? exchangePlace(step.item?.de, exchanges!) : null;
+          const inTalk = (step: any) => lineOf(step)?.dialogue === leadDialogue;
+          const talk = [...freshSteps.filter(inTalk), ...reviews.filter(inTalk)]
+            .sort((a, b) => lineOf(a)!.line - lineOf(b)!.line);
+          const talkSet = new Set(talk);
+          dealt = [
+            ...talk,
+            ...freshSteps.filter((step) => !talkSet.has(step)),
+            ...mixedWords,
+            ...reviews.filter((step) => !talkSet.has(step)),
+          ];
+        }
+        let steps = stepsForLearningDirection(dealt);
         steps = [...steps, { type: "complete" }];
         setActivePart(id);
         saveScopedJson("active-part", id, user);

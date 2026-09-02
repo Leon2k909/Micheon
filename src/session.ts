@@ -651,13 +651,21 @@ export function orderWithChains<T extends { de?: string; originalDe?: string; bu
 export function pickReviews(
   due: any[],
   n: number,
-  blockedKeys: Iterable<string> = []
+  blockedKeys: Iterable<string> = [],
+  /**
+   * Reviews the sitting would rather have, ahead of weaker ones: in
+   * conversation order, the lines of the conversation the fresh exchange is
+   * from. A preference, not a filter — when nothing due fits, the weakest
+   * come as they always did.
+   */
+  prefer: (step: any) => boolean = () => false
 ): any[] {
   const isOptionalFamiliar = (step: any) => Boolean(
     step?.reinforcement || step?.optionalPractice || step?.reviewReason === "attempted"
   );
   const weakestFirst = [...due].sort((a, b) =>
-    Number(isOptionalFamiliar(a)) - Number(isOptionalFamiliar(b))
+    Number(prefer(b)) - Number(prefer(a))
+    || Number(isOptionalFamiliar(a)) - Number(isOptionalFamiliar(b))
     || (a.interval ?? 1) - (b.interval ?? 1)
     || (b.repeatPriority ?? 0) - (a.repeatPriority ?? 0)
     || (b.overdue ?? 0) - (a.overdue ?? 0)
@@ -740,24 +748,30 @@ export function selectContinueLearningMix(
   freshLimit = NEW_PER_LESSON,
   reviewLimit = OLD_PER_LESSON,
   reinforcement: any[] = [],
-  _targetField: "de" | "en" = "de"
+  _targetField: "de" | "en" = "de",
+  /** Reviews to take ahead of weaker ones when they are due — see pickReviews. */
+  prefer: (step: any) => boolean = () => false
 ): { fresh: any[]; reviews: any[] } {
   const takeUnique = (steps: any[], limit: number, blocked = new Set<string>()) => {
     return takeMatchingSafe(steps, limit, matchingPairForStep, blocked);
   };
 
+  // Struggles are required and keep their own order; the preference decides
+  // among what is merely due, and among reinforcement.
   const priorityReviews = takeUnique(orderStrugglingReviews(struggling), reviewLimit);
   const selectedReviewKeys = new Set(priorityReviews.flatMap(matchingKeysForStep));
   const duePool = takeUnique(due, due.length, selectedReviewKeys);
   const dueReviews = pickReviews(
     duePool,
     Math.max(0, reviewLimit - priorityReviews.length),
-    selectedReviewKeys
+    selectedReviewKeys,
+    prefer
   );
   const scheduledReviews = [...priorityReviews, ...dueReviews];
   const scheduledReviewKeys = new Set(scheduledReviews.flatMap(matchingKeysForStep));
+  const preferredFirst = [...reinforcement].sort((a, b) => Number(prefer(b)) - Number(prefer(a)));
   const reinforcementReviews = takeUnique(
-    reinforcement,
+    preferredFirst,
     Math.max(0, reviewLimit - scheduledReviews.length),
     scheduledReviewKeys
   );

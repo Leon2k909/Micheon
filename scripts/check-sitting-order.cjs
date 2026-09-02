@@ -36,6 +36,7 @@ const built = esbuild.buildSync({
       'export * as order from "./src/lib/sittingOrder.ts";',
       'export { sentencePattern, sharesPattern } from "./src/lib/sentencePattern.ts";',
       'export { buildExchangeIndex, exchangeChain, exchangeKey, exchangePlace, repliesTo } from "./src/lib/exchanges.ts";',
+      'export { selectContinueLearningMix, pickReviews } from "./src/session.ts";',
       'export { buildListenQueue, LISTEN_QUEUE_ORDERS } from "./src/lib/listenMode.ts";',
       'export { allPartBlueprints } from "./src/lib/data.ts";',
       'export { buildApiPartFromResolved } from "./src/lib/api.ts";',
@@ -51,7 +52,7 @@ const compiled = new Module("sitting-order-check", module);
 compiled.filename = path.join(root, ".sitting-order-check.cjs");
 compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(built.outputFiles[0].text, compiled.filename);
-const { order: O, sentencePattern, sharesPattern, buildExchangeIndex, exchangeChain, exchangeKey, exchangePlace, repliesTo, buildListenQueue, LISTEN_QUEUE_ORDERS, allPartBlueprints, buildApiPartFromResolved, buildBundledParts } = compiled.exports;
+const { order: O, sentencePattern, sharesPattern, buildExchangeIndex, exchangeChain, exchangeKey, exchangePlace, repliesTo, selectContinueLearningMix, pickReviews, buildListenQueue, LISTEN_QUEUE_ORDERS, allPartBlueprints, buildApiPartFromResolved, buildBundledParts } = compiled.exports;
 
 const failures = [];
 const check = (name, ok, detail = "") => {
@@ -215,6 +216,42 @@ check("each dialogue plays whole, in turn order, and is never split",
 check("the first exchange really is a question and its reply",
   places[0]?.line === 0 && places[1]?.dialogue === places[0]?.dialogue && places[1]?.line === 1,
   `queue opens: ${talk.slice(0, 2).map((item) => item.de).join("  →  ")}`);
+
+// ── the exchange is not cut to fit, and reviews that belong to it come along ─
+// With a backlog of ten due reviews the mix left one fresh slot — the
+// question and never its reply — and with words in the sitting it did so
+// from four. The fresh slots now hold the lead and its mates; reviews give
+// way, as they already do to words. And among what is due, the lines of the
+// lead's own conversation are preferred and then dealt in dialogue order
+// around the exchange — a preference, so a sitting with nothing fitting is
+// exactly what it was.
+check("the fresh slots hold the whole exchange (or run of similar sentences), reviews give way",
+  /const mates = sittingOrder === "conversation" \? exchangeMates : sittingOrder === "similar" \? patternMates : \[\];/u.test(sitting)
+  && /sentenceSlots\.freshSlots = Math\.max\(sentenceSlots\.freshSlots, Math\.min\(NEW_PER_LESSON_TARGET, 1 \+ mates\.length\)\)/u.test(sitting)
+  && /const sittingRoom = Math\.max\(1, 6 - fresh\.length - mixedWords\.length\)/u.test(sitting));
+check("reviews from the lead's conversation are preferred, then dealt in dialogue order around the exchange",
+  /fitsConversation\s*\n\s*\);/u.test(sitting)
+  && /\.\.\.talk,\s*\n\s*\.\.\.freshSteps\.filter\(\(step\) => !talkSet\.has\(step\)\),\s*\n\s*\.\.\.mixedWords,\s*\n\s*\.\.\.reviews\.filter/u.test(sitting));
+// The preference in the mix itself, on synthetic reviews: a fitting review
+// with a longer interval beats a weaker unrelated one only when preferred.
+// Two slots, three due: the plain mix takes the weakest and one well-known
+// card (its "one older" rule), so the middling fitting one is left out; with
+// the preference it leads.
+const rv = (de, interval) => ({ type: "sentence", interval, item: { id: de, de, en: de } });
+const unrelatedWeak = rv("Wo ist der Bahnhof?", 1), fittingMid = rv("Ich heiße Alex.", 3), unrelatedOld = rv("Danke schön.", 9);
+const due = [unrelatedWeak, fittingMid, unrelatedOld];
+const fits = (step) => step.item.de === "Ich heiße Alex.";
+const withPreference = selectContinueLearningMix([], [], due, 3, 2, [], "de", fits).reviews;
+const without = selectContinueLearningMix([], [], due, 3, 2, [], "de").reviews;
+check("a fitting review is taken ahead of a weaker one when preferred, and not otherwise",
+  withPreference[0] === fittingMid && !without.includes(fittingMid) && without[0] === unrelatedWeak,
+  `preferred: ${withPreference.map((s) => s.item.de).join(", ")}; plain: ${without.map((s) => s.item.de).join(", ")}`);
+check("and the preference never adds a review that is not due",
+  selectContinueLearningMix([], [], [unrelatedWeak], 3, 2, [], "de", fits).reviews.length === 1);
+check("struggles keep their place ahead of any preference",
+  selectContinueLearningMix([], [rv("Hilfe!", 0)], due, 3, 2, [], "de", fits).reviews[0]?.item.de === "Hilfe!");
+check("pickReviews itself honours the preference first, then weakest first",
+  pickReviews(due, 2, [], fits)[0] === fittingMid && pickReviews(due, 2)[0] === unrelatedWeak);
 
 if (failures.length) {
   console.error(`\n${failures.length} sitting-order check(s) failed`);
