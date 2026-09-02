@@ -3250,4 +3250,7 @@ export const PL: Record<string, string> = {
   "Housework": "Sprzątanie",
   "The post office": "Poczta",
   "Older people": "Starsi ludzie",
+  "Mushroom picking": "Grzybobranie",
+  "The long road": "Trasa",
+  "Making do": "Radzenie sobie",
 };

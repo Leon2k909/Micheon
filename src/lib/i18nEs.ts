@@ -2811,4 +2811,7 @@ export const ES: Record<string, string> = {
   "Housework": "Las tareas de casa",
   "The post office": "La oficina de correos",
   "Older people": "Los mayores",
+  "Mushroom picking": "Recoger setas",
+  "The long road": "La carretera",
+  "Making do": "Apañárselas",
 };

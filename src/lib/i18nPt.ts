@@ -3162,4 +3162,7 @@ export const PT: Record<string, string> = {
   "Housework": "As lides da casa",
   "The post office": "Os correios",
   "Older people": "Os mais velhos",
+  "Mushroom picking": "Apanhar cogumelos",
+  "The long road": "A estrada",
+  "Making do": "Desenrascar",
 };

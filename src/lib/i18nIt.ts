@@ -2792,4 +2792,7 @@ export const IT: Record<string, string> = {
   "Housework": "Le pulizie di casa",
   "The post office": "L'ufficio postale",
   "Older people": "Gli anziani",
+  "Mushroom picking": "Andare a funghi",
+  "The long road": "La strada statale",
+  "Making do": "Arrangiarsi",
 };

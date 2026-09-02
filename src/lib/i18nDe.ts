@@ -3498,4 +3498,7 @@ export const DE: Record<string, string> = {
   "Housework": "Hausarbeit",
   "The post office": "Die Post",
   "Older people": "Die Älteren",
+  "Mushroom picking": "Pilze sammeln",
+  "The long road": "Die Fernstraße",
+  "Making do": "Selber machen",
 };
