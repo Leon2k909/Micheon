@@ -50,6 +50,7 @@ import {
 } from "@/lib/profileStorage";
 import { getLearningDirection, type LearningDirection } from "@/lib/direction";
 import { sentencePattern } from "@/lib/sentencePattern";
+import { buildExchangeIndex, exchangePlace } from "@/lib/exchanges";
 
 /**
  * Listen mode: passive exposure, deliberately NOT a lesson.
@@ -173,8 +174,8 @@ export const LISTEN_DIALOGUE_VOICES: Readonly<Record<"a" | "b", string>> = {
  * as the kinds joined by "+".
  */
 type ListenContentSource = ListenContentKind | "mixed";
-export type ListenQueueOrder = "common" | "learning" | "least-heard" | "newest" | "level" | "longest" | "similar";
-export const LISTEN_QUEUE_ORDERS: ListenQueueOrder[] = ["level", "common", "learning", "least-heard", "newest", "longest", "similar"];
+export type ListenQueueOrder = "common" | "learning" | "least-heard" | "newest" | "level" | "longest" | "similar" | "conversation";
+export const LISTEN_QUEUE_ORDERS: ListenQueueOrder[] = ["level", "common", "learning", "least-heard", "newest", "longest", "similar", "conversation"];
 
 /**
  * How big a card is, for Longest first: the length of what gets spoken.
@@ -1894,6 +1895,38 @@ export function buildListenQueue(
           || right.members - left.members
           || left.soonest - right.soonest
           || left.key.localeCompare(right.key)
+          || leads(a, b);
+      })
+      .map((entry) => entry.item);
+  }
+  if (order === "conversation") {
+    /**
+     * Exchanges as the dialogues have them: a line, then the reply to it,
+     * then what comes next, each dialogue kept whole and in turn order. A
+     * dialogue plays when its most useful line would otherwise have played,
+     * so the conversations people need most come first. Anything that is
+     * not part of a dialogue — most taught phrases, every single word —
+     * comes after every exchange, in commonality order.
+     */
+    const exchanges = buildExchangeIndex(parts);
+    const placeFor = new Map<string, { dialogue: string; line: number }>();
+    const soonest = new Map<string, number>();
+    for (const entry of available) {
+      const place = exchangePlace(entry.item.de, exchanges);
+      if (!place) continue;
+      placeFor.set(entry.item.id, place);
+      soonest.set(place.dialogue, Math.min(soonest.get(place.dialogue) ?? Infinity, entry.index));
+    }
+    return available
+      .sort((a, b) => {
+        const left = placeFor.get(a.item.id), right = placeFor.get(b.item.id);
+        return a.resting - b.resting
+          || (left ? 0 : 1) - (right ? 0 : 1)
+          || (left && right
+            ? (soonest.get(left.dialogue)! - soonest.get(right.dialogue)!)
+              || left.dialogue.localeCompare(right.dialogue)
+              || left.line - right.line
+            : 0)
           || leads(a, b);
       })
       .map((entry) => entry.item);

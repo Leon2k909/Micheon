@@ -17,13 +17,17 @@ import { cefrRung, cefrStep, CEFR_STEPS, type CefrStep } from "@/lib/cefr";
 import { getLearningDirection, type LearningDirection } from "@/lib/direction";
 import { sentencePattern } from "@/lib/sentencePattern";
 
-export type SittingOrder = "course" | "level" | "common" | "similar" | "shortest" | "longest";
+export type SittingOrder = "course" | "level" | "common" | "similar" | "conversation" | "shortest" | "longest";
 /**
  * Written as a list so a value can be checked against it in one place. An
  * order added to the picker and not to this list would be chosen, written,
  * and read back as the default on the next sitting — silently.
+ *
+ * "conversation" sorts like the course's pick; what makes it different is
+ * who follows the lead — the reply to it, from the packs' dialogues (see
+ * exchanges.ts), the way "similar" is followed by its pattern-mates.
  */
-export const SITTING_ORDERS: SittingOrder[] = ["course", "level", "common", "similar", "shortest", "longest"];
+export const SITTING_ORDERS: SittingOrder[] = ["course", "level", "common", "similar", "conversation", "shortest", "longest"];
 export const DEFAULT_SITTING_ORDER: SittingOrder = "course";
 
 const ORDER_KEY = "gl-sitting-order-v1";

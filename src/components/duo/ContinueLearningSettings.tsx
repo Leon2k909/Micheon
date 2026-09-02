@@ -30,6 +30,7 @@ const ORDER_CHOICES = [
   ["level", "Easiest first (A1 → C1)"],
   ["common", "Most common first"],
   ["similar", "Similar sentences together"],
+  ["conversation", "Conversation order"],
   ["shortest", "Shortest first"],
   ["longest", "Longest first"],
 ] as const;
@@ -60,7 +61,7 @@ export function ContinueLearningSettings() {
       <fieldset className="mt-3">
         <legend className="text-xs font-black text-[var(--text-2)]">{ui("Order")}</legend>
         <p className="mt-0.5 text-[11px] font-semibold leading-5 text-[var(--text-3)]">
-          {ui("The course's pick blends how common a sentence is with how hard it is and how far you are. Easiest first takes all of one level before the next. Most common first takes what people say most, whatever the level. Similar sentences together takes the next sentence and then every sentence that starts the same way — all the “Ich möchte …”, then all the “Kannst du …”. Shortest first and Longest first go by length. Reviews come back whatever the order.")}
+          {ui("The course's pick blends how common a sentence is with how hard it is and how far you are. Easiest first takes all of one level before the next. Most common first takes what people say most, whatever the level. Similar sentences together takes the next sentence and then every sentence that starts the same way — all the “Ich möchte …”, then all the “Kannst du …”. Conversation order takes an exchange as the dialogues have it — a question, then the answer that fits it, then what comes next. Shortest first and Longest first go by length. Reviews come back whatever the order.")}
         </p>
         <div
           aria-label={ui("Order")}

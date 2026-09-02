@@ -35,6 +35,7 @@ const built = esbuild.buildSync({
     contents: [
       'export * as order from "./src/lib/sittingOrder.ts";',
       'export { sentencePattern, sharesPattern } from "./src/lib/sentencePattern.ts";',
+      'export { buildExchangeIndex, exchangeChain, exchangeKey, exchangePlace, repliesTo } from "./src/lib/exchanges.ts";',
       'export { buildListenQueue, LISTEN_QUEUE_ORDERS } from "./src/lib/listenMode.ts";',
       'export { allPartBlueprints } from "./src/lib/data.ts";',
       'export { buildApiPartFromResolved } from "./src/lib/api.ts";',
@@ -50,7 +51,7 @@ const compiled = new Module("sitting-order-check", module);
 compiled.filename = path.join(root, ".sitting-order-check.cjs");
 compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(built.outputFiles[0].text, compiled.filename);
-const { order: O, sentencePattern, sharesPattern, buildListenQueue, LISTEN_QUEUE_ORDERS, allPartBlueprints, buildApiPartFromResolved, buildBundledParts } = compiled.exports;
+const { order: O, sentencePattern, sharesPattern, buildExchangeIndex, exchangeChain, exchangeKey, exchangePlace, repliesTo, buildListenQueue, LISTEN_QUEUE_ORDERS, allPartBlueprints, buildApiPartFromResolved, buildBundledParts } = compiled.exports;
 
 const failures = [];
 const check = (name, ok, detail = "") => {
@@ -121,7 +122,7 @@ check("the sitting sorts its fresh candidates by the chosen order",
 check("and drops fresh material outside the chosen levels before scoring it",
   /passesSittingLevel\(item\.level \?\? p\.level, sittingLevels\)/u.test(sitting));
 check("similar sentences follow the lead ahead of its pack-mates",
-  /similarMates\(lead, candidates\)/u.test(sitting) && /\.\.\.patternMates,\s*\n\s*(?:\/\/[^\n]*\n\s*)*\.\.\.candidates\.filter/u.test(sitting));
+  /similarMates\(lead, candidates\)/u.test(sitting) && /\.\.\.patternMates,\s*\n\s*(?:\.\.\.exchangeMates,\s*\n\s*)?(?:\/\/[^\n]*\n\s*)*\.\.\.candidates\.filter/u.test(sitting));
 
 // ── and both doors show the panel ───────────────────────────────────────────
 const session = read("src/GuidedSession.tsx");
@@ -163,6 +164,49 @@ check("the biggest shape plays first and shapes never grow along the queue",
 check("the first shape really is a run of one opening",
   starts.length > 3 && sizes[0] >= 5 && patterns[0] === patterns[1],
   `first shape "${patterns[0]}" ×${sizes[0]}`);
+
+// ── conversation order: a question, then the answer that fits it ────────────
+// The only honest source of "what answers what" is the packs' dialogues,
+// which are turns in sequence. The index is built from them by sentence,
+// so a line a pack also teaches as a phrase still knows its place.
+const exchanges = buildExchangeIndex(parts);
+check(`the dialogues are indexed (${exchanges.dialogues} of them, ${exchanges.follows.size} lines with a reply)`,
+  exchanges.dialogues > 500 && exchanges.follows.size > 2000);
+const wieHeisst = repliesTo("Wie heißt du?", exchanges).map((key) => key);
+check("\"Wie heißt du?\" is answered by a name",
+  wieHeisst.some((key) => key.startsWith("ich heiße")), `replies: ${wieHeisst.slice(0, 3).join(" | ")}`);
+const chain = exchangeChain("Hallo! Was möchtest du?", exchanges, () => true, 3);
+check("an exchange follows the dialogue turn by turn",
+  chain.length >= 1 && chain[0] === exchangeKey("Ich möchte einen Kaffee, bitte."), `chain: ${chain.join(" → ")}`);
+check("and stops at the first turn nobody has",
+  exchangeChain("Hallo! Was möchtest du?", exchanges, (key) => key !== exchangeKey("Ich möchte einen Kaffee, bitte."), 3).length === 0);
+check("the sitting leads with a card that has a reply, and its reply follows it",
+  /exchangeChain\(candidate\.de, exchanges, \(key\) => candidateByKey\.has\(key\), 1\)\.length > 0/u.test(sitting)
+  && /exchangeChain\(lead\.de, exchanges, \(key\) => candidateByKey\.has\(key\), NEW_PER_LESSON_TARGET\)/u.test(sitting)
+  && /\.\.\.exchangeMates,/u.test(sitting));
+check("Listen accepts conversation order and its picker offers it",
+  LISTEN_QUEUE_ORDERS.includes("conversation") && /"conversation", "Conversation order",/u.test(view)
+  && /Conversation order plays the course's dialogues as exchanges/u.test(view));
+const talk = buildListenQueue(parts, {}, { order: "conversation", within: "common", contentSource: ["phrases"] });
+const places = talk.map((item) => exchangePlace(item.de, exchanges));
+const lastInDialogue = places.map((p) => Boolean(p)).lastIndexOf(true), firstAlone = places.findIndex((p) => !p);
+check(`Listen plays every dialogue line (${places.filter(Boolean).length}) before anything that stands alone`,
+  lastInDialogue >= 0 && (firstAlone < 0 || firstAlone > lastInDialogue),
+  `a lone card at ${firstAlone + 1} before the last dialogue line at ${lastInDialogue + 1}`);
+let broken = 0, splitDialogues = 0;
+const seenDialogues = new Set();
+for (let i = 0; i <= lastInDialogue; i++) {
+  const here = places[i], before = places[i - 1];
+  if (!before || before.dialogue !== here.dialogue) {
+    if (seenDialogues.has(here.dialogue)) splitDialogues++;
+    seenDialogues.add(here.dialogue);
+  } else if (here.line < before.line) broken++;
+}
+check("each dialogue plays whole, in turn order, and is never split",
+  broken === 0 && splitDialogues === 0, `${broken} turn(s) out of order, ${splitDialogues} dialogue(s) split`);
+check("the first exchange really is a question and its reply",
+  places[0]?.line === 0 && places[1]?.dialogue === places[0]?.dialogue && places[1]?.line === 1,
+  `queue opens: ${talk.slice(0, 2).map((item) => item.de).join("  →  ")}`);
 
 if (failures.length) {
   console.error(`\n${failures.length} sitting-order check(s) failed`);

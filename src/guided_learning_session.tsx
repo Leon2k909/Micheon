@@ -5,6 +5,7 @@ import GuidedSession from "@/GuidedSession";
 import { buildApiPartFromResolved } from "@/lib/api";
 import { orderParts } from "@/lib/curriculum";
 import { getSittingLevelFilters, getSittingOrder, passesSittingLevel, similarMates, sittingComparator } from "@/lib/sittingOrder";
+import { buildExchangeIndex, exchangeChain, exchangeKey } from "@/lib/exchanges";
 import { buildBundledParts, buildTatoebaParts, filterPartsForLearningDirection } from "@/lib/contentBank";
 import { buildCustomParts, isCustomPartKey, CUSTOM_CONTENT_EVENT } from "@/lib/customContent";
 import { allPartBlueprints } from "@/lib/data";
@@ -930,6 +931,9 @@ export default function GuidedLearningSession() {
       // learner chose an order, and every level unless they narrowed it.
       const sittingOrder = getSittingOrder();
       const sittingLevels = getSittingLevelFilters();
+      // Conversation order needs to know what answers what: the packs'
+      // dialogues, indexed by sentence. Built only when asked for.
+      const exchanges = sittingOrder === "conversation" ? buildExchangeIndex(activeParts) : null;
       if (lessonContent === "words") {
         const rankedWords = rankWordCatalog(buildWordCatalog(activeParts), corpusIndex);
         let wordSteps: any[] = buildWordSitting(rankedWords, reviewState);
@@ -1227,7 +1231,13 @@ export default function GuidedLearningSession() {
       // fresh half prefers its pack-mates so the lesson still feels coherent,
       // then scans the remaining ranked pool to backfill duplicate/colliding
       // wording instead of silently returning fewer than 3 new phrases.
-      const lead = candidates[0];
+      // Conversation order leads with the best card that HAS a reply among
+      // the fresh cards, so the sitting can be an exchange; when nothing
+      // fresh answers anything, the course's pick leads as usual.
+      const candidateByKey = new Map(candidates.map((candidate) => [exchangeKey(candidate.de), candidate]));
+      const lead = exchanges
+        ? candidates.find((candidate) => exchangeChain(candidate.de, exchanges, (key) => candidateByKey.has(key), 1).length > 0) ?? candidates[0]
+        : candidates[0];
       // Anything that builds on the lead comes straight after it, before the
       // lead's own pack-mates — the chain IS the coherence the pack-mate rule
       // exists for. Followed transitively so a three-link chain stays whole.
@@ -1269,7 +1279,14 @@ export default function GuidedLearningSession() {
       const patternMates = sittingOrder === "similar" && lead
         ? similarMates(lead, candidates).filter((candidate) => !inChain.has(candidate) && !pinnedChains.includes(candidate))
         : [];
-      const pinned = new Set([...chainAfterLead, ...pinnedChains, ...patternMates]);
+      // Conversation order: the reply to the lead, then the reply to that,
+      // as far as the fresh cards go — an exchange rather than a list.
+      const exchangeMates = exchanges && lead
+        ? exchangeChain(lead.de, exchanges, (key) => candidateByKey.has(key), NEW_PER_LESSON_TARGET)
+            .map((key) => candidateByKey.get(key)!)
+            .filter((candidate) => candidate !== lead && !inChain.has(candidate) && !pinnedChains.includes(candidate))
+        : [];
+      const pinned = new Set([...chainAfterLead, ...pinnedChains, ...patternMates, ...exchangeMates]);
       // Regrouped once more at the end: the pack-mates reorder above can pull
       // dozens of the lead's pack between a base and its extension whenever
       // the base is NOT the lead. orderWithChains pulls every extension back
@@ -1280,6 +1297,7 @@ export default function GuidedLearningSession() {
             ...chainAfterLead,
             ...pinnedChains,
             ...patternMates,
+            ...exchangeMates,
             // Pack-mates come next so the sitting feels coherent — but only the
             // ones that are still nearly as worth learning as the lead. Without
             // a bound, one well-chosen lead dragged in whatever happened to sit
