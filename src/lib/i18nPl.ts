@@ -3244,4 +3244,7 @@ export const PL: Record<string, string> = {
   "The minibus": "Marszrutka",
   "Going south": "Wyjazd na południe",
   "Messages & chat": "Wiadomości i czat",
+  "Bread": "Chleb",
+  "At the chemist": "W aptece",
+  "Cats & dogs": "Koty i psy",
 };

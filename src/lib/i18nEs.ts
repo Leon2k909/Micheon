@@ -2805,4 +2805,7 @@ export const ES: Record<string, string> = {
   "The minibus": "El microbús",
   "Going south": "Irse al sur",
   "Messages & chat": "Mensajes y chat",
+  "Bread": "El pan",
+  "At the chemist": "En la farmacia",
+  "Cats & dogs": "Gatos y perros",
 };

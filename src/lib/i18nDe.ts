@@ -3492,4 +3492,7 @@ export const DE: Record<string, string> = {
   "The minibus": "Die Marschrutka",
   "Going south": "In den Süden fahren",
   "Messages & chat": "Nachrichten und Chat",
+  "Bread": "Brot",
+  "At the chemist": "In der Apotheke",
+  "Cats & dogs": "Katzen und Hunde",
 };

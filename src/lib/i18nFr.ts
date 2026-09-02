@@ -3244,4 +3244,7 @@ export const FR: Record<string, string> = {
   "The minibus": "Le minibus",
   "Going south": "Partir dans le Sud",
   "Messages & chat": "Messages et chat",
+  "Bread": "Le pain",
+  "At the chemist": "À la pharmacie",
+  "Cats & dogs": "Chats et chiens",
 };
