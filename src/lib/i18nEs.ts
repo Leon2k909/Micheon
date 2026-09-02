@@ -2796,4 +2796,7 @@ export const ES: Record<string, string> = {
   "Giving an opinion": "Dar una opinión",
   "Names": "Los nombres",
   "The very first phrases": "Las primerísimas frases",
+  "The garages": "Los garajes",
+  "Army service": "El servicio militar",
+  "The queue": "La cola",
 };

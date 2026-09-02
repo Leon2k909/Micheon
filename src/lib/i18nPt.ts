@@ -3147,4 +3147,7 @@ export const PT: Record<string, string> = {
   "Giving an opinion": "Dar uma opinião",
   "Names": "Os nomes",
   "The very first phrases": "As primeiras frases",
+  "The garages": "As garagens",
+  "Army service": "O serviço militar",
+  "The queue": "A fila",
 };

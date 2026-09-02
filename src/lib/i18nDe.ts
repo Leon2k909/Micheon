@@ -3483,4 +3483,7 @@ export const DE: Record<string, string> = {
   "Giving an opinion": "Eine Meinung sagen",
   "Names": "Namen",
   "The very first phrases": "Die allerersten Sätze",
+  "The garages": "Die Garagen",
+  "Army service": "Der Wehrdienst",
+  "The queue": "Die Schlange",
 };
