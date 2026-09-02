@@ -82,7 +82,13 @@ function swapItemForPortuguese(item: any, meaning: "de" | "en"): any | null {
 
 function portugueseDialogue(dialogue: Dialogue): Dialogue | null {
   const lines = (dialogue.lines ?? []).filter((line) => hasPortuguese(line));
-  return lines.length >= 2 ? { ...dialogue, lines } : null;
+  if (lines.length < 2) return null;
+  // The name too, for the same reason as in swapStepForPortuguese: the badge
+  // above the conversation is drawn from it, and spreading the dialogue
+  // carried it across in German. There are two paths that build a Portuguese
+  // dialogue and both have to do this, or one of them shows a German heading.
+  const title = dialogue.title ? portugueseFor(dialogue.title) : null;
+  return { ...dialogue, ...(title ? { title } : {}), lines };
 }
 
 function portuguesePart<T extends Part>(part: T): T | null {
