@@ -3486,4 +3486,7 @@ export const DE: Record<string, string> = {
   "The garages": "Die Garagen",
   "Army service": "Der Wehrdienst",
   "The queue": "Die Schlange",
+  "A Russian wedding": "Die russische Hochzeit",
+  "New Year in Russia": "Neujahr in Russland",
+  "The dormitory": "Das Wohnheim",
 };
