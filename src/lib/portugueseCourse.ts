@@ -39,7 +39,22 @@ export function swapStepForPortuguese(step: any, meaning: "de" | "en" = portugue
       .map((line: any) => swapItemForPortuguese(line, meaning))
       .filter(Boolean);
     if (lines.length < 2) return null;
-    return { ...step, dialogue: { ...step.dialogue, coachingLanguage: undefined, lines } };
+    /**
+     * The title too. It is drawn in a badge above the conversation, and
+     * spreading the dialogue carried it across in German — so a Portuguese
+     * conversation ran under a German heading. Untranslated titles keep the
+     * German, which is what every other language still shows.
+     */
+    const title = step.dialogue.title ? portugueseFor(step.dialogue.title) : null;
+    return {
+      ...step,
+      dialogue: {
+        ...step.dialogue,
+        ...(title ? { title } : {}),
+        coachingLanguage: undefined,
+        lines,
+      },
+    };
   }
 
   return step;
@@ -67,7 +82,13 @@ function swapItemForPortuguese(item: any, meaning: "de" | "en"): any | null {
 
 function portugueseDialogue(dialogue: Dialogue): Dialogue | null {
   const lines = (dialogue.lines ?? []).filter((line) => hasPortuguese(line));
-  return lines.length >= 2 ? { ...dialogue, lines } : null;
+  if (lines.length < 2) return null;
+  // The name too, for the same reason as in swapStepForPortuguese: the badge
+  // above the conversation is drawn from it, and spreading the dialogue
+  // carried it across in German. There are two paths that build a Portuguese
+  // dialogue and both have to do this, or one of them shows a German heading.
+  const title = dialogue.title ? portugueseFor(dialogue.title) : null;
+  return { ...dialogue, ...(title ? { title } : {}), lines };
 }
 
 function portuguesePart<T extends Part>(part: T): T | null {

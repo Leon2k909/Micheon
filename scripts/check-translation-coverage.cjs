@@ -70,16 +70,40 @@ M.primeTranslations("ru", M.RUSSIAN_BY_GERMAN);
 
 // ── read every taught entry out of the packs ────────────────────────────────
 const FIELD = (name) => new RegExp("\\b" + name + ':\\s*"((?:[^"\\\\]|\\\\.)*)"');
+
+/**
+ * The regex hands back the SOURCE text between the quotes, so a card that
+ * quotes somebody arrives with its backslashes still attached:
+ *
+ *   source   Ja. Sagen wir einfach „rot\".
+ *   table    Ja. Sagen wir einfach „rot".
+ *
+ * The tables are compiled modules, so their keys are the parsed strings. Left
+ * as it was, this compared one against the other and reported every card
+ * containing a quotation mark as untranslated — in every language at once,
+ * while the matching key sat in the table being byte-identical to the card.
+ * Portuguese alone lost seven that way, which is seven off the percentage and
+ * seven closer to a floor that exists to catch real losses.
+ */
+const unescape = (raw) => {
+  if (raw === undefined || raw === null) return raw;
+  try {
+    return JSON.parse(`"${raw}"`);
+  } catch {
+    return raw;
+  }
+};
+
 const dir = path.join(root, "src/lib");
 const entries = [];
 for (const file of fs.readdirSync(dir).filter((n) => n.endsWith(".ts"))) {
   const lines = fs.readFileSync(path.join(dir, file), "utf8").split(/\r?\n/);
   lines.forEach((line, index) => {
-    const de = (line.match(FIELD("de")) || [])[1];
+    const de = unescape((line.match(FIELD("de")) || [])[1]);
     if (!de) return;
     const inline = {};
     for (const language of TRANSLATION_LANGUAGES) {
-      inline[language] = (line.match(FIELD(language)) || [])[1] || null;
+      inline[language] = unescape((line.match(FIELD(language)) || [])[1]) || null;
     }
     entries.push({ de, inline, file, line: index + 1 });
   });

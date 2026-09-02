@@ -6509,10 +6509,10 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
         >
           <div
             aria-label={ui("How Continue learning is put together")}
-            className="max-h-full w-full max-w-md overflow-y-auto rounded-3xl border border-[var(--border)] bg-[var(--surface-1)] p-2 shadow-2xl"
+            className="max-h-full w-full max-w-lg overflow-y-auto rounded-3xl border border-[var(--border)] bg-[var(--surface-1)] p-1.5 shadow-2xl"
             role="dialog"
           >
-            <div className="flex items-center justify-between gap-3 px-3 pt-2">
+            <div className="flex items-center justify-between gap-3 px-3 pt-1.5">
               <p className="text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
                 {ui("Changing this rebuilds the sitting from the start.")}
               </p>

@@ -656,6 +656,108 @@ check(
   stalePlaces.length === 0
 );
 
+/**
+ * NO CONVERSATION IS HALF TRANSLATED.
+ *
+ * A dialogue is carried whole or not at all — the note beside the excluded
+ * packs says so — but nothing enforced it, and one line of a five-line
+ * conversation went out in German for weeks. Nobody reading the app would
+ * report that as a hole: it reads as one German line among Portuguese ones,
+ * which looks like a card that happens to be in German.
+ *
+ * It survived because the tool that lists untranslated work paired a card with
+ * its article-less form, so "der Hafen" and "Hafen" counted as one. Applied to
+ * a sentence that starts with an article, "Das ist, gelinde gesagt,
+ * unglücklich formuliert." and "Der ist, gelinde gesagt, unglücklich
+ * formuliert." collapse onto the same string, and the translated one vouched
+ * for the untranslated one. A tool that can be wrong is exactly why this
+ * belongs in the build instead.
+ *
+ * WHY HALF AND NOT ALL. Requiring every spoken line to have Portuguese would
+ * make adding a German conversation conditional on translating it, and turn
+ * main red on whoever wrote the German. That is the trade
+ * check-translation-coverage refuses in its own header, for good reason, and
+ * this file does not get to make it either. A conversation nobody has started
+ * translating is ordinary untranslated work. A conversation that is PART
+ * translated is the fault: somebody meant to carry it whole and a line was
+ * lost on the way.
+ *
+ * A dialogue line is written with a speaker beside it, which is what tells it
+ * apart from a word card, and the lines of one conversation are consecutive.
+ */
+const SPOKEN = /\{\s*speaker:\s*"[^"]*",\s*de:\s*"((?:[^"\\]|\\.)*)"/g;
+
+/**
+ * Is this conversation's name German?
+ *
+ * The first version of this asked whether the title STARTED with an article,
+ * and so passed In der Hausarztpraxis, Klatsch und Tratsch beim Kaffee and a
+ * dozen more straight through. A German function word anywhere is the better
+ * test, and it is safe here because the string being judged is the SOURCE
+ * title: English or German, never Portuguese, so das and de colliding with
+ * Portuguese prepositions does not arise.
+ *
+ * Words that are also English are left out — war, am, in, on, be — because an
+ * English title containing one would be asked for a Portuguese name it does
+ * not need.
+ */
+const GERMAN_TITLE = new RegExp(
+  "[ÄÖÜäöüß]|(?<![\\p{L}])(?:"
+  + "der|die|das|dem|den|des|und|ist|sind|bist|warst|wurde|hast|habe|haben|"
+  + "wir|ihr|sich|nicht|kein|keine|beim|vom|zum|zur|im|für|noch|wieder|"
+  + "oder|eine|einen|einem|mit|schon|doch|wenn|dass|nach|vor|über|unter|ohne|"
+  + "gegen|mal|wie|wer|wo|willst|kannst|geht|auf|aus|bei|von|zu|heute|morgen|abend"
+  + ")(?![\\p{L}])",
+  "iu"
+);
+const answered = new Set(pairs.map((row) => row.german));
+const halfDone = [];
+const germanTitles = [];
+let spokenCount = 0;
+for (const file of fs.readdirSync(path.join(root, "src/lib"))) {
+  if (!file.endsWith(".ts") || /Translations|i18n/.test(file)) continue;
+  const text = fs.readFileSync(path.join(root, "src/lib", file), "utf8");
+  // One conversation at a time: its title, then the lines: [...] it opens.
+  for (const block of text.split(/title: "/).slice(1)) {
+    const title = block.slice(0, block.indexOf('"'));
+    const lines = [...block.slice(0, block.indexOf("],")).matchAll(SPOKEN)].map((m) => m[1]);
+    if (lines.length < 2) continue;
+    spokenCount += lines.length;
+    const silent = lines.filter((l) => !answered.has(l) && !excluded.has(l));
+    if (silent.length && silent.length < lines.length) {
+      halfDone.push(`${silent[0]} (${lines.length - silent.length} of ${lines.length} lines carried)`);
+    }
+    /**
+     * And its name. A conversation reaches the Portuguese course when two of
+     * its lines are answered — that is the rule in portugueseCourse.ts — and
+     * the title is drawn in a badge above it. One that arrives without a
+     * Portuguese name runs under a German heading.
+     *
+     * Only German titles are asked for. The older packs name their
+     * conversations in English, which is a different question and not one this
+     * file gets to decide on its own.
+     *
+     * Counting ANSWERED lines rather than not-silent ones matters: a refused
+     * pack's lines are neither answered nor silent, so measuring the gap would
+     * have called Der, die oder das a carried conversation and asked for a
+     * Portuguese name for the one conversation this course refuses whole.
+     */
+    const carried = lines.filter((l) => answered.has(l)).length;
+    if (carried >= 2 && GERMAN_TITLE.test(title) && !answered.has(title) && !excluded.has(title)) {
+      germanTitles.push(title);
+    }
+  }
+}
+check(`the course has conversations to check (${spokenCount.toLocaleString("en-GB")} spoken lines)`, spokenCount > 3000);
+check(
+  `no conversation is half translated${halfDone.length ? ` — ${halfDone[0]}` : ""}`,
+  halfDone.length === 0
+);
+check(
+  `every conversation the course carries has a Portuguese name${germanTitles.length ? ` — ${germanTitles[0]}` : ""}`,
+  germanTitles.length === 0
+);
+
 if (failures.length) {
   console.error(`\n${failures.length} Portuguese table problem${failures.length === 1 ? "" : "s"}`);
   process.exit(1);
