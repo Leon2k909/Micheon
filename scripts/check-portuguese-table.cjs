@@ -688,18 +688,40 @@ check(
 const SPOKEN = /\{\s*speaker:\s*"[^"]*",\s*de:\s*"((?:[^"\\]|\\.)*)"/g;
 const answered = new Set(pairs.map((row) => row.german));
 const halfDone = [];
+const germanTitles = [];
 let spokenCount = 0;
 for (const file of fs.readdirSync(path.join(root, "src/lib"))) {
   if (!file.endsWith(".ts") || /Translations|i18n/.test(file)) continue;
   const text = fs.readFileSync(path.join(root, "src/lib", file), "utf8");
-  // One conversation at a time: the lines: [...] array a dialogue is written in.
-  for (const block of text.split(/lines:\s*\[/).slice(1)) {
-    const lines = [...block.slice(0, block.indexOf("\n    ],")).matchAll(SPOKEN)].map((m) => m[1]);
+  // One conversation at a time: its title, then the lines: [...] it opens.
+  for (const block of text.split(/title: "/).slice(1)) {
+    const title = block.slice(0, block.indexOf('"'));
+    const lines = [...block.slice(0, block.indexOf("],")).matchAll(SPOKEN)].map((m) => m[1]);
     if (lines.length < 2) continue;
     spokenCount += lines.length;
     const silent = lines.filter((l) => !answered.has(l) && !excluded.has(l));
     if (silent.length && silent.length < lines.length) {
       halfDone.push(`${silent[0]} (${lines.length - silent.length} of ${lines.length} lines carried)`);
+    }
+    /**
+     * And its name. A conversation reaches the Portuguese course when two of
+     * its lines are answered — that is the rule in portugueseCourse.ts — and
+     * the title is drawn in a badge above it. One that arrives without a
+     * Portuguese name runs under a German heading.
+     *
+     * Only German titles are asked for. The older packs name their
+     * conversations in English, which is a different question and not one this
+     * file gets to decide on its own.
+     *
+     * Counting ANSWERED lines rather than not-silent ones matters: a refused
+     * pack's lines are neither answered nor silent, so measuring the gap would
+     * have called Der, die oder das a carried conversation and asked for a
+     * Portuguese name for the one conversation this course refuses whole.
+     */
+    const carried = lines.filter((l) => answered.has(l)).length;
+    const german = /[ÄÖÜäöüß]|^(?:Der|Die|Das|Ein|Eine|Im|Am|Beim|Vom|Zum|Zur|Nach|Vor|Nur|Erst|Kein|Wer|Was|Wie|Wo)\b/.test(title);
+    if (german && carried >= 2 && !answered.has(title) && !excluded.has(title)) {
+      germanTitles.push(title);
     }
   }
 }
@@ -707,6 +729,10 @@ check(`the course has conversations to check (${spokenCount.toLocaleString("en-G
 check(
   `no conversation is half translated${halfDone.length ? ` — ${halfDone[0]}` : ""}`,
   halfDone.length === 0
+);
+check(
+  `every conversation the course carries has a Portuguese name${germanTitles.length ? ` — ${germanTitles[0]}` : ""}`,
+  germanTitles.length === 0
 );
 
 if (failures.length) {

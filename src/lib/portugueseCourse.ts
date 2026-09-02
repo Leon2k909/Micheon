@@ -39,7 +39,22 @@ export function swapStepForPortuguese(step: any, meaning: "de" | "en" = portugue
       .map((line: any) => swapItemForPortuguese(line, meaning))
       .filter(Boolean);
     if (lines.length < 2) return null;
-    return { ...step, dialogue: { ...step.dialogue, coachingLanguage: undefined, lines } };
+    /**
+     * The title too. It is drawn in a badge above the conversation, and
+     * spreading the dialogue carried it across in German — so a Portuguese
+     * conversation ran under a German heading. Untranslated titles keep the
+     * German, which is what every other language still shows.
+     */
+    const title = step.dialogue.title ? portugueseFor(step.dialogue.title) : null;
+    return {
+      ...step,
+      dialogue: {
+        ...step.dialogue,
+        ...(title ? { title } : {}),
+        coachingLanguage: undefined,
+        lines,
+      },
+    };
   }
 
   return step;
