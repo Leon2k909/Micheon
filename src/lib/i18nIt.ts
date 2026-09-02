@@ -2795,4 +2795,7 @@ export const IT: Record<string, string> = {
   "Mushroom picking": "Andare a funghi",
   "The long road": "La strada statale",
   "Making do": "Arrangiarsi",
+  "Toasts": "I brindisi",
+  "The suburban train": "Il treno locale",
+  "Supporting a team": "Fare il tifo",
 };

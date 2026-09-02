@@ -3501,4 +3501,7 @@ export const DE: Record<string, string> = {
   "Mushroom picking": "Pilze sammeln",
   "The long road": "Die Fernstraße",
   "Making do": "Selber machen",
+  "Toasts": "Trinksprüche",
+  "The suburban train": "Der Vorortzug",
+  "Supporting a team": "Mitfiebern",
 };

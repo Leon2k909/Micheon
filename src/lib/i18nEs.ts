@@ -2814,4 +2814,7 @@ export const ES: Record<string, string> = {
   "Mushroom picking": "Recoger setas",
   "The long road": "La carretera",
   "Making do": "Apañárselas",
+  "Toasts": "Los brindis",
+  "The suburban train": "El tren de cercanías",
+  "Supporting a team": "Animar a un equipo",
 };

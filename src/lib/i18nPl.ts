@@ -3253,4 +3253,7 @@ export const PL: Record<string, string> = {
   "Mushroom picking": "Grzybobranie",
   "The long road": "Trasa",
   "Making do": "Radzenie sobie",
+  "Toasts": "Toasty",
+  "The suburban train": "Kolejka podmiejska",
+  "Supporting a team": "Kibicowanie",
 };
