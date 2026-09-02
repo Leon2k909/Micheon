@@ -631,6 +631,10 @@ const KEEPS_ITS_GERMAN_PLACE = new Set([
   "Wir wohnen in NRW.",
   "Punkte kommen nach Flensburg.",
   "Ich habe einen Punkt in Flensburg bekommen.",
+  // And the conversation those two sit in, by its name. A letter from
+  // Flensburg is not post from a town: it is the notice from the register,
+  // and the register is in Flensburg the way the points are.
+  "The letter from Flensburg",
   "Die Schale geht dieses Jahr wohl wieder nach München.",
 ]);
 const strayPlaces = pairs.filter(
@@ -701,16 +705,40 @@ const SPOKEN = /\{\s*speaker:\s*"[^"]*",\s*de:\s*"((?:[^"\\]|\\.)*)"/g;
  * English title containing one would be asked for a Portuguese name it does
  * not need.
  */
-const GERMAN_TITLE = new RegExp(
-  "[ÄÖÜäöüß]|(?<![\\p{L}])(?:"
-  + "der|die|das|dem|den|des|und|ist|sind|bist|warst|wurde|hast|habe|haben|"
-  + "wir|ihr|sich|nicht|kein|keine|beim|vom|zum|zur|im|für|noch|wieder|"
-  + "oder|eine|einen|einem|mit|schon|doch|wenn|dass|nach|vor|über|unter|ohne|"
-  + "gegen|mal|wie|wer|wo|willst|kannst|geht|auf|aus|bei|von|zu|heute|morgen|abend"
-  + ")(?![\\p{L}])",
-  "iu"
-);
+/**
+ * This used to ask whether a title was GERMAN, and only then demand a
+ * Portuguese name for it. That test was wrong twice over and both times
+ * quietly: first it only looked at the FIRST word, so In der Hausarztpraxis
+ * and Klatsch und Tratsch beim Kaffee walked past it; widened to a German
+ * word anywhere, it still missed Kontakt!, Zockernacht and Verliebt, which
+ * contain no function word at all.
+ *
+ * The question was wrong, not the word list. A conversation the Portuguese
+ * course carries is drawn under its title whatever language that title is
+ * written in, and the older packs name their scenes in English. So the rule is
+ * now the simple one — every carried conversation has a Portuguese name — and
+ * there is no list of German words left to keep correct.
+ */
 const answered = new Set(pairs.map((row) => row.german));
+/**
+ * And the same keys unescaped, for comparing against titles.
+ *
+ * pairs holds what the source file says between the quotes, which for a key
+ * that quotes somebody still carries its backslashes. The titles below are
+ * parsed before they are compared, so they must be compared against parsed
+ * keys — otherwise a finished translation of "Wie ist das bei euch?" reads as
+ * missing. pairs itself is left alone: every other check on this page compares
+ * it against source text that is raw in the same way.
+ */
+const answeredParsed = new Set(
+  [...answered].map((key) => {
+    try {
+      return JSON.parse(`"${key}"`);
+    } catch {
+      return key;
+    }
+  })
+);
 const halfDone = [];
 const germanTitles = [];
 let spokenCount = 0;
@@ -719,7 +747,22 @@ for (const file of fs.readdirSync(path.join(root, "src/lib"))) {
   const text = fs.readFileSync(path.join(root, "src/lib", file), "utf8");
   // One conversation at a time: its title, then the lines: [...] it opens.
   for (const block of text.split(/title: "/).slice(1)) {
-    const title = block.slice(0, block.indexOf('"'));
+    /**
+     * The title, escapes and all. Slicing to the first quote cuts a title that
+     * quotes somebody in half — Confiding in a friend: "Sie ist fremdgegangen"
+     * came back as everything up to the backslash — and the halved string then
+     * matches nothing in the table. The value is unescaped too, because the
+     * table holds parsed strings: a key written with the backslash still in it
+     * never matches what the app looks up.
+     */
+    const titleMatch = /^((?:[^"\\]|\\.)*)"/.exec(block);
+    if (!titleMatch) continue;
+    let title = titleMatch[1];
+    try {
+      title = JSON.parse(`"${title}"`);
+    } catch {
+      // Leave it as written. A title this cannot parse is one to go and look at.
+    }
     const lines = [...block.slice(0, block.indexOf("],")).matchAll(SPOKEN)].map((m) => m[1]);
     if (lines.length < 2) continue;
     spokenCount += lines.length;
@@ -743,7 +786,7 @@ for (const file of fs.readdirSync(path.join(root, "src/lib"))) {
      * Portuguese name for the one conversation this course refuses whole.
      */
     const carried = lines.filter((l) => answered.has(l)).length;
-    if (carried >= 2 && GERMAN_TITLE.test(title) && !answered.has(title) && !excluded.has(title)) {
+    if (carried >= 2 && !answeredParsed.has(title) && !excluded.has(title)) {
       germanTitles.push(title);
     }
   }
