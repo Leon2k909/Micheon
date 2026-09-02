@@ -28395,4 +28395,17 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   // article and was matched by the same collapse.
   "Der ist, gelinde gesagt, unglücklich formuliert.": "Está, para dizer o mínimo, mal formulada.",
   "das erste Mal": "a primeira vez",
+
+  // ── Three word cards the app was showing in German ─────────────────────
+  //
+  // Found by asking the app's own translate() rather than by looking the key
+  // up in the table: a card is written de: "Vertrauen" with article: "das",
+  // and the table answered only "das Vertrauen". The lookup is handed the de
+  // field, so the article-less card found nothing and drew the German.
+  //
+  // Die Untertitel is the plural card; der Untertitel, the singular one beside
+  // it, already had a legenda.
+  "Paartherapie": "a terapia de casal",
+  "Vertrauen": "a confiança",
+  "die Untertitel": "as legendas",
 };
