@@ -178,6 +178,46 @@ check("every pack belongs to the Russian course alone", () => {
   );
 });
 
+// The lesson card shows uiOr(part.theme, "Konversationsmodul"), and uiOr is
+// keyed on the ENGLISH source string. A theme written in German misses every
+// table and falls back SILENTLY — all 66 packs once rendered as
+// "Konversationsmodul", which no gate saw and only a photograph of the running
+// app did. So the theme is pinned here: it must resolve in every interface
+// table there is, or the pack has no name on screen.
+check("every pack's theme has a name in every interface language", () => {
+  const tables = {
+    de: "i18nDe.ts", es: "i18nEs.ts", fr: "i18nFr.ts",
+    it: "i18nIt.ts", pl: "i18nPl.ts", pt: "i18nPt.ts",
+  };
+  const missing = [];
+  for (const [lang, file] of Object.entries(tables)) {
+    const src = fs.readFileSync(path.join(__dirname, "..", "src", "lib", file), "utf8");
+    for (const part of Object.values(partsDe)) {
+      const theme = String(part.theme ?? "");
+      if (!theme) { missing.push(`${lang}: a pack has no theme at all`); continue; }
+      if (!src.includes("\n  " + JSON.stringify(theme) + ":")) missing.push(`${lang}: ${theme}`);
+    }
+  }
+  assert.deepStrictEqual(
+    missing,
+    [],
+    `these packs would show "Konversationsmodul" instead of their own name: ${missing.join(" | ")}`,
+  );
+});
+
+// Two packs sharing one id is not an error anywhere: partsDe is a Record, so
+// the second silently REPLACES the first and the course quietly loses a pack.
+// It happened once and was caught only because cards inside the two collided.
+check("no two packs share an id", () => {
+  const ids = [...fs.readFileSync(ownFile, "utf8").matchAll(/id: "(ru-own-[^"]+)"/g)].map((m) => m[1]);
+  const twice = [...new Set(ids.filter((id, at) => ids.indexOf(id) !== at))];
+  assert.deepStrictEqual(
+    twice,
+    [],
+    `one pack would silently overwrite another: ${twice.join(" | ")}`,
+  );
+});
+
 let failed = 0;
 for (const [status, title, message] of results) {
   console.log(`${status === "ok" ? "ok  " : "FAIL"} ${title}`);
