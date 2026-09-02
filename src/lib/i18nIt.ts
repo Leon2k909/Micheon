@@ -2789,4 +2789,7 @@ export const IT: Record<string, string> = {
   "Bread": "Il pane",
   "At the chemist": "In farmacia",
   "Cats & dogs": "Gatti e cani",
+  "Housework": "Le pulizie di casa",
+  "The post office": "L'ufficio postale",
+  "Older people": "Gli anziani",
 };

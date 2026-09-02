@@ -3495,4 +3495,7 @@ export const DE: Record<string, string> = {
   "Bread": "Brot",
   "At the chemist": "In der Apotheke",
   "Cats & dogs": "Katzen und Hunde",
+  "Housework": "Hausarbeit",
+  "The post office": "Die Post",
+  "Older people": "Die Älteren",
 };

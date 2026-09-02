@@ -3247,4 +3247,7 @@ export const FR: Record<string, string> = {
   "Bread": "Le pain",
   "At the chemist": "À la pharmacie",
   "Cats & dogs": "Chats et chiens",
+  "Housework": "Le ménage",
+  "The post office": "La poste",
+  "Older people": "Les aînés",
 };

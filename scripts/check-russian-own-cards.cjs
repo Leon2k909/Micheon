@@ -205,6 +205,19 @@ check("every pack's theme has a name in every interface language", () => {
   );
 });
 
+// Two packs sharing one id is not an error anywhere: partsDe is a Record, so
+// the second silently REPLACES the first and the course quietly loses a pack.
+// It happened once and was caught only because cards inside the two collided.
+check("no two packs share an id", () => {
+  const ids = [...fs.readFileSync(ownFile, "utf8").matchAll(/id: "(ru-own-[^"]+)"/g)].map((m) => m[1]);
+  const twice = [...new Set(ids.filter((id, at) => ids.indexOf(id) !== at))];
+  assert.deepStrictEqual(
+    twice,
+    [],
+    `one pack would silently overwrite another: ${twice.join(" | ")}`,
+  );
+});
+
 let failed = 0;
 for (const [status, title, message] of results) {
   console.log(`${status === "ok" ? "ok  " : "FAIL"} ${title}`);
