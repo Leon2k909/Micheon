@@ -706,7 +706,7 @@ const GERMAN_TITLE = new RegExp(
   + "der|die|das|dem|den|des|und|ist|sind|bist|warst|wurde|hast|habe|haben|"
   + "wir|ihr|sich|nicht|kein|keine|beim|vom|zum|zur|im|für|noch|wieder|"
   + "oder|eine|einen|einem|mit|schon|doch|wenn|dass|nach|vor|über|unter|ohne|"
-  + "gegen|mal|wie|wer|wo|willst|kannst|geht"
+  + "gegen|mal|wie|wer|wo|willst|kannst|geht|auf|aus|bei|von|zu|heute|morgen|abend"
   + ")(?![\\p{L}])",
   "iu"
 );

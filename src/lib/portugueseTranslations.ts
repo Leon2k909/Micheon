@@ -28671,4 +28671,8 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Oma ist gestorben (comforting your partner)": "A avó morreu (consolar quem amas)",
   "In der Umkleidekabine": "No gabinete de provas",
   "Alaaf oder Helau?": "Alaaf ou Helau?",
+
+  // Two more, once the test learned auf, bei and zu.
+  "Vorfreude auf heute Nacht": "À espera desta noite",
+  "Zu Besuch bei Freunden": "De visita a casa de amigos",
 };
