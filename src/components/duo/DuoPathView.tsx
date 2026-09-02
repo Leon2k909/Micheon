@@ -1,4 +1,5 @@
 import { ChevronRight, Layers, MessagesSquare, Play, Rocket } from "lucide-react";
+import { ContinueLearningSettings } from "@/components/duo/ContinueLearningSettings";
 import { ui, uiFmt } from "@/lib/i18n";
 
 /**
@@ -178,6 +179,15 @@ export function DuoPathView({
           </span>
         </button>
       </section>
+
+      {/*
+        Under the ways in: how the first of them is put together. Continue
+        learning had one fixed answer — the course's pick — and Listen had
+        a whole panel; the learner who wants all of A1 before A2, or every
+        "Ich möchte" in one run, now says so here, and the next sitting is
+        built that way.
+      */}
+      <ContinueLearningSettings />
     </div>
   );
 }

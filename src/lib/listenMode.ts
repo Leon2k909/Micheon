@@ -49,6 +49,7 @@ import {
   type UserProfile,
 } from "@/lib/profileStorage";
 import { getLearningDirection, type LearningDirection } from "@/lib/direction";
+import { sentencePattern } from "@/lib/sentencePattern";
 
 /**
  * Listen mode: passive exposure, deliberately NOT a lesson.
@@ -172,8 +173,8 @@ export const LISTEN_DIALOGUE_VOICES: Readonly<Record<"a" | "b", string>> = {
  * as the kinds joined by "+".
  */
 type ListenContentSource = ListenContentKind | "mixed";
-export type ListenQueueOrder = "common" | "learning" | "least-heard" | "newest" | "level" | "longest";
-export const LISTEN_QUEUE_ORDERS: ListenQueueOrder[] = ["level", "common", "learning", "least-heard", "newest", "longest"];
+export type ListenQueueOrder = "common" | "learning" | "least-heard" | "newest" | "level" | "longest" | "similar";
+export const LISTEN_QUEUE_ORDERS: ListenQueueOrder[] = ["level", "common", "learning", "least-heard", "newest", "longest", "similar"];
 
 /**
  * How big a card is, for Longest first: the length of what gets spoken.
@@ -1861,6 +1862,40 @@ export function buildListenQueue(
         || listenItemLength(b.item) - listenItemLength(a.item)
         || leads(a, b)
       )
+      .map((entry) => entry.item);
+  }
+  if (order === "similar") {
+    /**
+     * Sentences that open the same way, in a run: every "Ich möchte …", then
+     * every "Kannst du …". The biggest shape plays first because it is the
+     * most reusable one, then shapes by how soon the commonest card in them
+     * would otherwise have played, and inside a shape the usual lead. A card
+     * nobody else opens like — and every single word — is a shape of one and
+     * comes after the shapes, in commonality order, so nothing is lost.
+     */
+    const patternOf = (entry: typeof available[number]) => sentencePattern(entry.item.de);
+    const size = new Map<string, number>();
+    const soonest = new Map<string, number>();
+    for (const entry of available) {
+      const key = patternOf(entry);
+      if (!key.includes(" ")) continue;
+      size.set(key, (size.get(key) ?? 0) + 1);
+      soonest.set(key, Math.min(soonest.get(key) ?? Infinity, entry.index));
+    }
+    const shape = (entry: typeof available[number]) => {
+      const key = patternOf(entry);
+      const members = size.get(key) ?? 1;
+      return { members: members > 1 ? members : 0, soonest: members > 1 ? (soonest.get(key) ?? entry.index) : entry.index, key };
+    };
+    return available
+      .sort((a, b) => {
+        const left = shape(a), right = shape(b);
+        return a.resting - b.resting
+          || right.members - left.members
+          || left.soonest - right.soonest
+          || left.key.localeCompare(right.key)
+          || leads(a, b);
+      })
       .map((entry) => entry.item);
   }
 

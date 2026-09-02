@@ -2203,7 +2203,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
             <fieldset className="mt-4 border-t border-[var(--border)] pt-4">
               <legend className="text-xs font-black text-[var(--text-2)]">{ui("Queue order")}</legend>
               <p className="mt-0.5 text-[11px] font-semibold text-[var(--text-3)]">
-                {ui("Easiest first works through the course by level — all of A1, then A2, then B1 — with the most useful card leading each level. Most common first teaches the phrases and words people are most likely to use, whatever level they are. Reviews & struggles first plays what is due and what you have marked as hard before anything new. Least heard first plays what you have heard fewest times, so nothing is skipped for long. Newest first plays the packs added most recently, so new content is heard instead of waiting behind thousands of commoner items. Longest first plays the biggest pieces first — whole passages, then sentences, then single words.")}
+                {ui("Easiest first works through the course by level — all of A1, then A2, then B1 — with the most useful card leading each level. Most common first teaches the phrases and words people are most likely to use, whatever level they are. Reviews & struggles first plays what is due and what you have marked as hard before anything new. Least heard first plays what you have heard fewest times, so nothing is skipped for long. Newest first plays the packs added most recently, so new content is heard instead of waiting behind thousands of commoner items. Longest first plays the biggest pieces first — whole passages, then sentences, then single words. Similar sentences together plays sentences that start the same way in a run — every “Ich möchte …”, then every “Kannst du …” — so one shape is drilled before the next.")}
               </p>
               <div
                 aria-label={ui("Queue order")}
@@ -2222,6 +2222,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
                   "newest", "Newest first",
                 ], [
                   "longest", "Longest first",
+                ], [
+                  "similar", "Similar sentences together",
                 ]] as const).map(([value, label]) => {
                   const selected = queueOrder === value;
                   return (

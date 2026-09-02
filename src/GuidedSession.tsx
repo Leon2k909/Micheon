@@ -114,7 +114,8 @@ function lessonSpeak(text: string, rate: number, lang: string): Promise<void> {
 }
 import { ui, uiOr, uiFmt, uiNumber } from "@/lib/i18n";
 import { cefrBadgeLabel } from "@/lib/cefr";
-import { Volume2, ChevronLeft, ChevronRight, ChevronDown, CheckCircle2, X, BookOpen, ArrowRight, MessageSquareQuote, RotateCcw, Languages, GripVertical, Eye, EyeOff, Lightbulb, Keyboard, ListChecks, MousePointerClick, SkipForward } from "lucide-react";
+import { ContinueLearningSettings } from "@/components/duo/ContinueLearningSettings";
+import { Settings2, Volume2, ChevronLeft, ChevronRight, ChevronDown, CheckCircle2, X, BookOpen, ArrowRight, MessageSquareQuote, RotateCcw, Languages, GripVertical, Eye, EyeOff, Lightbulb, Keyboard, ListChecks, MousePointerClick, SkipForward } from "lucide-react";
 // TTS now runs through the /api/tts server (premium Microsoft voices in every
 // browser) with an automatic fall back to the browser's built-in speechSynthesis.
 // See src/lib/voice.ts.
@@ -5846,6 +5847,10 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   const { speak: petSpeak } = useCodexPets();
   const reduceMotion = useReducedMotion() || effectsReduced();
   const [guidedBackground, setGuidedBackground] = useState<GuidedBackground>(() => getGuidedBackground());
+  // The gear beside mute and close: how Continue learning is put together.
+  // A sitting is built once, on the way in, so a change here is for the next
+  // one — the panel says so rather than pretending to reshuffle this one.
+  const [sessionSettingsOpen, setSessionSettingsOpen] = useState(false);
   const [guidedCustomBackground, setGuidedCustomBackground] = useState<string | null>(() => getGuidedCustomBackground());
   const [index, setIndex] = useState(0);
   const [previewActive, setPreviewActive] = useState(true);
@@ -6449,11 +6454,47 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
             iconClassName="h-4 w-4"
             panelClassName="prototype-audio-mixer"
           />
+          <button
+            type="button"
+            aria-expanded={sessionSettingsOpen}
+            aria-label={ui("How Continue learning is put together")}
+            className="fs-iconbtn"
+            data-testid="session-settings-button"
+            onClick={() => setSessionSettingsOpen((open) => !open)}
+          >
+            <Settings2 className="h-4 w-4" />
+          </button>
           <button type="button" aria-label={ui("Close lesson")} className="fs-iconbtn" onClick={handleCancel}>
             <X className="h-4 w-4" />
           </button>
         </div>
       </header>
+
+      {sessionSettingsOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-end bg-black/40 px-3 pb-3 pt-20 sm:px-5 sm:pb-5"
+          data-testid="session-settings"
+          onClick={(event) => { if (event.target === event.currentTarget) setSessionSettingsOpen(false); }}
+          onKeyDown={(event) => { if (event.key === "Escape") setSessionSettingsOpen(false); }}
+          role="presentation"
+        >
+          <div
+            aria-label={ui("How Continue learning is put together")}
+            className="max-h-[calc(100vh-6rem)] w-full max-w-md overflow-y-auto rounded-3xl border border-[var(--border)] bg-[var(--surface-1)] p-2 shadow-2xl"
+            role="dialog"
+          >
+            <div className="flex items-center justify-between px-3 pt-2">
+              <p className="text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
+                {ui("Changes apply from your next sitting.")}
+              </p>
+              <button type="button" aria-label={ui("Close")} className="fs-iconbtn" onClick={() => setSessionSettingsOpen(false)}>
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <ContinueLearningSettings />
+          </div>
+        </div>
+      )}
 
       {/* Main */}
       <main className="relative z-10 flex flex-1 items-start justify-center overflow-y-auto p-5 sm:p-7">

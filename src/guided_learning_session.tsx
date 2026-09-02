@@ -4,6 +4,7 @@ import { PlacementTest } from "@/components/PlacementTest";
 import GuidedSession from "@/GuidedSession";
 import { buildApiPartFromResolved } from "@/lib/api";
 import { orderParts } from "@/lib/curriculum";
+import { getSittingLevelFilters, getSittingOrder, passesSittingLevel, similarMates, sittingComparator } from "@/lib/sittingOrder";
 import { buildBundledParts, buildTatoebaParts, filterPartsForLearningDirection } from "@/lib/contentBank";
 import { buildCustomParts, isCustomPartKey, CUSTOM_CONTENT_EVENT } from "@/lib/customContent";
 import { allPartBlueprints } from "@/lib/data";
@@ -924,6 +925,10 @@ export default function GuidedLearningSession() {
       // which no sentence path constructs, so grading a word here cannot
       // schedule anything in an ordinary sitting — and vice versa.
       const lessonContent = getLessonContent();
+      // How this sitting is put together: the course's pick unless the
+      // learner chose an order, and every level unless they narrowed it.
+      const sittingOrder = getSittingOrder();
+      const sittingLevels = getSittingLevelFilters();
       if (lessonContent === "words") {
         const rankedWords = rankWordCatalog(buildWordCatalog(activeParts), corpusIndex);
         let wordSteps: any[] = buildWordSitting(rankedWords, reviewState);
@@ -1101,7 +1106,9 @@ export default function GuidedLearningSession() {
         if (buildsOn) chainTargetKeys.add(sentenceIdentityKey(String(buildsOn)).toLowerCase());
       });
       const chainBaseScores = new Map<string, number>();
-      const candidates: { pId: string; index: number; score: number; step: any }[] = [];
+      // level, de and commonality are what the sitting order sorts on — see
+      // sittingComparator; the course's own pick is the score.
+      const candidates: { pId: string; index: number; score: number; level?: string; de: string; commonality: number; step: any }[] = [];
       catalog.forEach((item, index) => {
         if (chainTargetKeys.size) {
           const keys = [
@@ -1143,11 +1150,16 @@ export default function GuidedLearningSession() {
         const pId = item.partKey;
         const p = activeParts[pId];
         if (!p) return;
+        // Fresh material only: a review is never filtered out by level.
+        if (!passesSittingLevel(item.level ?? p.level, sittingLevels)) return;
         const text = String(item.de ?? "");
         const commonality = sentenceCommonality(text, corpusIndex);
         candidates.push({
           pId,
           index,
+          level: item.level ?? p.level,
+          de: text,
+          commonality,
           score: conversationPriorityScore({
             partKey: pId,
             kind: item.kind,
@@ -1199,7 +1211,10 @@ export default function GuidedLearningSession() {
         }),
         chainBaseScores
       );
-      candidates.sort((a, b) => (a.score !== b.score ? a.score - b.score : a.index - b.index));
+      // The learner's order, or the course's pick. Every order breaks ties
+      // on the pick and then the curriculum, so "level first" is the course's
+      // pick within a level rather than a different course.
+      candidates.sort(sittingComparator(sittingOrder));
 
       // The lead sentence is the best-scoring one anywhere. The rest of the
       // fresh half prefers its pack-mates so the lesson still feels coherent,
@@ -1241,7 +1256,13 @@ export default function GuidedLearningSession() {
             .slice(0, NEW_PER_LESSON_TARGET)
             .filter((candidate) => candidate !== lead && !inChain.has(candidate) && candidate.step.item?.buildsOn)
         : [];
-      const pinned = new Set([...chainAfterLead, ...pinnedChains]);
+      // Similar sentences together: the cards that open the way the lead
+      // does come straight after its chain, ahead of its pack-mates. A lead
+      // with no mates leaves the sitting as the course's pick.
+      const patternMates = sittingOrder === "similar" && lead
+        ? similarMates(lead, candidates).filter((candidate) => !inChain.has(candidate) && !pinnedChains.includes(candidate))
+        : [];
+      const pinned = new Set([...chainAfterLead, ...pinnedChains, ...patternMates]);
       // Regrouped once more at the end: the pack-mates reorder above can pull
       // dozens of the lead's pack between a base and its extension whenever
       // the base is NOT the lead. orderWithChains pulls every extension back
@@ -1251,6 +1272,7 @@ export default function GuidedLearningSession() {
             lead,
             ...chainAfterLead,
             ...pinnedChains,
+            ...patternMates,
             // Pack-mates come next so the sitting feels coherent — but only the
             // ones that are still nearly as worth learning as the lead. Without
             // a bound, one well-chosen lead dragged in whatever happened to sit
