@@ -60,6 +60,7 @@ import {
   adaptiveRepeatPriority,
   isAdaptiveReinforcementEligible,
   isAttemptedPracticeEligible,
+  lastRunHadMistake,
   recordAnswerPerformance,
   type AnswerPerformance,
 } from "@/lib/adaptivePractice";
@@ -985,6 +986,12 @@ export default function GuidedLearningSession() {
               reviewReason: "struggle",
               interval: 0,
               struggledAt: Number.isFinite(struggledAt) ? struggledAt : 0,
+              // A struggle is what a failed spelling writes. The review it
+              // earns has to check the spelling again, so it opens on the
+              // full writing route rather than the one-test lean one — the
+              // same route the miss bought inside the sitting where it
+              // happened, which a remount had been forgetting.
+              item: { ...st.item, typingFailed: true },
             };
             requiredReviews.push(priorityReview);
             reviewPartByStep.set(priorityReview, pId);
@@ -1508,7 +1515,31 @@ export default function GuidedLearningSession() {
    * a dialogue, a register question — is left alone: those are not a phrase
    * being learned and have nothing to come back for.
    */
-  const withSecondShowing = (steps: any[]): any[] => {
+  /**
+   * A phrase whose spelling was missed last time is spelled again this time.
+   *
+   * The miss bought the writing stages back inside the sitting where it
+   * happened, and then the sitting ended and the component remounted and the
+   * memory of it went with it: the phrase came back for review on the
+   * one-test route as if it had never gone wrong. The record knows better —
+   * it keeps when the item was last answered and when it last slipped — so
+   * every step is stamped from that before the sitting is dealt, whatever
+   * kind of review brought it here.
+   */
+  const withSpellingMemory = (steps: any[]): any[] => {
+    const grades = loadCompleted();
+    return steps.map((step) => {
+      if (step?.type !== "sentence" || !step.item?.id || step.item.typingFailed) return step;
+      const record = progressEntryForId(grades, step.item.id, step.item.aliases ?? [])?.record;
+      return lastRunHadMistake(record)
+        ? { ...step, item: { ...step.item, typingFailed: true } }
+        : step;
+    });
+  };
+
+  const withSecondShowing = (dealt: any[]): any[] => {
+    // Stamped first, so the second showing inherits the memory too.
+    const steps: any[] = withSpellingMemory(dealt);
     const endsOnComplete = steps[steps.length - 1]?.type === "complete";
     const body = endsOnComplete ? steps.slice(0, -1) : steps;
     const again = body

@@ -255,7 +255,10 @@ check(
   // screen to copy from. Only missing it buys them back.
   check(
     "the route reads whether the typing test was missed",
-    guided.includes("const [typingFailed, setTypingFailed] = useState(false);")
+    // Seeded from the item rather than false: a phrase whose spelling was
+    // missed comes back as a review carrying typingFailed, so the miss is
+    // remembered past the remount instead of forgotten with the sitting.
+    guided.includes("const [typingFailed, setTypingFailed] = useState(() => Boolean(item?.typingFailed));")
       && /chained: Boolean\(item\?\.chainedFromLesson\),\s*\n\s*typingFailed,/.test(guided)
   );
   for (const [name, pattern, why] of [
@@ -371,7 +374,9 @@ check(
   "the reading stages count down and move on",
   /const READING_STAGE_MS = 10_000;/.test(guided)
     && /const READING_PHASES: readonly Phase\[\] = \["Read", "MeaningFirst"\];/.test(guided)
-    && /if \(currentPhaseRef\.current === phase\) advance\(\);/.test(guided)
+    // advanceOrFinish, because with the sound off a reading stage can be the
+    // last of a route, and advance() on the last stage is a no-op.
+    && /if \(currentPhaseRef\.current === phase\) advanceOrFinish\(\);/.test(guided)
 );
 check(
   "...and only those two, so nothing that asks a question answers itself",
@@ -396,7 +401,7 @@ check(
 );
 check(
   "a tick that outlives its stage cannot advance the next one",
-  /window\.clearInterval\(tick\);\s*\n\s*if \(currentPhaseRef\.current === phase\) advance\(\);/.test(guided)
+  /window\.clearInterval\(tick\);\s*\n(?:\s*\/\/[^\n]*\n)*\s*if \(currentPhaseRef\.current === phase\) advanceOrFinish\(\);/.test(guided)
 );
 
 // ── the missing-word stage opens by playing ────────────────────────────────

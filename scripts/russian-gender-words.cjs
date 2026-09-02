@@ -47,11 +47,21 @@ const MASCULINE_PAST = [
   "пришёл", "ушёл", "нашёл", "был", "смог", "взял", "дал", "мог", "писал",
   "читал", "работал", "жил", "ел", "пил", "спал", "играл", "купил", "спросил",
   "ответил", "решил", "начал", "закончил", "успел", "устал", "проспал",
+  // Added after block 65 wrote cards the list could not see: both are always
+  // a person speaking, so neither can be a noun agreeing with something else.
+  "договорил", "старался", "стал", "смотрел", "ходил", "остался",
 ];
 
 const FEMININE_PAST = MASCULINE_PAST
-  .map((word) => word.replace(/ёл$/, "ла").replace(/л$/, "ла").replace(/г$/, "гла"))
-  .filter((word) => word.endsWith("ла"));
+  // The reflexive branch has to come FIRST: старался -> старалась. Without it
+  // the -л rule never fires (the word ends in -ся), the entry is dropped for
+  // not ending in -ла, and every reflexive past tense walks past the gate.
+  .map((word) => word
+    .replace(/лся$/, "лась")
+    .replace(/ёл$/, "ла")
+    .replace(/л$/, "ла")
+    .replace(/г$/, "гла"))
+  .filter((word) => word.endsWith("ла") || word.endsWith("лась"));
 
 /**
  * Split a Russian line into comparable words: lower-cased, punctuation gone.

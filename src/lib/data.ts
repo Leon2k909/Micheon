@@ -870,7 +870,10 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "MMn ist das fair.",          en: "In my opinion that's fair. (meiner Meinung nach)", use: "Texting", fr: "À mon avis c'est juste." },
       { de: "Lernen wir zsm?",            en: "Shall we study together? (zusammen)",            use: "Texting", fr: "On révise ensemble ?" },
       { de: "Akla, bis gleich!",          en: "All good, see you in a bit! (alles klar)",       use: "Texting", fr: "Ça marche, à tout de suite !" },
-      { de: "Morgen bzw. übermorgen.",   en: "Tomorrow, or rather the day after. (beziehungsweise) / Tomorrow or the day after.", use: "Written German too", fr: "Demain, ou plutôt après-demain.", when: "Pinning down a date in writing when you need to correct yourself mid-sentence." , say: "read the abbreviation out in full: buh-TSEE-oongs-VY-zuh (beziehungsweise)" },
+      // "The day after tomorrow" is what an English speaker actually says
+      // for übermorgen; "the day after" on its own is the compressed form.
+      // Both are answers, and the one people reach for first was missing.
+      { de: "Morgen bzw. übermorgen.",   en: "Tomorrow, or rather the day after. (beziehungsweise) / Tomorrow or the day after. / Tomorrow or the day after tomorrow.", use: "Written German too", fr: "Demain, ou plutôt après-demain.", when: "Pinning down a date in writing when you need to correct yourself mid-sentence." , say: "read the abbreviation out in full: buh-TSEE-oongs-VY-zuh (beziehungsweise)" },
       { de: "Bring was mit, z.B. Chips.", en: "Bring something, e.g. chips. (zum Beispiel) / Bring something, for example chips.", use: "Written German too", fr: "Apporte un truc, par ex. des chips." },
       { de: "Ca. zehn Minuten noch.",     en: "About ten minutes left. (circa) / Around ten minutes left. / Roughly ten minutes left.", use: "Written German too", fr: "Encore environ dix minutes." },
       { de: "Bücher, Stifte usw.",       en: "Books, pens and so on. (und so weiter) / Books, pens, etc.", use: "Written German too", fr: "Des livres, des stylos, etc." , say: "sounds like: BUE-shuh, SHTIF-tuh, oont zo VY-tuh — usw. is read aloud as 'und so weiter'" },

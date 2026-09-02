@@ -1765,7 +1765,11 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
    * Held per phrase, and the component remounts for each one, so nothing has
    * to reset it.
    */
-  const [typingFailed, setTypingFailed] = useState(false);
+  // Seeded from the item, because the miss is remembered past the remount: a
+  // phrase whose spelling was failed comes back as a struggle review carrying
+  // typingFailed, so its spelling is checked again rather than waved through
+  // the one-test route as if nothing had happened.
+  const [typingFailed, setTypingFailed] = useState(() => Boolean(item?.typingFailed));
   const masteredRoute = item?.mastery === "strong" && !recallFailed;
   const [audioMuted, setAudioMuted] = useState(
     () => getTtsAudioVolume(guidedTargetLanguageTag()) <= 0
@@ -2926,7 +2930,9 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
         // The last tick advances. Cleared here rather than in a second effect
         // so the stage cannot be advanced twice by a tick that outlives it.
         window.clearInterval(tick);
-        if (currentPhaseRef.current === phase) advance();
+        // advanceOrFinish: a reading stage can be the LAST stage of a route
+        // when the sound is off, and advance() on the last stage is a no-op.
+        if (currentPhaseRef.current === phase) advanceOrFinish();
         return null;
       });
     }, 1000);
@@ -3587,7 +3593,11 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   : ui("Read and listen — it plays automatically.")}
             </p>
             {/* One Hear-it only — the purple listen button in the heading replays. */}
-            <Button onClick={advance}
+            {/* advanceOrFinish, not advance: with the sound off Meaning first
+                is the last stage of a word's route, and advance() on the last
+                stage does nothing at all — a Continue that could not be
+                pressed. */}
+            <Button onClick={advanceOrFinish}
               className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
               {ui("Continue")}
               {readingLeft === null
@@ -3604,7 +3614,11 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             <p className="text-center text-sm font-semibold text-zinc-500">
               {uiFmt("This is what you'd want to say. Here it is in {language}.", { language: ui(targetLabel) })}
             </p>
-            <Button onClick={advance}
+            {/* advanceOrFinish, not advance: with the sound off Meaning first
+                is the last stage of a word's route, and advance() on the last
+                stage does nothing at all — a Continue that could not be
+                pressed. */}
+            <Button onClick={advanceOrFinish}
               className="continue-glow h-14 w-full rounded-2xl lesson-cta text-sm font-black">
               {ui("Continue")}
               {readingLeft === null

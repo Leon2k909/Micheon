@@ -813,7 +813,9 @@ check(
 check(
   "muting during either listening check moves safely to the next usable stage",
   replacementSentencePhaseWhenMuted("ListenPick", { mastered: false, bilingual: false, typingFailed: true }) === "Type"
-    && replacementSentencePhaseWhenMuted("MissingWord", { mastered: false, bilingual: false, typingFailed: true }) === "Type"
+    // The spoken gap fill hands over to the written one, not to whatever
+    // happens to come next.
+    && replacementSentencePhaseWhenMuted("MissingWord", { mastered: false, bilingual: false, typingFailed: true }) === "Gap"
     && replacementSentencePhaseWhenMuted("Type", { mastered: false, bilingual: false, typingFailed: true }) === "Type"
 );
 // ── one typing test, and the writing practice is what missing it costs ────
@@ -845,9 +847,63 @@ check(
     }).includes(phase)),
   "a wrong answer no longer earns the practice it is supposed to"
 );
+// ── muting replaces the audio stages, it does not shorten the sitting ──────
+// Removing them was the rule, and it left a new word with three stages and
+// no test at all — Read, pick the meaning, see it the other way round, done —
+// because the one typing test a new item gets was Hear & write. So Hear &
+// write hands over to Read & write, the spoken gap fill to the written one,
+// and a word, which has neither a gap nor an ordering to fall back on, gets
+// the written trio in place of its one listening test.
 check(
-  "the muted lean route still leads somewhere real when the audio test is dropped",
-  replacementSentencePhaseWhenMuted("ListenPick", { mastered: false, bilingual: false }) === "Order"
+  "muting mid-listening test hands over to Read & write, not to whatever came next",
+  replacementSentencePhaseWhenMuted("ListenPick", { mastered: false, bilingual: false }) === "Type"
+);
+const mutedLeanLessonPhases = buildSentencePhaseRoute({ mastered: false, bilingual: false, audioMuted: true });
+check(
+  "a new phrase with the sound off is still tested, in writing, and still gap-filled",
+  AUDIO_REQUIRED_SENTENCE_PHASES.every((phase) => !mutedLeanLessonPhases.includes(phase))
+    && mutedLeanLessonPhases.includes("Type")
+    && mutedLeanLessonPhases.includes("Gap")
+    && mutedLeanLessonPhases.length >= leanLessonPhases.length,
+  `muted: ${mutedLeanLessonPhases.join(" → ")} against ${leanLessonPhases.join(" → ")}`
+);
+const leanWordPhases = buildSentencePhaseRoute({ mastered: false, bilingual: false, audioMuted: false, word: true });
+const mutedLeanWordPhases = buildSentencePhaseRoute({ mastered: false, bilingual: false, audioMuted: true, word: true });
+check(
+  "a new word with the sound off gets the written trio where its one listening test was",
+  !mutedLeanWordPhases.includes("ListenPick")
+    && ["Type", "Translate", "RecallBoth"].every((phase) => mutedLeanWordPhases.includes(phase))
+    && mutedLeanWordPhases.length > leanWordPhases.length,
+  `muted: ${mutedLeanWordPhases.join(" → ")} against ${leanWordPhases.join(" → ")}`
+);
+// ── a missed spelling is remembered past the sitting ────────────────────────
+// The miss bought the writing stages back inside the sitting where it
+// happened, and then the component remounted and forgot: the phrase came back
+// for review on the one-test route as if it had never gone wrong. The record
+// keeps when it was last answered and when it last slipped, so every step is
+// stamped from that before the sitting is dealt, and a struggle review — which
+// is what a failed spelling writes — carries it outright.
+const builder = fs.readFileSync(path.join(root, "src/guided_learning_session.tsx"), "utf8");
+check(
+  "a phrase whose last run had a mistake comes back to be spelled again",
+  builder.includes("const withSpellingMemory = (steps: any[]): any[] => {")
+    && builder.includes("lastRunHadMistake(record)")
+    && /const withSecondShowing = \(dealt: any\[\]\): any\[\] => \{[\s\S]{0,200}?const steps(?:: any\[\])? = withSpellingMemory\(dealt\);/.test(builder)
+    && /reviewReason: "struggle",[\s\S]{0,600}?item: \{ \.\.\.st\.item, typingFailed: true \}/.test(builder)
+    && guidedSource.includes("useState(() => Boolean(item?.typingFailed))"),
+  "the review of a misspelled phrase opens on the one-test route, so the spelling is never checked again"
+);
+const adaptive = fs.readFileSync(path.join(root, "src/lib/adaptivePractice.ts"), "utf8");
+check(
+  "...judged by the record itself: the last answer and the last slip are the same moment",
+  /export function lastRunHadMistake\([\s\S]{0,400}?slipped >= answered/.test(adaptive)
+);
+check(
+  "...and Meaning first is never left as a dead end at the foot of a route",
+  guidedSource.includes("<Button onClick={advanceOrFinish}")
+    && !guidedSource.includes("<Button onClick={advance}\n")
+    && /if \(currentPhaseRef\.current === phase\) advanceOrFinish\(\);/.test(guidedSource),
+  "a reading stage that ends a route calls advance(), which does nothing on the last stage"
 );
 check(
   "the guided lesson reacts to both master and learning-language mute controls",
