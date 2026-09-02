@@ -3489,4 +3489,7 @@ export const DE: Record<string, string> = {
   "A Russian wedding": "Die russische Hochzeit",
   "New Year in Russia": "Neujahr in Russland",
   "The dormitory": "Das Wohnheim",
+  "The minibus": "Die Marschrutka",
+  "Going south": "In den Süden fahren",
+  "Messages & chat": "Nachrichten und Chat",
 };

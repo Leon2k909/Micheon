@@ -3241,4 +3241,7 @@ export const FR: Record<string, string> = {
   "A Russian wedding": "Le mariage russe",
   "New Year in Russia": "Le Nouvel An en Russie",
   "The dormitory": "La cité universitaire",
+  "The minibus": "Le minibus",
+  "Going south": "Partir dans le Sud",
+  "Messages & chat": "Messages et chat",
 };
