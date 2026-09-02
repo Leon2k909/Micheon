@@ -842,7 +842,7 @@ const partBlueprintsBase: Record<string, Blueprint> = {
         { speaker: "A", de: "Hey, wmd grade?",            en: "Hey, what you doing rn? (was machst du)", fr: "Hé, tu fais quoi là ?" },
         { speaker: "B", de: "kA, chill nur. Du?",         en: "Idk, just chilling. You? (keine Ahnung)", fr: "Aucune idée, je chill. Toi ?" },
         { speaker: "A", de: "Vllt Kino später?",          en: "Maybe cinema later? (vielleicht)",        fr: "Ciné plus tard peut-être ?" },
-        { speaker: "B", de: "Jo, klingt gut. Lg!",        en: "Yeah, sounds good. Cheers! (liebe Grüße)", fr: "Ouais, ça marche. Bises !" },
+        { speaker: "B", de: "Jo, klingt gut. Lg!",        en: "Yeah, sounds good. Cheers! (liebe Grüße)", fr: "Ouais, ça marche. Bises !", use: "Texting. The LG sign-off is more an older-people-and-parents habit — under thirty you mostly just stop typing, or send an emoji" },
       ]},
       { title: "Gute Nacht", lines: [
         { speaker: "A", de: "Ich geh pennen, gn8.",       en: "I'm off to sleep, gn. (gute Nacht)",      fr: "Je vais dormir, bonne nuit." },
@@ -856,7 +856,7 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       { de: "Vllt komme ich später.",     en: "Maybe I'll come later. (vielleicht)",            use: "Texting", fr: "Je viendrai peut-être plus tard." },
       { de: "Kp, ist mir egal.",          en: "No prob, I don't mind. (kein Problem)",          use: "Texting", fr: "Pas de souci, ça m'est égal." },
       { de: "Bin gleich da, mom.",        en: "Almost there, one sec. (Moment)",                use: "Texting", fr: "J'arrive, deux secondes." },
-      { de: "Lg und bis bald!",           en: "Cheers and see you soon! (liebe Grüße)",         use: "Texting", fr: "Bises et à bientôt !" , say: "read it out in full: LEE-buh GRUE-suh — the ß in Grüße is just a plain 'ss'" },
+      { de: "Lg und bis bald!",           en: "Cheers and see you soon! (liebe Grüße)",         use: "Texting. LG as a sign-off is more an older-people-and-parents habit — younger Germans mostly leave it off or send an emoji", fr: "Bises et à bientôt !" , say: "read it out in full: LEE-buh GRUE-suh — the ß in Grüße is just a plain 'ss'" },
       { de: "Sry, war beschäftigt.",      en: "Sorry, was busy.",                               use: "Texting", fr: "Désolé, j'étais occupé.", when: "Replying hours later to a message you saw and never got around to answering." , say: "sounds like: var buh-SHEF-tisht — the ä is like the e in 'get', and -ig at the end sounds like '-ich'" },
       { de: "Iwie keine Lust heute.",     en: "Somehow not feeling it today. (irgendwie)",      use: "Texting", fr: "Pas trop la motiv aujourd'hui.", when: "Backing out of plans in a group chat without naming a real reason." },
       { de: "Hdl, mein Schatz.",          en: "Love ya, sweetheart. (hab dich lieb)",           use: "Texting", fr: "Je t'aime, mon cœur.", when: "Signing off a goodnight text to a partner or close family, never a colleague." },
