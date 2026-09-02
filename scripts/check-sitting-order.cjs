@@ -129,9 +129,17 @@ const session = read("src/GuidedSession.tsx");
 check("the session header has the gear beside mute and close",
   /<MuteButton[\s\S]{0,400}data-testid="session-settings-button"[\s\S]{0,600}aria-label=\{ui\("Close lesson"\)\}/u.test(session));
 check("and the gear opens the same panel the Learn page shows",
-  session.includes("<ContinueLearningSettings />") && read("src/components/duo/DuoPathView.tsx").includes("<ContinueLearningSettings />"));
-check("the panel says a change is for the next sitting",
-  session.includes('ui("Changes apply from your next sitting.")'));
+  /<ContinueLearningSettings\b/u.test(session) && read("src/components/duo/DuoPathView.tsx").includes("<ContinueLearningSettings />"));
+// A change rebuilds the sitting on the spot. The learner pressed an order to
+// see it; "applies from your next sitting" was the panel not doing its job.
+check("the panel says a change rebuilds the sitting, and does",
+  session.includes('ui("Changing this rebuilds the sitting from the start.")')
+  && /<ContinueLearningSettings onChange=\{\(\) => \{[^}]*onRebuildSitting\?\.\(\);/u.test(session)
+  && /onRebuildSitting=\{\(\) => \{[\s\S]{0,400}startSessionRef\.current\(lastRequestedPartRef\.current\)/u.test(sitting));
+check("the panel hangs under the header wherever the header ends, not at a fixed offset",
+  /sessionHeaderRef\.current\?\.getBoundingClientRect\(\)\.bottom/u.test(session)
+  && /style=\{\{ top: sessionSettingsTop \}\}/u.test(session)
+  && /<header className="fs-topbar" ref=\{sessionHeaderRef\}>/u.test(session));
 
 // ── Listen plays similar sentences together ─────────────────────────────────
 check("Listen accepts the order", LISTEN_QUEUE_ORDERS.includes("similar"));

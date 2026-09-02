@@ -41,16 +41,30 @@ const CHOICE_ON = "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-
 const CHOICE_OFF =
   "border-transparent bg-transparent text-[var(--text-2)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]";
 
-export function ContinueLearningSettings() {
+export function ContinueLearningSettings({ onChange }: {
+  /**
+   * Called after every change is written. The session uses it to rebuild
+   * the sitting on the spot; the Learn page has no sitting and passes
+   * nothing.
+   */
+  onChange?: () => void;
+} = {}) {
   const direction = getLearningDirection();
   const [order, setOrder] = useState<SittingOrder>(() => getSittingOrder(direction));
   const [levels, setLevels] = useState<Set<CefrStep>>(() => getSittingLevelFilters(direction));
 
-  const chooseOrder = (value: SittingOrder) => setOrder(setSittingOrder(value, direction));
+  const chooseOrder = (value: SittingOrder) => {
+    setOrder(setSittingOrder(value, direction));
+    onChange?.();
+  };
+  const chooseLevels = (next: Iterable<CefrStep>) => {
+    setLevels(setSittingLevelFilters(next, direction));
+    onChange?.();
+  };
   const toggleLevel = (step: CefrStep) => {
     const next = new Set(levels);
     if (next.has(step)) next.delete(step); else next.add(step);
-    setLevels(setSittingLevelFilters(next, direction));
+    chooseLevels(next);
   };
 
   return (
@@ -101,7 +115,7 @@ export function ContinueLearningSettings() {
             aria-pressed={levels.size === 0}
             className={cn(CHOICE, levels.size === 0 ? CHOICE_ON : CHOICE_OFF)}
             data-testid="sitting-level-all"
-            onClick={() => setLevels(setSittingLevelFilters([], direction))}
+            onClick={() => chooseLevels([])}
             type="button"
           >
             {ui("All levels")}

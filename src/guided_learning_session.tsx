@@ -163,6 +163,10 @@ export default function GuidedLearningSession() {
   const sessionStartRef = React.useRef<number | null>(null);
   const guidedAutoStartedRef = React.useRef(false);
   const startSessionRef = React.useRef<(partId?: string) => void>(() => {});
+  // The part the current sitting was asked for (undefined = Continue
+  // learning), so the sitting can be rebuilt the same way when the learner
+  // changes how it is put together.
+  const lastRequestedPartRef = React.useRef<string | undefined>(undefined);
   const activeStudyTimerRef = React.useRef<ActiveStudyTimer | null>(null);
   const sessionKnownBeforeRef = React.useRef<number | null>(null);
   const sessionLessonIdRef = React.useRef<string | undefined>(undefined);
@@ -1506,6 +1510,7 @@ export default function GuidedLearningSession() {
     ) return;
 
     guidedAutoStartedRef.current = true;
+    lastRequestedPartRef.current = requestedPart;
     startSessionRef.current(requestedPart);
   }, [apiParts, guidedRequest, showPlacementTest]);
 
@@ -1698,6 +1703,15 @@ export default function GuidedLearningSession() {
       onUndoGradeItem={(itemId: string) => undoGuidedGrade(itemId)}
       onPreviewKnown={replaceKnownPreviewItem}
       onPreviewSwap={swapPreviewItem}
+      // A change to how the sitting is put together rebuilds it on the spot,
+      // the way the next lesson is started: a short unmount so GuidedSession's
+      // stage state resets, then the same sitting request with the new
+      // settings read fresh from storage. Grades already given are saved as
+      // they were given, so nothing answered is lost — only the position.
+      onRebuildSitting={() => {
+        setShowGuidedSession(false);
+        window.setTimeout(() => startSessionRef.current(lastRequestedPartRef.current), 120);
+      }}
       onSnoozeItem={(itemId: string, days: number) => snoozeGuidedItem(itemId, days)}
       // A skipped item is NOT a recall — marking it would climb the memory
       // ladder and schedule it out for months, and inflate the fluency count.

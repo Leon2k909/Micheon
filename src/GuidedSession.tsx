@@ -5857,7 +5857,7 @@ function SessionFlashcardPreview({
   );
 }
 
-export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem, onSetItemStrength, onSetItemPermanent, onUndoGradeItem, onPreviewKnown, onPreviewSwap, onSnoozeItem, onAdvance, onRegisterAnswer, unseenPhrases = 0 }: any) {
+export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem, onSetItemStrength, onSetItemPermanent, onUndoGradeItem, onPreviewKnown, onPreviewSwap, onRebuildSitting, onSnoozeItem, onAdvance, onRegisterAnswer, unseenPhrases = 0 }: any) {
   const { speak: petSpeak } = useCodexPets();
   const reduceMotion = useReducedMotion() || effectsReduced();
   const [guidedBackground, setGuidedBackground] = useState<GuidedBackground>(() => getGuidedBackground());
@@ -5865,6 +5865,18 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
   // A sitting is built once, on the way in, so a change here is for the next
   // one — the panel says so rather than pretending to reshuffle this one.
   const [sessionSettingsOpen, setSessionSettingsOpen] = useState(false);
+  // The panel hangs under the header, wherever the header ends: measured,
+  // because the header's height depends on the window and on Electron's
+  // title bar above it, and a fixed offset overlapped it on both counts.
+  const sessionHeaderRef = useRef<HTMLElement | null>(null);
+  const [sessionSettingsTop, setSessionSettingsTop] = useState(0);
+  useEffect(() => {
+    if (!sessionSettingsOpen) return undefined;
+    const measure = () => setSessionSettingsTop(Math.round((sessionHeaderRef.current?.getBoundingClientRect().bottom ?? 0) + 8));
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [sessionSettingsOpen]);
   const [guidedCustomBackground, setGuidedCustomBackground] = useState<string | null>(() => getGuidedCustomBackground());
   const [index, setIndex] = useState(0);
   const [previewActive, setPreviewActive] = useState(true);
@@ -6369,7 +6381,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
     >
 
       {/* Topbar: brand · lesson progress · mute/close */}
-      <header className="fs-topbar">
+      <header className="fs-topbar" ref={sessionHeaderRef}>
         <div className="fs-brand">
           <img src="/icon-64.png" alt="" />
           <div className="fs-brand-copy">
@@ -6485,27 +6497,36 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
       </header>
 
       {sessionSettingsOpen && (
+        // Below the header only: the header (and Electron's title bar above
+        // it) stays visible and clickable, so the gear closes what it opened.
         <div
-          className="fixed inset-0 z-50 flex items-start justify-end bg-black/40 px-3 pb-3 pt-20 sm:px-5 sm:pb-5"
+          className="fixed inset-x-0 bottom-0 z-50 flex items-start justify-end bg-black/40 p-3 sm:p-4"
           data-testid="session-settings"
           onClick={(event) => { if (event.target === event.currentTarget) setSessionSettingsOpen(false); }}
           onKeyDown={(event) => { if (event.key === "Escape") setSessionSettingsOpen(false); }}
           role="presentation"
+          style={{ top: sessionSettingsTop }}
         >
           <div
             aria-label={ui("How Continue learning is put together")}
-            className="max-h-[calc(100vh-6rem)] w-full max-w-md overflow-y-auto rounded-3xl border border-[var(--border)] bg-[var(--surface-1)] p-2 shadow-2xl"
+            className="max-h-full w-full max-w-md overflow-y-auto rounded-3xl border border-[var(--border)] bg-[var(--surface-1)] p-2 shadow-2xl"
             role="dialog"
           >
-            <div className="flex items-center justify-between px-3 pt-2">
+            <div className="flex items-center justify-between gap-3 px-3 pt-2">
               <p className="text-[11px] font-black uppercase tracking-wide text-[var(--text-3)]">
-                {ui("Changes apply from your next sitting.")}
+                {ui("Changing this rebuilds the sitting from the start.")}
               </p>
-              <button type="button" aria-label={ui("Close")} className="fs-iconbtn" onClick={() => setSessionSettingsOpen(false)}>
+              <button type="button" aria-label={ui("Close")} className="fs-iconbtn shrink-0" onClick={() => setSessionSettingsOpen(false)}>
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <ContinueLearningSettings />
+            {/*
+              A change rebuilds the sitting on the spot rather than waiting
+              for the next one: the learner pressed an order to see it, and a
+              note saying "next time" was the panel apologising for not doing
+              its job. Grades already given were saved as they were given.
+            */}
+            <ContinueLearningSettings onChange={() => { setSessionSettingsOpen(false); onRebuildSitting?.(); }} />
           </div>
         </div>
       )}
