@@ -216,11 +216,39 @@ export function buildSentencePhaseRoute({
           ? SENTENCE_PHASES
           : LEAN_SENTENCE_PHASES;
 
-  return route.filter((phase) => {
-    if (audioMuted && AUDIO_REQUIRED_PHASE_SET.has(phase)) return false;
-    if (!orderable && phase === "Order") return false;
-    return true;
-  });
+  /**
+   * With the sound off, a stage that needs it is REPLACED, not removed.
+   *
+   * Removing it was the rule, and it left a new word with three stages and
+   * no test at all: Read, pick the meaning, see it the other way round, done.
+   * The one typing test a new item gets was Hear & write, so muting took the
+   * test away with the audio and nothing stood in for it. Now Hear & write
+   * becomes Read & write, the spoken gap fill becomes the written one, and a
+   * word — which has no gap and no ordering to fall back on — gets the
+   * written trio in place of its one listening test, so a sitting with the
+   * sound off is at least as long as one with it on, never shorter.
+   *
+   * A replacement already somewhere in the route is not added twice: the
+   * full route has Type and Gap of its own, so muting it still just drops
+   * the two audio stages and moves nothing else.
+   */
+  const standIn = (phase: SentencePhase): SentencePhase[] => {
+    if (phase === "ListenPick") return word ? ["Type", "Translate", "RecallBoth"] : ["Type"];
+    if (phase === "MissingWord") return word ? [] : ["Gap"];
+    return [];
+  };
+  const seen = new Set<SentencePhase>();
+  return route
+    .flatMap((phase) => {
+      if (!audioMuted || !AUDIO_REQUIRED_PHASE_SET.has(phase)) return [phase];
+      return standIn(phase).filter((replacement) => !route.includes(replacement));
+    })
+    .filter((phase) => {
+      if (!orderable && phase === "Order") return false;
+      if (seen.has(phase)) return false;
+      seen.add(phase);
+      return true;
+    });
 }
 
 /**
@@ -235,6 +263,11 @@ export function replacementSentencePhaseWhenMuted(
   const fullRoute = buildSentencePhaseRoute({ ...options, audioMuted: false });
   const mutedRoute = buildSentencePhaseRoute({ ...options, audioMuted: true });
   if (mutedRoute.includes(current)) return current;
+
+  // The stage that stands in for this one, where the muted route has one:
+  // Hear & write hands over to Read & write, the spoken gap to the written.
+  const standIn = current === "ListenPick" ? "Type" : current === "MissingWord" ? "Gap" : null;
+  if (standIn && mutedRoute.includes(standIn)) return standIn;
 
   const currentIndex = fullRoute.indexOf(current);
   if (currentIndex < 0) return mutedRoute[0] ?? null;

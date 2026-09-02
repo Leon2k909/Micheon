@@ -472,7 +472,9 @@ const petQuestionSchedulerSource = petQuestionSchedulerStart >= 0 && petQuestion
 // remembering; recalling it immediately is reading.
 check(
   "a sitting serves everything it teaches a second time",
-  /const withSecondShowing = \(steps: any\[\]\): any\[\] =>/.test(labSource)
+  // The parameter is the dealt list; it is stamped with the spelling memory
+  // before it is doubled, so the name of what comes in is not the rule.
+  /const withSecondShowing = \((?:steps|dealt): any\[\]\): any\[\] =>/.test(labSource)
     && /\.filter\(\(step\) => step\?\.type === "sentence" && step\.item\?\.id\)/.test(labSource)
 );
 check(

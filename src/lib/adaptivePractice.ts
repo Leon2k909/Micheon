@@ -159,6 +159,21 @@ export function adaptiveRepeatPriority(
  * treating it as fresh would quietly replace one of the three genuinely new
  * phrases promised by Continue Learning.
  */
+/**
+ * Whether the last run through this item had a mistake in it.
+ *
+ * The record keeps when it was last answered and when it last went wrong;
+ * where those are the same moment, the most recent attempt is the one that
+ * slipped. That is what a review has to know: a phrase whose spelling was
+ * missed comes back to be spelled again, not waved through the one-test
+ * route as if the miss had never happened.
+ */
+export function lastRunHadMistake(record: AdaptivePracticeFields | undefined): boolean {
+  const answered = Date.parse(String(record?.lastAnswerAt ?? ""));
+  const slipped = Date.parse(String(record?.lastMistakeAt ?? ""));
+  return Number.isFinite(answered) && Number.isFinite(slipped) && slipped >= answered;
+}
+
 export function isAttemptedPracticeEligible(
   record: AdaptivePracticeFields | undefined,
   now = Date.now()
