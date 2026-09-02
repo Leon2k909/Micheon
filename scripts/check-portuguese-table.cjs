@@ -657,13 +657,13 @@ check(
 );
 
 /**
- * EVERY LINE SOMEBODY SPEAKS HAS A PORTUGUESE ANSWER.
+ * NO CONVERSATION IS HALF TRANSLATED.
  *
  * A dialogue is carried whole or not at all — the note beside the excluded
  * packs says so — but nothing enforced it, and one line of a five-line
  * conversation went out in German for weeks. Nobody reading the app would
- * report it as a hole; it reads as one German line in a Portuguese
- * conversation, which looks like a card that happens to be in German.
+ * report that as a hole: it reads as one German line among Portuguese ones,
+ * which looks like a card that happens to be in German.
  *
  * It survived because the tool that lists untranslated work paired a card with
  * its article-less form, so "der Hafen" and "Hafen" counted as one. Applied to
@@ -673,29 +673,40 @@ check(
  * for the untranslated one. A tool that can be wrong is exactly why this
  * belongs in the build instead.
  *
+ * WHY HALF AND NOT ALL. Requiring every spoken line to have Portuguese would
+ * make adding a German conversation conditional on translating it, and turn
+ * main red on whoever wrote the German. That is the trade
+ * check-translation-coverage refuses in its own header, for good reason, and
+ * this file does not get to make it either. A conversation nobody has started
+ * translating is ordinary untranslated work. A conversation that is PART
+ * translated is the fault: somebody meant to carry it whole and a line was
+ * lost on the way.
+ *
  * A dialogue line is written with a speaker beside it, which is what tells it
- * apart from a word card. The packs this course leaves out are skipped, since
- * their lines are refused above rather than translated.
+ * apart from a word card, and the lines of one conversation are consecutive.
  */
-const spokenFiles = fs
-  .readdirSync(path.join(root, "src/lib"))
-  .filter((f) => f.endsWith(".ts") && !/Translations|i18n/.test(f));
 const SPOKEN = /\{\s*speaker:\s*"[^"]*",\s*de:\s*"((?:[^"\\]|\\.)*)"/g;
 const answered = new Set(pairs.map((row) => row.german));
-const silent = [];
+const halfDone = [];
 let spokenCount = 0;
-for (const file of spokenFiles) {
+for (const file of fs.readdirSync(path.join(root, "src/lib"))) {
+  if (!file.endsWith(".ts") || /Translations|i18n/.test(file)) continue;
   const text = fs.readFileSync(path.join(root, "src/lib", file), "utf8");
-  for (const m of text.matchAll(SPOKEN)) {
-    spokenCount++;
-    if (answered.has(m[1]) || excluded.has(m[1])) continue;
-    silent.push(m[1]);
+  // One conversation at a time: the lines: [...] array a dialogue is written in.
+  for (const block of text.split(/lines:\s*\[/).slice(1)) {
+    const lines = [...block.slice(0, block.indexOf("\n    ],")).matchAll(SPOKEN)].map((m) => m[1]);
+    if (lines.length < 2) continue;
+    spokenCount += lines.length;
+    const silent = lines.filter((l) => !answered.has(l) && !excluded.has(l));
+    if (silent.length && silent.length < lines.length) {
+      halfDone.push(`${silent[0]} (${lines.length - silent.length} of ${lines.length} lines carried)`);
+    }
   }
 }
-check(`the course has dialogue to check (${spokenCount.toLocaleString("en-GB")} spoken lines)`, spokenCount > 3000);
+check(`the course has conversations to check (${spokenCount.toLocaleString("en-GB")} spoken lines)`, spokenCount > 3000);
 check(
-  `every line somebody speaks has Portuguese${silent.length ? ` — ${silent[0]}` : ""}`,
-  silent.length === 0
+  `no conversation is half translated${halfDone.length ? ` — ${halfDone[0]}` : ""}`,
+  halfDone.length === 0
 );
 
 if (failures.length) {
