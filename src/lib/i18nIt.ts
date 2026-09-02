@@ -2801,4 +2801,7 @@ export const IT: Record<string, string> = {
   "Renting a flat": "Affittare un appartamento",
   "Nursery school": "L'asilo",
   "Getting seen by a doctor": "Ottenere una visita medica",
+  "Preserving for winter": "Le conserve per l'inverno",
+  "Utility bills": "Le bollette",
+  "Community work day": "La giornata di lavoro collettivo",
 };

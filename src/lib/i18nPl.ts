@@ -3259,4 +3259,7 @@ export const PL: Record<string, string> = {
   "Renting a flat": "Wynajem mieszkania",
   "Nursery school": "Przedszkole",
   "Getting seen by a doctor": "Umówić się do lekarza",
+  "Preserving for winter": "Przetwory na zimę",
+  "Utility bills": "Rachunki za mieszkanie",
+  "Community work day": "Wspólne porządki",
 };

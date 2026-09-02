@@ -2820,4 +2820,7 @@ export const ES: Record<string, string> = {
   "Renting a flat": "Alquilar un piso",
   "Nursery school": "La guardería",
   "Getting seen by a doctor": "Conseguir cita médica",
+  "Preserving for winter": "Conservas para el invierno",
+  "Utility bills": "Los recibos de la casa",
+  "Community work day": "La jornada vecinal de trabajo",
 };
