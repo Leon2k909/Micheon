@@ -72,8 +72,16 @@ export function TopicRoundView({
         <div>
           <span className="np-topic-kicker">{ui("Topic round")}</span>
           <h2>{ui(topic.label)}</h2>
+          {/*
+            A subject that carries its own question asks it. "Talking about"
+            is right for the weather and wrong for a greeting, which is said
+            rather than discussed — and the wrong verb narrowed the subject in
+            the reader's head, not just the sentence.
+          */}
           <p className="np-topic-ask">
-            {uiFmt("Which of these would you use when talking about {subject}?", { subject: ui(topic.about) })}
+            {topic.ask
+              ? ui(topic.ask)
+              : uiFmt("Which of these would you use when talking about {subject}?", { subject: ui(topic.about ?? "") })}
           </p>
           {!checked && <p className="np-topic-hint">{ui("Tap everything that fits, then check.")}</p>}
         </div>

@@ -31,8 +31,23 @@ type TopicDef = {
   id: string;
   /** The subject as a heading — an existing pack label where one fits. */
   label: string;
-  /** The subject as it sits in the question: "talking about {about}". */
-  about: string;
+  /**
+   * The subject as it sits in the question: "talking about {about}".
+   *
+   * Absent where "talking about" is the wrong verb for it. Most subjects are
+   * things you talk ABOUT — your family, the weather, money — and a greeting
+   * is not: it is something you SAY, at a moment. Those carry `ask` instead.
+   */
+  about?: string;
+  /**
+   * The whole question, for a subject the default sentence misdescribes.
+   *
+   * "Which of these would you use when talking about meeting people?" was
+   * read, reasonably, as asking for hellos — so a board of goodbyes marked
+   * five of them missed. The subject was never only hellos; the question was
+   * just describing it wrongly.
+   */
+  ask?: string;
   /** The packs whose material belongs to this subject. */
   packs: readonly string[];
 };
@@ -47,15 +62,26 @@ type TopicDef = {
  * to being real and every subject to having enough on the board.
  */
 export const TOPICS: readonly TopicDef[] = [
+  // Named for both ends of the conversation, because the pack is: "Greetings
+  // & politeness" is nine hellos, sixteen goodbyes, how-are-you, thank you and
+  // sorry. Called "Meeting people" it read as the hello alone, so a board that
+  // wanted Tschüss and Bis bald too came back five missed out of six.
+  //
   // Not part16: its "regional greetings" carry das Brötchen, lecker and der
-  // Feierabend, which are regional words rather than ways of meeting people,
+  // Feierabend, which are regional words rather than ways of greeting anyone,
   // and every one of them would be marked as belonging here.
-  { id: "greetings", label: "Meeting people", about: "meeting people", packs: ["cb-greetings", "cb-introductions", "cb-smalltalk"] },
+  {
+    id: "greetings",
+    label: "Hello, goodbye & small talk",
+    ask: "Which of these would you say when greeting someone, or leaving?",
+    packs: ["cb-greetings", "cb-introductions", "cb-smalltalk"],
+  },
   // Not part47: half of it is faith — beten, die Konfession, die Kirchensteuer
   // — and the family half is already here as cb-family-problems.
   { id: "family", label: "Family & relationships", about: "your family", packs: ["cb-family", "part7", "part41", "cb-family-problems", "cb-kids-school"] },
   { id: "food", label: "Food & drink", about: "food and drink", packs: ["cb-food", "part5", "cb-grocery", "part49"] },
-  { id: "plans", label: "Making plans", about: "making plans", packs: ["cb-plans", "part4"] },
+  // Same again: plans are made, not discussed in the abstract.
+  { id: "plans", label: "Making plans", ask: "Which of these would you say when making plans with someone?", packs: ["cb-plans", "part4"] },
   // Not part2 or part12: "Travel and daily tasks" teaches das Fenster, die
   // Rechnung and die Frage as its words, and "Travel and problems" teaches
   // vergessen and die Hilfe — a board would call every one of them getting

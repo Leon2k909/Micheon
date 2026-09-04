@@ -3262,4 +3262,7 @@ export const FR: Record<string, string> = {
   "Preserving for winter": "Les conserves pour l'hiver",
   "Utility bills": "Les charges",
   "Community work day": "La journée de travail collectif",
+  "Hello, goodbye & small talk": "Bonjour, au revoir & papotage",
+  "Which of these would you say when greeting someone, or leaving?": "Lesquels dirais-tu pour saluer quelqu'un ou prendre congé ?",
+  "Which of these would you say when making plans with someone?": "Lesquels dirais-tu en fixant quelque chose avec quelqu'un ?",
 };

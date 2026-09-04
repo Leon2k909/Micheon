@@ -41,6 +41,12 @@ const built = esbuild.buildSync({
       'export { allPartBlueprints } from "./src/lib/data.ts";',
       'export { buildApiPartFromResolved } from "./src/lib/api.ts";',
       'export { buildBundledParts } from "./src/lib/contentBank.ts";',
+      // For asking the SITTING the question Listen is asked, rather than
+      // reading the source and hoping.
+      'export { buildCatalog, orderWithChains } from "./src/session.ts";',
+      'export { takeMatchingSafe } from "./src/lib/germanTextMatch.ts";',
+      'export { conversationPriorityScore } from "./src/lib/conversationPriority.ts";',
+      'export { buildCorpusIndex, sentenceCommonality } from "./src/lib/corpusFrequency.ts";',
     ].join("\n"),
     resolveDir: root,
     sourcefile: "sitting-order-check-entry.ts",
@@ -52,7 +58,7 @@ const compiled = new Module("sitting-order-check", module);
 compiled.filename = path.join(root, ".sitting-order-check.cjs");
 compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(built.outputFiles[0].text, compiled.filename);
-const { order: O, sentencePattern, sharesPattern, buildExchangeIndex, exchangeChain, exchangeKey, exchangePlace, repliesTo, selectContinueLearningMix, pickReviews, buildListenQueue, LISTEN_QUEUE_ORDERS, allPartBlueprints, buildApiPartFromResolved, buildBundledParts } = compiled.exports;
+const { order: O, sentencePattern, sharesPattern, buildExchangeIndex, exchangeChain, exchangeKey, exchangePlace, repliesTo, selectContinueLearningMix, pickReviews, buildListenQueue, LISTEN_QUEUE_ORDERS, allPartBlueprints, buildApiPartFromResolved, buildBundledParts, buildCatalog, orderWithChains, takeMatchingSafe, conversationPriorityScore, buildCorpusIndex, sentenceCommonality } = compiled.exports;
 
 const failures = [];
 const check = (name, ok, detail = "") => {
@@ -193,6 +199,74 @@ check("the sitting leads with a card that has a reply, and its reply follows it"
   /exchangeChain\(candidate\.de, exchanges, \(key\) => candidateByKey\.has\(key\), 1\)\.length > 0/u.test(sitting)
   && /exchangeChain\(lead\.de, exchanges, \(key\) => candidateByKey\.has\(key\), NEW_PER_LESSON_TARGET\)/u.test(sitting)
   && /\.\.\.exchangeMates,/u.test(sitting));
+/*
+ * And the SITTING is asked the same question, not just read.
+ *
+ * Everything above about the sitting is a regex over its source: the lead
+ * finder is spelled this way, exchangeMates is spread there. That is worth
+ * having and it is not the same as knowing a sitting comes out as an
+ * exchange — Listen is built here and inspected, and the sitting was taken on
+ * trust, which is exactly the gap a report of "it works in Listen but not in
+ * the session" falls into. So this rebuilds the fresh half the way
+ * guided_learning_session does — sort by the order, lead with the best card
+ * that has a reply among the fresh ones, pin the reply behind it, order the
+ * chains, then take the slots through the same picker — and asks what the
+ * learner would actually be taught.
+ *
+ * A learner is somebody who has already learned things, so it is asked twice:
+ * once from nothing, once with the first six hundred cards behind them. An
+ * exchange needs BOTH halves unseen, and that is the condition most likely to
+ * quietly stop being met as a learner advances.
+ */
+const NEW_PER_LESSON_TARGET = 3;
+const corpusIndex = buildCorpusIndex(parts);
+const sittingCandidates = buildCatalog(parts).map((item, index) => {
+  const de = String(item.de ?? "");
+  const commonality = sentenceCommonality(de, corpusIndex);
+  return {
+    index,
+    de,
+    commonality,
+    level: item.level,
+    score: conversationPriorityScore({
+      partKey: item.partKey, kind: item.kind, commonality, lessonPriority: item.lessonPriority,
+    }),
+    step: { type: "sentence", item: { id: item.id, de, en: item.en, buildsOn: item.buildsOn, originalDe: item.originalDe } },
+  };
+});
+const freshSitting = (seenCount) => {
+  const inCourseOrder = [...sittingCandidates].sort(O.sittingComparator("course"));
+  const seen = new Set(inCourseOrder.slice(0, seenCount).map((c) => exchangeKey(c.de)));
+  const candidates = [...sittingCandidates]
+    .filter((c) => !seen.has(exchangeKey(c.de)))
+    .sort(O.sittingComparator("conversation"));
+  const byKey = new Map(candidates.map((c) => [exchangeKey(c.de), c]));
+  const lead = candidates.find((c) => exchangeChain(c.de, exchanges, (k) => byKey.has(k), 1).length > 0)
+    ?? candidates[0];
+  const mates = exchangeChain(lead.de, exchanges, (k) => byKey.has(k), NEW_PER_LESSON_TARGET)
+    .map((k) => byKey.get(k))
+    .filter((c) => c && c !== lead);
+  const pinned = new Set([lead, ...mates]);
+  const ranked = orderWithChains([lead, ...mates, ...candidates.filter((c) => !pinned.has(c))].map((c) => ({
+    candidate: c, de: c.de, originalDe: c.step.item.originalDe, buildsOn: c.step.item.buildsOn,
+  }))).map((row) => row.candidate);
+  return takeMatchingSafe(
+    ranked.map((c) => c.step),
+    NEW_PER_LESSON_TARGET,
+    (step) => ({ german: String(step?.item?.de ?? ""), english: String(step?.item?.en ?? "") }),
+    new Set()
+  ).map((step) => step.item.de);
+};
+for (const seenCount of [0, 600]) {
+  const taught = freshSitting(seenCount);
+  const replies = repliesTo(taught[0], exchanges);
+  check(
+    `a sitting in conversation order opens on an exchange${seenCount ? ` after ${seenCount} cards learned` : ""}`,
+    taught.length >= 2 && replies.includes(exchangeKey(taught[1])),
+    `it teaches: ${taught.join("  →  ")}`
+  );
+}
+
 check("Listen accepts conversation order and its picker offers it",
   LISTEN_QUEUE_ORDERS.includes("conversation") && /"conversation", "Conversation order",/u.test(view)
   && /Conversation order plays the course's dialogues as exchanges/u.test(view));

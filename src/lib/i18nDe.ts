@@ -3510,4 +3510,7 @@ export const DE: Record<string, string> = {
   "Preserving for winter": "Einwecken für den Winter",
   "Utility bills": "Nebenkosten",
   "Community work day": "Der gemeinsame Arbeitstag",
+  "Hello, goodbye & small talk": "Hallo, tschüss & Small Talk",
+  "Which of these would you say when greeting someone, or leaving?": "Was davon würdest du sagen, wenn du jemanden begrüßt oder dich verabschiedest?",
+  "Which of these would you say when making plans with someone?": "Was davon würdest du sagen, wenn du mit jemandem etwas ausmachst?",
 };

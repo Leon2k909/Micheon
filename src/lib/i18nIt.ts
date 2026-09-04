@@ -2804,4 +2804,7 @@ export const IT: Record<string, string> = {
   "Preserving for winter": "Le conserve per l'inverno",
   "Utility bills": "Le bollette",
   "Community work day": "La giornata di lavoro collettivo",
+  "Hello, goodbye & small talk": "Ciao, arrivederci e due chiacchiere",
+  "Which of these would you say when greeting someone, or leaving?": "Quali di questi diresti per salutare qualcuno, all'arrivo o all'uscita?",
+  "Which of these would you say when making plans with someone?": "Quali di questi diresti per organizzare qualcosa con qualcuno?",
 };

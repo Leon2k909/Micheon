@@ -3174,4 +3174,7 @@ export const PT: Record<string, string> = {
   "Preserving for winter": "Conservas para o inverno",
   "Utility bills": "As contas da casa",
   "Community work day": "O dia de trabalho comunitário",
+  "Hello, goodbye & small talk": "Olá, adeus e conversa fiada",
+  "Which of these would you say when greeting someone, or leaving?": "Quais destes dirias ao cumprimentar alguém ou ao despedires-te?",
+  "Which of these would you say when making plans with someone?": "Quais destes dirias ao combinar algo com alguém?",
 };

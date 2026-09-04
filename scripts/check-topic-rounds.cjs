@@ -93,6 +93,24 @@ TOPICS.forEach((topic, index) => {
 check("no pack belongs to two subjects, or its cards would be right and wrong at once",
   shared.length === 0, shared.join(", "));
 
+// ── every subject asks exactly one question, and asks it the right way ──────
+// "Which of these would you use when talking about X" fits a subject you talk
+// ABOUT and misdescribes one you SAY: read as "meeting people", a board that
+// wanted the goodbyes too came back five missed of six. Those subjects carry
+// the whole question instead — so exactly one of the two has to be there, or a
+// subject asks nothing, or carries a phrase nothing ever reads.
+const questionable = TOPICS.filter((topic) => Boolean(topic.about) === Boolean(topic.ask));
+check(
+  "every subject has either a phrase for the usual question or a question of its own",
+  questionable.length === 0,
+  questionable.map((topic) => `${topic.id}: ${topic.about ? "both" : "neither"}`).join(", ")
+);
+check(
+  "...and the board asks a subject's own question where it has one",
+  /topic\.ask\s*\n?\s*\?\s*ui\(topic\.ask\)/u.test(read("src/components/duo/TopicRoundView.tsx")),
+  "the subject's own question is never reached, so the default one is asked anyway"
+);
+
 // ── every subject fills its board, and the board is honest ──────────────────
 const textKey = (text) => String(text ?? "").trim().toLowerCase();
 for (const topic of TOPICS) {
@@ -206,7 +224,8 @@ const TABLES = {
 // ui("...") literals, so the coverage check cannot see them. Held here.
 const KEYS = [
   ...TOPICS.map((topic) => topic.label),
-  ...TOPICS.map((topic) => topic.about),
+  ...TOPICS.map((topic) => topic.about).filter(Boolean),
+  ...TOPICS.map((topic) => topic.ask).filter(Boolean),
   "Topic round",
   "Words for a subject",
   "Which of these would you use when talking about {subject}?",
