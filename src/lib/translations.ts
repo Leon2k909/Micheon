@@ -101,7 +101,30 @@ async function fromPackOrBundle(language: TranslationLanguage): Promise<Translat
       // reads, it is simply fetched again next time.
       if (!(await packs.isPackInstalled(pack.url))) await packs.installPack(pack.url);
       const table = await packs.readPack<TranslationTable>(pack.url);
-      if (table && Object.keys(table).length) return table;
+      /**
+       * ...and the kept copy has to be the one the manifest describes.
+       *
+       * A pack's address carries no version — content/language/pl.json is the
+       * same URL in every release — and a kept copy is never asked for again,
+       * so the table a learner downloaded the first time they opened the
+       * course is the table they keep. Polish was 6,879 entries when it was
+       * new and is 25,413 now; the course froze at the smaller one and said
+       * nothing, because a short table does not error, it just teaches less.
+       *
+       * The manifest says how big the pack should be, which is what makes
+       * this checkable at all. Short means stale: fetch it once more, and if
+       * that still comes up short, the copy inside the app is complete by
+       * definition.
+       */
+      const expected = Number(pack.entries) || 0;
+      if (table && Object.keys(table).length >= expected) return table;
+      if (expected) {
+        await packs.installPack(pack.url);
+        const refreshed = await packs.readPack<TranslationTable>(pack.url);
+        if (refreshed && Object.keys(refreshed).length >= expected) return refreshed;
+      } else if (table && Object.keys(table).length) {
+        return table;
+      }
     }
   } catch {
     // Any failure at all falls through to the copy inside the app.

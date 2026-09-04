@@ -179,6 +179,28 @@ assert.ok(!/file:\/\//.test(runtime), "contentPacks must not special-case file:/
 assert.ok(!/isElectron|process\.versions/.test(runtime), "contentPacks must stay one code path for web and desktop");
 assert.ok(/caches/.test(runtime), "packs need to survive offline, which is what the Cache API is for");
 
+// ── a kept language pack is never allowed to be older than the app ───────
+// A pack's address carries no version: content/language/pl.json is the same
+// URL in every release, and a kept copy is never asked for again. So the
+// table a learner downloaded the first time they opened a course is the one
+// they keep for good. Polish was 6,879 entries when it shipped and is 25,413
+// now, and a course reading the old copy simply taught less — a short table
+// does not error, it just runs out of cards.
+const translationsSource = fs.readFileSync(path.join(root, "src/lib/translations.ts"), "utf8");
+assert.ok(
+  translationsSource.includes("const expected = Number(pack.entries) || 0;")
+  && translationsSource.includes("Object.keys(table).length >= expected")
+  && translationsSource.includes("await packs.installPack(pack.url);"),
+  "a kept language pack is read without checking it against the size the manifest promises, so a "
+  + "table downloaded before the language was finished is the one the course keeps for good"
+);
+// ...and the manifest has to carry that size, or there is nothing to check.
+assert.ok(
+  manifest.languages.every((pack) => Number.isFinite(pack.entries) && pack.entries > 0),
+  "a language pack in the manifest does not say how many entries it holds, so a stale copy cannot "
+  + "be told from a current one"
+);
+
 console.log(
   `check-content-packs: ${sourceEntries.toLocaleString()} entries across ${manifest.levels.length} level packs `
   + `(largest ${(largest / 1048576).toFixed(2)} MB of ${(total / 1048576).toFixed(2)} MB) `
