@@ -494,6 +494,17 @@ const CLIPPED = new RegExp(`(?<!\\p{L})(${SPOKEN_STEMS.join("|")})e(?!\\p{L})`, 
  * short list of cards this course refuses.
  */
 const clip = (s) => s.replace(CLIPPED, "$1").replace(/,/g, "").replace(/\s+/g, " ").trim().toLowerCase();
+/**
+ * Every list in this file keyed on the card's German has the same problem, not
+ * just the exclusions: conversation mode gives the card a second name, and a
+ * list that knows only the written one silently stops applying to it. Frau
+ * Weber is allowed to keep her German name on one card; the same card in its
+ * spoken spelling was refused, because it was a different string.
+ */
+const alsoClipped = (set) => {
+  const clipped = new Set([...set].map(clip));
+  return (german) => set.has(german) || clipped.has(clip(german));
+};
 const excludedClipped = new Set([...excluded].map(clip));
 const shouldNotBeHere = pairs.filter((row) => excluded.has(row.german) || excludedClipped.has(clip(row.german)));
 check(
@@ -575,10 +586,11 @@ const KEEPS_ITS_GERMAN_NAME = new Set([
   "Sehr geehrte Frau Doktor Weber — Titel gehören in die Anrede.",
   "Liebe Frau Weber passt, sobald man sich kennt.",
 ]);
+const keepsItsGermanName = alsoClipped(KEEPS_ITS_GERMAN_NAME);
 const germanNames = [];
 for (const [german, portuguese] of Object.entries(RETIRED_NAMES)) {
   for (const row of pairs) {
-    if (KEEPS_ITS_GERMAN_NAME.has(row.german)) continue;
+    if (keepsItsGermanName(row.german)) continue;
     if (!edge(german).test(row.german)) continue;
     if (!edge(german).test(row.portuguese)) continue;
     germanNames.push(`${german} should be ${portuguese} — ${row.german}`);
@@ -736,9 +748,10 @@ const KEEPS_ITS_GERMAN_PLACE = new Set([
   "The letter from Flensburg",
   "Die Schale geht dieses Jahr wohl wieder nach München.",
 ]);
+const keepsItsGermanPlace = alsoClipped(KEEPS_ITS_GERMAN_PLACE);
 const strayPlaces = pairs.filter(
   (row) =>
-    !KEEPS_ITS_GERMAN_PLACE.has(row.german) &&
+    !keepsItsGermanPlace(row.german) &&
     GERMAN_PLACES.some((place) => edge(place).test(row.portuguese))
 );
 check(
