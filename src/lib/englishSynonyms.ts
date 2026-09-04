@@ -127,6 +127,12 @@ export const ENGLISH_SYNONYMS: string[][] = [
   ["wrong", "incorrect"],
   ["big", "large"],
   ["small", "little"],
+  // "Was für ein Käse ist das?" is what sort, what kind and what type of
+  // cheese, and nothing about the German picks between them. Folded as the
+  // phrase and not the bare words on purpose: "kind" on its own is also nice
+  // and "type" is also something you do to a keyboard, and folding those
+  // together would accept "a type person" for "a kind person" forever.
+  ["sort of", "kind of", "type of"],
 ];
 
 const escape = (word: string) => word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
