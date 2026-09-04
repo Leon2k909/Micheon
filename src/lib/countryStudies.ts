@@ -20,7 +20,7 @@ import type { Course } from "@/lib/courses";
  * entfernt werden."
  */
 
-export type CountryId = "uk" | "de" | "fr" | "pl";
+export type CountryId = "uk" | "de" | "fr" | "pl" | "it";
 
 export type CountryLevel = "easy" | "medium" | "hard";
 
@@ -106,7 +106,7 @@ export type CountryPack = {
     passMark: number;
   };
   /** The language the material is written in — the language of the real test. */
-  contentLang: "en" | "de" | "fr" | "pl";
+  contentLang: "en" | "de" | "fr" | "pl" | "it";
 };
 
 export const COUNTRY_LEVELS: CountryLevel[] = ["easy", "medium", "hard"];

@@ -132,9 +132,19 @@ const SAME_WORD = new Set([
   "incomplete", "Account", "Home", "Dashboard", "Desktop",
 ]);
 const MUST_STAY_ENGLISH = new Set(["colour, practise", "color, practice"]);
+/**
+ * WRITTEN IN ITALIAN TO BEGIN WITH: the country course about Italy carries
+ * an Italian tagline, so this table has nothing to translate and leaves it
+ * alone. Identical is the correct answer. check-french-interface and
+ * check-polish-interface hold the same kind of list for the same reason.
+ */
+const SOURCE_IS_ITALIAN = new Set([
+  "Storia, ordinamento e vita quotidiana \u2014 come funziona il paese.",
+]);
 const untouched = entries
   .filter(([key, value]) => key === value)
   .filter(([key]) => !SAME_WORD.has(key) && !MUST_STAY_ENGLISH.has(key))
+  .filter(([key]) => !SOURCE_IS_ITALIAN.has(key))
   .filter(([key]) => /[a-z]{4}/iu.test(key.replace(/\{\w+\}/g, "")))
   .map(([key]) => JSON.stringify(key));
 check("no string was left in English while counting as translated", untouched.length === 0,

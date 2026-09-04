@@ -11,6 +11,9 @@ import { FR_ERA_LABELS, FR_ERA_ORDER, FR_TIMELINE } from "@/lib/vivreEnFranceTim
 import { zycieWPolsceCourse } from "@/lib/zycieWPolsceCourse";
 import { PL_QUESTIONS } from "@/lib/plQuestionBank";
 import { PL_ERA_LABELS, PL_ERA_ORDER, PL_TIMELINE } from "@/lib/zycieWPolsceTimeline";
+import { vivereInItaliaCourse } from "@/lib/vivereInItaliaCourse";
+import { IT_QUESTIONS } from "@/lib/itQuestionBank";
+import { IT_ERA_LABELS, IT_ERA_ORDER, IT_TIMELINE } from "@/lib/vivereInItaliaTimeline";
 
 /**
  * The countries Country studies covers.
@@ -138,7 +141,33 @@ export const PL_PACK: CountryPack = {
   contentLang: "pl",
 };
 
-export const COUNTRY_PACKS: CountryPack[] = [UK_PACK, DE_PACK, FR_PACK, PL_PACK];
+/**
+ * Italy, the fifth. Like Poland it imitates no state exam, because Italy
+ * holds none: the citizenship requirement is a B1 certificate in the
+ * language, and the long-stay permit an A2 test. Neither asks about the
+ * country. The figures below are this course's own — the same thirty in
+ * forty-five minutes Poland uses, for a country in the same position.
+ */
+export const IT_PACK: CountryPack = {
+  id: "it",
+  flagId: "italian",
+  label: "Italy – Land and Culture",
+  country: "Italy",
+  course: vivereInItaliaCourse,
+  questions: IT_QUESTIONS,
+  timeline: IT_TIMELINE,
+  eraOrder: [...IT_ERA_ORDER],
+  eraLabels: IT_ERA_LABELS,
+  storeKey: "it-quiz-v1",
+  exam: {
+    questionCount: 30,
+    durationMs: 45 * 60 * 1000,
+    passMark: 21,
+  },
+  contentLang: "it",
+};
+
+export const COUNTRY_PACKS: CountryPack[] = [UK_PACK, DE_PACK, FR_PACK, PL_PACK, IT_PACK];
 
 export function countryPack(id: CountryId): CountryPack {
   return COUNTRY_PACKS.find((pack) => pack.id === id) ?? UK_PACK;

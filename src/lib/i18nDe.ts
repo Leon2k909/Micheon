@@ -2684,6 +2684,8 @@ export const DE: Record<string, string> = {
   "France – Land and Culture": "Frankreich – Land und Kultur",
   "Valeurs, institutions et vie quotidienne — comment le pays fonctionne.": "Werte, Institutionen und Alltag — wie das Land funktioniert.",
   "Poland – Land and Culture": "Polen – Land und Kultur",
+  "Italy – Land and Culture": "Italien – Land und Kultur",
+  "Storia, ordinamento e vita quotidiana — come funziona il paese.": "Geschichte, Verfassung und Alltag — wie das Land funktioniert.",
   "Historia, ustrój i codzienność — jak działa ten kraj.": "Geschichte, Staatsaufbau und Alltag — wie das Land funktioniert.",
   "Politik, Geschichte und Gesellschaft — wie das Land funktioniert.": "Politik, Geschichte und Gesellschaft — wie das Land funktioniert.",
   // The line under each course name in the switcher. It goes through ui()
@@ -2695,6 +2697,7 @@ export const DE: Record<string, string> = {
   Germany: "Deutschland",
   France: "Frankreich",
   Poland: "Polen",
+  Italy: "Italien",
   "Learn first": "Erst lernen",
   "Overview": "Übersicht",
   "By topic": "Nach Thema",

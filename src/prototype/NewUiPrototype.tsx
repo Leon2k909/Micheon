@@ -145,6 +145,7 @@ import homeLanguagesHiImage from "./assets/home-languages-hi-v1.webp";
 import homeLanguagesZhImage from "./assets/home-languages-zh-v1.webp";
 import homeCountryArtDe from "./assets/home-country-de-v2.webp";
 import homeCountryArtFr from "./assets/home-country-fr-v2.webp";
+import homeCountryArtIt from "./assets/home-country-it-v1.webp";
 import homeCountryArtPl from "./assets/home-country-pl-v1.webp";
 import homeCountryArtUk from "./assets/home-country-uk-v2.webp";
 import achievementAtlas from "./assets/achievements-v1/achievement-atlas-v3.webp";
@@ -2245,6 +2246,7 @@ function LanguageCard({
 const COUNTRY_ART: Record<CountryId, string> = {
   de: homeCountryArtDe,
   fr: homeCountryArtFr,
+  it: homeCountryArtIt,
   pl: homeCountryArtPl,
   uk: homeCountryArtUk,
 };

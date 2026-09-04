@@ -274,7 +274,19 @@ for (const symbol of courseSymbols) {
 // tagline was written in German and never translated, which is the same
 // row reading German in a French app. Neither is a typecheck error and
 // neither shows up in the language the author happens to be testing in.
-const INTERFACE_TABLES = ["i18nDe", "i18nFr", "i18nPl", "i18nEs", "i18nPt"];
+// Read off the directory, not typed out here. This list was written by
+// hand as five and the directory already held six — i18nIt had arrived
+// unannounced. A hand-kept list of tables is the exact thing that turned
+// main red when Poland was added, and it rots the same way every time.
+const INTERFACE_TABLES = fs
+  .readdirSync(path.join(root, "src/lib"))
+  .filter((name) => /^i18n[A-Z]\w*\.ts$/.test(name))
+  .map((name) => name.replace(/\.ts$/, ""))
+  .sort();
+assert.ok(
+  INTERFACE_TABLES.length >= 5,
+  `only ${INTERFACE_TABLES.length} interface tables found; the pattern that finds them must have stopped matching`
+);
 const translations = INTERFACE_TABLES.map((table) => [table, read(`src/lib/${table}.ts`)]);
 for (const symbol of courseSymbols) {
   const from = new RegExp(`import \\{ ${symbol} \\} from "@/lib/(\\w+)"`).exec(packs)?.[1];
