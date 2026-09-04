@@ -1709,7 +1709,7 @@ function CefrBadge({ level }: { level: unknown }) {
   );
 }
 
-function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [], onNext, onGradeItem, onReviewLevel, onSnooze, onAnswer, manualReviewNotice, onUndoManualReview, onDismissManualReview, onHoldManualReview, onReleaseManualReview, markedLevel = null, onClearMark }: {
+function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [], onNext, onGradeItem, onReviewLevel, onSnooze, onAnswer, onSlip, manualReviewNotice, onUndoManualReview, onDismissManualReview, onHoldManualReview, onReleaseManualReview, markedLevel = null, onClearMark }: {
   item: any;
   listeningChoicePool: string[];
   translationChoicePool: string[];
@@ -1718,6 +1718,12 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   onReviewLevel?: (level: GuidedReviewLevel) => void;
   onSnooze?: (days: number) => void;
   onAnswer?: (correct: boolean) => void;
+  /**
+   * The right words with a wrong letter. Reported separately from onAnswer
+   * because the two earn different things: a slip earns the writing stages,
+   * a wrong answer earns another meeting with the phrase.
+   */
+  onSlip?: () => void;
   /** The pending mark for THIS item, so the banner can host Undo inline. */
   manualReviewNotice?: { label: string; note: string } | null;
   onUndoManualReview?: () => void;
@@ -2839,14 +2845,21 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     setListeningTypeChecked(true);
     reactToAnswer(listeningTypeResult.ok, !!listeningTypeResult.phrasingNote);
     if (listeningTypeResult.ok) {
+      // The words were right and the letters were not. THAT is what the
+      // writing stages are for, and it is the only thing that buys them.
       if (listeningTypeResult.spellingNote || listeningTypeResult.capitalizationError) {
         setTypingFailed(true);
+        onSlip?.();
       }
       lessonSpeak(item.de, 0.88, targetLang);
       window.setTimeout(advanceOrFinish, 900);
     } else {
+      // Not being able to write the phrase is not a spelling problem: it has
+      // not been learnt yet. Writing it out six times teaches nothing that
+      // meeting it again does not, and the miss already sends it back round
+      // — it counts as a mistake, which raises its difficulty and brings the
+      // review forward. So the route stays lean and the schedule does the work.
       setListeningMisses((misses) => misses + 1);
-      setTypingFailed(true);
       lessonSpeak(item.de, 0.75, targetLang);
     }
   };
@@ -2865,7 +2878,10 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     if (listeningMode === "pick") return;
     setListeningMode("pick");
     setListeningTypeChecked(false);
-    setTypingFailed(true);
+    // Taking the options says "I cannot produce this", which is a memory
+    // problem and not a spelling one: it stays a struggle, so the phrase
+    // comes back round, but it does not buy six stages of writing out a
+    // phrase the learner has just said they cannot write.
     setWrongLanguageNotice(null);
     if (grade !== "struggle") {
       setGrade("struggle");
@@ -6087,6 +6103,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
     if (itemId) {
       const current = answerPerformanceRef.current.get(itemId) ?? { attempts: 0, mistakes: 0 };
       answerPerformanceRef.current.set(itemId, {
+        ...current,
         attempts: current.attempts + 1,
         mistakes: current.mistakes + (ok ? 0 : 1),
       });
@@ -6131,6 +6148,20 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
         });
       }
     }
+  };
+
+  /**
+   * A right-words-wrong-letters answer, remembered on the record.
+   *
+   * The sitting is rebuilt from storage every time, so without this the miss
+   * is forgotten the moment the session ends and the phrase returns on the
+   * lean route. Kept apart from the mistake count: only a slip brings the
+   * writing stages back, here or on a later day.
+   */
+  const registerSlip = (itemId?: string) => {
+    if (!itemId) return;
+    const current = answerPerformanceRef.current.get(itemId) ?? { attempts: 0, mistakes: 0 };
+    answerPerformanceRef.current.set(itemId, { ...current, slips: (current.slips ?? 0) + 1 });
   };
 
   const step = safeSteps[Math.min(index, safeSteps.length - 1)];
@@ -6557,7 +6588,7 @@ export default function GuidedSession({ steps, onComplete, onCancel, onGradeItem
                   />
                 ) : (
                   <>
-                    {kind === "sentence"  && <SentenceExercise key={`sentence-${index}`} item={step.item} listeningChoicePool={listeningChoicePool} translationChoicePool={translationChoicePool} onGradeItem={gradeItem} onReviewLevel={(level) => applyReviewLevelFromPicker([String(step.item?.id ?? "")], level)} onSnooze={(days) => applyManualSnooze([String(step.item?.id ?? "")], days)} onNext={next} onAnswer={(ok) => registerAnswer(ok, step.item?.id)} manualReviewNotice={manualNoticeInline ? lastManualReviewChange : null} onUndoManualReview={undoLastManualReviewChange} onDismissManualReview={() => setLastManualReviewChange(null)} onHoldManualReview={holdReviewNotice} onReleaseManualReview={releaseReviewNotice} markedLevel={manualMarks[String(step.item?.id ?? "")] ?? null} onClearMark={() => clearManualMark(String(step.item?.id ?? ""))} />}
+                    {kind === "sentence"  && <SentenceExercise key={`sentence-${index}`} item={step.item} listeningChoicePool={listeningChoicePool} translationChoicePool={translationChoicePool} onGradeItem={gradeItem} onReviewLevel={(level) => applyReviewLevelFromPicker([String(step.item?.id ?? "")], level)} onSnooze={(days) => applyManualSnooze([String(step.item?.id ?? "")], days)} onNext={next} onAnswer={(ok) => registerAnswer(ok, step.item?.id)} onSlip={() => registerSlip(step.item?.id)} manualReviewNotice={manualNoticeInline ? lastManualReviewChange : null} onUndoManualReview={undoLastManualReviewChange} onDismissManualReview={() => setLastManualReviewChange(null)} onHoldManualReview={holdReviewNotice} onReleaseManualReview={releaseReviewNotice} markedLevel={manualMarks[String(step.item?.id ?? "")] ?? null} onClearMark={() => clearManualMark(String(step.item?.id ?? ""))} />}
                     {kind === "dialogue"  && <div className="fs-card-body flex flex-col items-center"><DialogueExercise key={`dialogue-${index}`} dialogue={step.dialogue} onGradeItem={gradeItem} onReviewLevel={(itemId, level) => applyReviewLevelFromPicker([itemId], level)} onSnooze={(itemId, days) => applyManualSnooze([itemId], days)} onNext={next} onAnswer={registerAnswer} markedLevels={manualMarks} onClearMark={clearManualMark} /></div>}
                     {kind === "register"  && <RegisterCheck question={step.question} onAnswer={registerRegisterAnswer} onNext={next} />}
                     {kind === "complete"  && (

@@ -61,7 +61,7 @@ import {
   adaptiveRepeatPriority,
   isAdaptiveReinforcementEligible,
   isAttemptedPracticeEligible,
-  lastRunHadMistake,
+  lastRunHadSpellingSlip,
   recordAnswerPerformance,
   type AnswerPerformance,
 } from "@/lib/adaptivePractice";
@@ -994,12 +994,17 @@ export default function GuidedLearningSession() {
               reviewReason: "struggle",
               interval: 0,
               struggledAt: Number.isFinite(struggledAt) ? struggledAt : 0,
-              // A struggle is what a failed spelling writes. The review it
-              // earns has to check the spelling again, so it opens on the
-              // full writing route rather than the one-test lean one — the
-              // same route the miss bought inside the sitting where it
-              // happened, which a remount had been forgetting.
-              item: { ...st.item, typingFailed: true },
+              // A struggle is not always a failed spelling: it is also what
+              // taking the options writes, and what marking a phrase hard
+              // writes, and both of those mean the phrase is not remembered
+              // rather than mistyped. Only a recorded slip opens the review
+              // on the writing route; everything else comes back on the lean
+              // one, which is the meeting-it-again the struggle asked for.
+              item: lastRunHadSpellingSlip(
+                progressEntryForId(reviewState as any, st.item.id, st.item.aliases)?.record
+              )
+                ? { ...st.item, typingFailed: true }
+                : st.item,
             };
             requiredReviews.push(priorityReview);
             reviewPartByStep.set(priorityReview, pId);
@@ -1591,7 +1596,12 @@ export default function GuidedLearningSession() {
     return steps.map((step) => {
       if (step?.type !== "sentence" || !step.item?.id || step.item.typingFailed) return step;
       const record = progressEntryForId(grades, step.item.id, step.item.aliases ?? [])?.record;
-      return lastRunHadMistake(record)
+      // A SLIP, not any mistake. Getting the phrase wrong means it has not
+      // been learnt, and the review it earned is the answer to that; being
+      // handed the writing route as well makes forgetting cost six stages of
+      // transcription. Only the right words with a wrong letter come back
+      // here to have their spelling checked again.
+      return lastRunHadSpellingSlip(record)
         ? { ...step, item: { ...step.item, typingFailed: true } }
         : step;
     });

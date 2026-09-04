@@ -885,18 +885,32 @@ check(
 // is what a failed spelling writes — carries it outright.
 const builder = fs.readFileSync(path.join(root, "src/guided_learning_session.tsx"), "utf8");
 check(
-  "a phrase whose last run had a mistake comes back to be spelled again",
+  "a phrase whose last run ended on a SLIP comes back to be spelled again",
   builder.includes("const withSpellingMemory = (steps: any[]): any[] => {")
-    && builder.includes("lastRunHadMistake(record)")
+    && builder.includes("lastRunHadSpellingSlip(record)")
     && /const withSecondShowing = \(dealt: any\[\]\): any\[\] => \{[\s\S]{0,200}?const steps(?:: any\[\])? = withSpellingMemory\(dealt\);/.test(builder)
-    && /reviewReason: "struggle",[\s\S]{0,600}?item: \{ \.\.\.st\.item, typingFailed: true \}/.test(builder)
     && guidedSource.includes("useState(() => Boolean(item?.typingFailed))"),
   "the review of a misspelled phrase opens on the one-test route, so the spelling is never checked again"
+);
+// ...and a phrase that was merely forgotten does not. A struggle is also what
+// taking the options writes and what marking a phrase hard writes; both mean
+// it is not remembered, and the review is the answer to that. Handing it the
+// writing route as well makes forgetting cost six stages of transcription.
+check(
+  "a struggle only opens on the writing route when the record holds a slip",
+  /reviewReason: "struggle",[\s\S]{0,900}?lastRunHadSpellingSlip\([\s\S]{0,200}?typingFailed: true \}\s*:\s*st\.item/.test(builder)
+    && !/item: \{ \.\.\.st\.item, typingFailed: true \},/.test(builder),
+  "every struggle review opens on the writing route, whatever went wrong"
 );
 const adaptive = fs.readFileSync(path.join(root, "src/lib/adaptivePractice.ts"), "utf8");
 check(
   "...judged by the record itself: the last answer and the last slip are the same moment",
-  /export function lastRunHadMistake\([\s\S]{0,400}?slipped >= answered/.test(adaptive)
+  /export function lastRunHadSpellingSlip\([\s\S]{0,400}?slipped >= answered/.test(adaptive)
+    && /lastSpellingSlipAt: timestamp/.test(adaptive)
+    // A slip is counted apart from a mistake, or the record cannot tell the
+    // learner who mistyped from the learner who drew a blank.
+    && /slips > 0 \? \{ lastSpellingSlipAt: timestamp \}/.test(adaptive)
+    && /mistakes > 0 \? \{ lastMistakeAt: timestamp \}/.test(adaptive)
 );
 check(
   "...and Meaning first is never left as a dead end at the foot of a route",

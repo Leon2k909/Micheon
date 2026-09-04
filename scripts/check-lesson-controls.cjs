@@ -261,24 +261,46 @@ check(
     guided.includes("const [typingFailed, setTypingFailed] = useState(() => Boolean(item?.typingFailed));")
       && /chained: Boolean\(item\?\.chainedFromLesson\),\s*\n\s*typingFailed,/.test(guided)
   );
-  for (const [name, pattern, why] of [
+  // What buys the writing back is a SLIP: the right words with a wrong
+  // letter. Not knowing the phrase is a different problem with a different
+  // answer — it counts as a mistake, which raises the phrase's difficulty and
+  // brings its review forward, and meeting it again is what somebody who has
+  // forgotten it needs. Being handed six stages of transcription for
+  // forgetting is a punishment, not a lesson, and taking the four options
+  // says exactly the same thing as a blank does.
+  for (const [name, holds, why] of [
     [
-      "a wrong answer sets it",
-      /setListeningMisses\(\(misses\) => misses \+ 1\);\s*\n\s*setTypingFailed\(true\);/,
-      "missing the one typing stage no longer earns the writing practice",
-    ],
-    [
-      "so does a near miss, because a spelling nudge is the stage doing its job",
-      /listeningTypeResult\.spellingNote \|\| listeningTypeResult\.capitalizationError\) \{\s*\n\s*setTypingFailed\(true\);/,
+      "a near miss sets it, because a spelling nudge is the stage doing its job",
+      /listeningTypeResult\.spellingNote \|\| listeningTypeResult\.capitalizationError\) \{\s*\n\s*setTypingFailed\(true\);/.test(guided),
       "an answer that needed a correction counts as having been produced cleanly",
     ],
     [
-      "and so does taking the four options, because picking one is recognition",
-      /setListeningMode\("pick"\);[\s\S]{0,140}?setTypingFailed\(true\);/,
-      "the options are a way round the one stage that has to be typed",
+      "a wrong answer does not",
+      !/setListeningMisses\(\(misses\) => misses \+ 1\);\s*\n\s*setTypingFailed\(true\);/.test(guided),
+      "forgetting a phrase buys six stages of writing it out",
+    ],
+    [
+      "and neither does taking the four options",
+      !/setListeningMode\("pick"\);[\s\S]{0,240}?setTypingFailed\(true\);/.test(guided),
+      "saying you cannot write it buys stages of writing it",
+    ],
+    [
+      "so exactly one place in the session turns it on",
+      (guided.match(/setTypingFailed\(true\)/g) ?? []).length === 1,
+      "the writing route has grown another way in",
+    ],
+    [
+      "taking the options still marks the phrase a struggle, so it comes back",
+      /setListeningMode\("pick"\);[\s\S]{0,400}?setGrade\("struggle"\)/.test(guided),
+      "the way round the typing test now costs nothing at all",
+    ],
+    [
+      "and a slip is written to the record, not just held in the sitting",
+      /onSlip\?\.\(\);/.test(guided) && /onSlip=\{\(\) => registerSlip\(step\.item\?\.id\)\}/.test(guided),
+      "the slip dies with the remount, so the review opens on the lean route",
     ],
   ]) {
-    check(name, pattern.test(guided), why);
+    check(name, holds, why);
   }
 }
 

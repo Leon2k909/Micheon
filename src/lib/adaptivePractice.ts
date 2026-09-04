@@ -12,6 +12,15 @@ import { isSnoozed } from "@/lib/memoryStrength";
 export type AnswerPerformance = {
   attempts: number;
   mistakes: number;
+  /**
+   * Checks where the words were right and the letters were not.
+   *
+   * Counted apart from mistakes because the two ask for different things. A
+   * misspelling is answered by writing the phrase again; not knowing it is
+   * answered by meeting it again, which the review schedule already does.
+   * Only this number buys the writing stages back — see typingFailed.
+   */
+  slips?: number;
 };
 
 type AdaptivePracticeFields = {
@@ -25,6 +34,12 @@ type AdaptivePracticeFields = {
    */
   difficultyDebt?: number;
   lastMistakeAt?: string;
+  /**
+   * When the learner last wrote this phrase with the right words and a wrong
+   * letter. Kept apart from lastMistakeAt: a slip is what the writing stages
+   * are for, and a blank is not.
+   */
+  lastSpellingSlipAt?: string;
   lastAnswerAt?: string;
   /** Last optional familiar-half repetition; does not move the SRS due date. */
   reinforcedAt?: string;
@@ -105,6 +120,7 @@ export function recordAnswerPerformance<T extends AdaptivePracticeFields>(
 ): T & AdaptivePracticeFields {
   const attempts = Math.max(0, Math.round(Number(performance?.attempts) || 0));
   const mistakes = Math.min(attempts, Math.max(0, Math.round(Number(performance?.mistakes) || 0)));
+  const slips = Math.min(attempts, Math.max(0, Math.round(Number(performance?.slips) || 0)));
   if (!attempts) return { ...(prior ?? {} as T) };
 
   const correct = attempts - mistakes;
@@ -122,7 +138,23 @@ export function recordAnswerPerformance<T extends AdaptivePracticeFields>(
     difficultyDebt,
     lastAnswerAt: timestamp,
     ...(mistakes > 0 ? { lastMistakeAt: timestamp } : {}),
+    ...(slips > 0 ? { lastSpellingSlipAt: timestamp } : {}),
   };
+}
+
+/**
+ * Did the learner's last run end on a MISSPELLING, rather than on not knowing
+ * the phrase?
+ *
+ * The distinction decides whether the phrase comes back on the writing route.
+ * Getting the words wrong is not a spelling problem: it means the phrase is
+ * not learnt yet, and being asked to write it out six times teaches nothing —
+ * meeting it again does, which is what the review it also earns is for.
+ */
+export function lastRunHadSpellingSlip(record: AdaptivePracticeFields | undefined): boolean {
+  const answered = Date.parse(String(record?.lastAnswerAt ?? ""));
+  const slipped = Date.parse(String(record?.lastSpellingSlipAt ?? ""));
+  return Number.isFinite(answered) && Number.isFinite(slipped) && slipped >= answered;
 }
 
 /**
@@ -159,20 +191,11 @@ export function adaptiveRepeatPriority(
  * treating it as fresh would quietly replace one of the three genuinely new
  * phrases promised by Continue Learning.
  */
-/**
- * Whether the last run through this item had a mistake in it.
- *
- * The record keeps when it was last answered and when it last went wrong;
- * where those are the same moment, the most recent attempt is the one that
- * slipped. That is what a review has to know: a phrase whose spelling was
- * missed comes back to be spelled again, not waved through the one-test
- * route as if the miss had never happened.
- */
-export function lastRunHadMistake(record: AdaptivePracticeFields | undefined): boolean {
-  const answered = Date.parse(String(record?.lastAnswerAt ?? ""));
-  const slipped = Date.parse(String(record?.lastMistakeAt ?? ""));
-  return Number.isFinite(answered) && Number.isFinite(slipped) && slipped >= answered;
-}
+// Whether the last run had ANY mistake in it used to be asked here, to decide
+// whether a phrase came back on the writing route. It is the wrong question:
+// a wrong answer means the phrase is not learnt, which the review it earns is
+// the answer to, and lastRunHadSpellingSlip above asks the right one. The
+// mistake itself is still recorded — it drives difficulty and the due date.
 
 export function isAttemptedPracticeEligible(
   record: AdaptivePracticeFields | undefined,

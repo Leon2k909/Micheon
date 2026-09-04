@@ -208,8 +208,13 @@ check("the typing box is gone once the options are up",
 // ── the parts a render cannot see ───────────────────────────────────────
 check("the typed answer goes through matchEither — the same grading as every other typing stage",
   /const listeningTypeResult = useMemo\(\s*\(\) => matchEither\(listeningInput\)/.test(componentSource));
+// The window reaches the end of this function and no further; it was 400,
+// which fitted the code of the day and not a comment added above the grade.
+// What has to hold is that taking the options still records the struggle —
+// it is the whole consequence now that the options no longer buy the writing
+// stages — not how many characters sit in front of it.
 check("taking the options records a struggle, so the phrase comes back round",
-  /const showListeningChoices = \(\) => \{[\s\S]{0,400}?setGrade\("struggle"\)[\s\S]{0,200}?onGradeItem\?\.\(item\.id, "struggle"\)/
+  /const showListeningChoices = \(\) => \{[\s\S]{0,900}?setGrade\("struggle"\)[\s\S]{0,200}?onGradeItem\?\.\(item\.id, "struggle"\)/
     .test(componentSource));
 check("two misses promote the way out from a footnote to an offer",
   /listeningMisses >= 2/.test(componentSource));
