@@ -33,7 +33,7 @@ const root = path.resolve(__dirname, "..");
 function loadCourse({ german }) {
   const built = esbuild.buildSync({
     stdin: {
-      contents: 'export { getCourse } from "./src/lib/courseRegistry.ts";\n'
+      contents: 'export { getCourse, COURSES } from "./src/lib/courseRegistry.ts";\n'
         + 'export { CSHARP_COURSE_DE } from "./src/lib/csharpCourseDe.ts";\n'
         + 'export { csharpCourse } from "./src/lib/csharpCourse.ts";',
       resolveDir: root,
@@ -227,9 +227,52 @@ assert.deepStrictEqual([...missingChrome], [],
   "a course screen asks for interface copy that has no German, so the buttons around a German "
   + "lesson read English");
 
+// ── the heading of a course reads in the app's language ───────────────
+//
+// Four screens printed course.name raw, so a German account opening the
+// Italian country course read Italy in the heading while the dialog that
+// had just offered it said Italien, two centimetres above.
+//
+// The TAGLINE deliberately does not follow this rule: it is course content,
+// so it follows the translation picker and gets its own translated line
+// underneath. A name is a label; a tagline is text. See CourseLessonsView.
+for (const file of ["CourseLessonsView.tsx", "CourseDashboardView.tsx", "CourseShell.tsx", "CourseSession.tsx"]) {
+  const source = fs.readFileSync(path.join(root, "src/components/course", file), "utf8");
+  assert.ok(
+    !/\{course\.name\}/.test(source),
+    `${file} prints the course name raw, so that heading stays English however the app is set`
+  );
+}
+
+// Passing it through ui() achieves nothing if no table holds it: ui returns
+// the key unchanged and says nothing. So every course a learner can OPEN has
+// to be named in every table. The unavailable rows are the long list of
+// languages nobody has started, whose heading never reaches a screen.
+const INTERFACE_TABLES = fs
+  .readdirSync(path.join(root, "src/lib"))
+  .filter((name) => /^i18n[A-Z]\w*\.ts$/.test(name))
+  .map((name) => [name, fs.readFileSync(path.join(root, "src/lib", name), "utf8")]);
+assert.ok(INTERFACE_TABLES.length >= 5, "the interface tables stopped being found");
+const escapeKey = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const namedIn = (table, name) =>
+  table.includes(JSON.stringify(name) + ":")
+  // A one-word key is stored without quotes in some of the tables.
+  || new RegExp("\\n  " + escapeKey(name) + ": ").test(table);
+const unnamed = [];
+for (const course of english.COURSES.filter((entry) => entry.available)) {
+  for (const [table, text] of INTERFACE_TABLES) {
+    if (!namedIn(text, course.name)) unnamed.push(`${course.name} has no entry in ${table}`);
+  }
+}
+assert.deepStrictEqual(
+  unnamed, [],
+  "a course a learner can open has no name in one of the interface tables, so its heading "
+  + "would read English there while the picker that offered it read otherwise"
+);
 console.log(
   `check-course-language: the C# course reads back in German for a German account (${germanStrings.length} `
   + `strings, ${Object.keys(english.CSHARP_COURSE_DE).length} translated), its code and lesson ids are `
-  + "untouched, and language courses keep the tap-to-reveal they had"
+  + "untouched, language courses keep the tap-to-reveal they had, and every course anyone can "
+  + `open is named in all ${INTERFACE_TABLES.length} interface tables and shows that name in its heading`
 );
 process.exit(0);

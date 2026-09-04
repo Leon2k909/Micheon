@@ -7,6 +7,7 @@ import { getCodeBackground } from "@/lib/codeBackground";
 import { getAuthUser } from "@/lib/profileStorage";
 import { LessonBlocks } from "@/components/course/LessonBlocks";
 import { useScrollLock } from "@/lib/scrollLock";
+import { ui } from "@/lib/i18n";
 
 /**
  * One look per chapter, taken in order rather than by name.
@@ -81,7 +82,7 @@ export function CourseShell({ course, onExit, initialLessonId }: { course: Cours
           {course.icon}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-black text-[var(--text-1)]">{course.name}</p>
+          <p className="truncate text-sm font-black text-[var(--text-1)]">{ui(course.name)}</p>
           <p className="text-[11px] font-semibold text-[var(--text-3)]">{completed.length}/{lessons.length} lessons · {progressPct}%</p>
         </div>
         <div className="hidden h-1.5 w-40 overflow-hidden rounded-full bg-[var(--surface-2)] sm:block">

@@ -39,7 +39,7 @@ export function CourseDashboardView({
         <div>
           <div className="flex items-center justify-between gap-3">
             <span className="course-feature-pill rounded-full px-3 py-1 text-[11px] font-black">
-              {course.name}
+              {ui(course.name)}
             </span>
             <span className="course-feature-pill-success rounded-full px-3 py-1 text-[11px] font-black">
               {uiFmt("{pct}% complete", { pct })}

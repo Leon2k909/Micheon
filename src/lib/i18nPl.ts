@@ -2543,6 +2543,7 @@ export const PL: Record<string, string> = {
   "Valeurs, institutions et vie quotidienne — comment le pays fonctionne.": "Wartości, instytucje i życie codzienne — jak działa ten kraj.",
   "Poland – Land and Culture": "Polska — kraj i kultura",
   "Italy – Land and Culture": "Włochy — kraj i kultura",
+  "C# for s&box": "C# dla s&box",
   "Storia, ordinamento e vita quotidiana — come funziona il paese.": "Historia, ustrój i życie codzienne — jak funkcjonuje ten kraj.",
   "Historia, ustrój i codzienność — jak działa ten kraj.": "Historia, ustrój i codzienność — jak działa ten kraj.",
   "Politik, Geschichte und Gesellschaft — wie das Land funktioniert.": "Polityka, historia i społeczeństwo — jak działa ten kraj.",

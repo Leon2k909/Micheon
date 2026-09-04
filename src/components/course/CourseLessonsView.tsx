@@ -88,7 +88,10 @@ export function CourseLessonsView({
       <section className="card p-5 sm:p-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-[var(--text-1)]">{course.name}</h1>
+            {/* The heading follows the app language, not the course. The
+                tagline below it does the opposite on purpose — see the note
+                on it — because a tagline is content and a name is a label. */}
+            <h1 className="text-3xl font-black tracking-tight text-[var(--text-1)]">{ui(course.name)}</h1>
             {/* The tagline is course content, not interface text, so it follows
                 the translation picker rather than the app language — same
                 choice, same behaviour as the cards inside a lesson. */}
