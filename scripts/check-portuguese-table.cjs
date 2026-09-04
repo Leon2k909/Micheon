@@ -521,7 +521,15 @@ const ONE_ANSWER = [
         "the German canteen, where the dish keeps its name",
     },
   },
-  { german: "Brezel", answer: /Brezel/, unless: {} },
+  /**
+   * A Brezel was allowed to keep its German name while German food names were
+   * allowed to stand. They are not any more: a Portuguese sentence carries no
+   * German word that is not a town, a company or a person, and where Portugal
+   * has no twin for the thing the card describes it instead. So a Brezel is
+   * uma rosquilha salgada, a Leberkäse is pão de carne, a Kaiserschmarrn is
+   * panqueca desfeita com açúcar.
+   */
+  { german: "Brezel", answer: /rosquilha/, unless: {} },
   /**
    * A Kita is a creche. Portugal separates the two halves of what one German
    * word covers — a creche takes them to three, an infantário from three to
@@ -624,6 +632,7 @@ const KEEPS_ITS_GERMAN_PLACE = new Set([
   // the thing, so it names Berlin whichever way round it is read.
   "der Krapfen",
   "der Berliner",
+  "Krapfen, Berliner oder Pfannkuchen — je nachdem, wo du bist.",
   // The registers a German keeps: the plate that says where a car is from, the
   // state you live in, the points that accumulate in Flensburg, the trophy
   // that goes to Munich.
