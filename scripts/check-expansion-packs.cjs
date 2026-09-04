@@ -73,7 +73,10 @@ const expected = {
     fixture: "Darf's ein bisschen mehr sein?",
   },
   part156: {
-    theme: "At the drugstore: toiletries, laundry and photos",
+    // Named for the German shop rather than the American one: a Drogerie is
+    // not a pharmacy, which is the whole point of the pack, and "drugstore"
+    // is not a word this course's English uses.
+    theme: "At the Drogerie: toiletries, laundry and photos",
     fixture: "Gibt es das auch als Reisegröße?",
   },
   part157: {

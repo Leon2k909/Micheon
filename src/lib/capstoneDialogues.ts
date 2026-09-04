@@ -1422,7 +1422,7 @@ const CAPSTONE_DIALOGUES: Record<string, Dialogue[]> = {
       title: "Teils, teils",
       lines: [
         { speaker: "A", de: "Und, wie fandest du den Vorschlag?", en: "So, what did you make of the proposal?" },
-        { speaker: "B", de: "Naja, teils teils. Da ist schon was dran, aber so einfach ist das nicht.", en: "Well — so-so. There's something in it, but it's not that simple." },
+        { speaker: "B", de: "Naja, teils teils. Da ist schon was dran, aber so einfach ist das nicht.", en: "Well — yes and no. There's something in it, but it's not that simple." },
         { speaker: "A", de: "Kommt drauf an, wen du fragst, oder?", en: "Depends who you ask, right?" },
         { speaker: "B", de: "Genau. Ich sag ja nicht, dass er unrecht hat. Überzeugt bin ich trotzdem nicht.", en: "Exactly. I'm not saying he's wrong. I'm still not convinced, though." },
         { speaker: "A", de: "Das kann man so sehen. Schlafen wir eine Nacht drüber.", en: "That's one way to see it. Let's sleep on it." },
