@@ -4,6 +4,7 @@ import { lifeInTheUkCourse } from "@/lib/lifeInTheUkCourse";
 import { lebenInDeutschlandCourse } from "@/lib/lebenInDeutschlandCourse";
 import { vivreEnFranceCourse } from "@/lib/vivreEnFranceCourse";
 import { zycieWPolsceCourse } from "@/lib/zycieWPolsceCourse";
+import { vivereInItaliaCourse } from "@/lib/vivereInItaliaCourse";
 import { PLANNED_LANGUAGES } from "@/lib/languageCatalogue";
 import { localiseCourse } from "@/lib/courseTranslation";
 
@@ -138,6 +139,7 @@ export const COURSES: Course[] = [
   // so Poland shipped complete and unreachable — four packs on the home
   // card, three rows in the dialog that is the only way in.
   zycieWPolsceCourse,
+  vivereInItaliaCourse,
 ];
 
 /**

@@ -1219,6 +1219,97 @@ function typoClose(a: string, b: string): boolean {
 }
 
 /**
+ * How English spells the -ing of a verb it is given.
+ *
+ * Forward only, and deliberately: going backwards from an -ing is ambiguous
+ * — hoping and hopping arrive at the same place — while going forwards is
+ * three rules and no guessing. So the learner's word is inflected and the
+ * result compared with what the answer key actually wrote.
+ */
+function englishProgressive(base: string): string[] {
+  const word = String(base ?? "").toLowerCase();
+  if (word.length < 2) return [];
+  const forms = new Set<string>([`${word}ing`]);
+  // take → taking, come → coming. Not ee: see → seeing, not seing.
+  if (word.endsWith("e") && !word.endsWith("ee")) forms.add(`${word.slice(0, -1)}ing`);
+  // run → running, sit → sitting: a short verb ending consonant-vowel-consonant.
+  if (/[^aeiou][aeiou][^aeiouwxy]$/u.test(word)) forms.add(`${word}${word.at(-1)}ing`);
+  // lie → lying, die → dying.
+  if (word.endsWith("ie")) forms.add(`${word.slice(0, -2)}ying`);
+  return [...forms];
+}
+
+/**
+ * The verb the learner wrote, and the verb it is if that was a third person.
+ *
+ * "She takes the bus" is the simple present of "take", and only the base
+ * inflects to "taking". The -s is stripped speculatively, not decided: both
+ * readings are offered and the comparison picks whichever reconstructs.
+ */
+function englishVerbBases(word: string): string[] {
+  const bases = new Set<string>([word]);
+  if (word.endsWith("ies") && word.length > 4) bases.add(`${word.slice(0, -3)}y`);
+  if (word.endsWith("es") && word.length > 3) bases.add(word.slice(0, -2));
+  if (word.endsWith("s") && !word.endsWith("ss") && word.length > 2) bases.add(word.slice(0, -1));
+  return [...bases];
+}
+
+const PROGRESSIVE_AUX = new Set(["am", "is", "are", "was", "were"]);
+
+/**
+ * German has no progressive, so both English tenses render the same German.
+ *
+ * "Ich komme mit meiner Familie" is "I come with my family" and "I'm coming
+ * with my family" equally — the distinction the learner is being marked
+ * against does not exist in the sentence they were reading. Rejecting the
+ * simple present marks a correct understanding of the German wrong.
+ *
+ * This is not leniency and is not gated behind it: it is two spellings of one
+ * answer. It applies only to the side the learner is NOT learning — somebody
+ * learning ENGLISH is being taught exactly this difference, and for them the
+ * aspect is the answer rather than an accident of it.
+ *
+ * Aligned word by word rather than normalised in place, because the two
+ * readings are different lengths — "I am coming" against "I come" — and the
+ * auxiliary is the word that goes missing.
+ */
+export function sameEnglishAspect(input: string, target: string): boolean {
+  const words = (value: string) => String(value ?? "")
+    .toLowerCase()
+    // The auxiliary is the word that decides this, and contracted it is not a
+    // word at all — stripping the apostrophe first turns "I'm" into "im" and
+    // hides the "am" this has to see.
+    .replace(/\b(i)['’]?m\b/gu, "$1 am")
+    .replace(/\b(he|she|it|that|there)['’]?s\b/gu, "$1 is")
+    .replace(/\b(we|you|they)['’]?re\b/gu, "$1 are")
+    .replace(/['’]/gu, "")
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .split(/\s+/u)
+    .filter(Boolean);
+  const a = words(input);
+  const b = words(target);
+  let i = 0;
+  let j = 0;
+  let collapsed = 0;
+  // One side may spend two words (auxiliary + -ing) where the other spends
+  // one, so the two are walked with their own cursors rather than by index.
+  const takeProgressive = (side: string[], at: number, other: string[], otherAt: number) => {
+    if (!PROGRESSIVE_AUX.has(side[at])) return false;
+    const verb = side[at + 1];
+    if (!verb || !verb.endsWith("ing")) return false;
+    return englishVerbBases(other[otherAt] ?? "")
+      .some((base) => englishProgressive(base).includes(verb));
+  };
+  while (i < a.length && j < b.length) {
+    if (a[i] === b[j]) { i += 1; j += 1; continue; }
+    if (takeProgressive(b, j, a, i)) { j += 2; i += 1; collapsed += 1; continue; }
+    if (takeProgressive(a, i, b, j)) { i += 2; j += 1; collapsed += 1; continue; }
+    return false;
+  }
+  return i === a.length && j === b.length && collapsed > 0;
+}
+
+/**
  * The same slip, judged for the language the learner is NOT learning.
  *
  * typoClose refuses to forgive a word shorter than five letters, and that is

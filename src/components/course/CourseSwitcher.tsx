@@ -36,6 +36,9 @@ const COURSE_SEARCH_ALIASES: Record<string, string> = {
   // No test words here: Poland has no civics exam, and offering one in the
   // search would promise something the course does not contain.
   "zycie-w-polsce": "zycie w polsce polen poland polska landeskunde geschichte gesellschaft ustroj historia sejm solidarnosc konstytucja polnisch",
+  // No test words here either: Italy has no civics exam, and the
+  // language certificate it does ask for is not what this course teaches.
+  "vivere-in-italia": "vivere in italia italien italy italia landeskunde storia costituzione repubblica regioni risorgimento senato italienisch",
   // Endonyms and alternative spellings for everything in the catalogue, so
   // searching "nihongo" or "espanol" finds the right row.
   ...Object.fromEntries(PLANNED_LANGUAGES.map((language) => [language.id, language.search])),
