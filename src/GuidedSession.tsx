@@ -12,6 +12,7 @@ import {
   matchGermanSentence,
   matchEnglishMeaning,
   forgivableMeaningSlip,
+  sameEnglishAspect,
   matchEnglishPhrase as matchEnglish,
   matchingVisibleKeys,
   primaryAnswer,
@@ -115,6 +116,7 @@ function lessonSpeak(text: string, rate: number, lang: string): Promise<void> {
 import { ui, uiOr, uiFmt, uiNumber } from "@/lib/i18n";
 import { cefrBadgeLabel } from "@/lib/cefr";
 import { ContinueLearningSettings } from "@/components/duo/ContinueLearningSettings";
+import { getSittingOrder, SITTING_ORDER_LABELS } from "@/lib/sittingOrder";
 import { Settings2, Volume2, ChevronLeft, ChevronRight, ChevronDown, CheckCircle2, X, BookOpen, ArrowRight, MessageSquareQuote, RotateCcw, Languages, GripVertical, Eye, EyeOff, Lightbulb, Keyboard, ListChecks, MousePointerClick, SkipForward } from "lucide-react";
 // TTS now runs through the /api/tts server (premium Microsoft voices in every
 // browser) with an automatic fall back to the browser's built-in speechSynthesis.
@@ -2078,6 +2080,16 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       // touched — that half is the answer and stays marked as one.
       const forgiveSlips = (result: ReturnType<typeof matchEnglishMeaning>) => {
         if (result.ok) return result;
+        // German has no progressive, so "I come" and "I'm coming" are one
+        // answer to "Ich komme" — not a slip to be forgiven but a second
+        // spelling of the same understanding, so it passes clean and is not
+        // gated behind the lenience setting. Only ever asked about the side
+        // the learner is not learning: somebody learning English is being
+        // taught this exact difference, and matchMeaning is never their
+        // target side.
+        if (!meaningIsGerman && sameEnglishAspect(typed, displayEnglish)) {
+          return { ...result, ok: true };
+        }
         if (getMeaningLenience() !== "forgiving") return result;
         if (!forgivableMeaningSlip(typed, displayEnglish)) return result;
         return { ...result, ok: true, spellingNote: true };
@@ -5741,9 +5753,21 @@ function SessionFlashcardPreview({
           <span className="fs-eyebrow"><i />{ui("Lesson preview")}</span>
           <h1 className="fs-h1">{ui("Meet today's phrases")}</h1>
           <p className="fs-sub">{ui("Review both languages before sentence practice.")}</p>
+          {/*
+            How the sitting was put together, beside what is in it.
+
+            Listen and Continue learning each have their own order, both
+            offering a choice called Conversation order, and neither the
+            lesson nor the preview said which one built the sitting in front
+            of you — so an order set in one place and expected in the other
+            looks exactly like an order that does not work. The row already
+            says how many phrases and which languages; how they were chosen
+            belongs in the same breath.
+          */}
           <div className="fs-preview-summary" aria-label={ui("Lesson preview")}>
             <span><BookOpen className="h-4 w-4" />{cards.length} {ui("Phrases")}</span>
             <span><Languages className="h-4 w-4" />{ui(sides.target.label)} + {ui(sides.meaning.label)}</span>
+            <span><ListChecks className="h-4 w-4" />{ui(SITTING_ORDER_LABELS[getSittingOrder()])}</span>
           </div>
         </div>
         <span className="fs-preview-count">

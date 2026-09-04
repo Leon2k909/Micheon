@@ -28,7 +28,7 @@ const root = path.resolve(__dirname, "..");
 const built = esbuild.buildSync({
   stdin: {
     contents: [
-      'export { forgivableMeaningSlip, matchGermanSentence, matchEnglishPhrase } from "./src/lib/germanTextMatch.ts";',
+      'export { forgivableMeaningSlip, sameEnglishAspect, matchGermanSentence, matchEnglishPhrase } from "./src/lib/germanTextMatch.ts";',
       'export { DEFAULT_MEANING_LENIENCE } from "./src/lib/meaningLenience.ts";',
     ].join("\n"),
     resolveDir: root,
@@ -45,7 +45,7 @@ const built = esbuild.buildSync({
 const mod = new Module("meaning-lenience", null);
 mod.paths = Module._nodeModulePaths(root);
 mod._compile(built.outputFiles[0].text, path.join(root, "meaning-lenience.cjs"));
-const { forgivableMeaningSlip, matchGermanSentence, DEFAULT_MEANING_LENIENCE } = mod.exports;
+const { forgivableMeaningSlip, sameEnglishAspect, matchGermanSentence, DEFAULT_MEANING_LENIENCE } = mod.exports;
 
 let failed = 0;
 const check = (name, condition) => {
@@ -94,6 +94,38 @@ check("only the meaning matcher forgives, and only after a rejection",
 
 check("forgiving is the default, because that is what the meaning box is for",
   DEFAULT_MEANING_LENIENCE === "forgiving");
+
+// ── German has no progressive, so both English tenses are one answer ────────
+// "Ich komme mit meiner Familie" is "I come with my family" and "I'm coming
+// with my family" equally: the distinction being marked against is not in the
+// sentence the learner read. This is not a slip to forgive, it is a second
+// spelling of the same understanding, so it passes clean and is not gated
+// behind the lenience setting.
+for (const [typed, key] of [
+  ["I come with my family", "I'm coming with my family."],
+  ["I run every day", "I'm running every day"],
+  ["she takes the bus", "she is taking the bus"],
+  ["he studies German", "he is studying German"],
+  ["we sit here", "we are sitting here"],
+  ["I am coming", "I come"],
+]) {
+  check(`the two English presents are one answer: ${typed}`, sameEnglishAspect(typed, key));
+}
+// And it stays a tense difference, not a licence to write another sentence.
+for (const [typed, key] of [
+  ["I come with my brother", "I'm coming with my family."],
+  ["I eat", "I am drinking"],
+  ["the cat sat", "the bat sat"],
+  ["I came with my family", "I'm coming with my family."],
+  ["I am coming with my family.", "I'm coming with my family."],
+]) {
+  check(`and a different sentence is still a different sentence: ${typed}`, !sameEnglishAspect(typed, key));
+}
+check("the aspect is only ever forgiven on the side the learner is not learning",
+  /if \(!meaningIsGerman && sameEnglishAspect\(typed, displayEnglish\)\)/u.test(guided)
+  // The target side is matchEither, and it must never consult this.
+  && !/matchEither[\s\S]{0,200}?sameEnglishAspect/u.test(guided),
+  "somebody learning English is being taught this exact difference and must still be marked on it");
 
 const settings = fs.readFileSync(path.join(root, "src/Gamification.tsx"), "utf8").replace(/\r\n?/gu, "\n");
 check("and it is a setting, not a decision made for the learner",

@@ -85,6 +85,22 @@ check("every order the panel offers is one the library keeps",
 check("every order the library keeps has a button",
   O.SITTING_ORDERS.every((value) => choices.some(([v]) => v === value)),
   `accepted but unreachable: ${O.SITTING_ORDERS.filter((v) => !choices.some(([c]) => c === v)).join(", ")}`);
+// ── and the lesson calls each order what the picker calls it ────────────────
+// The picker used to be the only place that named an order. The lesson names
+// the one that built it now — because Listen and Continue learning each have
+// their own order and both offer a Conversation order, so an order set in one
+// and expected in the other looks exactly like an order that does not work.
+// Two lists of the same seven names drift the first time one is reworded, so
+// the picker's list is checked against the library's.
+const mislabelled = choices.filter(([value, label]) => O.SITTING_ORDER_LABELS[value] !== label);
+check("the picker and the library agree on what every order is called",
+  mislabelled.length === 0,
+  mislabelled.map(([v, label]) => `${v}: panel "${label}" vs library "${O.SITTING_ORDER_LABELS[v]}"`).join("; "));
+check("every order the library keeps has a name",
+  O.SITTING_ORDERS.every((value) => Boolean(O.SITTING_ORDER_LABELS[value])));
+check("the lesson says which order built the sitting",
+  /SITTING_ORDER_LABELS\[getSittingOrder\(\)\]/u.test(read("src/GuidedSession.tsx")),
+  "the sitting never says how it was put together, so a setting that did not apply looks like one that does not work");
 const explanation = panel.slice(panel.indexOf('ui("The course\'s pick'), panel.indexOf('aria-label={ui("Order")}'));
 for (const [, label] of choices) {
   const name = label.replace(/\s*\(.*\)$/u, "");

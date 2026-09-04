@@ -30,6 +30,24 @@ export type SittingOrder = "course" | "level" | "common" | "similar" | "conversa
 export const SITTING_ORDERS: SittingOrder[] = ["course", "level", "common", "similar", "conversation", "shortest", "longest"];
 export const DEFAULT_SITTING_ORDER: SittingOrder = "course";
 
+/**
+ * What each order is called, for anywhere that has to name one.
+ *
+ * Here rather than only in the picker, because the picker is no longer the
+ * only place that says it: the lesson names the order that built it, and two
+ * lists of the same seven names would drift the first time one was reworded.
+ * The picker's own list is checked against this one.
+ */
+export const SITTING_ORDER_LABELS: Record<SittingOrder, string> = {
+  course: "The course's pick",
+  level: "Easiest first (A1 → C1)",
+  common: "Most common first",
+  similar: "Similar sentences together",
+  conversation: "Conversation order",
+  shortest: "Shortest first",
+  longest: "Longest first",
+};
+
 const ORDER_KEY = "gl-sitting-order-v1";
 const LEVEL_FILTER_KEY = "gl-sitting-level-filter-v1";
 
