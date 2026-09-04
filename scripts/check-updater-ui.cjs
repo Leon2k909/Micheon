@@ -118,6 +118,19 @@ check("the strings the clock used are gone from the table",
 check("startup uses the in-app updater path", /autoUpdater\.checkForUpdates\(\)/.test(main));
 check("startup does not invoke the native notification updater", !/autoUpdater\.checkForUpdatesAndNotify\s*\(/.test(main));
 check("Electron publishes live download progress", /download-progress[\s\S]*setUpdateStatus\("downloading"[\s\S]*percent:\s*p\.percent/.test(main));
+// ── one update, downloaded once ────────────────────────────────────────────
+// Automatic mode leaves autoDownload on, so a check does not merely ask the
+// feed a question: whatever it finds goes straight to the downloader. Asking
+// "am I up to date?" while the background transfer was running, or after it
+// had finished and was waiting for the restart, therefore downloaded the same
+// version again — the bar filled, reached the end, and started from nothing.
+// The periodic check had always skipped those two states; the button somebody
+// presses had not.
+check(
+  "a manual check never restarts a download that is running or already done",
+  /if \(updateStatus\.state === "downloading" \|\| updateStatus\.state === "ready"\) \{\s*\n\s*return \{ \.\.\.updateStatus/.test(main)
+    && /\["checking", "downloading", "ready"\]\.includes\(updateStatus\.state\)/.test(main)
+);
 check("preload exposes status, manual checking and installation", ["getUpdateStatus", "checkForUpdateNow", "onUpdateStatus", "installUpdate"].every((name) => preload.includes(name)));
 check("the themed panel restores the current state on mount", banner.includes("desktop.getUpdateStatus()"));
 check("the themed panel listens for every updater state", banner.includes("desktop.onUpdateStatus?."));

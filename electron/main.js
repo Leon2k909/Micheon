@@ -1858,10 +1858,22 @@ ipcMain.handle("update:check-now", async () => {
   if (!app.isPackaged) {
     return { state: "unsupported", currentVersion: app.getVersion(), supported: false };
   }
+  // A transfer already running, or one already finished and waiting for the
+  // restart, is not something to start again.
+  //
+  // Automatic mode leaves autoDownload on, so a check does not just ask the
+  // feed a question — it hands whatever it finds straight to the downloader.
+  // Ask "am I up to date?" while the background download is running, or after
+  // it has finished, and the same version downloads a second time: the bar
+  // fills, reaches the end, and starts again from nothing. The honest answer
+  // to the question is the state already held here, so it is given without
+  // touching the feed. The periodic check has always skipped these two states
+  // for the same reason; only the button somebody presses did not.
+  if (updateStatus.state === "downloading" || updateStatus.state === "ready") {
+    return { ...updateStatus, currentVersion: app.getVersion(), supported: true };
+  }
   try {
-    // An update already downloaded stays "ready": checking again would report
-    // "current" against the feed and hide the restart the learner still needs.
-    if (updateStatus.state !== "ready") setUpdateStatus("checking");
+    setUpdateStatus("checking");
     await autoUpdater.checkForUpdates();
   } catch (error) {
     console.error("[updater] manual check failed:", error?.message ?? error);
