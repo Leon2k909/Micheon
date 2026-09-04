@@ -144,19 +144,31 @@ const frenchItems = countItems(frenchParts);
 const germanItems = countItems(germanParts);
 
 /**
- * The floor. Raise it as the translation tables grow; never lower it.
+ * French used to be a narrowing, and this asked whether enough survived.
  *
- * A course is not a course at five hundred cards, and the narrowing is exactly
- * the kind of thing that can quietly collapse — one wrong key in the lookup
- * and every pack comes back empty with no error anywhere.
+ * It covered about a third of the catalogue, so the danger was collapse: one
+ * wrong key in the lookup and every pack comes back empty with no error
+ * anywhere. A floor of six thousand items caught that.
+ *
+ * The table now answers the whole catalogue, so the question turns around. A
+ * floor cannot see a course that is meant to be the German one entry for entry
+ * quietly losing a thousand cards — it would still clear six thousand and look
+ * fine. So the bar is the other complete course rather than a constant, the
+ * way check-spanish-course.cjs pins Spanish against Polish: nothing to raise as
+ * the tables grow, and it fails the moment French falls behind.
+ *
+ * The old check demanded French be SMALLER than German. That was the shape of
+ * the narrowing, not a property worth keeping, and leaving it in meant the only
+ * way back to green was to delete translations.
  */
-const MINIMUM_ITEMS = 6000;
-check(`the French course has enough to teach (${frenchItems.toLocaleString()} of ${germanItems.toLocaleString()} items)`,
-  frenchItems >= MINIMUM_ITEMS);
-check("it is a narrowing of the German course, not a copy of it",
-  frenchItems < germanItems);
-check("and the packs that survive are a real spread, not one corner of the course",
-  Object.keys(frenchParts).length >= 100);
+const polishParts = M.filterPartsForLearningDirection(everything, "learn-pl");
+const polishItems = countItems(polishParts);
+check(`the French course is not behind the other complete course (${frenchItems.toLocaleString()} against Polish's ${polishItems.toLocaleString()}, out of ${germanItems.toLocaleString()})`,
+  frenchItems >= polishItems);
+check(`and it reaches the German course rather than a corner of it (${((germanItems ? frenchItems / germanItems : 0) * 100).toFixed(1)}%)`,
+  germanItems > 0 && frenchItems / germanItems >= 0.9);
+check("it is still the German course read through a table, not a copy of it",
+  Object.keys(frenchParts).length === Object.keys(germanParts).length);
 
 // EVERY entry the course serves has to have an answer. This is the promise the
 // narrowing exists to keep, so it is checked exhaustively rather than sampled.
