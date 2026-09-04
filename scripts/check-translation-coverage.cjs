@@ -149,7 +149,13 @@ const FLOORS = {
   // close to that number rather than well under it, because a finished table
   // has no more blocks coming to explain a fall.
   it: 22000,
-  pt: 1380,
+  // Portuguese is finished too, and further along than any of them: 8,999 of
+  // the 9,000 word cards, 3,466 of 3,500 spoken lines, 11,989 of 12,041
+  // sentences. The 87 it does not answer are refused on purpose — two packs
+  // and a handful of cards that teach the German writing system, German
+  // grammar, or a trap that only catches an English speaker. Floored close to
+  // what it reached, for the reason Italian is.
+  pt: 25000,
   // Russian has only just been started and is floored at zero for the same
   // reason Italian is: what matters while a table is being written is that
   // its number never falls. It is the seed a first lesson is built from —

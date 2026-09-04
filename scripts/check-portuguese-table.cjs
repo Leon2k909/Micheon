@@ -223,8 +223,17 @@ const GERMAN_TERMS = [
   // eating, drinking and the occasions for it
   "Biergarten", "Stammtisch", "Volksfest", "Polterabend", "Discofox", "Aufguss",
   "Abendbrot", "Brotzeit", "Leberk(?:ä|ae)se", "Brezel", "Brezeln", "Helles",
-  "Weizenbier", "Kaiserschmarrn", "Flammkuchen", "Buletten", "Fleischpflanzerl",
-  "Krapfen", "Gl(?:ü|ue)hwein", "Radler", "Apfelschorle", "Schorle",
+  "Weizenbier", "Kaiserschmarrn", "Flammkuchen", "Bulette", "Buletten",
+  "Fleischpflanzerl", "Krapfen", "Gl(?:ü|ue)hwein", "Radler", "Apfelschorle",
+  "Schorle",
+  // and the dishes a word-card pack teaches by name. Every one of these has a
+  // Portuguese answer that says what the thing IS — a Christmas loaf with
+  // dried fruit in it, a ball of cooked dough — because naming it in German
+  // would leave the card teaching nothing. Listed so the next pass cannot
+  // quietly put the German name back.
+  "Semmel", "Kn(?:ö|oe)del", "Klo(?:ß|ss)", "Maultasche", "Stollen", "Lebkuchen",
+  "Hefezopf", "Streusel", "Schmand", "Gr(?:ü|ue)tze", "Blutwurst", "Bratwurst",
+  "Zwieback", "Schnitzel", "Fassbier", "Sp(?:ä|ae)tzle", "Sauerkraut",
 ];
 /**
  * A word boundary comes apart on an umlaut — \bben\b matches inside üben — so
