@@ -44,8 +44,28 @@ const SPOKEN_STEMS = [
 ];
 
 const STEMS = SPOKEN_STEMS.join("|");
+/**
+ * "mein" is on the list because "das meine ich" really is said as "das mein
+ * ich". But "meine" is also the possessive, and this rule reached that too:
+ * "Und wann darf ich meine Figur bewegen?" was being taught as "ich mein
+ * Figur", which is not German at all.
+ *
+ * The two readings are told apart by the word after them, and German makes
+ * that easy: a possessive is followed by the thing owned, and a German noun is
+ * capitalised. So "ich meine" keeps its -e in front of a capital letter and
+ * loses it everywhere else — which is right for "Ich mein ja nur" and for
+ * "Das ist genau das, was ich meine." alike. Requiring the end of the clause
+ * instead was tried first and was too narrow: it took the -e off nothing and
+ * printed "Ich meine ja nur".
+ *
+ * The other two rules below are left alone. "meine ich" and a clause-final
+ * "meine" can only be the verb, because a possessive needs its noun.
+ */
+const AFTER_ICH_STEMS = SPOKEN_STEMS.filter((stem) => stem !== "mein").join("|");
 // "ich habe" -> "ich hab"
-const AFTER_ICH = new RegExp(`\\b(ich\\s+)(${STEMS})e\\b`, "gi");
+const AFTER_ICH = new RegExp(`\\b(ich\\s+)(${AFTER_ICH_STEMS})e\\b`, "gi");
+// "ich meine ja nur" -> "ich mein ja nur"; "ich meine Figur" left alone
+const AFTER_ICH_MEIN = /\b([Ii]ch\s+)(mein)e\b(?!\s+\p{Lu})/gu;
 // "habe ich" -> "hab ich" (inversion, questions, and anything fronted)
 const BEFORE_ICH = new RegExp(`\\b(${STEMS})e(\\s+ich\\b)`, "gi");
 // "..., dass ich es nicht verstehe" -> "... versteh". German puts the verb
@@ -76,6 +96,7 @@ export function toSpokenGerman(sentence: string): string {
   // survives: "Habe ich das gesagt?" -> "Hab ich das gesagt?".
   return text
     .replace(AFTER_ICH, (_match, lead: string, stem: string) => `${lead}${stem}`)
+    .replace(AFTER_ICH_MEIN, (_match, lead: string, stem: string) => `${lead}${stem}`)
     .replace(BEFORE_ICH, (_match, stem: string, tail: string) => `${stem}${tail}`)
     // Only the trailing -e goes; the rest of the clause is handed back as it
     // came in, so nothing between the conjunction and the verb is touched.

@@ -30898,7 +30898,7 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Ich zeig dir welchen ich mein.": "Eu mostro-te qual é.",
   "Weißt du was ich mein?": "Percebes o que quero dizer?",
   "Du weißt schon was ich mein, oder?": "Tu percebes o que quero dizer, não percebes?",
-  "Vom ersten eigenen Geld hab ich mein Eltern eingeladen.": "Com o primeiro dinheiro meu, paguei o jantar aos meus pais.",
+  "Vom ersten eigenen Geld hab ich meine Eltern eingeladen.": "Com o primeiro dinheiro meu, paguei o jantar aos meus pais.",
   "Ich ess langsamer und höre auf wenn ich satt bin.": "Como mais devagar e paro quando estou cheio.",
   "Ich zahl es in zwei Raten zurück wenn das okay ist.": "Devolvo em duas prestações, se não te importares.",
   "Ich schaff es heute nicht mehr weil der Tag völlig voll war.": "Hoje já não consigo, porque o dia esteve cheio de mais.",
