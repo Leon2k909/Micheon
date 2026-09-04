@@ -46,6 +46,15 @@ export type ResolvedInterfaceLanguage = "en" | "de" | "fr" | "pl" | "es" | "it" 
  * the button: somebody looking for Spanish is as likely to type "spanish" or
  * "espanol" (no accent, because the keyboard they are typing on is the reason
  * they are looking for this setting) as "Español".
+ *
+ * IN ALPHABETICAL ORDER, by the name on the row. The list is what the picker
+ * draws and what a search filters, both in this order, so the order here is
+ * the order on screen — and a list somebody has to read top to bottom to find
+ * their own language in is a list that got longer than its arrangement.
+ *
+ * By the name on the ROW, which is each language's own name for itself. That
+ * is the same word in every interface language, so unlike the course list this
+ * one sorts once here rather than per locale at render.
  */
 export const INTERFACE_LANGUAGES: ReadonlyArray<{
   value: ResolvedInterfaceLanguage;
@@ -53,12 +62,12 @@ export const INTERFACE_LANGUAGES: ReadonlyArray<{
   label: string;
   search: readonly string[];
 }> = [
-  { value: "en", label: "English", search: ["english", "englisch", "anglais", "angielski", "ingles", "inglés"] },
   { value: "de", label: "Deutsch", search: ["german", "deutsch", "allemand", "niemiecki", "aleman", "alemán"] },
-  { value: "fr", label: "Français", search: ["french", "französisch", "francais", "français", "francuski", "frances", "francés"] },
-  { value: "pl", label: "Polski", search: ["polish", "polnisch", "polonais", "polski", "polaco"] },
+  { value: "en", label: "English", search: ["english", "englisch", "anglais", "angielski", "ingles", "inglés"] },
   { value: "es", label: "Español", search: ["spanish", "spanisch", "espagnol", "hiszpański", "hiszpanski", "espanol", "español", "castellano"] },
+  { value: "fr", label: "Français", search: ["french", "französisch", "francais", "français", "francuski", "frances", "francés"] },
   { value: "it", label: "Italiano", search: ["italian", "italienisch", "italien", "włoski", "wloski", "italiano"] },
+  { value: "pl", label: "Polski", search: ["polish", "polnisch", "polonais", "polski", "polaco"] },
   { value: "pt", label: "Português", search: ["portuguese", "portugiesisch", "portugais", "portugalski", "portugues", "português", "brasileiro", "brazilian"] },
 ];
 

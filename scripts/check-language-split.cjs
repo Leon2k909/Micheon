@@ -166,6 +166,30 @@ check(
     && storage.includes('const EARLIER_SPLIT_KEYS = ["gl-direction-split-v2", "gl-direction-split"];')
 );
 
+
+// ── and the list reads in alphabetical order ───────────────────────────────
+// Seven rows in the order somebody happened to type them is already a list you
+// have to read rather than scan, and there are more languages coming. Sorted
+// by the name ON the row — each language's own name for itself, which is the
+// same word whatever the app is currently written in, so this sorts once in
+// the source rather than per locale at render.
+//
+// "Match my course" is not in this list. The picker draws it above the list as
+// the setting's default, so it stays first without being sorted anywhere.
+{
+  const source = fs.readFileSync(path.join(root, "src/lib/interfaceLanguage.ts"), "utf8");
+  const block = /export const INTERFACE_LANGUAGES[\s\S]*?\n\];/.exec(source);
+  const labels = block ? [...block[0].matchAll(/label: "([^"]+)"/g)].map((match) => match[1]) : [];
+  const sorted = [...labels].sort((a, b) => a.localeCompare(b, "en"));
+  check(
+    "the app languages are listed alphabetically",
+    labels.length >= 7 && labels.join(" ") === sorted.join(" "),
+    labels.length < 7
+      ? "the app-language list is not where this check looks for it"
+      : `is: ${labels.join(", ")} / should be: ${sorted.join(", ")}`
+  );
+}
+
 if (failures) {
   console.error(`\n${failures} language-split regression${failures === 1 ? "" : "s"}`);
   process.exit(1);
