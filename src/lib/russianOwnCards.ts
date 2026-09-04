@@ -3214,15 +3214,15 @@ const PACKS: OwnPack[] = [
     focusEn: "'Who's last?', remembering a person instead of standing in line, and 'I only want to ask'",
     words: [
       {
-        ru: "очередь",
-        de: "die Schlange",
-        en: "queue",
+        ru: "живая очередь",
+        de: "die Schlange ohne Nummern",
+        en: "the open queue",
         pos: "Substantiv",
-        tipDe: "Keine Linie, sondern eine Reihenfolge. Man merkt sich, wer vor einem ist, und kann weggehen.",
-        tipEn: "Not a line but an order of turns. You remember who is ahead of you, and then you can walk away.",
-        example: "Очередь большая.",
-        exampleDe: "Die Schlange ist lang.",
-        exampleEn: "It's a long queue.",
+        tipDe: "Keine Nummern, keine Termine: Man merkt sich, wer vor einem ist, und darf deshalb weggehen.",
+        tipEn: "No numbers and no appointments: you remember who is ahead of you, and that is what lets you walk away.",
+        example: "Тут живая очередь.",
+        exampleDe: "Hier wird ohne Nummern angestanden.",
+        exampleEn: "It's an open queue here.",
       },
       {
         ru: "талончик",
