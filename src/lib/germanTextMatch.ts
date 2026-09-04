@@ -874,6 +874,9 @@ function canonicalizeEnglish(t: string) {
     .replace(/\bthanks (?:all|both)\b/g, "thanks")
 
     // Common vocabulary synonyms
+    // "eine Katastrophe" is a catastrophe as readily as a disaster, and the
+    // answer key can only print one of them.
+    .replace(/\b(catastrophe|disaster)\b/g, "disaster")
     .replace(/\b(pretty good|quite well)\b/g, "pretty well")
     .replace(/\b(quite a lot|a lot|pretty much|lots|plenty)\b/g, "quite a lot")
     .replace(/\b(lots of|a lot of)\b/g, "quite a lot")
@@ -1074,7 +1077,31 @@ function canonicalizeEnglish(t: string) {
     .replace(/\b(at the end|in the end)\b/g, "in the end")
     .replace(/\bevery day\b/g, "daily")
     .replace(/\bstudy(ing)?\b/g, "learn$1")   // lernen covers both; people interchange them
-    .replace(/\bpossibly\b/g, "maybe");
+    .replace(/\bpossibly\b/g, "maybe")
+    /**
+     * A spoken question drops its auxiliary and its subject.
+     *
+     * "Kommst du mit?" is "Are you coming?", "Coming?" and "You coming?" —
+     * one German question, several English ones a learner might reasonably
+     * type, and an answer key that can print only one of them. Every
+     * "Kommst du …" card had the same problem.
+     *
+     * Only the auxiliary-and-you opening moves, and only at the very start.
+     * The pair goes as a unit, so no pronoun is ever equated with another:
+     * "Am I coming?" is still not "Are you coming?", and what follows the
+     * opening has to match as it always did.
+     *
+     * It runs LAST because it removes the very words the folds above look
+     * for. Higher up it broke "Have you got a light?" = "Do you have a
+     * light?" — both openings were gone before the rule that pairs them
+     * could see either, and "Would you like a coffee?" = "Do you want a
+     * coffee?" would have gone the same way.
+     */
+    .replace(/^(?:are|do|will|would|did|have|has|can|could|shall|should) you\b\s*/u, "")
+    // ...and the bare "You coming?" form, where only the auxiliary was
+    // dropped. Guarded to a following -ing verb, so a statement about what
+    // you do ("you speak German") keeps its subject.
+    .replace(/^you\s+(?=\w+ing\b)/u, "");
   // The rest of the folds live in a table rather than in this chain. They are
   // the same idea — words that may stand in for one another — but there are
   // enough of them now that a list you can read beats another hundred lines of

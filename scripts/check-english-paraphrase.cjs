@@ -41,6 +41,17 @@ const ACCEPT = [
   ["ill come with although im pretty worn out",
    "I'll come along, although I'm pretty worn out. / I'll come with, although I'm pretty worn out."],
   ["wait until im finished", "Hang on until I'm done. / Wait until I'm finished."],
+  // A spoken question drops its auxiliary and its subject. One German
+  // question — "Kommst du mit?" — is "Are you coming?", "Coming?" and "You
+  // coming?" in English, and the answer key prints one of them.
+  ["Are you coming for a smoke?", "Coming out for a smoke? / Coming for a smoke?"],
+  ["You coming for a smoke?", "Coming out for a smoke? / Coming for a smoke?"],
+  ["Coming along tonight?", "Are you coming along tonight?"],
+  ["You coming along tonight?", "Are you coming along tonight?"],
+  ["Are you coming to the gym with me?", "Coming to the gym with me?"],
+  ["Do you have a light?", "Have you got a light?"],
+  // "eine Katastrophe" is a catastrophe as readily as a disaster.
+  ["maths was a catastrophe", "maths was a disaster"],
 ];
 
 // These change the meaning and must still be refused.
@@ -55,6 +66,14 @@ const REJECT = [
   ["I could of helped you if you had asked", "I could've helped you if you'd asked."],
   ["You should of told me sooner", "You should've told me sooner."],
   ["the book on the table", "The book under the table."],
+  // Dropping the auxiliary-and-subject opening must not equate two subjects:
+  // the pair goes as a unit, so who is being asked about is untouched.
+  ["Are you coming too?", "Am I coming too?"],
+  ["Am I coming too?", "Are you coming too?"],
+  ["I speak German.", "You speak German."],
+  // ...and it is the opening that moves, not the rest of the question.
+  ["Coming for a drink?", "Coming out for a smoke? / Coming for a smoke?"],
+  ["Are you coming along tomorrow?", "Are you coming along tonight?"],
 ];
 
 const failures = [];
