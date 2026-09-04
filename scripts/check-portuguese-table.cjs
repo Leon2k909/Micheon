@@ -180,6 +180,67 @@ check(`no Portuguese line still carries an umlaut${stillGerman.length ? ` — "$
   stillGerman.length === 0);
 
 /**
+ * NO GERMAN WORD STANDS IN A PORTUGUESE SENTENCE.
+ *
+ * Somebody working through this course wants Portuguese, not Portuguese with
+ * German words left standing in it. Where the two countries do the same thing
+ * under different names, the Portuguese name is the answer: die Krankenkasse
+ * is o seguro de saúde, die Anmeldung is o registo de residência, der Termin
+ * is a marcação, das Abitur is o diploma do ensino secundário. Where there is
+ * no exact twin, the thing is described in Portuguese rather than named in
+ * German — a course that names it in German has taught nothing.
+ *
+ * The umlaut check above catches a German word only when it happens to be
+ * spelled with one, and most of these are not. Bürgeramt was caught by it;
+ * Pfand, Abitur, Minijob and Handy went straight through, which is how 142 of
+ * them came to be sitting in the table.
+ *
+ * ONLY REAL PROPER NOUNS ARE EXEMPT — towns, companies, people. Those are in
+ * PROPER_NAMES above and are not repeated here.
+ *
+ * AND A TERM INSIDE QUOTATION MARKS, because there the card is talking ABOUT
+ * the word rather than using it. One conversation is named after the German
+ * sentence it is about; rendering that sentence in Portuguese would leave the
+ * conversation named after something nobody in it ever said.
+ */
+const GERMAN_TERMS = [
+  // offices, paperwork and the things they issue
+  "B(?:ü|ue)rgeramt", "B(?:ü|ue)rgerb(?:ü|ue)ro", "Ausl(?:ä|ae)nderbeh(?:ö|oe)rde",
+  "Krankenkasse", "Anmeldung", "Standesamt", "Finanzamt", "Rentenversicherung",
+  "Meldebescheinigung", "Fiktionsbescheinigung", "Landrat", "Landratsamt",
+  "Ministerpr(?:ä|ae)sident", "Oberb(?:ü|ue)rgermeister", "Bundesland", "Bundesl(?:ä|ae)nder",
+  // money the state takes or hands over
+  "Rundfunkbeitrag", "Hundesteuer", "Steueridentifikationsnummer", "Steuerklasse",
+  "Elternzeit", "Kindergeld", "BAf(?:ö|oe)G", "Schufa", "Elster", "Minijob", "Pfand",
+  "Kaltmiete", "Warmmiete",
+  // school and training
+  "Abitur", "Gymnasium", "Realschule", "Gesamtschule", "Berufsschule", "Ausbildung",
+  "Azubi", "Einschulung", "Schult(?:ü|ue)te", "Volkshochschule", "Kita",
+  // the everyday appointments and errands
+  "Termin", "Einschreiben", "Kompaktbrief", "Packstation", "Onleihe",
+  "Verbraucherzentrale", "Hausordnung", "Sperrm(?:ü|ue)ll", "Wertstoffhof",
+  "Pfandautomat", "Kehrwoche", "Schrebergarten", "T(?:Ü|UE)V", "Deutschlandticket", "Handy",
+  // eating, drinking and the occasions for it
+  "Biergarten", "Stammtisch", "Volksfest", "Polterabend", "Discofox", "Aufguss",
+  "Abendbrot", "Brotzeit", "Leberk(?:ä|ae)se", "Brezel", "Brezeln", "Helles",
+  "Weizenbier", "Kaiserschmarrn", "Flammkuchen", "Buletten", "Fleischpflanzerl",
+  "Krapfen", "Gl(?:ü|ue)hwein", "Radler", "Apfelschorle", "Schorle",
+];
+/**
+ * A word boundary comes apart on an umlaut — \bben\b matches inside üben — so
+ * the edges are letter lookarounds instead.
+ */
+const GERMAN_TERM = new RegExp(`(?<!\\p{L})(?:${GERMAN_TERMS.join("|")})(?!\\p{L})`, "iu");
+// The table holds source text, so a quotation mark inside a line arrives as
+// a backslash and a quote.
+const QUOTED = /(?:\\"|[«"„“])[^«»"„“”]*(?:\\"|[»"”“])/g;
+const germanTerms = pairs.filter((row) => GERMAN_TERM.test(row.portuguese.replace(QUOTED, " ")));
+check(
+  `no German word stands in a Portuguese sentence${germanTerms.length ? ` — ${germanTerms[0].portuguese}` : ""}`,
+  germanTerms.length === 0
+);
+
+/**
  * Forms that are Brazilian and are not European Portuguese.
  *
  * High-frequency words only, and only ones with no European meaning of their
@@ -405,7 +466,36 @@ check(
 );
 for (const german of NOT_FOR_PORTUGUESE) excluded.add(german);
 
-const shouldNotBeHere = pairs.filter((row) => excluded.has(row.german));
+/**
+ * AND NOT UNDER ITS SPOKEN SPELLING EITHER.
+ *
+ * Conversation mode does not teach the German the source files hold. It drops
+ * the -e off an ich-form and the comma in front of a subordinate clause, and
+ * it is that clipped spelling the course looks a translation up by. So an
+ * excluded card has two names: the written one listed above, and the one the
+ * learner actually meets. Ich habe ein Gift für dich is refused; Ich hab ein
+ * Gift für dich would have gone straight in, and the refused conversation
+ * would have arrived in the course anyway.
+ *
+ * The stems come out of the app's own list rather than a copy of it, so a
+ * stem added there is covered here without anybody remembering to.
+ */
+const spokenSource = fs.readFileSync(path.join(root, "src/lib/spokenGerman.ts"), "utf8");
+const stemBlock = /const SPOKEN_STEMS = \[([\s\S]*?)\];/.exec(spokenSource);
+check("the spoken-form stems are still where this expects them", stemBlock !== null);
+const SPOKEN_STEMS = stemBlock ? [...stemBlock[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]) : [];
+check(`the spoken-form stems were read (${SPOKEN_STEMS.length})`, SPOKEN_STEMS.length > 30);
+const CLIPPED = new RegExp(`(?<!\\p{L})(${SPOKEN_STEMS.join("|")})e(?!\\p{L})`, "giu");
+/**
+ * Both sides go through the same clipping, so the comparison is between two
+ * sentences stripped of exactly what conversation mode strips. It clips
+ * everywhere rather than only next to ich, which is wider than the app —
+ * harmless here, because the only thing it is ever compared against is the
+ * short list of cards this course refuses.
+ */
+const clip = (s) => s.replace(CLIPPED, "$1").replace(/,/g, "").replace(/\s+/g, " ").trim().toLowerCase();
+const excludedClipped = new Set([...excluded].map(clip));
+const shouldNotBeHere = pairs.filter((row) => excluded.has(row.german) || excludedClipped.has(clip(row.german)));
 check(
   `no card this course leaves out is translated${shouldNotBeHere.length ? ` — ${shouldNotBeHere[0].german}` : ""}`,
   shouldNotBeHere.length === 0
