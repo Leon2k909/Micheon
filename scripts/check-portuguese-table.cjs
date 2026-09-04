@@ -133,6 +133,11 @@ const PROPER_NAMES = [
   // Einschulung — so the names in them stay German, and these are the only two
   // carrying an umlaut or an ß for the check above to trip over.
   "Maß", "Schultüte",
+  // And the one name in the telephone spelling alphabet that carries an
+  // umlaut. C wie Cäsar is a fixed list the person on the other end of a
+  // German line is listening for, so it keeps its German names — the frame
+  // around it is Portuguese, which joins the letter to the name with de.
+  "Cäsar",
 ];
 const KEPT_GREETINGS = ["Grüß dich", "Grüß Gott", "Grüezi", "Tschüss", "Tschüs"];
 /**
@@ -171,8 +176,20 @@ const QUOTED_AS_WORDS = [
  * Gartenstraße acht is Gartenstraße oito.
  */
 const STREET = /\b[A-ZÄÖÜ][\wäöüß-]*straße\b/g;
+/**
+ * And anything inside quotation marks, which is the general form of the rule
+ * the greetings and the quoted words above are special cases of: a German
+ * letter or word in guillemets is what the card is ABOUT, not a line somebody
+ * forgot to translate. A whole pack turns on it — Com Alt mais 0228 escrevo
+ * «ä» is a Portuguese sentence with a German letter as its object, and there
+ * is no way to write that card without the letter in it.
+ *
+ * The table holds source text, so a quotation mark inside a line arrives as a
+ * backslash and a quote.
+ */
+const QUOTED = /(?:\\"|[«"„“])[^«»"„“”]*(?:\\"|[»"”“])/g;
 const stillGerman = pairs.filter((row) => {
-  let rest = row.portuguese.replace(STREET, " ");
+  let rest = row.portuguese.replace(STREET, " ").replace(QUOTED, " ");
   for (const name of [...PROPER_NAMES, ...KEPT_GREETINGS, ...KEPT_FORMULAS, ...QUOTED_AS_WORDS]) rest = rest.split(name).join(" ");
   return /[äöüßÄÖÜ]/.test(rest);
 });
@@ -240,9 +257,6 @@ const GERMAN_TERMS = [
  * the edges are letter lookarounds instead.
  */
 const GERMAN_TERM = new RegExp(`(?<!\\p{L})(?:${GERMAN_TERMS.join("|")})(?!\\p{L})`, "iu");
-// The table holds source text, so a quotation mark inside a line arrives as
-// a backslash and a quote.
-const QUOTED = /(?:\\"|[«"„“])[^«»"„“”]*(?:\\"|[»"”“])/g;
 const germanTerms = pairs.filter((row) => GERMAN_TERM.test(row.portuguese.replace(QUOTED, " ")));
 check(
   `no German word stands in a Portuguese sentence${germanTerms.length ? ` — ${germanTerms[0].portuguese}` : ""}`,
@@ -313,167 +327,30 @@ check(
   `the progressive is estar a + infinitive${brazilianProgressive.length ? ` — "${brazilianProgressive[0].portuguese}"` : ""}`,
   brazilianProgressive.length === 0
 );
-
 /**
- * The packs that teach the German writing system stay out of this table.
+ * NOTHING IS LEFT OUT ANY MORE.
  *
- * Part 141 is "Alt plus 0228 types ä" and "the letter ß exists only in
- * German"; part 330 is the telephone spelling alphabet, A wie Anton, and what
- * to do about umlauts when the keyboard has none. Both are lessons about how
- * German is written, and a Portuguese course has no use for either — the
- * learner is not going to be spelling their name into a German telephone in
- * Portuguese.
+ * This file used to refuse three packs and two dozen single cards: the
+ * telephone spelling alphabet, the Alt-codes for typing an umlaut, the
+ * conversation about der, die or das, and the word-forms that only trap an
+ * English speaker — Gift against gift, eventuell against eventually,
+ * bekommen against become. The reasoning was that a card about how German is
+ * written has nothing to say in Portuguese, and a joke about English lands on
+ * nobody.
  *
- * The narrowing drops whatever this table does not answer, so the way to keep
- * them out of the course is simply never to translate them. That is a decision
- * somebody can undo by accident on a later pass, working through the
- * curriculum in order and translating what comes next — which is why it is
- * pinned here rather than left as a note.
+ * That was overturned, and the course now carries them. It answers them the
+ * way French, Polish, Spanish and Italian already did: the frame is written in
+ * Portuguese and the German letter or word it is about stands in guillemets,
+ * as the thing being discussed rather than a word being used. A card reading
+ * «Bekommen» quer dizer receber teaches something; refusing it taught nothing,
+ * and somebody learning German in Portuguese has every reason to want the
+ * spelling alphabet before they telephone an office.
  *
- * ONLY THE SENTENCES. Part 330 also teaches der Buchstabe, der Punkt and das
- * Leerzeichen, which are ordinary words a Portuguese speaker has every use
- * for, and buchstabieren is a verb like any other. It is the phrases that are
- * about German — "Mit Alt plus 0228 tippe ich ä" — so only the phrases are
- * refused. Part 141 has no seed words at all, so nothing of it survives.
- *
- * Cards a Portuguese speaker really does need about German life — Bürgeramt,
- * Pfand, Anmeldung — are in other packs and this rule does not touch them.
- *
- * Part 585 is the third, and it is a capstone conversation rather than a word
- * pack: six lines on whether it is der, die or das Wörterbuch, and on what
- * turns der Tisch into den Tisch. That is German grammar being taught, and
- * Portuguese has neither three genders to guess at nor any cases at all, so
- * there is nothing in it for this course. It is refused whole, the way the
- * note beside the single cards says a dialogue must be carried or dropped.
+ * The set is kept, empty, because several checks below ask it whether a card
+ * is refused and an empty answer is the correct one. Anything put back into it
+ * is refused again, under both of its spellings.
  */
-const EXCLUDED_PACKS = {
-  part141: "src/lib/data.ts",
-  part330: "src/lib/expansionPacks.ts",
-  part585: "src/lib/capstoneDialogues.ts",
-};
 const excluded = new Set();
-for (const [id, file] of Object.entries(EXCLUDED_PACKS)) {
-  const source = fs.readFileSync(path.join(root, file), "utf8");
-  // The word packs write an object, the capstone conversations an array under
-  // a quoted key. Both shapes have to be findable by the same pack name.
-  const from = Math.max(source.indexOf(`\n  ${id}: {`), source.indexOf(`\n  "${id}": [`));
-  if (from < 0) {
-    check(`the excluded pack ${id} is still where this expects it`, false);
-    continue;
-  }
-  const after = source.slice(from + 1);
-  const next = after.search(/\n {2}"?(part\d+|cb-[a-z-]+)"?: [{[]/);
-  const block = next < 0 ? after : after.slice(0, next);
-  // In a word pack the seed words are ordinary vocabulary and it is the
-  // sentences that are about how German is written, so the search starts at
-  // the phrases. A capstone pack has no phrases section and is nothing but
-  // the conversation, so the whole block goes.
-  const phrases = block.indexOf("phrases:");
-  const lines = phrases < 0 ? block : block.slice(phrases);
-  for (const m of lines.matchAll(/\bde:\s*"((?:[^"\\]|\\.)*)"/g)) excluded.add(m[1]);
-}
-check(`the excluded packs were found and read (${excluded.size} sentences)`, excluded.size > 30);
-
-/**
- * And the single cards, scattered through packs this course otherwise keeps.
- *
- * Two whole packs could be refused by name above. These cannot: they sit
- * inside packs full of cards a Portuguese speaker wants, and only the
- * individual line is dead. Left as a note they would be translated on the
- * next pass through the curriculum by somebody working in order, so they are
- * listed here and the build refuses them.
- *
- * THE GERMAN ARTICLE. Der Kühlschrank — der, nicht das is a lesson in German
- * gender and nothing else. There is no Portuguese in it to write.
- *
- * THE ENGLISH TRAPS. The rest are word-forms that catch English speakers and
- * nobody else. Gift is a present in English and poison in German; eventuell
- * looks like eventually; bekommen looks like become; sensibel looks like
- * sensible. Portuguese has none of those look-alikes — there is no become and
- * no sensible — so the card explains a mistake the learner was never going to
- * make, and the joke lands on nobody. Cards about German words being hard to
- * carry into English are a different thing and are kept: gemütlich really is
- * hard to carry, and that is a fact about German.
- */
-const NOT_FOR_PORTUGUESE = new Set([
-  // part57 — the German article, asked as a quiz with no Portuguese answer.
-  // Only the standalone card. Two more sentences of this pack were once listed
-  // here and are not any more: they are the middle of a conversation, and
-  // taking them out left the partner praising an answer nobody had given. A
-  // dialogue is carried whole or not at all, so they went back in — see the
-  // note beside them in the table.
-  "Der, die oder das?",
-  // part29 — the two meanings of one German word. Schwanz is an animal's tail
-  // and, of a man, something vulgar, and these cards exist to say so. No
-  // Portuguese word carries both, so there is nothing for the lesson to be
-  // about. The idioms built on it are NOT here and are translated: den
-  // Schwanz einziehen is meter o rabo entre as pernas, and da war kein
-  // Schwanz is não estava lá vivalma. Portugal has its own pictures for those.
-  "der Schwanz",
-  "Bei Tieren ist das Wort völlig neutral.",
-  "Und was heißt: Jetzt zieht er den Schwanz ein?",
-  "Das heißt, dass er plötzlich zurückweicht.",
-  "Und wenn es um einen Mann geht?",
-  "Dann kann Schwanz ein vulgäres Wort für Penis sein.",
-  "Bei einem Mann ist das Wort Schwanz eine vulgäre Bezeichnung für den Penis.",
-  // part174 — Gift and eventuell, traps for English speakers
-  "Eventuell? Also ja oder nein?",
-  "Wahrscheinlich ja! Eventuell heißt vielleicht, oder?",
-  "Genau. Auf Englisch klingt es nur ganz anders.",
-  "Ich habe ein Gift für dich!",
-  "Ein Gift?! Du meinst hoffentlich ein Geschenk.",
-  "Oh nein. Gift heißt Poison, stimmt's?",
-  "Stimmt. Das Geschenk nehme ich trotzdem gern.",
-  // part317 — bekommen against become, sensibel against sensible
-  "Bekommen heißt nicht become, sondern to get.",
-  "Ich verwechsle ständig sensibel und sensible.",
-  "Ich möchte ein Steak bekommen — sagt man das so?",
-  "Ja. Aber sag bloß nicht: I become a steak.",
-  "Warum? — Oh. Weil become werden heißt.",
-  "Genau. Klassischer falscher Freund.",
-  // advancedWordPacks2 — the one card in a linguistics pack that is about
-  // German rather than about language. Its own note in the pack says the
-  // sentence performs the rule it states, and the rule is that a German main
-  // clause puts the verb second. Portuguese does not, and a learner of
-  // Portuguese has no use for the fact.
-  //
-  // The rest of that pack is kept and translated, because it is ordinary
-  // linguistic vocabulary that any language needs: die Betonung is a tónica,
-  // die Wortart is a classe de palavras, die Zeichensetzung is a pontuação.
-  // The line is between a word about language and a rule about German.
-  "Der deutsche Satzbau stellt das Verb an die zweite Stelle.",
-  // phrasebank — two cards about how German is spelled, sitting in a pack that
-  // is otherwise about spelling a name aloud in any language. The umlaut and
-  // the sharp S exist only in German, so a Portuguese course has nothing to
-  // put on the answer side. The cards around them are kept and translated: how
-  // do you write your name, how many letters has the alphabet, capital or
-  // lower case.
-  "Mein Name schreibt sich mit einem Umlaut.",
-  "Man schreibt das mit einem scharfen S.",
-]);
-/**
- * A list of sentences protects nothing if one of them has a typo in it, or if
- * a card gets reworded upstream — the entry would quietly stop matching and
- * the card would slip back into the course with nobody noticing. So each one
- * is looked for in the curriculum first, and the build says which is missing.
- */
-const curriculum = [
-  fs.readFileSync(path.join(root, "src/lib/data.ts"), "utf8"),
-  fs.readFileSync(path.join(root, "src/lib/expansionPacks.ts"), "utf8"),
-  // The single-card exclusions are not all in the two big pack files. The one
-  // about German word order sits in the advanced sentence bank, and without
-  // this line the check above would report it as vanished on every build.
-  fs.readFileSync(path.join(root, "src/lib/advancedWordPacks2.ts"), "utf8"),
-  // And the everyday phrasebank, which holds two of the single-card
-  // exclusions of its own.
-  fs.readFileSync(path.join(root, "src/lib/phrasebank.ts"), "utf8"),
-].join("\n");
-const vanished = [...NOT_FOR_PORTUGUESE].filter((german) => !curriculum.includes(`"${german}"`));
-check(
-  `every excluded card still exists to be excluded${vanished.length ? ` — ${vanished[0]}` : ""}`,
-  vanished.length === 0
-);
-for (const german of NOT_FOR_PORTUGUESE) excluded.add(german);
 
 /**
  * AND NOT UNDER ITS SPOKEN SPELLING EITHER.
@@ -594,6 +471,12 @@ const KEEPS_ITS_GERMAN_NAME = new Set([
   "Zu Händen Frau Weber — kurz: z. Hd.",
   "Sehr geehrte Frau Doktor Weber — Titel gehören in die Anrede.",
   "Liebe Frau Weber passt, sobald man sich kennt.",
+  // And the cards where the name is the thing being spelled. Müller mit Ü
+  // oder mit U-E is a question about that surname and no other, and the email
+  // address is read out letter by letter — swapping either for a Portuguese
+  // name would leave the card spelling something nobody asked about.
+  "Müller mit Ü oder mit U-E?",
+  "Meier Punkt Anna, alles klein, ät Beispiel Punkt de.",
 ]);
 const keepsItsGermanName = alsoClipped(KEEPS_ITS_GERMAN_NAME);
 const germanNames = [];
