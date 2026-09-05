@@ -14,6 +14,9 @@ import { PL_ERA_LABELS, PL_ERA_ORDER, PL_TIMELINE } from "@/lib/zycieWPolsceTime
 import { vivereInItaliaCourse } from "@/lib/vivereInItaliaCourse";
 import { IT_QUESTIONS } from "@/lib/itQuestionBank";
 import { IT_ERA_LABELS, IT_ERA_ORDER, IT_TIMELINE } from "@/lib/vivereInItaliaTimeline";
+import { vivirEnEspanaCourse } from "@/lib/vivirEnEspanaCourse";
+import { ES_QUESTIONS } from "@/lib/esQuestionBank";
+import { ES_ERA_LABELS, ES_ERA_ORDER, ES_TIMELINE } from "@/lib/vivirEnEspanaTimeline";
 
 /**
  * The countries Country studies covers.
@@ -167,7 +170,33 @@ export const IT_PACK: CountryPack = {
   contentLang: "it",
 };
 
-export const COUNTRY_PACKS: CountryPack[] = [UK_PACK, DE_PACK, FR_PACK, PL_PACK, IT_PACK];
+/**
+ * Spain, the sixth — and the first since France with a real examination to
+ * imitate. The CCSE, of Conocimientos Constitucionales y Socioculturales de
+ * España, is set by the Instituto Cervantes and required for naturalisation:
+ * 25 questions in 45 minutes, 15 right to pass. Those are the figures below,
+ * and check-es-questions holds them to it rather than to itself.
+ */
+export const ES_PACK: CountryPack = {
+  id: "es",
+  flagId: "spanish",
+  label: "Spain – Land and Culture",
+  country: "Spain",
+  course: vivirEnEspanaCourse,
+  questions: ES_QUESTIONS,
+  timeline: ES_TIMELINE,
+  eraOrder: [...ES_ERA_ORDER],
+  eraLabels: ES_ERA_LABELS,
+  storeKey: "es-quiz-v1",
+  exam: {
+    questionCount: 25,
+    durationMs: 45 * 60 * 1000,
+    passMark: 15,
+  },
+  contentLang: "es",
+};
+
+export const COUNTRY_PACKS: CountryPack[] = [UK_PACK, DE_PACK, FR_PACK, PL_PACK, IT_PACK, ES_PACK];
 
 export function countryPack(id: CountryId): CountryPack {
   return COUNTRY_PACKS.find((pack) => pack.id === id) ?? UK_PACK;

@@ -208,4 +208,5 @@ export const COUNTRY_SEARCH_EXAMPLES: Record<CountryId, string[]> = {
   fr: ["1789", "laïcité", "Marianne", "Bastille", "Sénat", "outre-mer", "Schœlcher", "Maastricht"],
   pl: ["966", "Solidarność", "3 maja", "rozbiory", "Sejm", "wojewódctwo", "Piłsudski", "1989"],
   it: ["1861", "Costituzione", "2 giugno", "Risorgimento", "Senato", "regioni", "Garibaldi", "1946"],
+  es: ["1978", "Constitución", "Cortes Generales", "autonomías", "12 de octubre", "Transición", "al-Ándalus", "euskera"],
 };

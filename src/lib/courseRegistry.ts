@@ -5,6 +5,7 @@ import { lebenInDeutschlandCourse } from "@/lib/lebenInDeutschlandCourse";
 import { vivreEnFranceCourse } from "@/lib/vivreEnFranceCourse";
 import { zycieWPolsceCourse } from "@/lib/zycieWPolsceCourse";
 import { vivereInItaliaCourse } from "@/lib/vivereInItaliaCourse";
+import { vivirEnEspanaCourse } from "@/lib/vivirEnEspanaCourse";
 import { PLANNED_LANGUAGES } from "@/lib/languageCatalogue";
 import { localiseCourse } from "@/lib/courseTranslation";
 
@@ -143,6 +144,7 @@ export const COURSES: Course[] = [
   // card, three rows in the dialog that is the only way in.
   zycieWPolsceCourse,
   vivereInItaliaCourse,
+  vivirEnEspanaCourse,
 ];
 
 /**
