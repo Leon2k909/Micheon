@@ -109,11 +109,16 @@ export function phraseForLearningMode<T extends PhraseForm>(phrase: T, mode: Lea
   // fuller standard form in `long`. Conversation mode must preserve that full
   // form as supporting context (and as an accepted answer).
   if (spoken === original) {
-    return asTexted(withSpokenIchForm({
+    return asTexted(withSpokenEnglish(withSpokenIchForm({
       ...phrase,
+      // A conversational English written for a sentence whose GERMAN is the
+      // same either way. shortEn used to be reachable only alongside a short
+      // German form, so a card whose only difference was the English had no
+      // way to say so.
+      ...(spokenEn ? { en: spokenEn } : {}),
       short: undefined,
       long: standard !== original ? standard : undefined,
-    }));
+    })));
   }
 
   // Swapping the German for its short form while leaving the English describing
@@ -127,7 +132,7 @@ export function phraseForLearningMode<T extends PhraseForm>(phrase: T, mode: Lea
   // the mismatched definition goes. The ich-form contraction below still
   // applies, because that one never changes what the English means.
   if (!spokenEn) {
-    return asTexted(withSpokenIchForm({ ...phrase, long: undefined }));
+    return asTexted(withSpokenEnglish(withSpokenIchForm({ ...phrase, long: undefined })));
   }
 
   // No derived contraction here on purpose: this phrase carries a hand-written
@@ -158,6 +163,27 @@ function withSpokenIchForm<T extends PhraseForm>(phrase: T): T {
   const spoken = toSpokenGerman(written);
   if (spoken === written) return phrase;
   return { ...phrase, de: spoken, long: phrase.long?.trim() || written };
+}
+
+/**
+ * "Sollen wir …?" is "Should we …?" when people say it out loud.
+ *
+ * Shall is not wrong — it is the form an exam expects, and Exam mode keeps
+ * it. It is just not what gets said, and a course teaching somebody to talk
+ * should hand them the words they will hear. Ninety cards opened on it, and
+ * several already offered "Should we …" as their second wording, which is
+ * the same judgement made one card at a time.
+ *
+ * Only the opening moves, and only where the sentence really begins — the
+ * start of the English or the start of an alternative after a slash. Shall
+ * elsewhere in a sentence is doing something else ("what shall be done"),
+ * and an authored shortEn outranks this the way `long` outranks the spoken
+ * German rule: a hand-written wording knows more than a transform.
+ */
+function withSpokenEnglish<T extends PhraseForm>(phrase: T): T {
+  const written = String(phrase.en ?? "");
+  const spoken = written.replace(/(^|\/\s*)Shall (we|I)\b/gu, "$1Should $2");
+  return spoken === written ? phrase : { ...phrase, en: spoken };
 }
 
 /**

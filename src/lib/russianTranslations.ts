@@ -4495,7 +4495,7 @@ export const RUSSIAN_BY_GERMAN: Record<string, string> = {
   "Wie hoch ist das Porto für diesen Brief?": "Сколько стоит отправка этого письма?",
   "aussteigen": "выходить из транспорта",
   "Klar, du putzt bei voller Sonne.": "Ну конечно, ты моешь на самом солнце.",
-  "Autsch, das ist eine Vier. Im Ernst, lass das von jemandem prüfen.": "Ой, это четвёрка — по-немецки почти неуд. Серьёзно, дай кому-нибудь это проверить.",
+  "Autsch, das ist eine Vier. Im Ernst, lass das von jemandem prüfen.": "Ой, это плохая оценка. Серьёзно, дай кому-нибудь это проверить.",
   "Ich zeig dir gleich welche Einstellung du ändern musst.": "Я тебе сейчас покажу, какую настройку надо поменять.",
   "Was schulde ich dir?": "Сколько с меня?",
   "Können Sie mir die Haare hochstecken? Ich geh auf eine Hochzeit.": "Вы можете мне заколоть волосы наверх? Я иду на свадьбу.",

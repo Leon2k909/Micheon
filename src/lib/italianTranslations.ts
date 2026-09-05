@@ -15076,7 +15076,7 @@ export const ITALIAN_BY_GERMAN: Record<string, string> = {
   "Was?! Das klingt doch total positiv!": "Cosa?! Ma suona del tutto positivo!",
   "Das ist ja der Trick. Ein Zeugnis muss wohlwollend formuliert sein — also verstecken die Chefs die Kritik im Code. Gut wäre \"stets zu unserer vollsten Zufriedenheit\".": "È proprio questo il trucco. Un attestato deve essere formulato in modo benevolo, quindi i capi nascondono la critica dentro un codice. Buono sarebbe «sempre con la nostra piena soddisfazione».",
   "Und bei mir steht nur \"zu unserer Zufriedenheit\"...": "E sul mio c'è scritto solo «con la nostra soddisfazione»...",
-  "Autsch, das ist eine Vier. Im Ernst, lass das von jemandem prüfen.": "Ahi, quello vale un sei stiracchiato. Sul serio, fattelo controllare da qualcuno.",
+  "Autsch, das ist eine Vier. Im Ernst, lass das von jemandem prüfen.": "Ahi, è un brutto voto. Sul serio, fattelo controllare da qualcuno.",
   "Schau mal, wie schön! Ich liebe Weihnachtsmärkte.": "Guarda che bello! Adoro i mercatini di Natale.",
   "Ich auch. Zuerst einen Glühwein? Mir ist jetzt schon eiskalt.": "Anch'io. Prima un vin brulé? Ho già un freddo terribile.",
   "Unbedingt. Zwei Glühwein bitte, einen mit Schuss!": "Assolutamente. Due vin brulé, per favore, uno corretto!",

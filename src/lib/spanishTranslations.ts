@@ -9928,7 +9928,7 @@ export const SPANISH_BY_GERMAN: Record<string, string> = {
   "Was?! Das klingt doch total positiv!": "¿¡Qué!? ¡Si suena totalmente positivo!",
   "Das ist ja der Trick. Ein Zeugnis muss wohlwollend formuliert sein — also verstecken die Chefs die Kritik im Code. Gut wäre \"stets zu unserer vollsten Zufriedenheit\".": "Ahí está el truco. Un certificado tiene que estar redactado con benevolencia, así que los jefes esconden la crítica en clave. Lo bueno sería «siempre a nuestra entera satisfacción».",
   "Und bei mir steht nur \"zu unserer Zufriedenheit\"...": "Y el mío solo pone «a nuestra satisfacción»...",
-  "Autsch, das ist eine Vier. Im Ernst, lass das von jemandem prüfen.": "Uf, eso es un suficiente raspado. En serio, que alguien te lo revise.",
+  "Autsch, das ist eine Vier. Im Ernst, lass das von jemandem prüfen.": "Uf, es una mala nota. En serio, que alguien te lo revise.",
   "Schau mal, wie schön! Ich liebe Weihnachtsmärkte.": "¡Mira qué bonito! Me encantan los mercados de Navidad.",
   "Ich auch. Zuerst einen Glühwein? Mir ist jetzt schon eiskalt.": "A mí también. ¿Primero un vino caliente? Ya estoy helada.",
   "Unbedingt. Zwei Glühwein bitte, einen mit Schuss!": "Sin falta. ¡Dos vinos calientes, por favor, uno con licor!",

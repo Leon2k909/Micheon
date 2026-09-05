@@ -4455,7 +4455,7 @@ const partBlueprintsBase: Record<string, Blueprint> = {
         { speaker: "A", de: "Was?! Das klingt doch total positiv!", en: "What?! It sounds totally positive!", fr: "Quoi ?! Ça a l'air complètement positif !" },
         { speaker: "B", de: "Das ist ja der Trick. Ein Zeugnis muss wohlwollend formuliert sein — also verstecken die Chefs die Kritik im Code. Gut wäre \"stets zu unserer vollsten Zufriedenheit\".", en: "That's exactly the trick. A reference has to sound positive, so bosses hide criticism in coded language. A good phrase would be \"always to our fullest satisfaction.\"", fr: "C'est justement l'astuce. Un certificat doit être formulé avec bienveillance — alors les patrons cachent la critique dans un code. La bonne formule, ce serait « toujours à notre entière satisfaction »." },
         { speaker: "A", de: "Und bei mir steht nur \"zu unserer Zufriedenheit\"...", en: "And mine just says \"to our satisfaction\"...", fr: "Et sur le mien, il y a juste « à notre satisfaction »..." },
-        { speaker: "B", de: "Autsch, das ist eine Vier. Im Ernst, lass das von jemandem prüfen.", en: "Ouch, that's a four — a bad mark. Seriously, get someone to look at it.", fr: "Aïe, ça correspond à un 4 — une mauvaise note. Sérieusement, fais-le vérifier par quelqu'un." },
+        { speaker: "B", de: "Autsch, das ist eine Vier. Im Ernst, lass das von jemandem prüfen.", en: "Ouch, that's a bad grade. Seriously, get someone to look at it.", fr: "Aïe, c'est une mauvaise note. Sérieusement, fais-le vérifier par quelqu'un." },
       ]},
     ],
     phrases: [

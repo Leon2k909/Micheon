@@ -17049,7 +17049,7 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "Was?! Das klingt doch total positiv!": "O quê?! Mas aquilo soa completamente positivo!",
   "Das ist ja der Trick. Ein Zeugnis muss wohlwollend formuliert sein — also verstecken die Chefs die Kritik im Code. Gut wäre \"stets zu unserer vollsten Zufriedenheit\".": "É esse mesmo o truque. Um certificado tem de ser redigido em tom favorável — por isso os chefes escondem a crítica no código. Bom seria \"stets zu unserer vollsten Zufriedenheit\".",
   "Und bei mir steht nur \"zu unserer Zufriedenheit\"...": "E no meu está só \"zu unserer Zufriedenheit\"...",
-  "Autsch, das ist eine Vier. Im Ernst, lass das von jemandem prüfen.": "Ui, isso é um suficiente raspado. A sério, manda alguém verificar isso.",
+  "Autsch, das ist eine Vier. Im Ernst, lass das von jemandem prüfen.": "Ui, é uma má nota. A sério, manda alguém verificar isso.",
   "Ich hab mich bei Siemens beworben.": "Candidatei-me à Siemens.",
   "Ich hab mich auf die Stelle als Projektmanagerin beworben.": "Candidatei-me ao lugar de gestora de projeto.",
   "Ich hab nächste Woche ein Vorstellungsgespräch!": "Para a semana tenho uma entrevista de emprego!",

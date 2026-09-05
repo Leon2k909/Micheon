@@ -159,6 +159,25 @@ check(
   Boolean(reportedPhrase?.shortEn?.trim())
 );
 
+// ── the English moves with the mode too, not just the German ───────────────
+// "Sollen wir …?" was taught as "Shall we …?" in both modes. Shall is what an
+// exam expects and Exam mode keeps it; it is not what gets said, and ninety
+// cards opened on it. Only the opening moves, so a shall doing other work in
+// the middle of a sentence is left alone, and an authored shortEn still wins.
+{
+  const said = (en, extra = {}) => phraseForLearningMode({ de: "Sollen wir zu Fuß gehen?", en, ...extra }, "conversation").en;
+  const examined = (en) => phraseForLearningMode({ de: "Sollen wir zu Fuß gehen?", en }, "exam").en;
+  check("Conversation mode asks Should we, not Shall we", said("Shall we walk?") === "Should we walk?");
+  check("...and Should I for the first person", said("Shall I give you a hand?") === "Should I give you a hand?");
+  check("...including an alternative wording after the slash",
+    said("Do you want me to help? / Shall I give you a hand?") === "Do you want me to help? / Should I give you a hand?");
+  check("Exam mode keeps Shall, which is what it is marked against", examined("Shall we walk?") === "Shall we walk?");
+  check("a shall in the middle of a sentence is doing something else and is left alone",
+    said("We shall see what happens.") === "We shall see what happens.");
+  check("and a hand-written conversational English still outranks the rule",
+    said("Shall we walk?", { shortEn: "Fancy walking it?" }) === "Fancy walking it?");
+}
+
 if (reportedPhrase) {
   const conversation = phraseForLearningMode(reportedPhrase, "conversation");
   const exam = phraseForLearningMode(reportedPhrase, "exam");

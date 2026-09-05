@@ -15351,7 +15351,7 @@ export const POLISH_BY_GERMAN: Record<string, string> = {
   "Was?! Das klingt doch total positiv!": "Co?! Przecież to brzmi zupełnie pozytywnie!",
   "Das ist ja der Trick. Ein Zeugnis muss wohlwollend formuliert sein — also verstecken die Chefs die Kritik im Code. Gut wäre \"stets zu unserer vollsten Zufriedenheit\".": "No właśnie na tym polega sztuczka. Świadectwo musi być sformułowane życzliwie, więc szefowie ukrywają krytykę w szyfrze. Dobrze brzmiałoby: zawsze ku naszemu pełnemu zadowoleniu.",
   "Und bei mir steht nur \"zu unserer Zufriedenheit\"...": "A u mnie stoi tylko: ku naszemu zadowoleniu...",
-  "Autsch, das ist eine Vier. Im Ernst, lass das von jemandem prüfen.": "Auć, to jest ocena dostateczna. Serio, daj to komuś sprawdzić.",
+  "Autsch, das ist eine Vier. Im Ernst, lass das von jemandem prüfen.": "Auć, to zła ocena. Serio, daj to komuś sprawdzić.",
   "Schau mal, wie schön! Ich liebe Weihnachtsmärkte.": "Zobacz, jak pięknie! Uwielbiam jarmarki bożonarodzeniowe.",
   "Ich auch. Zuerst einen Glühwein? Mir ist jetzt schon eiskalt.": "Ja też. Najpierw grzane wino? Już mi jest lodowato.",
   "Unbedingt. Zwei Glühwein bitte, einen mit Schuss!": "Koniecznie. Poproszę dwa grzane wina, jedno z prądem!",
