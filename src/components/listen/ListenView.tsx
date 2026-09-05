@@ -22,6 +22,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usageNote, useUsageNotes } from "@/lib/usageNotes";
 import { ENGLISH_VARIANT_EVENT } from "@/lib/englishVariant";
 import { SettingsCategory } from "@/components/SettingsCategory";
 import { ui, uiFmt, uiNumber, uiOr } from "@/lib/i18n";
@@ -495,6 +496,8 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
   onOpen: () => void;
   profile: UserProfile | null;
 }) {
+  // Redraws once when this language's usage notes land.
+  useUsageNotes();
   const [contentKinds, setContentKinds] = useState<ListenContentKind[]>(
     () => getListenContentKinds(learningDirection)
   );
@@ -1862,7 +1865,7 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
           ) : null}
           {item.kind === "word" && item.use ? (
             <p className="mx-auto max-w-3xl rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-4 py-2 text-sm font-semibold leading-relaxed text-[var(--text-3)]">
-              {item.use}
+              {usageNote(item.use)}
             </p>
           ) : null}
           {item.kind === "word" && (item.synonyms?.length ?? 0) > 0 ? (

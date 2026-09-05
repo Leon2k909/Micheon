@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { usageNote, useUsageNotes } from "@/lib/usageNotes";
 import {
   matchGermanPhrase as match,
   matchGermanMeaning,
@@ -235,7 +236,12 @@ function insertAt(el: HTMLInputElement | null, char: string, set: (s: string) =>
  * "Feind" isn't). The usage note is hidden during Translate — some notes
  * would give the answer away.
  */
-function UsageChips({ de, use, lookup, tierNote, hideUse, short, shortLabel, long, synonyms }: { de: string; use?: string; lookup?: string; tierNote?: string; hideUse?: boolean; short?: string; shortLabel?: string; long?: string; synonyms?: Array<{ de: string; lookup?: string }> }) {
+function UsageChips({ de, use: rawUse, lookup, tierNote, hideUse, short, shortLabel, long, synonyms }: { de: string; use?: string; lookup?: string; tierNote?: string; hideUse?: boolean; short?: string; shortLabel?: string; long?: string; synonyms?: Array<{ de: string; lookup?: string }> }) {
+  // The note is written in English and read in six languages. usageNote gives
+  // back whichever of those is available, and the hook redraws the chip when
+  // the table for this language lands.
+  useUsageNotes();
+  const use = usageNote(rawUse);
   const register = detectRegister(de);
   // A combined synonym card names its own siblings below, which says
   // everything the pairwise note would — the note stays for cards without
@@ -5862,7 +5868,7 @@ function SessionFlashcardPreview({
           {/* The usage note explains the answer, so on a flip card it waits
               until the card has actually been turned over. */}
           {card.use && (mode !== "flip" || flipped) && (
-            <p className="fs-flashcard-note">{card.use}</p>
+            <p className="fs-flashcard-note">{usageNote(card.use)}</p>
           )}
 
           <div className="fs-flashcard-footer">

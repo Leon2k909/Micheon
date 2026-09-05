@@ -126,7 +126,14 @@ const BANDS = [
 // entries of its own — the difference is that inflation. Correcting it would
 // move Italian and Portuguese below their floors in the same commit, so it
 // wants doing deliberately rather than as a side effect.
-const TRANSLATED_QUEUE_FLOORS = { fr: 17300, pl: 18700, es: 24000, it: 24000, pt: 4370, ru: 14660 };
+// Russian's floor came down 10 when the texting pack left the spoken queue.
+// Its thirty sentences are translated in all six languages and still taught in
+// lessons; they are simply no longer read aloud, because chat shorthand has no
+// pronunciation (see Blueprint.writtenOnly). Russian is the only floor with
+// too little headroom to absorb it, so it is the only one that moved — the
+// translations are all still there, and the rule that its number never falls
+// on its own is intact.
+const TRANSLATED_QUEUE_FLOORS = { fr: 17300, pl: 18700, es: 24000, it: 24000, pt: 4370, ru: 14650 };
 
 /**
  * How much of the word tracker the French course is allowed to be missing.

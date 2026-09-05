@@ -115,6 +115,11 @@ for (const [input, key] of ACCEPT) {
 
 // ── the inaccurate one is still refused ───────────────────────────────────
 const REJECT = [
+  // "sort of" folds with "kind of" and "type of"; the bare words must not,
+  // because kind is also nice and type is also what you do to a keyboard.
+  ["he is a type person", "He is a kind person."],
+  ["i sort the letter", "I type the letter."],
+  ["what sort of bread is that", "What sort of cheese is that?"],
   ["we're going to the lake at the weekend", "We're going to the sea at the weekend."],
   ["we're going to the mountains at the weekend", "We're going to the seaside at the weekend."],
   ["the river is beautiful", "The sea is beautiful."],

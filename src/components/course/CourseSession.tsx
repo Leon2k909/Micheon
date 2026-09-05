@@ -433,7 +433,7 @@ export function CourseSession({
             <Code2 className="h-5 w-5" />
           </div>
           <div className="hidden sm:block">
-            <div className="text-[10px] font-black uppercase tracking-wide text-[var(--text-3)]">{course.name}</div>
+            <div className="text-[10px] font-black uppercase tracking-wide text-[var(--text-3)]">{ui(course.name)}</div>
             <div className="text-base font-black tracking-tight text-[var(--text-1)]">{lesson.title}</div>
           </div>
         </div>

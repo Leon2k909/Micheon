@@ -249,6 +249,36 @@ check("the default queue combines sentence and word trackers",
     view.includes("item.long.trim() !== item.de.trim()"));
 }
 
+// ── what people TYPE is never read aloud ────────────────────────────────
+// Listen handed a voice "Hey, wmd grade?" and "kA, chill nur." Chat shorthand
+// has no pronunciation: a voice either spells it out or invents a word, and
+// either way it teaches a sound German does not have. A pack that teaches
+// typing says so with writtenOnly, and its SENTENCES leave the spoken queue.
+//
+// Not every abbreviation — the ones Germans really do say, z. B. as "zum
+// Beispiel" and bzw. as "beziehungsweise", are speech that happens to be
+// written short, and the pack teaching those stays. That is the whole
+// distinction, so it is checked from both sides.
+{
+  const spokenQueue = buildListenQueue(parts, {}, { contentSource: "sentences", order: "common" });
+  const typed = /(?<![\wäöüß])(kA|hdl|hdgdl|vllt|gn8|wmd|mfg|iwie|zsm|akla|kb|mmn|kp|sry)(?![\wäöüß])/i;
+  const heard = spokenQueue.filter((item) => typed.test(String(item.de ?? "")));
+  check(`no chat shorthand is read aloud (${spokenQueue.length} sentences)`,
+    heard.length === 0,
+    heard.slice(0, 3).map((item) => JSON.stringify(item.de)).join(", "));
+  check("the texting pack declares itself written rather than spoken",
+    parts.part15?.writtenOnly === true && /Texting/u.test(String(parts.part15?.theme ?? "")));
+  check("and none of its sentences reach the queue",
+    spokenQueue.every((item) => !String(item.id ?? "").startsWith("part15-")));
+  // Its own words are words: die Nachricht and texten are said constantly.
+  const wordQueue = buildListenQueue(parts, {}, { contentSource: "words", order: "common" });
+  check("but the pack's ordinary words are still spoken",
+    ["die Nachricht", "texten", "schreiben"].every((word) => wordQueue.some((item) => item.de === word)));
+  // The abbreviations that ARE speech stay.
+  check("the abbreviations Germans say out loud are still read",
+    spokenQueue.filter((item) => /(?:bzw\.|usw\.|z\. ?B\.|inkl\.|d\. ?h\.)/u.test(String(item.de ?? ""))).length >= 4);
+}
+
 check("most-common-first genuinely uses shared popularity order",
   buildListenQueue(parts, {}, { contentSource: "sentences", order: "common" })
     .slice(0, 200)
@@ -1697,8 +1727,10 @@ check("both languages are scheduled in the learner-selected order",
 check("German and English repeat independently",
   sides({ targetRepeats: 3, meaningRepeats: 1 }) === "meaning target target target"
   && sides({ targetRepeats: 1, meaningRepeats: 4 }) === "meaning meaning meaning meaning target");
+// Through usageNote, so the explanation is in the language the card is in.
+// It was printed raw, which put an English sentence under a Portuguese card.
 check("reviewed word cards explain important secondary meanings on screen",
-  view.includes('item.kind === "word" && item.use') && view.includes("{item.use}"));
+  view.includes('item.kind === "word" && item.use') && view.includes("{usageNote(item.use)}"));
 // The player has to agree with the queue about which slot holds which
 // language, or the labels, the voice and the mute switch all name a language
 // the lines are not in. And the queue has to rebuild when the app language

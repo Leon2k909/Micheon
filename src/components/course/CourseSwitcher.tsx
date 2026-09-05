@@ -39,6 +39,12 @@ const COURSE_SEARCH_ALIASES: Record<string, string> = {
   // No test words here either: Italy has no civics exam, and the
   // language certificate it does ask for is not what this course teaches.
   "vivere-in-italia": "vivere in italia italien italy italia landeskunde storia costituzione repubblica regioni risorgimento senato italienisch",
+  // The one country course here whose test words belong: Spain does hold a
+  // civics examination, and CCSE is what somebody would type looking for it.
+  "vivir-en-espana": "vivir en espana españa spanien spain landeskunde ccse nacionalidad constitucion cortes autonomias transicion historia spanisch",
+  // Both scripts, because the search box folds accents but not alphabets:
+  // somebody looking for this course may type it either way.
+  "zhizn-v-rossii": "zhizn v rossii russland russia rossiya россия landeskunde история конституция дума федерация rus geschichte russisch",
   // Endonyms and alternative spellings for everything in the catalogue, so
   // searching "nihongo" or "espanol" finds the right row.
   ...Object.fromEntries(PLANNED_LANGUAGES.map((language) => [language.id, language.search])),

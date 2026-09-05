@@ -104,6 +104,21 @@ export interface Blueprint {
   dialogues: Dialogue[];
   phrases: Phrase[];
   learningDirections?: LearningDirection[];
+  /**
+   * The pack teaches what people TYPE, not what they say — so its sentences
+   * are never read aloud.
+   *
+   * "kA", "hdl", "vllt" and "gn8" exist only on a keyboard: nobody pronounces
+   * them, and a voice given one either spells it or invents a word, which
+   * teaches a sound German does not have. The abbreviations Germans really do
+   * SAY — z. B. as "zum Beispiel", bzw. as "beziehungsweise" — are ordinary
+   * speech written short and stay in Listen, so this is set on the pack that
+   * teaches chat shorthand and not on the one that teaches spoken shorthand.
+   *
+   * Only the pack's SENTENCES are withheld. Its words are words like any
+   * other: die Nachricht and texten are said out loud constantly.
+   */
+  writtenOnly?: boolean;
   coachingLanguage?: "de" | "en" | "both";
 }
 
@@ -149,6 +164,21 @@ export interface Part {
   phrases: Phrase[];
   /** Restrict a specialist pack to the direction it was written for. */
   learningDirections?: LearningDirection[];
+  /**
+   * The pack teaches what people TYPE, not what they say — so its sentences
+   * are never read aloud.
+   *
+   * "kA", "hdl", "vllt" and "gn8" exist only on a keyboard: nobody pronounces
+   * them, and a voice given one either spells it or invents a word, which
+   * teaches a sound German does not have. The abbreviations Germans really do
+   * SAY — z. B. as "zum Beispiel", bzw. as "beziehungsweise" — are ordinary
+   * speech written short and stay in Listen, so this is set on the pack that
+   * teaches chat shorthand and not on the one that teaches spoken shorthand.
+   *
+   * Only the pack's SENTENCES are withheld. Its words are words like any
+   * other: die Nachricht and texten are said out loud constantly.
+   */
+  writtenOnly?: boolean;
   /** Preserve target-language coaching when a lesson is direction-swapped. */
   coachingLanguage?: "de" | "en" | "both";
 }

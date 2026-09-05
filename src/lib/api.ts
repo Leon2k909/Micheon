@@ -145,5 +145,6 @@ export function buildApiPartFromResolved(blueprint: Blueprint, resolvedEntries: 
     vocab, articleQuestions, translationQuestions, dialogues, phrases,
     learningDirections: blueprint.learningDirections,
     coachingLanguage: blueprint.coachingLanguage,
+    writtenOnly: blueprint.writtenOnly,
   };
 }

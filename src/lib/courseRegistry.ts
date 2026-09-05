@@ -5,6 +5,8 @@ import { lebenInDeutschlandCourse } from "@/lib/lebenInDeutschlandCourse";
 import { vivreEnFranceCourse } from "@/lib/vivreEnFranceCourse";
 import { zycieWPolsceCourse } from "@/lib/zycieWPolsceCourse";
 import { vivereInItaliaCourse } from "@/lib/vivereInItaliaCourse";
+import { vivirEnEspanaCourse } from "@/lib/vivirEnEspanaCourse";
+import { zhiznVRossiiCourse } from "@/lib/zhiznVRossiiCourse";
 import { PLANNED_LANGUAGES } from "@/lib/languageCatalogue";
 import { localiseCourse } from "@/lib/courseTranslation";
 
@@ -42,12 +44,15 @@ export const COURSES: Course[] = [
     available: true,
     builtIn: true,
   },
-  // French is the third course made of this same material. The app holds
-  // German↔French translations for around a third of the catalogue — some
-  // written inline on the entry, the rest in frenchTranslations.ts — and the
-  // course is NARROWED to those rather than served with two cards in three
-  // blank. What is left is roughly seven thousand words, phrases and dialogue
-  // lines, all of which have an answer. See frenchCourse.ts.
+  // French is the third course made of this same material, and it is now
+  // complete: 9,000 word cards, 12,041 sentences and 3,500 dialogue lines, the
+  // German course entry for entry. It began as a narrowing — the table reached
+  // about a third of the catalogue and frenchCourse.ts dropped the rest rather
+  // than serve two cards in three blank — and that filter is still there, but
+  // it no longer has anything to drop. What kept a thousand entries out at the
+  // end was spelling, not translation: the packs hold "Ich verstehe" and the
+  // course serves the spoken "Ich versteh", so the table needed both. See
+  // frenchCourse.ts.
   {
     id: "french",
     kind: "language",
@@ -140,6 +145,8 @@ export const COURSES: Course[] = [
   // card, three rows in the dialog that is the only way in.
   zycieWPolsceCourse,
   vivereInItaliaCourse,
+  vivirEnEspanaCourse,
+  zhiznVRossiiCourse,
 ];
 
 /**

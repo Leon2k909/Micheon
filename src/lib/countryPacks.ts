@@ -14,6 +14,12 @@ import { PL_ERA_LABELS, PL_ERA_ORDER, PL_TIMELINE } from "@/lib/zycieWPolsceTime
 import { vivereInItaliaCourse } from "@/lib/vivereInItaliaCourse";
 import { IT_QUESTIONS } from "@/lib/itQuestionBank";
 import { IT_ERA_LABELS, IT_ERA_ORDER, IT_TIMELINE } from "@/lib/vivereInItaliaTimeline";
+import { vivirEnEspanaCourse } from "@/lib/vivirEnEspanaCourse";
+import { ES_QUESTIONS } from "@/lib/esQuestionBank";
+import { ES_ERA_LABELS, ES_ERA_ORDER, ES_TIMELINE } from "@/lib/vivirEnEspanaTimeline";
+import { zhiznVRossiiCourse } from "@/lib/zhiznVRossiiCourse";
+import { RU_QUESTIONS } from "@/lib/ruQuestionBank";
+import { RU_ERA_LABELS, RU_ERA_ORDER, RU_TIMELINE } from "@/lib/zhiznVRossiiTimeline";
 
 /**
  * The countries Country studies covers.
@@ -167,7 +173,66 @@ export const IT_PACK: CountryPack = {
   contentLang: "it",
 };
 
-export const COUNTRY_PACKS: CountryPack[] = [UK_PACK, DE_PACK, FR_PACK, PL_PACK, IT_PACK];
+/**
+ * Spain, the sixth — and the first since France with a real examination to
+ * imitate. The CCSE, of Conocimientos Constitucionales y Socioculturales de
+ * España, is set by the Instituto Cervantes and required for naturalisation:
+ * 25 questions in 45 minutes, 15 right to pass. Those are the figures below,
+ * and check-es-questions holds them to it rather than to itself.
+ */
+export const ES_PACK: CountryPack = {
+  id: "es",
+  flagId: "spanish",
+  label: "Spain – Land and Culture",
+  country: "Spain",
+  course: vivirEnEspanaCourse,
+  questions: ES_QUESTIONS,
+  timeline: ES_TIMELINE,
+  eraOrder: [...ES_ERA_ORDER],
+  eraLabels: ES_ERA_LABELS,
+  storeKey: "es-quiz-v1",
+  exam: {
+    questionCount: 25,
+    durationMs: 45 * 60 * 1000,
+    passMark: 15,
+  },
+  contentLang: "es",
+};
+
+/**
+ * Russia, the seventh. Like Spain it has a real examination to imitate, and
+ * like Spain the figures below are its and not this course's. A government
+ * decree of July 2025 split the old combined exam; for citizenship there are
+ * now two, and this pack takes the shape of the second — history of Russia
+ * and the foundations of legislation. Thirty-six tasks in ninety minutes.
+ *
+ * The pass mark is CONVERTED. The real exam scores forty points across those
+ * thirty-six tasks, because six want an answer in the candidate's own words
+ * and count double, and a pass is twenty-eight of forty. This bank has only
+ * one-point questions, so the threshold carries across as a proportion:
+ * seventy per cent of thirty-six is twenty-five. check-ru-questions
+ * recomputes that rather than trusting the number below.
+ */
+export const RU_PACK: CountryPack = {
+  id: "ru",
+  flagId: "russian",
+  label: "Russia – Land and Culture",
+  country: "Russia",
+  course: zhiznVRossiiCourse,
+  questions: RU_QUESTIONS,
+  timeline: RU_TIMELINE,
+  eraOrder: [...RU_ERA_ORDER],
+  eraLabels: RU_ERA_LABELS,
+  storeKey: "ru-quiz-v1",
+  exam: {
+    questionCount: 36,
+    durationMs: 90 * 60 * 1000,
+    passMark: 25,
+  },
+  contentLang: "ru",
+};
+
+export const COUNTRY_PACKS: CountryPack[] = [UK_PACK, DE_PACK, FR_PACK, PL_PACK, IT_PACK, ES_PACK, RU_PACK];
 
 export function countryPack(id: CountryId): CountryPack {
   return COUNTRY_PACKS.find((pack) => pack.id === id) ?? UK_PACK;

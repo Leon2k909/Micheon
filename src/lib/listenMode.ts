@@ -1391,6 +1391,10 @@ export function buildListenQueue(
   const rankedSentences = !content.includes("sentences")
     ? []
     : buildCatalog(parts)
+    // A pack that teaches what people type is not read aloud: "kA" and "hdl"
+    // have no pronunciation, so a voice given one spells it or invents a
+    // word. Sentences only — its words are said out loud like any others.
+    .filter((item) => !parts[String(item.partKey ?? "")]?.writtenOnly)
     .filter((item) => keep(item.partKey))
     .map((item, index) => ({
       item,
