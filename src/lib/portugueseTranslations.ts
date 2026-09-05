@@ -32962,4 +32962,18 @@ export const PORTUGUESE_BY_GERMAN: TranslationTable = {
   "The false friend": "O falso amigo",
   "The name on the phone": "O nome ao telefone",
   "The email address": "O endereço de email",
+
+  // Twelve word cards the German course has under a second name, given the answer their synonym already carries
+  "der Bär": "o urso",
+  "der Hang": "a encosta",
+  "eklig": "nojento",
+  "das Toilettenpapier": "o papel higiénico",
+  "der Schraubenzieher": "a chave de fendas",
+  "die Warnung": "o aviso",
+  "der Windstoß": "a rajada de vento",
+  "die Schlichtung": "a mediação",
+  "der Ertrag": "o rendimento",
+  "die Partitur": "a partitura",
+  "die Perspektive": "a perspetiva",
+  "die Forschungsfrage": "a questão de investigação",
 };
