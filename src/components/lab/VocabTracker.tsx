@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, Circle, AlertTriangle, Search, Volume2, Star, Check, Minus, X as XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usageNote, useUsageNotes } from "@/lib/usageNotes";
 import { CustomContentEditor } from "@/components/lab/CustomContentEditor";
 import { buildCatalog, type CatalogItem } from "@/session";
 import { loadGradeStore, progressEntryForId, saveGradeStore, setItemStatus, setItemsStatus, statusForId, type GradeStore, type ItemStatus } from "@/lib/activity";
@@ -241,7 +242,7 @@ const TrackerRow = React.memo(
           <p className="truncate text-sm font-black text-[var(--text-1)]">{primaryText}</p>
           <p className="truncate text-xs font-semibold text-[var(--text-3)]">
             {meaningText} · {ui(item.partLabel)}
-            {englishUi && item.use ? ` · ${ui(item.use)}` : ""}
+            {item.use ? ` · ${usageNote(item.use)}` : ""}
             {englishUi && (() => {
                 const syn = synonymNote(item.lookup);
                 if (syn) return <span className={syn.kind === "rare" ? "font-black text-amber-600" : "font-black text-sky-600"} title={ui(syn.hint)}> · {ui(syn.label)}</span>;
@@ -587,6 +588,8 @@ export function VocabTracker({
   user?: UserProfile | null;
 }) {
   const [grades, setGrades] = useState<GradeStore>(() => loadGradeStore(user));
+  // Redraws once when this language's usage notes land.
+  useUsageNotes();
   const [filter, setFilter] = useState<FilterKey>("all");
   const [itemTypeFilter, setItemTypeFilter] = useState<ItemTypeFilter>("all");
   const [usefulnessFilter, setUsefulnessFilter] = useState<UsefulnessFilter>("all");

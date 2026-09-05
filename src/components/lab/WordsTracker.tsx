@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, CheckCircle2, Check, Circle, Minus, Search, Star, Volume2, X as XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usageNote, useUsageNotes } from "@/lib/usageNotes";
 import { ui, uiFmt, uiIsEnglish, uiLocale, uiNumber } from "@/lib/i18n";
 import { buildWordCatalog, rankWordCatalog, type WordItem } from "@/lib/wordSession";
 import { useLearningMode } from "@/lib/learningMode";
@@ -266,6 +267,8 @@ export function WordsTracker({ apiParts, user }: {
   user: UserProfile | null;
 }) {
   const [filter, setFilter] = useState<Filter>("all");
+  // Redraws once when this language's usage notes land.
+  useUsageNotes();
   const [partOfSpeech, setPartOfSpeech] = useState<WordPartOfSpeechFilter>("all");
   const [level, setLevel] = useState<"all" | CefrStep>("all");
   // Usefulness is read from the pack an item belongs to, and a word belongs
@@ -648,7 +651,7 @@ export function WordsTracker({ apiParts, user }: {
                   <p className="truncate text-xs font-semibold text-[var(--text-3)]">
                     {meaningText}
                     {word.pos ? ` · ${ui(word.pos)}` : ""}
-                    {uiIsEnglish() && word.use ? ` · ${ui(word.use)}` : ""}
+                    {word.use ? ` · ${usageNote(word.use)}` : ""}
                     {(() => {
                         const register = sides.target.code === "de" ? detectRegister(primaryText) : null;
                         return register
