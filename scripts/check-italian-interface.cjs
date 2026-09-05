@@ -127,6 +127,8 @@ check("every {slot} survives translation", slotMismatch.length === 0,
  */
 const SAME_WORD = new Set([
   "Cache", "Beta", "XP", "TSV", "CSV", "MICHEON", "Micheon Premium", "Micheon coins",
+  // A country whose Italian name is the English one, letter for letter.
+  "Russia",
   "Euro", "Original", "Normal", "Familiar", "Extras", "Lingo",
   "Twemoji", "Tatoeba", "Lucide",
   "incomplete", "Account", "Home", "Dashboard", "Desktop",

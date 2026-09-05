@@ -6,6 +6,7 @@ import { vivreEnFranceCourse } from "@/lib/vivreEnFranceCourse";
 import { zycieWPolsceCourse } from "@/lib/zycieWPolsceCourse";
 import { vivereInItaliaCourse } from "@/lib/vivereInItaliaCourse";
 import { vivirEnEspanaCourse } from "@/lib/vivirEnEspanaCourse";
+import { zhiznVRossiiCourse } from "@/lib/zhiznVRossiiCourse";
 import { PLANNED_LANGUAGES } from "@/lib/languageCatalogue";
 import { localiseCourse } from "@/lib/courseTranslation";
 
@@ -145,6 +146,7 @@ export const COURSES: Course[] = [
   zycieWPolsceCourse,
   vivereInItaliaCourse,
   vivirEnEspanaCourse,
+  zhiznVRossiiCourse,
 ];
 
 /**

@@ -148,6 +148,7 @@ import homeCountryArtEs from "./assets/home-country-es-v1.webp";
 import homeCountryArtFr from "./assets/home-country-fr-v2.webp";
 import homeCountryArtIt from "./assets/home-country-it-v1.webp";
 import homeCountryArtPl from "./assets/home-country-pl-v1.webp";
+import homeCountryArtRu from "./assets/home-country-ru-v1.webp";
 import homeCountryArtUk from "./assets/home-country-uk-v2.webp";
 import achievementAtlas from "./assets/achievements-v1/achievement-atlas-v3.webp";
 import backpackReward from "./assets/rewards-v3/backpack.webp";
@@ -2250,6 +2251,7 @@ const COUNTRY_ART: Record<CountryId, string> = {
   fr: homeCountryArtFr,
   it: homeCountryArtIt,
   pl: homeCountryArtPl,
+  ru: homeCountryArtRu,
   uk: homeCountryArtUk,
 };
 
