@@ -65,7 +65,11 @@ const parts = {
  * a field carrying the British form as well is teaching the pair.
  */
 const AMERICAN = [
-  [/\b(col|fav|hon|lab|behavi|neighb|flav|rum|harb|end)or(s|ed|ing|less)?\b/g, "our"],
+  // Written out rather than stemmed. The stems missed the long ones —
+  // "endeavored" survived the first sweep because \bend + or never reaches
+  // the "or" in endeavor, and humour, armour and vapour were not stems at
+  // all. A word each is longer and cannot quietly fail to match.
+  [/\b(col|fav|hon|lab|behavi|neighb|flav|rum|harb|endeav|hum|vap|vig|od|arm|savi|splend|clam|tum|cand|demean|ferv|glam|val|parl|rig|end)or(s|ed|ing|less|able|ite|ites)?\b/g, "our"],
   [/\b(cent|theat|fib)er(s)?\b/g, "re"],
   [/\b(travel|cancel|label|signal|model|marvel|fuel)(ed|ing|er|ers)\b/g, "ll"],
   [/\b(organiz|recogniz|apologiz|realiz|memoriz|criticiz|specializ|prioritiz|summariz)(e|es|ed|ing|ation)\b/g, "is"],

@@ -2251,7 +2251,7 @@ const partBlueprintsBase: Record<string, Blueprint> = {
   part36: {
     label: "Part 36", level: "A2-B1", theme: "Gym & training",
     description: "Real gym German: how people actually talk in the Fitnessstudio — Muskelkater, Beintag, spotting, sets and reps, and the jokes that come with all of it.",
-    focus: "Gym vocabulary and etiquette: naming exercises, talking sets and reps, asking for a spot or a free bench, complaining about Muskelkater, and the universal leg-day humor.",
+    focus: "Gym vocabulary and etiquette: naming exercises, talking sets and reps, asking for a spot or a free bench, complaining about Muskelkater, and the universal leg-day humour.",
     seeds: [
       { de: "das Fitnessstudio", lookup: "Fitnessstudio", fallbackEn: "gym", tip: "noun", article: "das", use: "the standard word; casually 'die Muckibude' or just 'das Gym'" },
       { de: "trainieren", lookup: "trainieren", fallbackEn: "to work out, to train", tip: "verb", use: "the everyday verb for working out; 'Ich trainiere dreimal die Woche'" },
@@ -4448,12 +4448,12 @@ const partBlueprintsBase: Record<string, Blueprint> = {
         { speaker: "A", de: "Drei Monate zum Monatsende. Ich kündige gleich morgen früh — und heute Abend wird gefeiert.", en: "Three months, effective at the end of a month. I'm handing in my notice first thing tomorrow — and tonight we celebrate.", fr: "Trois mois de préavis, avec effet à la fin du mois. Je donne ma démission demain à la première heure — et ce soir, on fête ça." },
       ]},
       { title: "Der Zeugnis-Code", lines: [
-        { speaker: "A", de: "Mein Arbeitszeugnis ist endlich da. \"Er war stets bemüht, die Aufgaben zu erledigen.\" Klingt doch nett, oder?", en: "My reference letter finally arrived. \"He always endeavored to complete his tasks.\" Sounds nice, right?", fr: "Mon certificat de travail est enfin arrivé. « Il s'est toujours efforcé d'accomplir ses tâches. » Ça sonne bien, non ?" },
-        { speaker: "B", de: "Oh nein. \"Stets bemüht\" heißt übersetzt: Er hat's versucht und nichts hingekriegt.", en: "Oh no. \"Always endeavored,\" translated: he tried and achieved nothing.", fr: "Oh non. « S'est toujours efforcé », traduction : il a essayé et n'a rien réussi." },
+        { speaker: "A", de: "Mein Arbeitszeugnis ist endlich da. \"Er war stets bemüht, die Aufgaben zu erledigen.\" Klingt doch nett, oder?", en: "My reference letter finally arrived. \"He always endeavoured to complete his tasks.\" Sounds nice, right?", fr: "Mon certificat de travail est enfin arrivé. « Il s'est toujours efforcé d'accomplir ses tâches. » Ça sonne bien, non ?" },
+        { speaker: "B", de: "Oh nein. \"Stets bemüht\" heißt übersetzt: Er hat's versucht und nichts hingekriegt.", en: "Oh no. \"Always endeavoured,\" translated: he tried and achieved nothing.", fr: "Oh non. « S'est toujours efforcé », traduction : il a essayé et n'a rien réussi." },
         { speaker: "A", de: "Was?! Das klingt doch total positiv!", en: "What?! It sounds totally positive!", fr: "Quoi ?! Ça a l'air complètement positif !" },
         { speaker: "B", de: "Das ist ja der Trick. Ein Zeugnis muss wohlwollend formuliert sein — also verstecken die Chefs die Kritik im Code. Gut wäre \"stets zu unserer vollsten Zufriedenheit\".", en: "That's exactly the trick. A reference has to sound positive, so bosses hide criticism in coded language. A good phrase would be \"always to our fullest satisfaction.\"", fr: "C'est justement l'astuce. Un certificat doit être formulé avec bienveillance — alors les patrons cachent la critique dans un code. La bonne formule, ce serait « toujours à notre entière satisfaction »." },
         { speaker: "A", de: "Und bei mir steht nur \"zu unserer Zufriedenheit\"...", en: "And mine just says \"to our satisfaction\"...", fr: "Et sur le mien, il y a juste « à notre satisfaction »..." },
-        { speaker: "B", de: "Autsch, das ist eine Vier. Im Ernst, lass das von jemandem prüfen.", en: "Ouch, that's a D. Seriously, have someone check it.", fr: "Aïe, ça correspond à un 4 — une mauvaise note. Sérieusement, fais-le vérifier par quelqu'un." },
+        { speaker: "B", de: "Autsch, das ist eine Vier. Im Ernst, lass das von jemandem prüfen.", en: "Ouch, that's a four — a bad mark. Seriously, get someone to look at it.", fr: "Aïe, ça correspond à un 4 — une mauvaise note. Sérieusement, fais-le vérifier par quelqu'un." },
       ]},
     ],
     phrases: [
