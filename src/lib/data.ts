@@ -829,6 +829,8 @@ const partBlueprintsBase: Record<string, Blueprint> = {
   },
   part15: {
     label: "Part 15", level: "A2-B1", theme: "Texting & chat shorthand",
+    // Typed, never spoken — see Blueprint.writtenOnly.
+    writtenOnly: true,
     description: "The abbreviations Germans actually type in WhatsApp and DMs — hdl, lg, kA, vllt — plus the borrowed omg/lol, shown in real text messages.",
     focus: "Recognise German chat shorthand in context so messages make sense.",
     seeds: [
