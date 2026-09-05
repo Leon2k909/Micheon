@@ -7,6 +7,7 @@ const root = path.resolve(__dirname, "..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 const main = read("electron/main.js");
 const preload = read("electron/preload.cjs");
+const settings = read("electron/desktop-settings.cjs");
 const banner = read("src/components/UpdateBanner.tsx");
 const styles = read("src/index.css");
 const card = read("src/components/UpdateStatusCard.tsx");
@@ -126,6 +127,27 @@ check("Electron publishes live download progress", /download-progress[\s\S]*setU
 // version again — the bar filled, reached the end, and started from nothing.
 // The periodic check had always skipped those two states; the button somebody
 // presses had not.
+// ── the launch after an update does not ask for another one ────────────────
+// Installing restarts the app, and the new copy's first act was to ask the
+// feed what was available. Releases land several times a day here, so the
+// answer was often "another one", and finishing an update by being handed the
+// next reads as the app updating twice for nothing. The version that was
+// running last time is on record, so the app can tell an ordinary launch from
+// the one after an install and leave that first check to the timer.
+check(
+  "the launch straight after an update skips the immediate check",
+  /const justUpdated = Boolean\(getDesktopSettings\(\)\.lastRunVersion\)/.test(main)
+    && /getDesktopSettings\(\)\.lastRunVersion !== runningVersion/.test(main)
+    && /saveDesktopSettings\(\{ lastRunVersion: runningVersion \}\)/.test(main)
+    && /if \(!justUpdated && getDesktopSettings\(\)\.updateMode !== "manual"/.test(main)
+    // ...and the timer still runs, so the next release is still found.
+    && /setInterval\(\(\) => \{/.test(main)
+);
+check(
+  "the remembered version is stored and normalised like every other setting",
+  /lastRunVersion: ""/.test(settings)
+    && /lastRunVersion: typeof value\?\.lastRunVersion === "string"/.test(settings)
+);
 check(
   "a manual check never restarts a download that is running or already done",
   /if \(updateStatus\.state === "downloading" \|\| updateStatus\.state === "ready"\) \{\s*\n\s*return \{ \.\.\.updateStatus/.test(main)

@@ -23,6 +23,13 @@ const DEFAULT_DESKTOP_SETTINGS = Object.freeze({
   // Hide the in-app update panel entirely. The update still happens; it just
   // stops narrating.
   updateNoticesHidden: false,
+  // The version that was running last time. An update restarts the app, and
+  // the first thing the new copy did was ask the feed whether there was
+  // another one — which, at eight releases in a day, there often was. So the
+  // learner finished an update and was handed the next one seconds later.
+  // Comparing this with the running version is how the app knows it has just
+  // updated and can leave the next check to the ordinary timer.
+  lastRunVersion: "",
   // Offline speaking practice is part of Micheon, not an add-on. The native
   // model installs itself on first launch and stays available until the learner
   // explicitly removes it from Settings.
@@ -54,6 +61,7 @@ function normalizeDesktopSettings(value) {
     updateMode: UPDATE_MODES.has(value?.updateMode) ? value.updateMode : DEFAULT_DESKTOP_SETTINGS.updateMode,
     updateSnoozeUntil: normalizeSnooze(value?.updateSnoozeUntil),
     updateNoticesHidden: value?.updateNoticesHidden === true,
+    lastRunVersion: typeof value?.lastRunVersion === "string" ? value.lastRunVersion.slice(0, 32) : "",
   };
 }
 

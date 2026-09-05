@@ -1701,7 +1701,26 @@ function setupAutoUpdate() {
   // Micheon owns the complete visible update experience in the renderer. Using
   // checkForUpdatesAndNotify here would add an OS notification that cannot
   // follow the app theme and would duplicate the in-app progress panel.
-  if (getDesktopSettings().updateMode !== "manual" && !updateSnoozeActive()) {
+  /**
+   * The launch straight after an update does not ask for another one.
+   *
+   * Installing restarts the app, and the new copy's first act was to ask the
+   * feed what was available. Releases here land several times a day, so the
+   * answer was often "another one" — and finishing an update by being handed
+   * the next update reads as the app updating twice for nothing. The version
+   * that was running last time is on record, so the app can tell an ordinary
+   * launch from the one that follows an install, and leave that first check
+   * to the fifteen-minute timer.
+   */
+  const runningVersion = app.getVersion();
+  const justUpdated = Boolean(getDesktopSettings().lastRunVersion)
+    && getDesktopSettings().lastRunVersion !== runningVersion;
+  saveDesktopSettings({ lastRunVersion: runningVersion });
+  if (justUpdated) {
+    console.log(`[updater] just updated to ${runningVersion} — leaving the first check to the timer`);
+    setUpdateStatus("current", runningVersion);
+  }
+  if (!justUpdated && getDesktopSettings().updateMode !== "manual" && !updateSnoozeActive()) {
     autoUpdater.checkForUpdates().catch((e) => console.error("[updater] check failed:", e?.message ?? e));
   }
   // Re-check periodically for long-running sessions. Fifteen minutes rather than
