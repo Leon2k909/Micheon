@@ -38,7 +38,9 @@ const built = esbuild.buildSync({
   stdin: {
     contents:
       'export { UK_QUESTIONS } from "./src/lib/ukQuestionBank.ts";\n' +
+      'export { DE_QUESTIONS } from "./src/lib/deQuestionBank.ts";\n' +
       'export { UK_QUESTION_BANK_RU } from "./src/lib/ukQuestionBankTranslationsRu.ts";\n' +
+      'export { DE_QUESTION_BANK_RU } from "./src/lib/deQuestionBankTranslationsRu.ts";\n' +
       'export { LIFE_IN_THE_UK_RU } from "./src/lib/lifeInTheUkTranslationsRu.ts";\n' +
       'export { LEBEN_IN_DEUTSCHLAND_RU } from "./src/lib/lebenInDeutschlandTranslationsRu.ts";\n' +
       'export { VIVRE_EN_FRANCE_RU } from "./src/lib/vivreEnFranceTranslationsRu.ts";\n' +
@@ -97,6 +99,24 @@ const BANKS = [
       "Equality Act 2010",
       "Human Rights Act 1998",
       "GCSE",
+    ],
+  },
+  {
+    label: "Leben in Deutschland",
+    questions: M.DE_QUESTIONS,
+    table: M.DE_QUESTION_BANK_RU,
+    symbol: "DE_QUESTION_BANK_RU",
+    // The same line as LEBEN_IN_DEUTSCHLAND_RU draws, and again only the half
+    // that stays GERMAN is checked here: the words a reader meets printed on
+    // a form. What Russian has a name for — Основной закон, федеральный
+    // канцлер, Бундестаг — is left to the no-Russian rule above, because
+    // Russian declines those and a literal needle would accuse a correct
+    // sentence for writing Основным законом.
+    keep: [
+      "Standesamt",
+      "Kindergeld",
+      "Elterngeld",
+      "Bürgergeld",
     ],
   },
 ];
@@ -172,7 +192,7 @@ for (const { label, questions, table, symbol, keep } of BANKS) {
     if (withTerm.length >= 3 && dropped.length > withTerm.length / 2) {
       failures.push(
         `${label}: ${dropped.length} of ${withTerm.length} entries mentioning "${term}" no longer carry it. ` +
-          "A reader meets that one on a form, so it stays in English:\n" +
+          "A reader meets that one on a form, so it stays in the bank's own language:\n" +
           dropped.slice(0, 4).map(([key]) => `      ${JSON.stringify(key.slice(0, 80))}`).join("\n")
       );
     }
