@@ -10,6 +10,41 @@ export function primaryAnswer(s: string): string {
   return String(s ?? "").split(" / ")[0].trim();
 }
 
+const BRACKET_MASK = "\u0000";
+
+/**
+ * Everything inside brackets, blanked out.
+ *
+ * A separator inside brackets belongs to the note, not to a choice between
+ * senses: "to catch (a ball or animal)" is one meaning with its use spelled
+ * out, and cutting it at that "or" leaves "to catch (a ball" — an unfinished
+ * phrase with a bracket hanging open. Sixteen cards read like that, among
+ * them Schorle, Kapitän, Komödie and Abitur.
+ *
+ * Blanked rather than removed so every character keeps its position, and
+ * blanked with a character no separator contains rather than with spaces:
+ * a separator may begin with whitespace, so pad with spaces and "a (b) or c"
+ * starts matching at the space after the a — swallowing the very bracket the
+ * mask exists to protect.
+ */
+function maskBracketed(value: string): string {
+  let depth = 0;
+  let masked = "";
+  for (let index = 0; index < value.length; index += 1) {
+    const character = value[index];
+    if (character === "(") {
+      depth += 1;
+      masked += BRACKET_MASK;
+    } else if (character === ")") {
+      if (depth > 0) depth -= 1;
+      masked += BRACKET_MASK;
+    } else {
+      masked += depth > 0 ? BRACKET_MASK : character;
+    }
+  }
+  return masked;
+}
+
 /**
  * Vocabulary glosses often name several equally valid senses, for example
  * "goal or aim" or "aim, destination". They are choices, not a phrase the
@@ -21,19 +56,56 @@ function splitMeaningAlternatives(value: string, separator: RegExp): string[] {
   const original = String(value ?? "").trim();
   if (!original) return [];
 
-  const alternatives = original
-    .split(separator)
-    .map((part) => part.trim())
-    .filter(Boolean);
-  return alternatives.length ? alternatives : [original];
+  // Separators are found in the masked copy and applied to the real string.
+  // Masking is character-for-character, so a match's offsets carry across.
+  const scan = new RegExp(
+    separator.source,
+    separator.flags.includes("g") ? separator.flags : `${separator.flags}g`
+  );
+  const masked = maskBracketed(original);
+  const alternatives: string[] = [];
+  let cursor = 0;
+  for (let match = scan.exec(masked); match; match = scan.exec(masked)) {
+    if (!match[0]) {
+      scan.lastIndex += 1;
+      continue;
+    }
+    alternatives.push(original.slice(cursor, match.index).trim());
+    cursor = match.index + match[0].length;
+  }
+  alternatives.push(original.slice(cursor).trim());
+
+  const kept = alternatives.filter(Boolean);
+  return kept.length ? kept : [original];
 }
 
+const ENGLISH_MEANING_SEPARATOR = /\s+\/\s+|[,;]|\s+or\s+/iu;
+const GERMAN_MEANING_SEPARATOR = /\s+\/\s+|[,;]|\s+oder\s+/iu;
+
 function englishMeaningAlternatives(value: string): string[] {
-  return splitMeaningAlternatives(value, /\s+\/\s+|[,;]|\s+or\s+/iu);
+  return splitMeaningAlternatives(value, ENGLISH_MEANING_SEPARATOR);
 }
 
 export function germanMeaningAlternatives(value: string): string[] {
-  return splitMeaningAlternatives(value, /\s+\/\s+|[,;]|\s+oder\s+/iu);
+  return splitMeaningAlternatives(value, GERMAN_MEANING_SEPARATOR);
+}
+
+/**
+ * What to ACCEPT, as opposed to what to show.
+ *
+ * Stepping over brackets is a rule about display: a card must not end in the
+ * middle of its own note. Matching has no such duty and every reason to stay
+ * generous, so it tries the bracket-blind pieces as well — somebody typing
+ * "to catch a ball" for "to catch (a ball or animal)" was always right and
+ * still is.
+ */
+function acceptedMeaningAlternatives(value: string, separator: RegExp): string[] {
+  const bracketBlind = String(value ?? "")
+    .trim()
+    .split(separator)
+    .map((part) => part.trim())
+    .filter(Boolean);
+  return [...new Set([...splitMeaningAlternatives(value, separator), ...bracketBlind])];
 }
 
 export function primaryEnglishMeaning(value: string): string {
@@ -77,7 +149,7 @@ export function matchEnglishMeaning(input: string, target: string) {
   const whole = matchEnglishPhrase(input, target);
   if (whole.ok) return whole;
 
-  for (const alternative of englishMeaningAlternatives(target)) {
+  for (const alternative of acceptedMeaningAlternatives(target, ENGLISH_MEANING_SEPARATOR)) {
     const result = matchEnglishPhrase(input, alternative);
     if (result.ok) return result;
   }
@@ -88,7 +160,7 @@ export function matchGermanMeaning(input: string, target: string) {
   const whole = matchGermanSentence(input, target);
   if (whole.ok) return whole;
 
-  for (const alternative of germanMeaningAlternatives(target)) {
+  for (const alternative of acceptedMeaningAlternatives(target, GERMAN_MEANING_SEPARATOR)) {
     const result = matchGermanSentence(input, alternative);
     if (result.ok) return result;
   }

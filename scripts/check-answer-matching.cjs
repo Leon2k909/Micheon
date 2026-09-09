@@ -530,6 +530,30 @@ check(
     && !matchEnglishMeaning("i am tired", "You are tired").ok
 );
 
+// A bracket holds a note about the sense, not a second sense. Splitting
+// inside it showed "to catch (a ball" on the card — a phrase cut in half
+// with its bracket left open, which happened on sixteen cards.
+check(
+  "a bracketed note is shown whole, not cut at the separator inside it",
+  primaryEnglishMeaning("to catch (a ball or animal)") === "to catch (a ball or animal)"
+    && primaryEnglishMeaning("comedy (film or play)") === "comedy (film or play)"
+    && primaryEnglishMeaning("abstürzen (computer / program)") === "abstürzen (computer / program)"
+    && primaryGermanMeaning("aufhören (mit etwas oder ganz)") === "aufhören (mit etwas oder ganz)"
+);
+check(
+  "a separator outside the brackets still chooses the first sense",
+  primaryEnglishMeaning("goal, aim, destination") === "goal"
+    && primaryEnglishMeaning("to learn / to study") === "to learn"
+    && primaryEnglishMeaning("spritzer (juice or wine) or shandy") === "spritzer (juice or wine)"
+    && primaryGermanMeaning("das Ziel, der Zweck") === "das Ziel"
+);
+// Display is the only thing that changed: what a learner may type did not.
+check(
+  "the bracketed note stays optional and stays typeable",
+  matchEnglishMeaning("to catch", "to catch (a ball or animal)").ok
+    && matchEnglishMeaning("to catch a ball", "to catch (a ball or animal)").ok
+    && matchEnglishMeaning("to catch (a ball or animal)", "to catch (a ball or animal)").ok
+);
 if (failures) {
   console.error(`\n${failures} answer-matching regression${failures === 1 ? "" : "s"}`);
   process.exit(1);

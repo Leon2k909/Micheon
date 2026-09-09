@@ -12,6 +12,7 @@ const built = esbuild.buildSync({
       export { buildBundledParts, buildTatoebaParts } from "./src/lib/contentBank.ts";
       export { orderParts } from "./src/lib/curriculum.ts";
       export { buildWordCatalog } from "./src/lib/wordSession.ts";
+      export { primaryEnglishMeaning, primaryGermanMeaning } from "./src/lib/germanTextMatch.ts";
     `,
     resolveDir: root,
     sourcefile: "bilingual-word-gloss-check-entry.ts",
@@ -37,6 +38,8 @@ const {
   buildTatoebaParts,
   buildWordCatalog,
   orderParts,
+  primaryEnglishMeaning,
+  primaryGermanMeaning,
 } = compiled.exports;
 
 const resolvedBlueprints = Object.fromEntries(
@@ -164,6 +167,34 @@ check(
     && !vocabTracker.includes("usefulness.label")
 );
 
+// What the card actually shows, swept across the whole catalogue. A gloss
+// whose brackets balance must still balance once the first sense is taken
+// from it: a card ending mid-note is the visible half of a bad split.
+const bracketsBalance = (value) => {
+  let depth = 0;
+  for (const character of String(value ?? "")) {
+    if (character === "(") depth += 1;
+    else if (character === ")") depth -= 1;
+    if (depth < 0) return false;
+  }
+  return depth === 0;
+};
+const cutMidNote = [];
+for (const word of words) {
+  for (const [side, shown] of [
+    [word.en, primaryEnglishMeaning(String(word.en ?? ""))],
+    [word.de, primaryGermanMeaning(String(word.de ?? ""))],
+  ]) {
+    if (side && bracketsBalance(side) && !bracketsBalance(shown)) {
+      cutMidNote.push(`${word.de} => ${shown}`);
+    }
+  }
+}
+check(
+  `no card of ${words.length} is shown with a bracket left open`,
+  cutMidNote.length === 0,
+  cutMidNote.slice(0, 20).join(" | ")
+);
 if (failures) {
   console.error(`\n${failures} bilingual word-gloss regression${failures === 1 ? "" : "s"}`);
   process.exit(1);
