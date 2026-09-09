@@ -3118,6 +3118,21 @@ a { color: inherit; text-decoration: none; }
   font-size: 0.44em; font-weight: 700; letter-spacing: 0.005em; line-height: 1.25;
   text-shadow: none;
 }
+/* The same second line on a card or a matching cell, which set their own
+   alignment and run much smaller type than a lesson sentence: 0.44em of a
+   12px cell is six pixels, so the proportion keeps a floor, and the alignment
+   is inherited rather than centred against a left-aligned row. */
+/* Named twice over: `.fs-flashcard-language span` is the card's little
+   RUSSISCH label, and being a class-plus-type it outranks a lone class — so
+   the transcription came out shouted in ten pixels. The label selector is the
+   one to beat, not to fight with !important. */
+.fs-translit-inline,
+.fs-flashcard-language .fs-translit-inline {
+  display: block; width: 100%; text-align: inherit;
+  margin-top: 0.15em; color: var(--fs-text-soft, var(--text-3));
+  font-size: max(0.44em, 11px); font-weight: 700; letter-spacing: 0.005em;
+  line-height: 1.25; text-transform: none; text-shadow: none;
+}
 :is(.guided-session, .fs-tappable-sentence) .fs-word {
   position: relative; display: inline-block; border: 0; border-radius: 0.24em; padding: 0.1em 0.08em 0.14em;
   user-select: text; -webkit-user-select: text; -webkit-user-drag: none;

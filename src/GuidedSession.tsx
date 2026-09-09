@@ -66,7 +66,7 @@ import { russianMeaningLanguage } from "@/lib/russianCourse";
 import { matchPortugueseSentence, PORTUGUESE_SPECIAL_CHARACTERS } from "@/lib/portugueseTextMatch";
 import { matchRussianSentence } from "@/lib/russianTextMatch";
 import { INTERFACE_LANGUAGE_CHANGE_EVENT } from "@/lib/interfaceLanguage";
-import { getRussianScript, resolveRussianScript, russianScriptLabel, russianScriptShows, RUSSIAN_SCRIPT_EVENT, RUSSIAN_SPECIAL_CHARACTERS, setRussianScript } from "@/lib/russianScript";
+import { formatRussianText, getRussianScript, resolveRussianScript, russianScriptLabel, russianScriptShows, russianSecondLine, RUSSIAN_SCRIPT_EVENT, RUSSIAN_SPECIAL_CHARACTERS, setRussianScript } from "@/lib/russianScript";
 
 import {
   AUDIO_SETTINGS_EVENT,
@@ -1348,6 +1348,32 @@ function useRussianScript() {
     };
   }, []);
   return script;
+}
+
+/**
+ * A whole line of course text, drawn in the alphabet the learner chose.
+ *
+ * TappableSentence does this for the lesson stages, word by word, so that a
+ * word can be tapped and heard. The preview flashcard and the matching board
+ * show a line nobody taps, so they need the same transformation without the
+ * splitting — and without it they were the two screens the Russian script
+ * setting never reached: Cyrillic whatever was chosen, and no transcription
+ * under it on the both setting.
+ *
+ * Only what the eye reads changes. The text handed to the voice stays
+ * Cyrillic, because that is what a Russian voice can pronounce.
+ */
+function CourseText({ code, text }: { code: string; text: string }) {
+  const stored = useRussianScript();
+  if (!String(code ?? "").toLowerCase().startsWith("ru")) return <>{text}</>;
+  const script = resolveRussianScript(stored);
+  const second = russianSecondLine(text, script);
+  return (
+    <>
+      {formatRussianText(text, script)}
+      {second && <span className="fs-translit-inline">{second}</span>}
+    </>
+  );
 }
 
 function PromptLanguageBadge({ label }: { label: string }) {
@@ -5766,7 +5792,7 @@ function SessionFlashcardPreview({
         title={mode === "both" ? ui("Tap to hear it") : undefined}
       >
         <span>{ui(label)}</span>
-        <strong lang={htmlLang}>{text}</strong>
+        <strong lang={htmlLang}><CourseText code={htmlLang} text={text} /></strong>
       </div>
       <button
         type="button"
@@ -6291,7 +6317,7 @@ function SessionMatchingPairs({
                   onClick={() => selectSource(sourceItem.matchId)}
                 >
                   <kbd className="fs-match-key" aria-hidden>{rowIndex + 1}</kbd>
-                  <span>{sourceText(sourceItem)}</span>
+                  <span><CourseText code={sourceSide.code} text={sourceText(sourceItem)} /></span>
                   {sourceMatched && <CheckCircle2 className="h-4 w-4" />}
                 </button>
                 <button
@@ -6307,7 +6333,7 @@ function SessionMatchingPairs({
                   onClick={() => selectTarget(targetItem.matchId)}
                 >
                   <kbd className="fs-match-key" aria-hidden>{rowIndex + 1}</kbd>
-                  <span>{targetText(targetItem)}</span>
+                  <span><CourseText code={targetSide.code} text={targetText(targetItem)} /></span>
                   {targetMatched && <CheckCircle2 className="h-4 w-4" />}
                 </button>
               </React.Fragment>
