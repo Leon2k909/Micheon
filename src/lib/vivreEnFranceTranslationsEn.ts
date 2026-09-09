@@ -10,6 +10,16 @@
  * The names of laws and institutions stay French — laïcité, the Sénat, the
  * SMIC — because those are what the exam asks about. What gets translated is
  * the sentence explaining them.
+ *
+ * The practice questions that close each lesson are here too, added last and
+ * kept together under a heading of their own. An answer nobody can read is an
+ * answer nobody can pick, so a line of the Déclaration quoted as an option is
+ * given in French and then in English, and the institution it names stays put.
+ *
+ * Coverage stops five short of the course, and that is right: "En 1936",
+ * "En 1945", "1848", "18" and "112" are dates and bare numbers another
+ * English table already answers, and a key in two of them loses one silently
+ * — the later spread decides both. See check-en-translations.
  */
 export const VIVRE_EN_FRANCE_EN: Record<string, string> = {
   "France – Land and Culture": "France – Land and Culture",
@@ -676,4 +686,493 @@ export const VIVRE_EN_FRANCE_EN: Record<string, string> = {
   "17 police · 15 SAMU · 18 pompiers · 112 Europe · 114 SMS urgence · 119 enfance en danger.": "17 police · 15 SAMU · 18 fire brigade · 112 Europe · 114 emergency SMS · 119 children in danger.",
   "Usager · réclamation · discrimination · préfecture · titre de séjour.": "User · complaint · discrimination · prefecture · residence permit.",
   "En une phrase : trois numéros pour l'urgence, quatre guichets pour le reste — et un recours gratuit quand un guichet vous traite mal.": "In one sentence: three numbers for an emergency, four counters for the rest — and a free remedy when a counter treats you badly.",
+  // ── The practice questions ──────────────────────────────────────────────────
+  "Combien de bonnes réponses faut-il pour réussir l'examen civique ?":
+    "How many correct answers do you need to pass the civics test?",
+  "20 sur 40": "20 out of 40",
+  "26 sur 40": "26 out of 40",
+  "32 sur 40": "32 out of 40",
+  "40 sur 40": "40 out of 40",
+  "Il faut 32 bonnes réponses sur 40, soit 80 %, en 45 minutes au maximum.":
+    "You need 32 correct answers out of 40, which is 80 %, in 45 minutes at most.",
+  "Que porte Marianne sur la tête ?": "What does Marianne wear on her head?",
+  "Une couronne": "A crown",
+  "Un bonnet phrygien": "A Phrygian cap",
+  "Un casque": "A helmet",
+  "Un chapeau de paille": "A straw hat",
+  "Le bonnet phrygien, porté par les esclaves affranchis de la Rome antique : il signifie la liberté conquise.":
+    "The Phrygian cap, worn by freed slaves in ancient Rome: it stands for liberty won.",
+  "Qui a écrit et composé La Marseillaise ?": "Who wrote and composed La Marseillaise?",
+  "Rouget de Lisle": "Rouget de Lisle",
+  "Napoléon Bonaparte": "Napoléon Bonaparte",
+  "Hector Berlioz": "Hector Berlioz",
+  "Claude Joseph Rouget de Lisle l'a écrite à Strasbourg en 1792. Elle est devenue l'hymne national en 1795.":
+    "Claude Joseph Rouget de Lisle wrote it in Strasbourg in 1792. It became the national anthem in 1795.",
+  "Que signifie l'Égalité dans la devise de la République ?":
+    "What does Égalité mean in the motto of the Republic?",
+  "Tout le monde gagne la même chose": "Everyone earns the same",
+  "La loi est la même pour tous et tous ont les mêmes droits":
+    "The law is the same for everyone and everyone has the same rights",
+  "Tout le monde doit avoir le même travail": "Everyone has to have the same job",
+  "Tout le monde doit penser pareil": "Everyone has to think alike",
+  "C'est l'égalité devant la loi et l'égalité des droits, pas l'égalité des revenus ou des situations.":
+    "It is equality before the law and equality of rights, not equality of income or of circumstances.",
+  "Qu'est-ce que la liberté d'association ?": "What is freedom of association?",
+  "Le droit de créer une association ou d'y adhérer librement":
+    "The right to set up an association, or to join one freely",
+  "Le droit d'entrer dans n'importe quel bâtiment": "The right to enter any building at all",
+  "L'obligation d'appartenir à une association": "The duty to belong to an association",
+  "Le droit de fonder une entreprise": "The right to found a business",
+  "Depuis la loi de 1901, on peut créer une association ou y adhérer sans autorisation préalable — et on peut aussi n'en faire partie d'aucune.":
+    "Since the law of 1901 you can create an association or join one with no permission asked for in advance — and you are just as free to belong to none.",
+  "En quelle année la loi de séparation des Églises et de l'État a-t-elle été votée ?":
+    "In which year was the law separating the Churches and the State passed?",
+  "1881": "1881",
+  "1905": "1905",
+  "1958": "1958",
+  "Le 9 décembre 1905. C'est le texte fondateur de la laïcité, et le 9 décembre est aujourd'hui la journée de la laïcité.":
+    "9 December 1905. It is the founding text of laïcité, and 9 December is today the day of laïcité.",
+  "Qui doit respecter la neutralité religieuse dans les services publics ?":
+    "Who has to observe religious neutrality in the public services?",
+  "Les usagers du service": "The people using the service",
+  "Les agents du service public": "The staff of the public service",
+  "Tout le monde dans la rue": "Everyone in the street",
+  "Personne, la neutralité n'est pas obligatoire": "Nobody, neutrality is not compulsory",
+  "La neutralité s'impose aux agents, pas aux usagers. Une personne qui se rend à la mairie reste libre de ses convictions et de sa tenue.":
+    "Neutrality binds the staff, not the public. Someone going to the town hall stays free in their beliefs and in what they wear.",
+  "Une personne déclare ne croire en aucun dieu. On peut dire :":
+    "Someone says they believe in no god. You can say:",
+  "qu'elle est athée": "that they are an atheist",
+  "qu'elle est croyante": "that they are a believer",
+  "qu'elle enfreint la loi": "that they are breaking the law",
+  "qu'elle doit choisir une religion": "that they have to choose a religion",
+  "Elle est athée, et c'est parfaitement légal : la liberté de conscience comprend le droit de ne rien croire.":
+    "They are an atheist, and that is perfectly legal: freedom of conscience includes the right to believe nothing.",
+  "À quoi sert le droit de grève ?": "What is the right to strike for?",
+  "À défendre des revendications professionnelles": "Pressing claims about pay and conditions",
+  "À obtenir des vacances supplémentaires automatiquement": "Getting extra holiday automatically",
+  "À refuser de payer ses impôts": "Refusing to pay your taxes",
+  "À quitter son emploi sans préavis": "Leaving your job without notice",
+  "La grève est l'arrêt collectif et concerté du travail pour défendre des revendications professionnelles. C'est un droit constitutionnel.":
+    "A strike is a collective, agreed stopping of work to press claims about pay and conditions. It is a constitutional right.",
+  "Au nom de quoi l'État peut-il restreindre une liberté ?":
+    "On what grounds may the State restrict a freedom?",
+  "De l'opinion du gouvernement": "The opinion of the government",
+  "De l'ordre public, dans les limites fixées par la loi":
+    "Public order, within the limits set by law",
+  "De la volonté d'une majorité de citoyens": "The will of a majority of citizens",
+  "D'une décision d'un employeur": "A decision taken by an employer",
+  "Seul l'ordre public — sécurité, santé publique, droits d'autrui — justifie une restriction, et elle doit être prévue par la loi.":
+    "Only public order — safety, public health, the rights of others — justifies a restriction, and the law has to provide for it.",
+  "Déclarer ses revenus aux services fiscaux est :": "Declaring your income to the tax office is:",
+  "facultatif": "optional",
+  "obligatoire chaque année": "compulsory every year",
+  "obligatoire seulement pour les salariés": "compulsory only for employees",
+  "réservé aux personnes imposables": "only for people who owe tax",
+  "La déclaration est annuelle et obligatoire, même si l'on ne paie pas d'impôt sur le revenu au bout du compte.":
+    "The declaration is annual and compulsory, even if no income tax turns out to be due in the end.",
+  "Quand la Sécurité sociale a-t-elle été établie en France ?":
+    "When was the Sécurité sociale set up in France?",
+  "En 1905": "In 1905",
+  "En 1958": "In 1958",
+  "En 1945, à la Libération. Elle couvre la maladie, la vieillesse, la famille et les accidents du travail.":
+    "In 1945, at the Liberation. It covers illness, old age, the family and accidents at work.",
+  "Quels sont les trois pouvoirs de la séparation des pouvoirs ?":
+    "What are the three powers in the separation of powers?",
+  "Législatif, exécutif, judiciaire": "Legislative, executive, judicial",
+  "Militaire, religieux, civil": "Military, religious, civil",
+  "National, régional, communal": "National, regional, communal",
+  "Politique, économique, social": "Political, economic, social",
+  "Le législatif fait la loi, l'exécutif l'applique, le judiciaire juge. Les séparer empêche la concentration du pouvoir.":
+    "The legislative makes the law, the executive applies it, the judicial judges. Keeping them apart stops power gathering in one place.",
+  "A-t-on le droit de ne pas respecter une loi que l'on juge injuste ?":
+    "Do you have the right to disregard a law you consider unjust?",
+  "Oui, si beaucoup de gens la trouvent injuste": "Yes, if a lot of people find it unjust",
+  "Non : on peut la contester, mais pas s'en dispenser":
+    "No: you may challenge it, but not excuse yourself from it",
+  "Oui, à condition de le dire à la mairie": "Yes, provided you tell the town hall",
+  "Oui, si elle est ancienne": "Yes, if it is an old one",
+  "La loi s'impose à tous. On peut la critiquer, manifester, saisir un juge ou faire campagne pour la changer — pas décider de ne pas l'appliquer.":
+    "The law binds everyone. You can criticise it, demonstrate, go to a judge or campaign to change it — not decide not to obey it.",
+  "Comment est désigné le Premier ministre ?": "How is the Premier ministre chosen?",
+  "Il est élu par les Français": "He is elected by the French",
+  "Il est nommé par le président de la République":
+    "He is appointed by the président de la République",
+  "Il est élu par les sénateurs": "He is elected by the senators",
+  "Il est tiré au sort parmi les députés": "He is drawn by lot from among the deputies",
+  "Le Premier ministre est nommé par le président. Il n'est jamais élu directement par les citoyens.":
+    "The Premier ministre is appointed by the president. He is never elected directly by the citizens.",
+  "Qui assure l'intérim du président de la République en cas de décès ?":
+    "Who stands in for the président de la République in the event of death?",
+  "Le président du Sénat": "The president of the Sénat",
+  "Le président de l'Assemblée nationale": "The president of the Assemblée nationale",
+  "Le président du Conseil constitutionnel": "The president of the Conseil constitutionnel",
+  "C'est le président du Sénat, jusqu'à l'élection d'un nouveau président de la République.":
+    "It is the president of the Sénat, until a new président de la République is elected.",
+  "Quelle est la durée du mandat du président de la République ?":
+    "How long is the term of the président de la République?",
+  "4 ans": "4 years",
+  "5 ans": "5 years",
+  "6 ans": "6 years",
+  "7 ans": "7 years",
+  "Cinq ans depuis la réforme du quinquennat de 2000. Auparavant, le mandat durait sept ans.":
+    "Five years since the quinquennat reform of 2000. Before that the term ran for seven.",
+  "Quelle est la durée du mandat des députés ?": "How long is the term of the deputies?",
+  "9 ans": "9 years",
+  "Cinq ans, sauf dissolution de l'Assemblée nationale par le président. Les sénateurs, eux, sont élus pour six ans.":
+    "Five years, unless the president dissolves the Assemblée nationale. Senators, for their part, are elected for six.",
+  "Comment sont désignés les députés ?": "How are the deputies chosen?",
+  "Élus au suffrage universel direct par les citoyens":
+    "Elected by direct universal suffrage by the citizens",
+  "Nommés par le président de la République": "Appointed by the président de la République",
+  "Élus par les conseillers municipaux": "Elected by the municipal councillors",
+  "Désignés par les partis politiques": "Chosen by the political parties",
+  "Au suffrage universel direct, dans chaque circonscription, au scrutin majoritaire à deux tours. Ce sont les sénateurs qui sont élus indirectement.":
+    "By direct universal suffrage, in each constituency, on a two-round majority ballot. It is the senators who are elected indirectly.",
+  "Qui sanctionne l'auteur d'un vol ?": "Who punishes someone who commits a theft?",
+  "Le maire de la commune": "The mayor of the commune",
+  "Un juge": "A judge",
+  "La victime elle-même": "The victim themselves",
+  "Seul un juge peut prononcer une peine. La police interpelle et enquête ; elle ne juge pas.":
+    "Only a judge can hand down a sentence. The police arrest and investigate; they do not judge.",
+  "Quel est le rôle du Conseil constitutionnel ?":
+    "What is the role of the Conseil constitutionnel?",
+  "Juger les crimes les plus graves": "Trying the most serious crimes",
+  "Vérifier que les lois sont conformes à la Constitution":
+    "Checking that laws comply with the Constitution",
+  "Nommer le Premier ministre": "Appointing the Premier ministre",
+  "Gérer les collèges publics": "Running the state collèges",
+  "Il contrôle la constitutionnalité des lois et veille à la régularité des élections nationales et des référendums.":
+    "It reviews whether laws are constitutional and watches over the conduct of national elections and referendums.",
+  "En France, est-ce obligatoire de voter ?": "Is voting compulsory in France?",
+  "Oui, sous peine d'amende": "Yes, on pain of a fine",
+  "Non : voter est un droit, seule l'inscription est obligatoire":
+    "No: voting is a right, only registering is compulsory",
+  "Oui, mais seulement aux présidentielles": "Yes, but only for the presidential election",
+  "Non, et l'inscription non plus": "No, and registering is not either",
+  "L'inscription sur les listes électorales est obligatoire ; l'acte de voter reste un droit que personne n'est contraint d'exercer.":
+    "Registering on the electoral roll is compulsory; casting the vote stays a right nobody is forced to use.",
+  "À qui appartient la souveraineté nationale ?": "To whom does national sovereignty belong?",
+  "Au président de la République": "To the président de la République",
+  "Au peuple": "To the people",
+  "Au Parlement": "To Parliament",
+  "Au gouvernement": "To the government",
+  "Elle appartient au peuple, qui l'exerce par ses représentants et par le référendum.":
+    "It belongs to the people, who exercise it through their representatives and through the referendum.",
+  "Qui gère les collèges publics ?": "Who runs the state collèges, the lower secondary schools?",
+  "L'État seul": "The State alone",
+  "Le département gère les collèges. La commune gère les écoles maternelles et élémentaires, la région les lycées.":
+    "The département runs the collèges. The commune runs the nursery and primary schools, the région the lycées.",
+  "Comment sont désignés les maires ?": "How are mayors chosen?",
+  "Élus directement par les habitants": "Elected directly by the inhabitants",
+  "Élus par le conseil municipal": "Elected by the municipal council",
+  "Nommés par le préfet": "Appointed by the préfet",
+  "Les habitants élisent le conseil municipal ; le conseil élit ensuite le maire parmi ses membres.":
+    "The inhabitants elect the municipal council; the council then elects the mayor from among its own members.",
+  "Où est le siège de la Banque centrale européenne ?":
+    "Where does the European Central Bank have its seat?",
+  "À Bruxelles": "In Brussels",
+  "À Strasbourg": "In Strasbourg",
+  "À Francfort": "In Frankfurt",
+  "À Luxembourg": "In Luxembourg",
+  "À Francfort, en Allemagne. Le Parlement siège à Strasbourg et la Commission à Bruxelles.":
+    "In Frankfurt, in Germany. Parliament sits in Strasbourg and the Commission in Brussels.",
+  "Quel État a quitté l'Union européenne en 2020 ?":
+    "Which State left the European Union in 2020?",
+  "La Norvège": "Norway",
+  "Le Royaume-Uni": "The United Kingdom",
+  "La Suisse": "Switzerland",
+  "L'Irlande": "Ireland",
+  "Le Royaume-Uni, à l'issue du Brexit. La Norvège et la Suisse n'ont jamais été membres.":
+    "The United Kingdom, at the end of Brexit. Norway and Switzerland have never been members.",
+  "Quel est l'hymne de l'Union européenne ?": "What is the anthem of the European Union?",
+  "L'Ode à la joie de Beethoven": "Beethoven's Ode to Joy",
+  "L'Hymne à l'amour": "L'Hymne à l'amour, the Édith Piaf song",
+  "Le Chant des partisans": "Le Chant des partisans, the song of the Resistance",
+  "L'Ode à la joie, extraite de la Neuvième Symphonie de Beethoven. Elle est jouée sans paroles.":
+    "The Ode to Joy, taken from Beethoven's Ninth Symphony. It is played without words.",
+  "Quel texte affirme que tous les hommes naissent libres et égaux en droits ?":
+    "Which text states that all men are born free and equal in rights?",
+  "La Constitution de 1958": "The Constitution of 1958",
+  "La Déclaration des droits de l'homme et du citoyen de 1789":
+    "The Déclaration des droits de l'homme et du citoyen of 1789",
+  "Le Code civil de 1804": "The Code civil of 1804",
+  "La loi de 1905": "The law of 1905",
+  "C'est l'article 1er de la Déclaration de 1789 : « Les hommes naissent et demeurent libres et égaux en droits. »":
+    "It is article 1 of the Declaration of 1789: « Les hommes naissent et demeurent libres et égaux en droits. » — men are born and remain free and equal in rights.",
+  "Que sont les droits fondamentaux ?": "What are fundamental rights?",
+  "Des avantages accordés aux personnes méritantes": "Advantages granted to deserving people",
+  "Des droits reconnus à toute personne du seul fait qu'elle est humaine":
+    "Rights held by every person for the sole reason that they are human",
+  "Des droits réservés aux citoyens français": "Rights reserved for French citizens",
+  "Des règles qui s'appliquent seulement aux fonctionnaires":
+    "Rules that apply only to civil servants",
+  "Ils appartiennent à toute personne, sans condition de nationalité, de mérite ou de fortune.":
+    "They belong to every person, with no condition of nationality, merit or wealth.",
+  "Quel droit protège une personne contre une arrestation arbitraire ?":
+    "Which right protects a person against arbitrary arrest?",
+  "Le droit de propriété": "The right to property",
+  "Le droit à la sûreté": "The right to security of the person",
+  "Le droit de grève": "The right to strike",
+  "Le droit d'association": "The right of association",
+  "Le droit à la sûreté : nul ne peut être arrêté ni détenu en dehors des cas et des formes prévus par la loi.":
+    "The right to security of the person: nobody may be arrested or held outside the cases and the forms the law provides for.",
+  "À quel âge est fixée la majorité numérique en France ?":
+    "At what age is digital majority set in France?",
+  "13 ans": "13 years old",
+  "15 ans. En dessous, l'inscription sur un réseau social nécessite l'accord d'un parent.":
+    "15. Below that, signing up to a social network needs a parent's consent.",
+  "Est-il obligatoire de porter secours à une personne en danger ?":
+    "Is it compulsory to help a person in danger?",
+  "Oui, c'est une obligation légale": "Yes, it is a legal duty",
+  "Non, c'est un choix personnel": "No, it is a personal choice",
+  "Seulement pour les professionnels de santé": "Only for health professionals",
+  "Seulement si l'on connaît la personne": "Only if you know the person",
+  "Ne pas porter secours — ou au minimum appeler les secours — est le délit de non-assistance à personne en danger.":
+    "Failing to help — or at the very least to call the emergency services — is the offence of non-assistance à personne en danger.",
+  "Qu'est-ce que le devoir de mémoire ?":
+    "What is the devoir de mémoire, the duty of remembrance?",
+  "L'obligation d'apprendre l'histoire par cœur": "The duty to learn history by heart",
+  "Se souvenir des événements douloureux du passé pour qu'ils ne se répètent pas":
+    "Remembering the painful events of the past so that they are not repeated",
+  "Le droit de garder le silence devant un juge": "The right to stay silent before a judge",
+  "L'obligation de conserver ses documents administratifs":
+    "The duty to keep your official papers",
+  "C'est le travail collectif de mémoire sur la Shoah, l'esclavage, les guerres — commémorations, enseignement, lieux de mémoire.":
+    "It is the shared work of remembrance about the Shoah, slavery and the wars — commemorations, teaching, places of memory.",
+  "La vente d'alcool en France est interdite aux personnes de moins de :":
+    "Selling alcohol in France is forbidden to people under:",
+  "20 ans": "20 years old",
+  "21 ans": "21 years old",
+  "18 ans, pour l'alcool comme pour le tabac. Le commerçant doit refuser la vente en cas de doute.":
+    "18, for alcohol as for tobacco. The seller has to refuse the sale wherever there is doubt.",
+  "Quelle est l'infraction la plus grave ?": "Which offence is the most serious?",
+  "La contravention": "The contravention, the smallest offence",
+  "Le délit": "The délit, the middle one",
+  "Le crime": "The crime, the gravest",
+  "L'amende": "The fine",
+  "Dans l'ordre croissant : contravention, délit, crime. Le crime est jugé par la cour d'assises.":
+    "In rising order: contravention, délit, crime. A crime is tried by the cour d'assises.",
+  "Dans le cadre d'un entretien d'embauche, que peut-on demander au candidat ?":
+    "In a job interview, what may the candidate be asked?",
+  "Sa religion": "Their religion",
+  "Ce qui permet d'évaluer sa capacité à occuper le poste":
+    "Whatever allows their ability to do the job to be judged",
+  "S'il compte avoir des enfants": "Whether they are planning to have children",
+  "Son origine ethnique": "Their ethnic origin",
+  "Les questions doivent porter uniquement sur l'aptitude professionnelle. Religion, origine, santé, vie familiale et opinions politiques sont hors sujet et discriminatoires.":
+    "The questions must bear only on fitness for the job. Religion, origin, health, family life and political opinions are off the point and discriminatory.",
+  "Une personne peut-elle changer librement de religion en France ?":
+    "Can a person change religion freely in France?",
+  "Oui, la liberté de conscience le garantit": "Yes, freedom of conscience guarantees it",
+  "Non, il faut une autorisation de la mairie": "No, the town hall has to give permission",
+  "Seulement avec l'accord de sa famille": "Only with the family's agreement",
+  "Seulement une fois dans sa vie": "Only once in a lifetime",
+  "La liberté de conscience comprend le droit de croire, de ne pas croire et de changer de conviction à tout moment, sans se justifier.":
+    "Freedom of conscience includes the right to believe, not to believe, and to change conviction at any moment, with no reason given.",
+  "En quelle année a débuté la Révolution française ?":
+    "In which year did the French Revolution begin?",
+  "1776": "1776",
+  "1789 : prise de la Bastille le 14 juillet, Déclaration des droits de l'homme et du citoyen le 26 août.":
+    "1789: the storming of the Bastille on 14 July, the Déclaration des droits de l'homme et du citoyen on 26 August.",
+  "Parmi ces textes, lequel a été adopté sous Napoléon Ier ?":
+    "Which of these texts was adopted under Napoléon I?",
+  "Le Code civil": "The Code civil",
+  "La loi de séparation des Églises et de l'État": "The law separating the Churches and the State",
+  "La Constitution de la Ve République": "The Constitution of the Fifth Republic",
+  "Le Code civil, en 1804. Il unifie le droit privé et reste la base du droit français.":
+    "The Code civil, in 1804. It brought private law together and is still the base of French law.",
+  "Dans quelle ville les rois de France étaient-ils couronnés ?":
+    "In which city were the kings of France crowned?",
+  "À Paris": "In Paris",
+  "À Versailles": "In Versailles",
+  "À Reims": "In Reims",
+  "À Orléans": "In Orléans",
+  "À Reims, dans la cathédrale. Versailles était la résidence du pouvoir, pas le lieu du sacre.":
+    "In Reims, in the cathedral. Versailles was where power lived, not where the crowning happened.",
+  "Le 11 novembre est un jour férié. À quoi correspond cette date ?":
+    "11 November is a public holiday. What does the date stand for?",
+  "À l'armistice de 1918, fin de la Première Guerre mondiale":
+    "The armistice of 1918, the end of the First World War",
+  "À la victoire de 1945": "The victory of 1945",
+  "Au débarquement de Normandie": "The Normandy landings",
+  "À la prise de la Bastille": "The storming of the Bastille",
+  "L'armistice du 11 novembre 1918. Le 8 mai commémore la victoire de 1945.":
+    "The armistice of 11 November 1918. 8 May marks the victory of 1945.",
+  "Sous quel président a été abolie la peine de mort en France ?":
+    "Under which president was the death penalty abolished in France?",
+  "Charles de Gaulle": "Charles de Gaulle",
+  "Valéry Giscard d'Estaing": "Valéry Giscard d'Estaing",
+  "François Mitterrand": "François Mitterrand",
+  "Jacques Chirac": "Jacques Chirac",
+  "En 1981, sous François Mitterrand, sur proposition de Robert Badinter, alors garde des Sceaux.":
+    "In 1981, under François Mitterrand, on the proposal of Robert Badinter, at the time garde des Sceaux, the justice minister.",
+  "Qu'est-ce que la Shoah ?": "What was the Shoah?",
+  "Une bataille de la Seconde Guerre mondiale": "A battle of the Second World War",
+  "Le génocide des Juifs d'Europe pendant la Seconde Guerre mondiale":
+    "The genocide of the Jews of Europe during the Second World War",
+  "Un traité de paix signé en 1945": "A peace treaty signed in 1945",
+  "Un mouvement de résistance français": "A French resistance movement",
+  "Le génocide des Juifs d'Europe perpétré par l'Allemagne nazie. Le nier est un délit en France.":
+    "The genocide of the Jews of Europe carried out by Nazi Germany. Denying it is an offence in France.",
+  "Depuis quand l'esclavage est-il aboli définitivement en France ?":
+    "Since when has slavery been abolished for good in France?",
+  "1794": "1794",
+  "1946": "1946",
+  "1848, sur l'initiative de Victor Schœlcher. L'abolition de 1794 avait été annulée par Napoléon en 1802.":
+    "1848, at the initiative of Victor Schœlcher. The abolition of 1794 had been undone by Napoléon in 1802.",
+  "Quelle est la plus haute montagne de France ?": "What is the highest mountain in France?",
+  "Le pic du Midi": "The pic du Midi",
+  "Le puy de Dôme": "The puy de Dôme",
+  "Le mont Ventoux": "The mont Ventoux",
+  "Le mont Blanc, dans les Alpes, à environ 4 800 mètres. C'est aussi le plus haut sommet d'Europe occidentale.":
+    "Mont Blanc, in the Alps, at around 4,800 metres. It is also the highest summit in western Europe.",
+  "Quel fleuve traverse Paris ?": "Which river runs through Paris?",
+  "La Loire": "The Loire",
+  "Le Rhône": "The Rhône",
+  "La Garonne": "The Garonne",
+  "La Seine. Elle prend sa source en Bourgogne et se jette dans la Manche au Havre.":
+    "The Seine. It rises in Burgundy and flows into the Channel at Le Havre.",
+  "Quel est le chef-lieu de la région Bretagne ?":
+    "What is the administrative capital of the région of Brittany?",
+  "Brest": "Brest",
+  "Rennes": "Rennes",
+  "Nantes": "Nantes",
+  "Quimper": "Quimper",
+  "Rennes. Nantes est la plus grande ville de la région voisine des Pays de la Loire.":
+    "Rennes. Nantes is the biggest city of the neighbouring région, the Pays de la Loire.",
+  "Quel département français a une frontière avec le Brésil ?":
+    "Which French département has a border with Brazil?",
+  "La Guyane, en Amérique du Sud. Elle a aussi une frontière avec le Suriname.":
+    "Guyane, in South America. It also has a border with Suriname.",
+  "Quelle île française est située dans l'océan Indien ?":
+    "Which French island lies in the Indian Ocean?",
+  "La Corse": "Corsica",
+  "La Réunion, au sud-est de l'Afrique, près de Madagascar. Mayotte s'y trouve également.":
+    "La Réunion, to the south-east of Africa, near Madagascar. Mayotte is there as well.",
+  "Qui a peint « La Liberté guidant le peuple » ?":
+    "Who painted « La Liberté guidant le peuple », Liberty Leading the People?",
+  "Eugène Delacroix": "Eugène Delacroix",
+  "Eugène Delacroix, en 1830. Le tableau est exposé au Louvre ; la figure centrale est une allégorie de la liberté.":
+    "Eugène Delacroix, in 1830. The painting hangs in the Louvre; the central figure is an allegory of liberty.",
+  "Qui était Simone de Beauvoir ?": "Who was Simone de Beauvoir?",
+  "Une peintre impressionniste": "An Impressionist painter",
+  "Une philosophe et écrivaine, figure du féminisme":
+    "A philosopher and writer, a figure of feminism",
+  "Une scientifique prix Nobel": "A Nobel prize-winning scientist",
+  "Une résistante fusillée en 1943": "A resistance fighter shot in 1943",
+  "Philosophe et écrivaine, autrice du Deuxième Sexe (1949), l'un des textes fondateurs du féminisme moderne.":
+    "A philosopher and writer, author of Le Deuxième Sexe (1949), The Second Sex, one of the founding texts of modern feminism.",
+  "À quelle occasion a été construite la tour Eiffel ?":
+    "For what occasion was the Eiffel Tower built?",
+  "Pour le centenaire de la Révolution et l'Exposition universelle de 1889":
+    "For the centenary of the Revolution and the Exposition universelle of 1889",
+  "Pour les Jeux olympiques de 1900": "For the Olympic Games of 1900",
+  "Pour la Libération de Paris": "For the Liberation of Paris",
+  "Pour l'Exposition coloniale de 1931": "For the Colonial Exposition of 1931",
+  "Pour l'Exposition universelle de 1889, qui marquait le centenaire de la Révolution française.":
+    "For the Exposition universelle of 1889, which marked the centenary of the French Revolution.",
+  "Où faut-il déclarer la naissance d'un enfant ?":
+    "Where do you have to register the birth of a child?",
+  "À la préfecture": "At the préfecture",
+  "À la mairie": "At the town hall",
+  "Au commissariat": "At the police station",
+  "À la caisse d'allocations familiales": "At the family allowance office",
+  "À la mairie du lieu de naissance, dans les cinq jours. C'est elle qui tient l'état civil.":
+    "At the town hall of the place of birth, within five days. It is the town hall that keeps the état civil.",
+  "En cas de divorce, qui exerce l'autorité parentale ?":
+    "In the event of divorce, who holds parental authority?",
+  "La mère seule": "The mother alone",
+  "Le père seul": "The father alone",
+  "Les deux parents, en commun": "Both parents, jointly",
+  "Le juge, à la place des parents": "The judge, in place of the parents",
+  "Le divorce ne change rien à l'autorité parentale : elle reste conjointe, sauf décision contraire d'un juge.":
+    "Divorce changes nothing about parental authority: it stays joint, unless a judge decides otherwise.",
+  "Est-ce possible de punir physiquement ses enfants ?":
+    "Is it possible to punish your children physically?",
+  "Oui, si la punition reste légère": "Yes, if the punishment stays light",
+  "Non : les violences éducatives sont interdites":
+    "No: violence in bringing up a child is forbidden",
+  "Oui, jusqu'à l'âge de 10 ans": "Yes, up to the age of 10",
+  "Oui, avec l'accord de l'autre parent": "Yes, with the other parent's agreement",
+  "La loi de 2019 interdit toute violence physique ou psychologique dans l'éducation. L'autorité parentale s'exerce sans violence.":
+    "The law of 2019 forbids all physical or psychological violence in bringing up a child. Parental authority is exercised without violence.",
+  "Qu'est-ce que le tiers payant ?": "What is the tiers payant?",
+  "Une aide financière versée chaque mois": "A cash benefit paid every month",
+  "Le dispositif qui évite d'avancer les frais de santé":
+    "The arrangement that saves you paying health costs up front",
+  "Une assurance privée obligatoire": "A compulsory private insurance",
+  "Un impôt sur les soins médicaux": "A tax on medical care",
+  "Avec le tiers payant, le professionnel de santé est payé directement par l'Assurance maladie : le patient n'avance rien.":
+    "With the tiers payant, the health professional is paid directly by the Assurance maladie: the patient pays nothing up front.",
+  "À quoi sert la carte Vitale ?": "What is the carte Vitale for?",
+  "À payer les consultations": "Paying for appointments",
+  "À attester des droits à l'Assurance maladie et transmettre les soins":
+    "Showing your entitlement to the Assurance maladie and sending on the record of treatment",
+  "À prouver son identité": "Proving your identity",
+  "À souscrire une mutuelle": "Taking out a mutuelle",
+  "Elle prouve les droits et transmet la feuille de soins par voie électronique. Ce n'est ni un moyen de paiement ni une pièce d'identité.":
+    "It proves your entitlement and sends the record of treatment on electronically. It is neither a means of payment nor a proof of identity.",
+  "Qu'est-ce que le SMIC ?": "What is the SMIC?",
+  "Le salaire moyen des Français": "The average French wage",
+  "Le salaire minimum légal": "The legal minimum wage",
+  "Une aide versée aux chômeurs": "A benefit paid to the unemployed",
+  "Un impôt prélevé sur les salaires": "A tax taken out of wages",
+  "Le salaire minimum interprofessionnel de croissance : le plancher légal en dessous duquel aucun salarié ne peut être payé.":
+    "The salaire minimum interprofessionnel de croissance: the legal floor below which no employee may be paid.",
+  "Quelles sont les affaires traitées par le conseil de prud'hommes ?":
+    "Which cases does the conseil de prud'hommes deal with?",
+  "Les crimes les plus graves": "The most serious crimes",
+  "Les litiges entre un salarié et son employeur":
+    "Disputes between an employee and their employer",
+  "Les divorces": "Divorces",
+  "Les infractions au code de la route": "Breaches of the road traffic code",
+  "Le conseil de prud'hommes juge les conflits individuels du travail : licenciement, salaires, contrat, harcèlement.":
+    "The conseil de prud'hommes judges individual disputes at work: dismissal, pay, contract, harassment.",
+  "Travailler sans être déclaré est :": "Working without being declared is:",
+  "légal si l'employeur est d'accord": "legal if the employer agrees",
+  "illégal, pour l'employeur comme pour le salarié":
+    "illegal, for the employer as much as for the employee",
+  "autorisé pour les emplois de courte durée": "allowed for short spells of work",
+  "autorisé dans le secteur agricole": "allowed in farming",
+  "C'est le travail dissimulé, un délit. Le salarié perd toute couverture : retraite, chômage, accident du travail.":
+    "That is travail dissimulé, undeclared work, and an offence. The employee loses every cover: pension, unemployment, accidents at work.",
+  "À quel âge commence l'instruction obligatoire des enfants ?":
+    "At what age does compulsory education for children begin?",
+  "À 2 ans": "At 2",
+  "À 3 ans": "At 3",
+  "À 6 ans": "At 6",
+  "À 7 ans": "At 7",
+  "Depuis la rentrée 2019, l'instruction est obligatoire dès 3 ans. Auparavant, elle commençait à 6 ans.":
+    "Since the 2019 school year education has been compulsory from the age of 3. Before that it began at 6.",
+  "Comment s'appellent les établissements que les élèves intègrent après l'école élémentaire ?":
+    "What are the schools called that pupils move on to after primary school?",
+  "Les lycées": "The lycées",
+  "Les collèges": "The collèges",
+  "Les universités": "The universities",
+  "Les écoles maternelles": "The nursery schools",
+  "Le collège, de la sixième à la troisième. Le lycée vient après le collège.":
+    "The collège, which runs from the year called sixième to the one called troisième. Lycée comes after it.",
+  "Quel numéro d'urgence permet d'appeler le SAMU ?": "Which emergency number reaches the SAMU?",
+  "15": "15",
+  "17": "17",
+  "Le 15 pour le SAMU, le 17 pour la police, le 18 pour les pompiers. Le 112 fonctionne partout en Europe.":
+    "15 for the SAMU, 17 for the police, 18 for the fire brigade. 112 works everywhere in Europe.",
+  "Que peut faire un usager du service public dans une mairie ?":
+    "What can a member of the public do at a town hall?",
+  "Demander un acte d'état civil et s'inscrire sur les listes électorales":
+    "Ask for a civil status certificate and register on the electoral roll",
+  "Obtenir un titre de séjour": "Obtain a residence permit",
+  "Faire juger un litige avec son employeur": "Have a dispute with an employer judged",
+  "Demander le remboursement de ses frais de santé": "Ask to be reimbursed for health costs",
+  "La mairie tient l'état civil et les listes électorales. Le titre de séjour relève de la préfecture, les frais de santé de la CPAM, les litiges du travail des prud'hommes.":
+    "The town hall keeps the état civil and the electoral roll. A residence permit is a matter for the préfecture, health costs for the CPAM, disputes at work for the prud'hommes.",
+  "Quel est le rôle du Défenseur des droits ?": "What is the role of the Défenseur des droits?",
+  "Juger les crimes": "Judging crimes",
+  "Défendre les personnes dont les droits ne sont pas respectés, gratuitement":
+    "Standing up, free of charge, for people whose rights are not respected",
+  "Nommer les préfets": "Appointing the préfets",
+  "Voter les lois": "Voting laws through",
+  "C'est une autorité indépendante que toute personne peut saisir gratuitement, notamment en cas de discrimination ou de litige avec une administration.":
+    "It is an independent authority anyone may turn to free of charge, in particular over discrimination or a dispute with a public body.",
 };

@@ -15,6 +15,17 @@
  * wrong answer. What gets translated is the explanation around them, and the
  * German term is kept in the English sentence where a reader needs to
  * recognise it on the day.
+ *
+ * The practice questions at the end of each lesson are here too, added last
+ * and kept together under their own heading rather than woven into the cards
+ * above. They are the half a reader meets when the lesson is over, and an
+ * option nobody can read is an option nobody can choose — so a constitutional
+ * sentence quoted as an answer is given in English, while the institution it
+ * names stays German.
+ *
+ * Coverage stops three short of the course, and that is correct: "12", "16"
+ * and "112" are bare numbers another English table already answers, and a key
+ * present in two of them would lose one silently. See check-en-translations.
  */
 export const LEBEN_IN_DEUTSCHLAND_EN: Record<string, string> = {
   // The course title is already English, so it has no entry here.
@@ -646,4 +657,537 @@ export const LEBEN_IN_DEUTSCHLAND_EN: Record<string, string> = {
   "Politik in der Demokratie": "Politics in a democracy",
   "Geschichte und Verantwortung": "History and responsibility",
   "Mensch und Gesellschaft": "People and society",
+  // ── The practice questions ──────────────────────────────────────────────────
+  "Wie viele Fragen musst du im Einbürgerungstest richtig beantworten, um zu bestehen?":
+    "How many questions do you have to get right in the Einbürgerungstest to pass?",
+  "15 von 33": "15 out of 33",
+  "17 von 33": "17 out of 33",
+  "20 von 33": "20 out of 33",
+  "25 von 33": "25 out of 33",
+  "17 von 33 Fragen genügen. Du hast 60 Minuten Zeit, und wer nicht besteht, darf beliebig oft wiederholen.":
+    "17 of the 33 questions is enough. You have 60 minutes, and anyone who fails may retake it as often as they need to.",
+  "Wie lautet der erste Artikel des Grundgesetzes?":
+    "What does the first article of the Grundgesetz say?",
+  "Alle Menschen sind vor dem Gesetz gleich.": "All people are equal before the law.",
+  "Die Würde des Menschen ist unantastbar.": "Human dignity is inviolable.",
+  "Deutschland ist ein demokratischer und sozialer Bundesstaat.":
+    "Germany is a democratic and social federal state.",
+  "Jeder hat das Recht auf freie Meinungsäußerung.":
+    "Everyone has the right to express their opinion freely.",
+  "Artikel 1 stellt die Menschenwürde an den Anfang. Die Gleichheit steht in Artikel 3, der Bundesstaat in Artikel 20, die Meinungsfreiheit in Artikel 5.":
+    "Article 1 puts human dignity first. Equality is in Article 3, the federal state in Article 20, freedom of opinion in Article 5.",
+  "Was bedeutet die Ewigkeitsklausel im Grundgesetz?":
+    "What does the Ewigkeitsklausel in the Grundgesetz mean?",
+  "Das Grundgesetz kann nie geändert werden": "The Grundgesetz can never be amended",
+  "Die Menschenwürde und der Kern der Grundrechte können nicht abgeschafft werden":
+    "Human dignity and the core of the basic rights cannot be abolished",
+  "Gesetze gelten unbefristet": "Laws apply with no time limit",
+  "Der Bundespräsident wird auf Lebenszeit gewählt": "The Bundespräsident is elected for life",
+  "Das Grundgesetz ist änderbar — aber Artikel 1 und der Kern der Grundrechte sind es nicht, auch nicht mit einer Mehrheit im Parlament.":
+    "The Grundgesetz can be amended — but Article 1 and the core of the basic rights cannot, not even with a majority in parliament.",
+  "Welche drei Gewalten teilen sich in Deutschland die Staatsgewalt?":
+    "Which three branches share state power in Germany?",
+  "Bundestag, Bundesrat und Bundesregierung": "Bundestag, Bundesrat and Bundesregierung",
+  "Legislative, Exekutive und Judikative": "Legislature, executive and judiciary",
+  "Bund, Länder und Gemeinden": "Federal government, Länder and municipalities",
+  "Regierung, Opposition und Presse": "Government, opposition and the press",
+  "Gesetzgebung, Vollzug und Rechtsprechung. Bundestag und Bundesrat sind Teil der Legislative, die Regierung Teil der Exekutive.":
+    "Lawmaking, enforcement and judgement. Bundestag and Bundesrat are part of the legislature, the government part of the executive.",
+  "Wer darf in Deutschland eine Partei verbieten?": "Who may ban a political party in Germany?",
+  "Der Bundestag mit Zweidrittelmehrheit": "The Bundestag with a two-thirds majority",
+  "Das Bundesinnenministerium": "The Bundesinnenministerium, the interior ministry",
+  "Nur das Bundesverfassungsgericht in Karlsruhe. Dass keine Regierung ihre Gegner verbieten kann, ist genau der Punkt.":
+    "Only the Bundesverfassungsgericht in Karlsruhe. That no government can ban its own opponents is exactly the point.",
+  "Was bedeutet „Sozialstaat“?": "What does „Sozialstaat“ mean?",
+  "Der Staat sichert Menschen in Notlagen ab": "The state supports people who fall into hardship",
+  "Alle verdienen gleich viel": "Everyone earns the same",
+  "Der Staat besitzt alle Betriebe": "The state owns every business",
+  "Soziale Netzwerke werden staatlich geprüft": "Social networks are vetted by the state",
+  "Der Sozialstaat fängt auf, wer krank, arbeitslos, alt oder in Not ist — über Sozialversicherungen und staatliche Leistungen.":
+    "The Sozialstaat catches whoever is ill, unemployed, old or in need — through social insurance and state benefits.",
+  "Für wie viele Jahre wird der Bundestag gewählt?":
+    "For how many years is the Bundestag elected?",
+  "Drei Jahre": "Three years",
+  "Vier Jahre": "Four years",
+  "Sechs Jahre": "Six years",
+  "Vier Jahre. Fünf Jahre ist die Amtszeit des Bundespräsidenten — genau diese Verwechslung wird gern geprüft.":
+    "Four years. Five years is the term of the Bundespräsident — that is exactly the mix-up the test likes to ask about.",
+  "Wer sitzt im Bundesrat?": "Who sits in the Bundesrat?",
+  "Direkt gewählte Abgeordnete": "Directly elected members of parliament",
+  "Vertreter der 16 Landesregierungen": "Representatives of the 16 Land governments",
+  "Die Bundesminister": "The federal ministers",
+  "Vertreter der Städte und Gemeinden": "Representatives of the cities and municipalities",
+  "Der Bundesrat besteht aus Mitgliedern der Landesregierungen. Dadurch wirken die Länder an der Gesetzgebung des Bundes mit.":
+    "The Bundesrat is made up of members of the Land governments. That is how the Länder take part in federal lawmaking.",
+  "Ab wann gilt ein beschlossenes Gesetz?": "From when does a law that has been passed apply?",
+  "Sofort nach der Abstimmung im Bundestag": "Immediately after the vote in the Bundestag",
+  "Nach der Verkündung im Bundesgesetzblatt": "After it is announced in the Bundesgesetzblatt",
+  "Nach der Zustimmung des Bundesverfassungsgerichts":
+    "After the Bundesverfassungsgericht agrees to it",
+  "Nach einer Volksabstimmung": "After a referendum",
+  "Erst die Veröffentlichung im Bundesgesetzblatt setzt ein Gesetz in Kraft — nach Abstimmung, gegebenenfalls Bundesrat und Ausfertigung durch den Bundespräsidenten.":
+    "A law comes into force only when it is published in the Bundesgesetzblatt — after the vote, the Bundesrat where that is needed, and signature by the Bundespräsident.",
+  "Wer wählt den Bundeskanzler?": "Who elects the Bundeskanzler?",
+  "Das Volk direkt": "The people directly",
+  "Der Bundestag": "The Bundestag",
+  "Die Bundesversammlung": "The Bundesversammlung",
+  "Der Bundestag wählt den Kanzler auf Vorschlag des Bundespräsidenten. Die Bundesversammlung wählt den Bundespräsidenten — nicht den Kanzler.":
+    "The Bundestag elects the Kanzler on the proposal of the Bundespräsident. The Bundesversammlung elects the Bundespräsident — not the Kanzler.",
+  "Wie lange dauert die Amtszeit des Bundespräsidenten?":
+    "How long is the term of office of the Bundespräsident?",
+  "Acht Jahre": "Eight years",
+  "Fünf Jahre, einmal wiederwählbar. Der Bundestag dagegen wird für vier Jahre gewählt.":
+    "Five years, renewable once. The Bundestag, by contrast, is elected for four years.",
+  "Was ist ein konstruktives Misstrauensvotum?":
+    "What is a konstruktives Misstrauensvotum, a constructive vote of no confidence?",
+  "Der Bundestag stürzt den Kanzler und wählt zugleich einen Nachfolger":
+    "The Bundestag brings the Kanzler down and elects a successor in the same act",
+  "Das Volk stimmt über den Kanzler ab": "The people vote on the Kanzler",
+  "Der Bundespräsident entlässt den Kanzler": "The Bundespräsident dismisses the Kanzler",
+  "Die Minister treten geschlossen zurück": "The ministers all resign together",
+  "Abwahl nur mit gleichzeitiger Wahl eines Nachfolgers. Aus Weimar gelernt: Stürzen ohne Alternative soll nicht möglich sein.":
+    "A removal only alongside the election of a successor. The lesson of Weimar: bringing a government down with nothing to put in its place should not be possible.",
+  "Welche Stimme entscheidet bei der Bundestagswahl über die Stärke einer Partei?":
+    "Which vote decides how strong a party is in the Bundestag election?",
+  "Die Erststimme": "The Erststimme, the first vote",
+  "Die Zweitstimme": "The Zweitstimme, the second vote",
+  "Beide zu gleichen Teilen": "Both in equal measure",
+  "Es gibt nur eine Stimme": "There is only one vote",
+  "Die Zweitstimme bestimmt, wie viele Sitze eine Partei bekommt. Die Erststimme wählt eine Person im Wahlkreis.":
+    "The Zweitstimme decides how many seats a party gets. The Erststimme elects a person in the constituency.",
+  "Was bedeutet „geheime Wahl“?": "What does „geheime Wahl“, a secret ballot, mean?",
+  "Der Wahltermin wird nicht bekannt gegeben": "The date of the election is not announced",
+  "Niemand darf erfahren, wie du gewählt hast": "Nobody may find out how you voted",
+  "Die Kandidaten sind unbekannt": "The candidates are unknown",
+  "Das Ergebnis bleibt geheim": "The result stays secret",
+  "Deine Wahlentscheidung ist deine Sache. Deshalb gibt es die Wahlkabine — niemand darf dir hineinschauen.":
+    "How you vote is your own business. That is what the polling booth is for — nobody may look in at you.",
+  "Ab welchem Alter darf man in Deutschland den Bundestag wählen?":
+    "From what age may you vote for the Bundestag in Germany?",
+  "Ab 16 Jahren": "From the age of 16",
+  "Ab 18 Jahren": "From the age of 18",
+  "Ab 21 Jahren": "From the age of 21",
+  "Ab 25 Jahren": "From the age of 25",
+  "Ab 18. Bei manchen Kommunal- und Landtagswahlen liegt das Alter niedriger, bei der Bundestagswahl bleibt es bei 18.":
+    "From 18. Some local and Land elections set the age lower; for the Bundestag election it stays at 18.",
+  "Wie viele Bundesländer hat Deutschland?": "How many Bundesländer does Germany have?",
+  "14": "14",
+  "18": "18",
+  "16 seit der Wiedervereinigung 1990: die alten elf plus die fünf neuen Länder und das wiedervereinigte Berlin.":
+    "16 since reunification in 1990: the old eleven plus the five new Länder and a reunified Berlin.",
+  "Wer ist in Deutschland für die Schulen zuständig?":
+    "Who is responsible for schools in Germany?",
+  "Der Bund": "The federal government",
+  "Die Bundesländer": "The Bundesländer",
+  "Die Gemeinden allein": "The municipalities alone",
+  "Bildung ist Ländersache. Deshalb unterscheiden sich Lehrpläne, Schulformen und Ferien von Land zu Land.":
+    "Education belongs to the Länder. That is why curricula, school types and holidays differ from Land to Land.",
+  "Welche drei Bundesländer sind Stadtstaaten?": "Which three Bundesländer are city states?",
+  "Berlin, Hamburg, Bremen": "Berlin, Hamburg, Bremen",
+  "Berlin, München, Köln": "Berlin, Munich, Cologne",
+  "Hamburg, Frankfurt, Stuttgart": "Hamburg, Frankfurt, Stuttgart",
+  "Bremen, Hannover, Leipzig": "Bremen, Hanover, Leipzig",
+  "Berlin, Hamburg und Bremen sind zugleich Stadt und Bundesland. München, Köln und Frankfurt sind nur Städte.":
+    "Berlin, Hamburg and Bremen are a city and a Bundesland at once. Munich, Cologne and Frankfurt are only cities.",
+  "Wo hat das Bundesverfassungsgericht seinen Sitz?":
+    "Where does the Bundesverfassungsgericht have its seat?",
+  "Berlin": "Berlin",
+  "Karlsruhe": "Karlsruhe",
+  "München": "Munich",
+  "Leipzig": "Leipzig",
+  "Karlsruhe. Bewusst nicht in der Hauptstadt — räumliche Distanz zur Politik gehört zur Unabhängigkeit.":
+    "Karlsruhe. Deliberately not in the capital — distance from politics is part of being independent.",
+  "Was bedeutet die Unschuldsvermutung?": "What does the presumption of innocence mean?",
+  "Wer sich nicht äußert, ist unschuldig": "Anyone who says nothing is innocent",
+  "Jeder gilt als unschuldig, bis ein Gericht ihn rechtskräftig verurteilt":
+    "Everyone counts as innocent until a court convicts them in a final judgement",
+  "Der Angeklagte muss seine Unschuld beweisen": "The accused has to prove their innocence",
+  "Bei Zweifeln entscheidet die Polizei": "Where there is doubt, the police decide",
+  "Beweisen muss die Anklage, nicht der Angeklagte. Bis zum rechtskräftigen Urteil gilt die Unschuldsvermutung.":
+    "It is the prosecution that has to prove its case, not the accused. Until the judgement is final, the presumption of innocence holds.",
+  "Ein Nachbar schuldet dir Geld und zahlt nicht. Was ist richtig?":
+    "A neighbour owes you money and does not pay. What is the right thing to do?",
+  "Du darfst dir etwas aus seiner Wohnung nehmen": "You may take something from their flat",
+  "Du kannst vor Gericht klagen": "You can take them to court",
+  "Du darfst ihn festhalten, bis er zahlt": "You may hold on to them until they pay",
+  "Du darfst sein Auto beschädigen": "You may damage their car",
+  "Selbstjustiz ist strafbar, auch wenn die Forderung berechtigt ist. Der Weg führt über das Gericht.":
+    "Taking the law into your own hands is a crime, even when the claim itself is justified. The way through is the court.",
+  "Welche gehört NICHT zu den fünf Sozialversicherungen?":
+    "Which one is NOT one of the five social insurances?",
+  "Hausratversicherung": "Home contents insurance",
+  "Die Hausratversicherung ist eine private Sache. Die fünf gesetzlichen sind Kranken-, Renten-, Arbeitslosen-, Pflege- und Unfallversicherung.":
+    "Home contents insurance is a private matter. The five statutory ones are health, pension, unemployment, long-term care and accident insurance.",
+  "Wer bezahlt die gesetzliche Unfallversicherung?":
+    "Who pays for the statutory accident insurance?",
+  "Arbeitgeber und Arbeitnehmer je zur Hälfte": "Employer and employee, half each",
+  "Der Arbeitgeber allein": "The employer alone",
+  "Der Arbeitnehmer allein": "The employee alone",
+  "Der Staat aus Steuermitteln": "The state, out of tax revenue",
+  "Die Unfallversicherung ist die Ausnahme: Sie zahlt der Arbeitgeber allein. Bei den anderen vier teilen sich beide Seiten den Beitrag.":
+    "Accident insurance is the exception: the employer pays it alone. For the other four, both sides share the contribution.",
+  "Was besagt das Solidarprinzip?": "What does the Solidarprinzip say?",
+  "Alle zahlen den gleichen Betrag": "Everyone pays the same amount",
+  "Beiträge richten sich nach dem Einkommen, Leistungen nach dem Bedarf":
+    "Contributions follow income, benefits follow need",
+  "Nur wer einzahlt, bekommt Hilfe": "Only those who pay in get help",
+  "Der Staat zahlt alles aus Steuern": "The state pays for all of it out of taxes",
+  "Wer mehr verdient, zahlt mehr — behandelt wird aber nach Bedarf, nicht nach Beitragshöhe.":
+    "Whoever earns more pays more — but treatment follows need, not the size of the contribution.",
+  "In welchem Jahr wurde das Deutsche Kaiserreich gegründet?":
+    "In which year was the Deutsches Kaiserreich founded?",
+  "1848": "1848",
+  "1871": "1871",
+  "1888": "1888",
+  "1918": "1918",
+  "1871, nach dem Krieg gegen Frankreich. Bis dahin bestand Deutschland aus vielen Einzelstaaten.":
+    "1871, after the war against France. Until then Germany was made up of many separate states.",
+  "Ab wann durften Frauen in Deutschland wählen?":
+    "From when were women allowed to vote in Germany?",
+  "Seit 1871": "Since 1871",
+  "Seit 1919": "Since 1919",
+  "Seit 1949": "Since 1949",
+  "Seit 1969": "Since 1969",
+  "Das Frauenwahlrecht kam mit der Weimarer Republik 1919 — eine der wichtigsten Neuerungen der ersten deutschen Demokratie.":
+    "Women got the vote with the Weimarer Republik in 1919 — one of the most important new things about the first German democracy.",
+  "Warum heißt die Weimarer Republik so?": "Why is the Weimarer Republik called that?",
+  "Weimar war die Hauptstadt": "Weimar was the capital",
+  "Die Verfassung wurde in Weimar beschlossen": "The constitution was adopted in Weimar",
+  "Der erste Präsident stammte aus Weimar": "The first president came from Weimar",
+  "Das Parlament tagte dauerhaft in Weimar": "Parliament sat in Weimar permanently",
+  "Die Nationalversammlung tagte 1919 in Weimar und beschloss dort die Verfassung. Hauptstadt blieb Berlin.":
+    "The Nationalversammlung met in Weimar in 1919 and adopted the constitution there. Berlin stayed the capital.",
+  "Wann begann der Zweite Weltkrieg?": "When did the Second World War begin?",
+  "Am 30. Januar 1933": "On 30 January 1933",
+  "Am 9. November 1938": "On 9 November 1938",
+  "Am 1. September 1939": "On 1 September 1939",
+  "Am 8. Mai 1945": "On 8 May 1945",
+  "Mit dem deutschen Überfall auf Polen am 1. September 1939. Der 8. Mai 1945 ist das Kriegsende in Europa.":
+    "With the German attack on Poland on 1 September 1939. 8 May 1945 is the end of the war in Europe.",
+  "Was geschah in der Nacht vom 9. auf den 10. November 1938?":
+    "What happened on the night of 9 to 10 November 1938?",
+  "Die Berliner Mauer fiel": "The Berlin Wall fell",
+  "Synagogen wurden angezündet und jüdische Geschäfte zerstört":
+    "Synagogues were set on fire and Jewish shops destroyed",
+  "Der Zweite Weltkrieg begann": "The Second World War began",
+  "Das Grundgesetz trat in Kraft": "The Grundgesetz came into force",
+  "Die Pogromnacht. Der Mauerfall fällt auf denselben Kalendertag — den 9. November 1989 — und wird deshalb gern verwechselt.":
+    "The Pogromnacht. The fall of the Wall falls on the same calendar day — 9 November 1989 — which is why the two are so often mixed up.",
+  "Wer gehörte zur Widerstandsgruppe „Weiße Rose“?":
+    "Who belonged to the resistance group „Weiße Rose“?",
+  "Sophie und Hans Scholl": "Sophie and Hans Scholl",
+  "Konrad Adenauer": "Konrad Adenauer",
+  "Claus Schenk Graf von Stauffenberg": "Claus Schenk Graf von Stauffenberg",
+  "Willy Brandt": "Willy Brandt",
+  "Die Geschwister Scholl verteilten in München Flugblätter gegen das Regime und wurden 1943 hingerichtet. Stauffenberg gehörte zum militärischen Widerstand des 20. Juli 1944.":
+    "The Scholl siblings handed out leaflets against the regime in Munich and were executed in 1943. Stauffenberg belonged to the military resistance of 20 July 1944.",
+  "Ist es in Deutschland erlaubt, öffentlich zu behaupten, der Holocaust habe nie stattgefunden?":
+    "Is it allowed in Germany to claim in public that the Holocaust never happened?",
+  "Ja, das ist Meinungsfreiheit": "Yes, that is freedom of opinion",
+  "Nein, das ist eine Straftat": "No, that is a criminal offence",
+  "Nur in wissenschaftlichen Texten": "Only in academic writing",
+  "Nur mit Genehmigung": "Only with permission",
+  "Die Leugnung des Holocaust ist strafbar. Die Meinungsfreiheit endet dort, wo Volksverhetzung beginnt.":
+    "Denying the Holocaust is a criminal offence. Freedom of opinion ends where Volksverhetzung, incitement against a group, begins.",
+  "Woran erinnert der 27. Januar in Deutschland?": "What does 27 January commemorate in Germany?",
+  "An die Gründung der Bundesrepublik": "The founding of the Bundesrepublik",
+  "An die Opfer des Nationalsozialismus": "The victims of National Socialism",
+  "An den Mauerfall": "The fall of the Wall",
+  "An das Ende des Ersten Weltkriegs": "The end of the First World War",
+  "Am 27. Januar 1945 wurde Auschwitz befreit. Der Tag ist deutschlandweiter Gedenktag für die Opfer des Nationalsozialismus.":
+    "Auschwitz was liberated on 27 January 1945. The day is a nationwide day of remembrance for the victims of National Socialism.",
+  "Was waren die Nürnberger Prozesse?": "What were the Nürnberger Prozesse, the Nuremberg trials?",
+  "Verfahren gegen führende Nationalsozialisten nach dem Krieg":
+    "Proceedings against leading National Socialists after the war",
+  "Die Verhandlungen zur Wiedervereinigung": "The negotiations on reunification",
+  "Die Gesetze gegen jüdische Deutsche von 1935": "The 1935 laws against Jewish Germans",
+  "Die Verhandlungen über den Versailler Vertrag": "The negotiations on the Treaty of Versailles",
+  "1945/46 klagten die Alliierten die Hauptverantwortlichen an. Die Nürnberger *Gesetze* von 1935 sind etwas anderes — hier lohnt genaues Lesen.":
+    "In 1945 and 1946 the Allies put those most responsible on trial. The Nürnberger *Gesetze* of 1935 are something else — reading closely pays off here.",
+  "Welche vier Mächte besetzten Deutschland nach 1945?":
+    "Which four powers occupied Germany after 1945?",
+  "USA, Großbritannien, Frankreich, Sowjetunion": "USA, Great Britain, France, Soviet Union",
+  "USA, Großbritannien, Italien, Sowjetunion": "USA, Great Britain, Italy, Soviet Union",
+  "USA, Frankreich, Polen, Sowjetunion": "USA, France, Poland, Soviet Union",
+  "Großbritannien, Frankreich, Österreich, Sowjetunion":
+    "Great Britain, France, Austria, Soviet Union",
+  "Die vier Siegermächte. Aus den drei westlichen Zonen entstand 1949 die Bundesrepublik, aus der sowjetischen die DDR.":
+    "The four victorious powers. The three western zones became the Bundesrepublik in 1949, the Soviet one the DDR.",
+  "Wer war der erste Bundeskanzler der Bundesrepublik Deutschland?":
+    "Who was the first Bundeskanzler of the Bundesrepublik Deutschland?",
+  "Ludwig Erhard": "Ludwig Erhard",
+  "Helmut Kohl": "Helmut Kohl",
+  "Konrad Adenauer, ab 1949. Erhard folgte ihm 1963, Brandt kam 1969, Kohl 1982.":
+    "Konrad Adenauer, from 1949. Erhard followed him in 1963, Brandt came in 1969, Kohl in 1982.",
+  "Was war die Berliner Luftbrücke?": "What was the Berliner Luftbrücke, the Berlin airlift?",
+  "Eine Brücke über die Spree": "A bridge over the Spree",
+  "Die Versorgung West-Berlins aus der Luft während der Blockade":
+    "Supplying West Berlin from the air during the blockade",
+  "Der Bau des Flughafens Tegel": "The building of Tegel airport",
+  "Eine Fluchtroute über die Mauer": "An escape route over the Wall",
+  "1948/49 blockierte die Sowjetunion die Zufahrtswege. Die Westalliierten versorgten die Stadt fast ein Jahr lang per Flugzeug.":
+    "In 1948 and 1949 the Soviet Union blocked the access routes. The western Allies supplied the city by air for almost a year.",
+  "Wann wurde die Berliner Mauer gebaut?": "When was the Berlin Wall built?",
+  "1949": "1949",
+  "1953": "1953",
+  "1961": "1961",
+  "1968": "1968",
+  "Am 13. August 1961, um die Fluchtbewegung zu stoppen. 1953 war der Aufstand, 1949 die Staatsgründung.":
+    "On 13 August 1961, to stop people leaving. 1953 was the uprising, 1949 the founding of the state.",
+  "Was war die Stasi?": "What was the Stasi?",
+  "Die Armee der DDR": "The army of the DDR",
+  "Der Geheimdienst, der die eigene Bevölkerung überwachte":
+    "The secret service that kept watch on its own population",
+  "Die Jugendorganisation der SED": "The youth organisation of the SED",
+  "Die Wirtschaftsbehörde der DDR": "The economic authority of the DDR",
+  "Das Ministerium für Staatssicherheit überwachte die eigenen Bürger. Die Armee hieß Nationale Volksarmee, die Jugendorganisation FDJ.":
+    "The Ministerium für Staatssicherheit kept watch on its own citizens. The army was called the Nationale Volksarmee, the youth organisation the FDJ.",
+  "Warum war die DDR keine Demokratie?": "Why was the DDR not a democracy?",
+  "Weil es keine Verfassung gab": "Because there was no constitution",
+  "Weil eine Partei herrschte und es keine freien Wahlen gab":
+    "Because one party ruled and there were no free elections",
+  "Weil es kein Parlament gab": "Because there was no parliament",
+  "Weil sie zu klein war": "Because it was too small",
+  "Eine Verfassung und ein Parlament gab es durchaus. Entscheidend ist: Die SED bestimmte, echte Wahlmöglichkeiten und Meinungsfreiheit fehlten.":
+    "There was a constitution, and a parliament too. What decides it is this: the SED ruled, and real choice at the ballot box and freedom of opinion were missing.",
+  "Welcher Tag ist der deutsche Nationalfeiertag?": "Which day is the German national holiday?",
+  "Der 9. November": "9 November",
+  "Der 3. Oktober": "3 October",
+  "Der 23. Mai": "23 May",
+  "Der 1. Mai": "1 May",
+  "Der 3. Oktober, Tag der Deutschen Einheit. Der 9. November ist der Tag des Mauerfalls — aber auch der Pogromnacht 1938.":
+    "3 October, the Tag der Deutschen Einheit. 9 November is the day the Wall fell — but also the day of the Pogromnacht in 1938.",
+  "Wann fiel die Berliner Mauer?": "When did the Berlin Wall fall?",
+  "Am 13. August 1961": "On 13 August 1961",
+  "Am 9. November 1989": "On 9 November 1989",
+  "Am 3. Oktober 1990": "On 3 October 1990",
+  "Am 23. Mai 1949": "On 23 May 1949",
+  "Am 9. November 1989 wurden die Grenzübergänge geöffnet. Die staatliche Einheit folgte knapp elf Monate später.":
+    "The border crossings were opened on 9 November 1989. Unification as one state followed barely eleven months later.",
+  "Welche Länder kamen 1990 als „neue Bundesländer“ dazu?":
+    "Which Länder joined in 1990 as the „neue Bundesländer“?",
+  "Bayern, Hessen, Saarland, Bremen, Hamburg": "Bavaria, Hesse, Saarland, Bremen, Hamburg",
+  "Brandenburg, Mecklenburg-Vorpommern, Sachsen, Sachsen-Anhalt, Thüringen":
+    "Brandenburg, Mecklenburg-Vorpommern, Saxony, Saxony-Anhalt, Thuringia",
+  "Nur Sachsen und Thüringen": "Only Saxony and Thuringia",
+  "Berlin, Brandenburg, Sachsen, Bayern, Hessen": "Berlin, Brandenburg, Saxony, Bavaria, Hesse",
+  "Diese fünf Länder wurden auf dem Gebiet der DDR wiedergegründet. Zusammen mit dem vereinigten Berlin ergeben sich die heutigen 16 Länder.":
+    "These five Länder were refounded on the territory of the DDR. Together with a united Berlin they make up today's 16 Länder.",
+  "Seit wann gibt es in Deutschland Euro-Bargeld?":
+    "Since when has there been euro cash in Germany?",
+  "Seit 1990": "Since 1990",
+  "Seit 1999": "Since 1999",
+  "Seit 2002": "Since 2002",
+  "Seit 2010": "Since 2010",
+  "Die Scheine und Münzen kamen 2002. Als Buchgeld existierte der Euro schon seit 1999 — im Portemonnaie aber erst 2002.":
+    "The notes and coins came in 2002. As book money the euro had existed since 1999 — but in the wallet only from 2002.",
+  "An wie viele Nachbarländer grenzt Deutschland?":
+    "How many neighbouring countries does Germany border?",
+  "Sechs": "Six",
+  "Sieben": "Seven",
+  "Neun": "Nine",
+  "Elf": "Eleven",
+  "Neun: Dänemark, Polen, Tschechien, Österreich, Schweiz, Frankreich, Luxemburg, Belgien und die Niederlande.":
+    "Nine: Denmark, Poland, Czechia, Austria, Switzerland, France, Luxembourg, Belgium and the Netherlands.",
+  "Wer entscheidet über Auslandseinsätze der Bundeswehr?":
+    "Who decides on deployments of the Bundeswehr abroad?",
+  "Der Bundeskanzler allein": "The Bundeskanzler alone",
+  "Die NATO": "NATO",
+  "Die Bundeswehr ist eine Parlamentsarmee: Ohne Zustimmung des Bundestages gibt es keinen Auslandseinsatz.":
+    "The Bundeswehr is a parliamentary army: without the consent of the Bundestag there is no deployment abroad.",
+  "Welche Farben hat die deutsche Flagge von oben nach unten?":
+    "What are the colours of the German flag from top to bottom?",
+  "Schwarz, Rot, Gold": "Black, red, gold",
+  "Gold, Rot, Schwarz": "Gold, red, black",
+  "Schwarz, Gold, Rot": "Black, gold, red",
+  "Rot, Schwarz, Gold": "Red, black, gold",
+  "Schwarz oben, Rot in der Mitte, Gold unten. Die unterste Farbe heißt Gold, nicht Gelb.":
+    "Black at the top, red in the middle, gold at the bottom. The bottom colour is called gold, not yellow.",
+  "Welche Strophe des Deutschlandlieds ist die Nationalhymne?":
+    "Which verse of the Deutschlandlied is the national anthem?",
+  "Die erste": "The first",
+  "Die zweite": "The second",
+  "Die dritte": "The third",
+  "Alle drei": "All three",
+  "Die dritte Strophe: „Einigkeit und Recht und Freiheit“. Nur sie wird bei offiziellen Anlässen gesungen.":
+    "The third verse: „Einigkeit und Recht und Freiheit“. That one alone is sung on official occasions.",
+  "Wie heißt der höchste Berg Deutschlands?": "What is the highest mountain in Germany called?",
+  "Der Brocken": "The Brocken",
+  "Die Zugspitze": "The Zugspitze",
+  "Der Feldberg": "The Feldberg",
+  "Der Watzmann": "The Watzmann",
+  "Die Zugspitze in Bayern, 2.962 Meter. Der Brocken im Harz ist der höchste Berg Norddeutschlands.":
+    "The Zugspitze in Bavaria, 2,962 metres. The Brocken in the Harz is the highest mountain in northern Germany.",
+  "Was bedeutet Religionsfreiheit in Deutschland?":
+    "What does freedom of religion mean in Germany?",
+  "Jeder muss einer Religion angehören": "Everyone has to belong to a religion",
+  "Jeder darf glauben, was er möchte, oder gar nichts glauben":
+    "Everyone may believe what they want, or believe nothing at all",
+  "Nur christliche Religionen sind erlaubt": "Only Christian religions are allowed",
+  "Religion ist Privatsache und in der Öffentlichkeit verboten":
+    "Religion is a private matter and forbidden in public",
+  "Artikel 4 schützt beides: den Glauben und die Freiheit, keiner Religion anzugehören.":
+    "Article 4 protects both: belief, and the freedom to belong to no religion at all.",
+  "Eine religiöse Vorschrift widerspricht einem deutschen Gesetz. Was gilt?":
+    "A religious rule contradicts a German law. Which one applies?",
+  "Die religiöse Vorschrift": "The religious rule",
+  "Das deutsche Gesetz": "The German law",
+  "Die Entscheidung der Familie": "Whatever the family decides",
+  "Das kommt auf die Religion an": "It depends on the religion",
+  "Das staatliche Recht gilt für alle gleichermaßen. Religionsfreiheit erlaubt den Glauben, nicht den Rechtsbruch.":
+    "The law of the state applies to everyone alike. Freedom of religion permits belief, not breaking the law.",
+  "Muss ein Kind an staatlichen Schulen am Religionsunterricht teilnehmen?":
+    "Does a child at a state school have to take part in religious education?",
+  "Ja, das ist Pflicht": "Yes, it is compulsory",
+  "Nein, man kann sich abmelden und meist Ethik belegen":
+    "No, you can opt out and usually take ethics instead",
+  "Nur bei christlichen Familien": "Only in Christian families",
+  "Nur in der Grundschule": "Only in primary school",
+  "Religionsunterricht ist ein reguläres Fach, aber niemand ist dazu verpflichtet. Als Alternative gibt es meist Ethik oder Philosophie.":
+    "Religious education is a regular subject, but nobody is obliged to take it. The alternative on offer is usually ethics or philosophy.",
+  "Ein Mann verbietet seiner Frau, arbeiten zu gehen. Was gilt in Deutschland?":
+    "A man forbids his wife to go out to work. What applies in Germany?",
+  "Er darf das als Familienoberhaupt": "He may do that as head of the family",
+  "Sie entscheidet selbst, denn Männer und Frauen sind gleichberechtigt":
+    "She decides for herself, because men and women have equal rights",
+  "Nur mit Zustimmung der Familie": "Only with the family's consent",
+  "Das Standesamt entscheidet": "The Standesamt decides",
+  "Artikel 3 des Grundgesetzes: gleichberechtigt. Über Arbeit, Geld und Lebensweg entscheidet jede Person selbst.":
+    "Article 3 of the Grundgesetz: equal rights. Each person decides for themselves about work, money and the course of their own life.",
+  "Wie ist körperliche Bestrafung von Kindern in Deutschland geregelt?":
+    "How is physical punishment of children regulated in Germany?",
+  "Erlaubt, wenn es die Eltern für nötig halten": "Allowed if the parents think it necessary",
+  "Verboten — Kinder haben ein Recht auf gewaltfreie Erziehung":
+    "Forbidden — children have a right to be brought up without violence",
+  "Erlaubt bis zum 10. Lebensjahr": "Allowed up to the age of 10",
+  "Nur Lehrern verboten": "Forbidden to teachers only",
+  "Seit 2000 steht das Recht auf gewaltfreie Erziehung im Gesetz. Schläge sind keine Erziehungsmethode, sondern strafbar.":
+    "Since 2000 the right to be brought up without violence has stood in law. Hitting is not a way of raising a child; it is a criminal offence.",
+  "Was gilt für die Ehe in Deutschland?": "What applies to marriage in Germany?",
+  "Man kann mit mehreren Personen gleichzeitig verheiratet sein":
+    "You can be married to several people at once",
+  "Die Ehe muss freiwillig geschlossen werden; Zwangsheirat ist strafbar":
+    "A marriage has to be entered into freely; forced marriage is a criminal offence",
+  "Die Eltern wählen den Ehepartner aus": "The parents choose the spouse",
+  "Eine Scheidung ist nicht möglich": "Divorce is not possible",
+  "Freiwilligkeit ist Voraussetzung. Zwangsheirat ist eine Straftat, Mehrehe verboten, und geschieden werden kann jede Ehe.":
+    "Consent is the condition. Forced marriage is a crime, plural marriage is forbidden, and any marriage can be divorced.",
+  "Was bedeutet „duale Ausbildung“?": "What does „duale Ausbildung“ mean?",
+  "Zwei Berufe gleichzeitig lernen": "Learning two trades at the same time",
+  "Ausbildung im Betrieb und in der Berufsschule zugleich":
+    "Training in a company and at a Berufsschule at the same time",
+  "Eine Ausbildung mit doppelter Dauer": "Training that takes twice as long",
+  "Ausbildung in zwei Bundesländern": "Training in two Bundesländer",
+  "Zwei Lernorte: der Betrieb für die Praxis, die Berufsschule für die Theorie. Bezahlt wird von Anfang an.":
+    "Two places of learning: the company for the practice, the Berufsschule for the theory. You are paid from the first day.",
+  "Gilt die Schulpflicht in Deutschland auch für Mädchen?":
+    "Does compulsory schooling in Germany apply to girls too?",
+  "Ja, für alle Kinder gleichermaßen": "Yes, to all children alike",
+  "Nein, Eltern entscheiden das": "No, the parents decide that",
+  "Nur bis zur vierten Klasse": "Only up to year four",
+  "Nur für deutsche Staatsangehörige": "Only for German citizens",
+  "Die Schulpflicht gilt für alle Kinder, unabhängig von Geschlecht, Herkunft oder Religion — einschließlich Sport- und Schwimmunterricht.":
+    "Compulsory schooling applies to every child, whatever their sex, origin or religion — sport and swimming lessons included.",
+  "Welcher Abschluss berechtigt in der Regel zum Studium an einer Universität?":
+    "Which qualification normally opens the way to study at a university?",
+  "Der Hauptschulabschluss": "The Hauptschulabschluss",
+  "Die Mittlere Reife": "The Mittlere Reife",
+  "Das Abitur": "The Abitur",
+  "Der Gesellenbrief": "The Gesellenbrief, the journeyman's certificate",
+  "Das Abitur ist die allgemeine Hochschulreife. Über Fachhochschulreife und berufliche Qualifikationen gibt es weitere Wege.":
+    "The Abitur is the general university entrance qualification. There are further routes through the Fachhochschulreife and through vocational qualifications.",
+  "Wie lange zahlt der Arbeitgeber bei Krankheit den Lohn weiter?":
+    "For how long does an employer keep paying wages during illness?",
+  "Zwei Wochen": "Two weeks",
+  "Sechs Wochen": "Six weeks",
+  "Drei Monate": "Three months",
+  "Gar nicht": "Not at all",
+  "Sechs Wochen Lohnfortzahlung. Danach zahlt die Krankenkasse Krankengeld.":
+    "Six weeks of continued pay. After that the health insurer pays sick pay.",
+  "Was ist ein Betriebsrat?": "What is a Betriebsrat, a works council?",
+  "Die Geschäftsführung eines Betriebs": "The management of a company",
+  "Eine von den Beschäftigten gewählte Vertretung":
+    "A body elected by the staff to represent them",
+  "Eine Behörde für Betriebsprüfungen": "An authority that audits companies",
+  "Der Zusammenschluss mehrerer Firmen": "A merger of several firms",
+  "Die Belegschaft wählt ihn. Er vertritt ihre Interessen gegenüber dem Arbeitgeber und hat bei vielen Entscheidungen ein Mitspracherecht.":
+    "The workforce elects it. It represents their interests towards the employer and has a say in many decisions.",
+  "Du wurdest gekündigt und hältst das für unrechtmäßig. Wie lange hast du Zeit für eine Klage?":
+    "You have been dismissed and believe it was unlawful. How long do you have to bring a claim?",
+  "Drei Wochen": "Three weeks",
+  "Ein Jahr": "One year",
+  "Unbegrenzt": "No time limit at all",
+  "Drei Wochen ab Zugang der Kündigung. Danach gilt die Kündigung in aller Regel als wirksam.":
+    "Three weeks from the day the notice reaches you. After that the dismissal is as a rule treated as valid.",
+  "Du ziehst in eine neue Wohnung. Was musst du tun?":
+    "You move into a new flat. What do you have to do?",
+  "Nichts, das macht der Vermieter": "Nothing, the landlord does it",
+  "Dich innerhalb von zwei Wochen beim Einwohnermeldeamt anmelden":
+    "Register at the Einwohnermeldeamt within two weeks",
+  "Dich beim Finanzamt anmelden": "Register at the Finanzamt",
+  "Die Nachbarn informieren": "Tell the neighbours",
+  "Es gilt die Meldepflicht: Anmeldung beim Einwohnermeldeamt oder Bürgeramt innerhalb von zwei Wochen.":
+    "Registering is compulsory: at the Einwohnermeldeamt or Bürgeramt within two weeks.",
+  "Wie hoch darf die Mietkaution höchstens sein?": "What is the most a rent deposit may be?",
+  "Eine Monatsmiete": "One month's rent",
+  "Drei Monatsmieten": "Three months' rent",
+  "Sechs Monatsmieten": "Six months' rent",
+  "Das ist frei verhandelbar": "It is freely negotiable",
+  "Höchstens drei Monatskaltmieten. Mehr darf der Vermieter nicht verlangen.":
+    "At most three months' rent excluding bills. A landlord may not ask for more.",
+  "Ab wann gilt in Deutschland üblicherweise die Nachtruhe?":
+    "From what time does the quiet period at night usually run in Germany?",
+  "Ab 20 Uhr": "From 8 pm",
+  "Ab 22 Uhr": "From 10 pm",
+  "Ab 24 Uhr": "From midnight",
+  "Es gibt keine Nachtruhe": "There is no quiet period at night",
+  "In der Regel von 22 bis 6 Uhr. Sonn- und Feiertage sind meist ganztägig Ruhetage.":
+    "As a rule from 10 pm to 6 am. Sundays and public holidays are usually quiet all day long.",
+  "Welche Nummer wählst du in Deutschland bei einem medizinischen Notfall?":
+    "Which number do you call in Germany in a medical emergency?",
+  "110": "110",
+  "116117": "116117",
+  "115": "115",
+  "112 für Notarzt und Feuerwehr, 110 für die Polizei. 116117 ist der ärztliche Bereitschaftsdienst außerhalb der Sprechzeiten.":
+    "112 for the ambulance and the fire brigade, 110 for the police. 116117 is the doctors' on-call service outside surgery hours.",
+  "Wer ist in der gesetzlichen Krankenversicherung beitragsfrei mitversichert?":
+    "Who is covered by statutory health insurance without paying a contribution?",
+  "Niemand, jeder zahlt selbst": "Nobody, everyone pays for themselves",
+  "Kinder und Ehepartner ohne eigenes Einkommen":
+    "Children and spouses with no income of their own",
+  "Nur Kinder bis 6 Jahre": "Only children up to the age of 6",
+  "Alle Verwandten im selben Haushalt": "Every relative in the same household",
+  "Die Familienversicherung deckt Kinder und nicht erwerbstätige Ehepartner ohne zusätzlichen Beitrag ab.":
+    "Family cover includes children and non-working spouses at no extra contribution.",
+  "Darf dein Arzt dem Arbeitgeber sagen, welche Krankheit du hast?":
+    "May your doctor tell your employer what illness you have?",
+  "Ja, das ist üblich": "Yes, that is the normal thing",
+  "Nein, es gilt die ärztliche Schweigepflicht": "No, a doctor is bound to confidentiality",
+  "Nur bei längerer Krankheit": "Only for a longer illness",
+  "Nur wenn der Arbeitgeber fragt": "Only if the employer asks",
+  "Die Diagnose bleibt zwischen dir und dem Arzt. Der Arbeitgeber erfährt nur, dass und wie lange du arbeitsunfähig bist.":
+    "The diagnosis stays between you and the doctor. The employer learns only that you are unfit for work, and for how long.",
+  "Darf eine deutsche Zeitung die Bundesregierung öffentlich kritisieren?":
+    "May a German newspaper criticise the Bundesregierung in public?",
+  "Nein, das ist verboten": "No, that is forbidden",
+  "Ja, denn es gilt die Pressefreiheit": "Yes, because there is freedom of the press",
+  "Nur mit Genehmigung des Ministeriums": "Only with the ministry's permission",
+  "Nur vor Wahlen": "Only before elections",
+  "Artikel 5 des Grundgesetzes garantiert Presse- und Meinungsfreiheit. Eine Zensur findet nicht statt.":
+    "Article 5 of the Grundgesetz guarantees freedom of the press and of opinion. There is no censorship.",
+  "Was wird am 1. Mai in Deutschland gefeiert?": "What is celebrated on 1 May in Germany?",
+  "Der Tag der Deutschen Einheit": "The Tag der Deutschen Einheit",
+  "Der Tag der Arbeit": "The Tag der Arbeit, labour day",
+  "Das Ende des Zweiten Weltkriegs": "The end of the Second World War",
+  "Der Geburtstag des Grundgesetzes": "The birthday of the Grundgesetz",
+  "Der 1. Mai ist der Tag der Arbeit. Der 3. Oktober ist der Tag der Deutschen Einheit, der 23. Mai der Tag des Grundgesetzes.":
+    "1 May is the Tag der Arbeit. 3 October is the Tag der Deutschen Einheit, and 23 May the day of the Grundgesetz.",
+  "Wer sammelte die bekannten deutschen Märchen?":
+    "Who collected the well-known German fairy tales?",
+  "Johann Wolfgang von Goethe": "Johann Wolfgang von Goethe",
+  "Die Brüder Grimm": "The Brothers Grimm",
+  "Friedrich Schiller": "Friedrich Schiller",
+  "Thomas Mann": "Thomas Mann",
+  "Jacob und Wilhelm Grimm sammelten im 19. Jahrhundert Märchen wie Hänsel und Gretel und Rotkäppchen.":
+    "Jacob and Wilhelm Grimm collected tales such as Hänsel und Gretel and Rotkäppchen — Hansel and Gretel, Little Red Riding Hood — in the 19th century.",
 };
