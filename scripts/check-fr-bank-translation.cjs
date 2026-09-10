@@ -39,8 +39,10 @@ const built = esbuild.buildSync({
     contents:
       'export { UK_QUESTIONS } from "./src/lib/ukQuestionBank.ts";\n' +
       'export { DE_QUESTIONS } from "./src/lib/deQuestionBank.ts";\n' +
+      'export { PL_QUESTIONS } from "./src/lib/plQuestionBank.ts";\n' +
       'export { UK_QUESTION_BANK_FR } from "./src/lib/ukQuestionBankTranslationsFr.ts";\n' +
       'export { DE_QUESTION_BANK_FR } from "./src/lib/deQuestionBankTranslationsFr.ts";\n' +
+      'export { PL_QUESTION_BANK_FR } from "./src/lib/plQuestionBankTranslationsFr.ts";\n' +
       'export { LIFE_IN_THE_UK_FR } from "./src/lib/lifeInTheUkTranslationsFr.ts";\n' +
       'export { LEBEN_IN_DEUTSCHLAND_FR } from "./src/lib/lebenInDeutschlandTranslationsFr.ts";\n' +
       'export { VIVERE_IN_ITALIA_FR } from "./src/lib/vivereInItaliaTranslationsFr.ts";\n' +
@@ -151,6 +153,42 @@ const BANKS = [
       "Bürgergeld",
       "Arbeitslosengeld",
       "Rundfunkbeitrag",
+    ],
+  },
+  {
+    label: "Zycie w Polsce",
+    questions: M.PL_QUESTIONS,
+    table: M.PL_QUESTION_BANK_FR,
+    symbol: "PL_QUESTION_BANK_FR",
+    // The half that stays POLISH, as ZYCIE_W_POLSCE_FR keeps it: the word
+    // that IS the answer and has no French equivalent. What French does have
+    // a name for takes it — the Rada Ministrów is the Conseil des ministres,
+    // the Sąd Najwyższy the Cour suprême — and that half is left to the
+    // no-French rule above, because Polish declines those and a literal
+    // needle would accuse a correct sentence.
+    //
+    // Measured against the finished table first, and two needles that look
+    // as if they belong are deliberately out. "gminy" is the plural where the
+    // French writes the singular. "złoty" is the currency in two keys but the
+    // adjective for golden in three more — a black eagle on a golden field is
+    // not a sum of money, and the needle would accuse the heraldry questions
+    // of losing a word they never carried.
+    //
+    // Sejm and Senat stay in even though two entries each appear to drop
+    // them: those two are "sejmik" and "Senatorem", the needle hiding inside
+    // a longer Polish word, and both are correctly French in the value.
+    keep: [
+      "Sejm",
+      "Senat",
+      "gmina",
+      "powiat",
+      "Marszałek",
+      "Solidarność",
+      "REGON",
+      "ZUS",
+      "NFZ",
+      "KRUS",
+      "RODO",
     ],
   },
 ];
