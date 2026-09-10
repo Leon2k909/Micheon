@@ -795,7 +795,7 @@ export const ES_QUESTION_BANK_RU: Record<string, string> = {
   "¿Cuándo NO puede el presidente disolver las Cortes?":
     "Когда председатель правительства НЕ может распустить кортесы?",
   "En el primer año de legislatura": "В первый год созыва",
-  "Mientras esté en trámite una moción de censura": "Пока рассматривается вотум недоверия",
+  "Mientras esté en trámite una moción de censura": "Во время рассмотрения вотума недоверия",
   "Durante el periodo de sesiones": "Во время сессии",
   "En año electoral europeo": "В год европейских выборов",
   "Ni con una moción de censura en trámite, ni antes de que haya pasado un año desde la disolución anterior. Las dos limitaciones están en el artículo 115.":

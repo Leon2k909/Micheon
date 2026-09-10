@@ -1969,7 +1969,7 @@ export const IT_QUESTION_BANK_RU: Record<string, string> = {
   "Come è finanziato il Servizio sanitario nazionale?":
     "Как финансируется Национальная служба здравоохранения?",
   "Con premi assicurativi individuali": "Индивидуальными страховыми взносами",
-  "Con la fiscalità generale": "Из общих налогов",
+  "Con la fiscalità generale": "Общими налогами",
   "Con i contributi versati dai soli lavoratori dipendenti":
     "Взносами, которые платят только наёмные работники",
   "Con i ticket pagati dai pazienti": "Соплатежами пациентов",

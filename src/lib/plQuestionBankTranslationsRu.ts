@@ -597,7 +597,7 @@ export const PL_QUESTION_BANK_RU: Record<string, string> = {
     "Солецтво, во главе с солтысом. В городе это дзельницы или оседле.",
   "Jak mieszkańcy mogą odwołać wójta przed końcem kadencji?":
     "Как жители могут отозвать wójta до конца срока?",
-  "W referendum lokalnym": "На местном референдуме",
+  "W referendum lokalnym": "Местным референдумом",
   "Uchwałą wojewody": "Постановлением воеводы",
   "Decyzją premiera": "Решением премьера",
   "Nie da się tego zrobić": "Этого сделать нельзя",
@@ -1172,7 +1172,7 @@ export const PL_QUESTION_BANK_RU: Record<string, string> = {
     "Оценки говорят о десяти с лишним до двадцати миллионов; крупнейшие сообщества — в США, Германии и Великобритании.",
   "Co stało się w Polsce po pełnoskalowej agresji Rosji na Ukrainę w 2022 roku?":
     "Что произошло в Польше после полномасштабной агрессии России против Украины в 2022 году?",
-  "Przez kraj przeszły miliony uchodźców": "Через страну прошли миллионы беженцев",
+  "Przez kraj przeszły miliony uchodźców": "Миллионы беженцев прошли через страну",
   "Zamknięto granicę zachodnią": "Закрыли западную границу",
   "Wprowadzono stan wojenny": "Ввели военное положение",
   "Polska wystąpiła z NATO": "Польша вышла из НАТО",
