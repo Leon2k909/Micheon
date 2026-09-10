@@ -41,10 +41,12 @@ const built = esbuild.buildSync({
       'export { DE_QUESTIONS } from "./src/lib/deQuestionBank.ts";\n' +
       'export { PL_QUESTIONS } from "./src/lib/plQuestionBank.ts";\n' +
       'export { FR_QUESTIONS } from "./src/lib/frQuestionBank.ts";\n' +
+      'export { IT_QUESTIONS } from "./src/lib/itQuestionBank.ts";\n' +
       'export { UK_QUESTION_BANK_RU } from "./src/lib/ukQuestionBankTranslationsRu.ts";\n' +
       'export { DE_QUESTION_BANK_RU } from "./src/lib/deQuestionBankTranslationsRu.ts";\n' +
       'export { PL_QUESTION_BANK_RU } from "./src/lib/plQuestionBankTranslationsRu.ts";\n' +
       'export { FR_QUESTION_BANK_RU } from "./src/lib/frQuestionBankTranslationsRu.ts";\n' +
+      'export { IT_QUESTION_BANK_RU } from "./src/lib/itQuestionBankTranslationsRu.ts";\n' +
       'export { LIFE_IN_THE_UK_RU } from "./src/lib/lifeInTheUkTranslationsRu.ts";\n' +
       'export { LEBEN_IN_DEUTSCHLAND_RU } from "./src/lib/lebenInDeutschlandTranslationsRu.ts";\n' +
       'export { VIVRE_EN_FRANCE_RU } from "./src/lib/vivreEnFranceTranslationsRu.ts";\n' +
@@ -166,6 +168,30 @@ const BANKS = [
       "Sécurité sociale",
       "carte Vitale",
       "baccalauréat",
+    ],
+  },
+  {
+    label: "Vivere in Italia",
+    questions: M.IT_QUESTIONS,
+    table: M.IT_QUESTION_BANK_RU,
+    symbol: "IT_QUESTION_BANK_RU",
+    // The half that stays ITALIAN, as VIVERE_IN_ITALIA_RU keeps it: the word
+    // printed on the card, the form or the payslip. The half that becomes
+    // Russian — Конституция, Палата депутатов, Сенат, области — is left to
+    // the no-Russian rule above, because Russian declines those and a literal
+    // needle would accuse a correct sentence for writing областями.
+    keep: [
+      "codice fiscale",
+      "carta d'identità",
+      "tessera sanitaria",
+      "permesso di soggiorno",
+      "questura",
+      "anagrafe",
+      "INPS",
+      "INAIL",
+      "IRPEF",
+      "CCNL",
+      "Ferragosto",
     ],
   },
 ];
