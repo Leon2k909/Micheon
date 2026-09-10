@@ -11,10 +11,10 @@
  *
  * Life in the UK is not in this list and never will be: its bank is written
  * in English already. The other six are arriving one at a time, so BANKS
- * holds the ones an English reader can already have — Leben in Deutschland,
- * Zycie w Polsce, Vivere in Italia, Vivir en España and Vivre en France so
- * far. A bank is added to that list on the day its table ships, and from
- * that day this gate refuses to let a single string of it go missing.
+ * holds the ones an English reader can already have, and with Zhizn v
+ * Rossii that is now all six. A bank was added to the list on the day its
+ * table shipped, and from that day this gate refuses to let a single
+ * string of it go missing.
  *
  * What this checks, for each bank listed:
  *
@@ -43,11 +43,13 @@ const built = esbuild.buildSync({
       'export { IT_QUESTIONS } from "./src/lib/itQuestionBank.ts";\n' +
       'export { ES_QUESTIONS } from "./src/lib/esQuestionBank.ts";\n' +
       'export { FR_QUESTIONS } from "./src/lib/frQuestionBank.ts";\n' +
+      'export { RU_QUESTIONS } from "./src/lib/ruQuestionBank.ts";\n' +
       'export { DE_QUESTION_BANK_EN } from "./src/lib/deQuestionBankTranslationsEn.ts";\n' +
       'export { PL_QUESTION_BANK_EN } from "./src/lib/plQuestionBankTranslationsEn.ts";\n' +
       'export { IT_QUESTION_BANK_EN } from "./src/lib/itQuestionBankTranslationsEn.ts";\n' +
       'export { ES_QUESTION_BANK_EN } from "./src/lib/esQuestionBankTranslationsEn.ts";\n' +
       'export { FR_QUESTION_BANK_EN } from "./src/lib/frQuestionBankTranslationsEn.ts";\n' +
+      'export { RU_QUESTION_BANK_EN } from "./src/lib/ruQuestionBankTranslationsEn.ts";\n' +
       'export { LEBEN_IN_DEUTSCHLAND_EN } from "./src/lib/lebenInDeutschlandTranslationsEn.ts";\n' +
       'export { VIVRE_EN_FRANCE_EN } from "./src/lib/vivreEnFranceTranslationsEn.ts";\n' +
       'export { VIVERE_IN_ITALIA_EN } from "./src/lib/vivereInItaliaTranslationsEn.ts";\n' +
@@ -326,6 +328,51 @@ const BANKS = [
       ["Premier ministre", "prime minister"],
       ["député", "deput"],
       ["grève", "strik"],
+    ],
+  },
+  {
+    label: "Zhizn v Rossii",
+    questions: M.RU_QUESTIONS,
+    table: M.RU_QUESTION_BANK_EN,
+    symbol: "RU_QUESTION_BANK_EN",
+    // Every term here is a pair, and it has to be: a Cyrillic word cannot
+    // survive unchanged into an English sentence, so the plain form would
+    // match a key and then never find itself in the value. The pair names
+    // the source word and the English one it has to arrive as.
+    //
+    // Measured against the finished table first. SNILS, INN, MROT, EGE,
+    // ZAGS, marshrutka, elektrichka, banya and dacha are each in fewer than
+    // three keys and sit under the threshold this gate fires at, so listing
+    // them would be decoration.
+    //
+    // Two needles that look as if they belong are out. "дач" hides inside
+    // неудачном and удачной, and "Екатерин" inside Екатеринбург, which is
+    // Yekaterinburg and not Catherine: the needle inside a longer Russian
+    // word, correct English in the value.
+    //
+    // "перепис" drops twice out of ten and stays in: a census is a census,
+    // but the same root also carries the act of writing something over.
+    keep: [
+      ["Дума", "Duma"],
+      ["Совет Федерации", "Federation Council"],
+      ["Конституционный Суд", "Constitutional Court"],
+      ["субъект", "federal subject"],
+      ["Транссиб", "Trans-Siberian"],
+      ["отчеств", "patronymic"],
+      ["поликлиник", "clinic"],
+      ["Кремл", "Kremlin"],
+      ["СССР", "USSR"],
+      ["ЮНЕСКО", "UNESCO"],
+      ["Байкал", "Baikal"],
+      ["Ленинград", "Leningrad"],
+      ["рубл", "rouble"],
+      ["Пушкин", "Pushkin"],
+      ["Сибир", "Siberia"],
+      ["Волга", "Volga"],
+      ["Гагарин", "Gagarin"],
+      ["Орд", "Horde"],
+      ["крепостно", "serf"],
+      ["перепис", "census"],
     ],
   },
 ];

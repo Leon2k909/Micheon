@@ -44,6 +44,7 @@ import { PL_QUESTION_BANK_EN } from "@/lib/plQuestionBankTranslationsEn";
 import { IT_QUESTION_BANK_EN } from "@/lib/itQuestionBankTranslationsEn";
 import { ES_QUESTION_BANK_EN } from "@/lib/esQuestionBankTranslationsEn";
 import { FR_QUESTION_BANK_EN } from "@/lib/frQuestionBankTranslationsEn";
+import { RU_QUESTION_BANK_EN } from "@/lib/ruQuestionBankTranslationsEn";
 import { LEBEN_IN_DEUTSCHLAND_FR } from "@/lib/lebenInDeutschlandTranslationsFr";
 import { ZYCIE_W_POLSCE_FR } from "@/lib/zycieWPolsceTranslationsFr";
 import { VIVERE_IN_ITALIA_FR } from "@/lib/vivereInItaliaTranslationsFr";
@@ -159,12 +160,15 @@ const TRANSLATIONS: Partial<Record<TranslationLanguage, Record<string, string>>>
     ...LEBEN_IN_DEUTSCHLAND_EN, ...VIVRE_EN_FRANCE_EN, ...ZHIZN_V_ROSSII_EN,
     ...ZYCIE_W_POLSCE_EN, ...VIVERE_IN_ITALIA_EN, ...VIVIR_EN_ESPANA_EN,
     // The practice questions, the same second body of text the German,
-    // Polish, Russian and French tables answer.
+    // Polish, Russian and French tables answer. Six of the seven packs are
+    // here; the seventh, Life in the UK, asks its questions in English
+    // already.
     ...DE_QUESTION_BANK_EN,
     ...PL_QUESTION_BANK_EN,
     ...IT_QUESTION_BANK_EN,
     ...ES_QUESTION_BANK_EN,
     ...FR_QUESTION_BANK_EN,
+    ...RU_QUESTION_BANK_EN,
   },
   pl: {
     ...LIFE_IN_THE_UK_PL, ...LEBEN_IN_DEUTSCHLAND_PL, ...VIVRE_EN_FRANCE_PL,
