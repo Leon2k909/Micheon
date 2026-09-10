@@ -33,6 +33,7 @@ import { VIVRE_EN_FRANCE_RU } from "@/lib/vivreEnFranceTranslationsRu";
 import { VIVERE_IN_ITALIA_RU } from "@/lib/vivereInItaliaTranslationsRu";
 import { VIVIR_EN_ESPANA_RU } from "@/lib/vivirEnEspanaTranslationsRu";
 import { LIFE_IN_THE_UK_FR } from "@/lib/lifeInTheUkTranslationsFr";
+import { UK_QUESTION_BANK_FR } from "@/lib/ukQuestionBankTranslationsFr";
 import { LEBEN_IN_DEUTSCHLAND_FR } from "@/lib/lebenInDeutschlandTranslationsFr";
 import { ZYCIE_W_POLSCE_FR } from "@/lib/zycieWPolsceTranslationsFr";
 import { VIVERE_IN_ITALIA_FR } from "@/lib/vivereInItaliaTranslationsFr";
@@ -157,7 +158,13 @@ const TRANSLATIONS: Partial<Record<TranslationLanguage, Record<string, string>>>
     ...ES_QUESTION_BANK_PL,
     ...RU_QUESTION_BANK_PL,
   },
-  fr: { ...LIFE_IN_THE_UK_FR, ...LEBEN_IN_DEUTSCHLAND_FR, ...ZYCIE_W_POLSCE_FR, ...VIVERE_IN_ITALIA_FR, ...VIVIR_EN_ESPANA_FR, ...ZHIZN_V_ROSSII_FR },
+  fr: {
+    ...LIFE_IN_THE_UK_FR, ...LEBEN_IN_DEUTSCHLAND_FR, ...ZYCIE_W_POLSCE_FR,
+    ...VIVERE_IN_ITALIA_FR, ...VIVIR_EN_ESPANA_FR, ...ZHIZN_V_ROSSII_FR,
+    // The practice questions, the same second body of text the German,
+    // Polish and Russian tables answer.
+    ...UK_QUESTION_BANK_FR,
+  },
   ru: {
     ...LEBEN_IN_DEUTSCHLAND_RU, ...LIFE_IN_THE_UK_RU, ...ZYCIE_W_POLSCE_RU,
     ...VIVRE_EN_FRANCE_RU, ...VIVERE_IN_ITALIA_RU, ...VIVIR_EN_ESPANA_RU,
