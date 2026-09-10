@@ -24,6 +24,7 @@ import { LEBEN_IN_DEUTSCHLAND_RU } from "@/lib/lebenInDeutschlandTranslationsRu"
 import { LIFE_IN_THE_UK_RU } from "@/lib/lifeInTheUkTranslationsRu";
 import { UK_QUESTION_BANK_RU } from "@/lib/ukQuestionBankTranslationsRu";
 import { DE_QUESTION_BANK_RU } from "@/lib/deQuestionBankTranslationsRu";
+import { PL_QUESTION_BANK_RU } from "@/lib/plQuestionBankTranslationsRu";
 import { ZYCIE_W_POLSCE_RU } from "@/lib/zycieWPolsceTranslationsRu";
 import { VIVRE_EN_FRANCE_RU } from "@/lib/vivreEnFranceTranslationsRu";
 import { VIVERE_IN_ITALIA_RU } from "@/lib/vivereInItaliaTranslationsRu";
@@ -161,6 +162,7 @@ const TRANSLATIONS: Partial<Record<TranslationLanguage, Record<string, string>>>
     // Polish tables above answer.
     ...UK_QUESTION_BANK_RU,
     ...DE_QUESTION_BANK_RU,
+    ...PL_QUESTION_BANK_RU,
   },
 };
 

@@ -39,8 +39,10 @@ const built = esbuild.buildSync({
     contents:
       'export { UK_QUESTIONS } from "./src/lib/ukQuestionBank.ts";\n' +
       'export { DE_QUESTIONS } from "./src/lib/deQuestionBank.ts";\n' +
+      'export { PL_QUESTIONS } from "./src/lib/plQuestionBank.ts";\n' +
       'export { UK_QUESTION_BANK_RU } from "./src/lib/ukQuestionBankTranslationsRu.ts";\n' +
       'export { DE_QUESTION_BANK_RU } from "./src/lib/deQuestionBankTranslationsRu.ts";\n' +
+      'export { PL_QUESTION_BANK_RU } from "./src/lib/plQuestionBankTranslationsRu.ts";\n' +
       'export { LIFE_IN_THE_UK_RU } from "./src/lib/lifeInTheUkTranslationsRu.ts";\n' +
       'export { LEBEN_IN_DEUTSCHLAND_RU } from "./src/lib/lebenInDeutschlandTranslationsRu.ts";\n' +
       'export { VIVRE_EN_FRANCE_RU } from "./src/lib/vivreEnFranceTranslationsRu.ts";\n' +
@@ -117,6 +119,32 @@ const BANKS = [
       "Kindergeld",
       "Elterngeld",
       "Bürgergeld",
+    ],
+  },
+  {
+    label: "Zycie w Polsce",
+    questions: M.PL_QUESTIONS,
+    table: M.PL_QUESTION_BANK_RU,
+    symbol: "PL_QUESTION_BANK_RU",
+    // The same line as ZYCIE_W_POLSCE_RU draws, and again only the half that
+    // stays POLISH is listed: what a reader meets printed on a form, a card
+    // or a doorplate. The Sejm, the Senat, the gmina and the powiat are not
+    // here — Russian names all four and declines them, so a literal needle
+    // would accuse a correct sentence for writing Сейму or гмины.
+    //
+    // "Wójt" is capitalised on purpose. The office has no Russian name and
+    // stays Polish, but this comparison is case-sensitive and the lowercase
+    // form appears in only two keys, under the threshold; the capitalised one
+    // is in three and is the shape the bank prints.
+    keep: [
+      "PESEL",
+      "NIP",
+      "REGON",
+      "ZUS",
+      "NFZ",
+      "KRUS",
+      "RODO",
+      "Wójt",
     ],
   },
 ];
