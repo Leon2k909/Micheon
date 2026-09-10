@@ -38,7 +38,9 @@ const built = esbuild.buildSync({
   stdin: {
     contents:
       'export { UK_QUESTIONS } from "./src/lib/ukQuestionBank.ts";\n' +
+      'export { DE_QUESTIONS } from "./src/lib/deQuestionBank.ts";\n' +
       'export { UK_QUESTION_BANK_FR } from "./src/lib/ukQuestionBankTranslationsFr.ts";\n' +
+      'export { DE_QUESTION_BANK_FR } from "./src/lib/deQuestionBankTranslationsFr.ts";\n' +
       'export { LIFE_IN_THE_UK_FR } from "./src/lib/lifeInTheUkTranslationsFr.ts";\n' +
       'export { LEBEN_IN_DEUTSCHLAND_FR } from "./src/lib/lebenInDeutschlandTranslationsFr.ts";\n' +
       'export { VIVERE_IN_ITALIA_FR } from "./src/lib/vivereInItaliaTranslationsFr.ts";\n' +
@@ -108,6 +110,47 @@ const BANKS = [
       "Senedd",
       "Holyrood",
       "Magna Carta",
+    ],
+  },
+  {
+    label: "Leben in Deutschland",
+    questions: M.DE_QUESTIONS,
+    table: M.DE_QUESTION_BANK_FR,
+    symbol: "DE_QUESTION_BANK_FR",
+    // The half that stays GERMAN, as LEBEN_IN_DEUTSCHLAND_FR keeps it: the
+    // Einbürgerungstest is sat in German and asks for these words by name, so
+    // a French rendering would teach the wrong answer. The half that becomes
+    // French — l'État de droit, la séparation des pouvoirs, les Länder — is
+    // left to the no-French rule above, because a literal needle would accuse
+    // a correct sentence for declining them.
+    //
+    // Measured against the finished table first. Bundesversammlung, Stasi,
+    // Jugendamt, Ausländerbehörde, Landtag, Minijob, Integrationskurs and
+    // Richtlinienkompetenz are each in fewer than three keys and sit under
+    // the threshold this gate fires at, so listing them would be decoration.
+    keep: [
+      "Grundgesetz",
+      "Bundestag",
+      "Bundesrat",
+      "Bundesregierung",
+      "Bundeskanzler",
+      "Bundespräsident",
+      "Bundesverfassungsgericht",
+      "Ministerpräsident",
+      "Fraktion",
+      "Budgetrecht",
+      "Erststimme",
+      "Zweitstimme",
+      "Volkskammer",
+      "Standesamt",
+      "Bürgeramt",
+      "Finanzamt",
+      "Agentur für Arbeit",
+      "Kindergeld",
+      "Elterngeld",
+      "Bürgergeld",
+      "Arbeitslosengeld",
+      "Rundfunkbeitrag",
     ],
   },
 ];
