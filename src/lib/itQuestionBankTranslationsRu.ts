@@ -230,9 +230,9 @@ export const IT_QUESTION_BANK_RU: Record<string, string> = {
     "Часть I идёт со статьи 13 по 54 и делится на четыре раздела: гражданские, этико-социальные, экономические и политические отношения.",
   "In quanti titoli è divisa la Parte I della Costituzione?":
     "На сколько разделов делится Часть I Конституции?",
-  "Due": "На два",
-  "Quattro": "На четыре",
-  "Sei": "На шесть",
+  "Due": "Два",
+  "Quattro": "Четыре",
+  "Sei": "Шесть",
   "Quattro: rapporti civili, rapporti etico-sociali, rapporti economici e rapporti politici. Ogni titolo guarda la persona da un lato diverso.":
     "На четыре: гражданские, этико-социальные, экономические и политические отношения. Каждый раздел смотрит на человека с другой стороны.",
   "Quale articolo esclude la pena di morte?": "Какая статья исключает смертную казнь?",
@@ -710,8 +710,8 @@ export const IT_QUESTION_BANK_RU: Record<string, string> = {
     "Пятьдесят восемь: по три от каждой области и только один от Валле-д'Аоста. Они прибавляются к депутатам и сенаторам, собравшимся на совместное заседание.",
   "Quanti delegati esprime la Valle d'Aosta all'elezione presidenziale?":
     "Сколько делегатов выставляет Валле-д'Аоста на президентских выборах?",
-  "Uno": "Одного",
-  "Tre come tutte le altre": "Трёх, как все остальные",
+  "Uno": "Один",
+  "Tre come tutte le altre": "Три, как все остальные",
   "Uno solo: è l'eccezione prevista proprio per la sua dimensione. Tutte le altre diciannove regioni ne esprimono tre.":
     "Только одного: это исключение, предусмотренное именно из-за её размера. Все остальные девятнадцать областей выставляют по три.",
   "Quale maggioranza serve nei primi tre scrutini per eleggere il Presidente?":
@@ -2063,10 +2063,10 @@ export const IT_QUESTION_BANK_RU: Record<string, string> = {
   "Porta il codice fiscale sul fronte e sul retro è la tessera europea che consente l'assistenza negli altri Stati dell'Unione.":
     "На лицевой стороне у неё codice fiscale, а на обороте — европейская карта, дающая помощь в других государствах Союза.",
   "Da quanti caratteri è composto il codice fiscale?":
-    "Из скольких знаков состоит codice fiscale?",
-  "Undici": "Из одиннадцати",
-  "Tredici": "Из тринадцати",
-  "Sedici": "Из шестнадцати",
+    "Сколько знаков в codice fiscale?",
+  "Undici": "Одиннадцать",
+  "Tredici": "Тринадцать",
+  "Sedici": "Шестнадцать",
   "Sedici caratteri ricavati da nome, cognome, data e luogo di nascita. Undici è la lunghezza della partita IVA, che è un'altra cosa.":
     "Шестнадцать знаков, выведенных из имени, фамилии, даты и места рождения. Одиннадцать — это длина номера плательщика НДС, а это другое.",
   "Che cos'è la residenza anagrafica?": "Что такое residenza anagrafica, учётная прописка?",
