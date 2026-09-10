@@ -415,8 +415,8 @@ export const DE_QUESTION_BANK_RU: Record<string, string> = {
   "Bismarck ab 1871. Ebert wurde 1919 erster Reichspräsident, Adenauer 1949 erster Bundeskanzler.":
     "Бисмарк с 1871 года. Эберт в 1919 году стал первым рейхспрезидентом, Аденауэр в 1949 — первым федеральным канцлером.",
   "Wann endete der Erste Weltkrieg?": "Когда кончилась Первая мировая война?",
-  "1914": "В 1914",
-  "1933": "В 1933",
+  "1914": "1914",
+  "1933": "1933",
   "1918. Im selben Jahr dankte der Kaiser ab und die Republik wurde ausgerufen.":
     "В 1918 году. В том же году император отрёкся и была провозглашена республика.",
   "Was war der Versailler Vertrag?": "Что такое Версальский договор?",
@@ -454,7 +454,7 @@ export const DE_QUESTION_BANK_RU: Record<string, string> = {
     "Страхование на случай болезни, несчастного случая и по старости возникло в 1880-е годы — немецкое социальное государство старше немецкой демократии.",
   "Wann kamen die Nationalsozialisten in Deutschland an die Macht?":
     "Когда национал-социалисты пришли в Германии к власти?",
-  "1939": "В 1939",
+  "1939": "1939",
   "Am 30. Januar 1933 wurde Hitler Reichskanzler. 1939 begann der Krieg, 1945 endete er.":
     "30 января 1933 года Гитлер стал рейхсканцлером. В 1939 году началась война, в 1945 она кончилась.",
   "Was bewirkte das Ermächtigungsgesetz von 1933?":
@@ -634,9 +634,9 @@ export const DE_QUESTION_BANK_RU: Record<string, string> = {
     "«Мы — народ» — дословно мысль из статьи 20 Основного закона, на которую ГДР только притязала.",
   "In welcher Stadt waren die Montagsdemonstrationen 1989 besonders bedeutsam?":
     "В каком городе понедельничные демонстрации 1989 года были особенно значимы?",
-  "Dresden": "В Дрездене",
-  "Rostock": "В Ростоке",
-  "Erfurt": "В Эрфурте",
+  "Dresden": "Дрезден",
+  "Rostock": "Росток",
+  "Erfurt": "Эрфурт",
   "In Leipzig, ausgehend von den Friedensgebeten in der Nikolaikirche, wuchsen die Demonstrationen auf Hunderttausende an.":
     "В Лейпциге, где из молитв о мире в церкви святого Николая демонстрации выросли до сотен тысяч человек.",
   "Wer war zur Zeit der Wiedervereinigung Bundeskanzler?":
@@ -654,7 +654,7 @@ export const DE_QUESTION_BANK_RU: Record<string, string> = {
     "Два немецких государства и четыре державы-победительницы договорились об этом в 1990 году — внешнеполитическое условие единства.",
   "Wann zogen Bundestag und Bundesregierung nach Berlin um?":
     "Когда Бундестаг и федеральное правительство переехали в Берлин?",
-  "2005": "В 2005",
+  "2005": "2005",
   "Sie sind in Bonn geblieben": "Они остались в Бонне",
   "1999. Berlin war schon 1990 wieder Hauptstadt, der Umzug von Parlament und Regierung folgte neun Jahre später.":
     "В 1999 году. Берлин снова стал столицей ещё в 1990 году, а переезд парламента и правительства последовал девятью годами позже.",
@@ -1577,7 +1577,7 @@ export const DE_QUESTION_BANK_RU: Record<string, string> = {
   "Der Reichstag wurde gewählt, konnte die Regierung aber nicht stürzen — der Kanzler war dem Kaiser verantwortlich.":
     "Рейхстаг избирался, но свалить правительство не мог — канцлер отвечал перед императором.",
   "Wann begann der Erste Weltkrieg?": "Когда началась Первая мировая война?",
-  "1919": "В 1919",
+  "1919": "1919",
   "1914, und er endete 1918 mit der deutschen Niederlage.":
     "В 1914 году, а кончилась она в 1918 поражением Германии.",
   "Wer war der erste Reichspräsident der Weimarer Republik?":
@@ -1661,10 +1661,10 @@ export const DE_QUESTION_BANK_RU: Record<string, string> = {
     "Вместе с братом Гансом она раздавала в Мюнхене листовки против режима. 20 июля — это военное сопротивление вокруг Штауффенберга.",
   "Welches Land überfiel Deutschland am 1. September 1939?":
     "На какую страну Германия напала 1 сентября 1939 года?",
-  "Frankreich": "На Францию",
-  "Polen": "На Польшу",
-  "Die Sowjetunion": "На Советский Союз",
-  "Österreich": "На Австрию",
+  "Frankreich": "Франция",
+  "Polen": "Польша",
+  "Die Sowjetunion": "Советский Союз",
+  "Österreich": "Австрия",
   "Der Überfall auf Polen löste den Zweiten Weltkrieg aus. Der Angriff auf die Sowjetunion folgte 1941.":
     "Нападение на Польшу развязало Вторую мировую войну. Нападение на Советский Союз последовало в 1941 году.",
   "Was ist am 8. Mai 1945 geschehen?": "Что произошло 8 мая 1945 года?",
@@ -1879,8 +1879,8 @@ export const DE_QUESTION_BANK_RU: Record<string, string> = {
     "Распределение мест было известно заранее; списку можно было сказать «да», но выбирать между возможностями было нельзя.",
   "In welchem Jahr wurde Deutschland wiedervereinigt?":
     "В каком году Германия была воссоединена?",
-  "1991": "В 1991",
-  "1993": "В 1993",
+  "1991": "1991",
+  "1993": "1993",
   "Am 3. Oktober 1990. Die Mauer fiel schon im November 1989.":
     "3 октября 1990 года. Стена пала ещё в ноябре 1989-го.",
   "Von welcher Kirche gingen die Leipziger Montagsdemonstrationen aus?":
@@ -1987,7 +1987,7 @@ export const DE_QUESTION_BANK_RU: Record<string, string> = {
     "Каждый гражданин государства-члена сам собой является и гражданином Союза.",
   "Seit wann ist die Bundesrepublik Mitglied der NATO?":
     "С какого времени Федеративная Республика состоит в НАТО?",
-  "1955": "С 1955 года",
+  "1955": "1955",
   "1955, im Zuge der Westbindung. 1949 wurde die Bundesrepublik gegründet, 1973 trat sie den UN bei.":
     "С 1955 года, в ходе привязки к Западу. В 1949 году Федеративная Республика была основана, в 1973 она вступила в ООН.",
   "Welche deutsche Institution überwacht heute nicht mehr die Geldpolitik des Euro?":

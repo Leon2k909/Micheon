@@ -193,10 +193,10 @@ export const UK_QUESTION_BANK_RU: Record<string, string> = {
   "The Thames — the second longest river in the UK, after the Severn.":
     "Темза — вторая по длине река Соединённого Королевства после Северна.",
   "In which year did the Channel Tunnel open?": "В каком году открылся тоннель под Ла-Маншем?",
-  "1984": "В 1984",
-  "1990": "В 1990",
-  "1994": "В 1994",
-  "2000": "В 2000",
+  "1984": "1984",
+  "1990": "1990",
+  "1994": "1994",
+  "2000": "2000",
   "1994, linking Folkestone with Coquelles in France — the UK's only fixed land link to the continent.":
     "В 1994 году, соединив Фолкстон с Кокелем во Франции — единственная постоянная сухопутная связь Соединённого Королевства с континентом.",
   "Which of these is an official language in Wales?":
@@ -311,7 +311,7 @@ export const UK_QUESTION_BANK_RU: Record<string, string> = {
   "Boudicca, queen of the Iceni. Her statue stands on Westminster Bridge in London.":
     "Боудикка, королева иценов. Её статуя стоит у Вестминстерского моста в Лондоне.",
   "In which year did the Romans leave Britain?": "В каком году римляне ушли из Британии?",
-  "AD 597": "В 597 году нашей эры",
+  "AD 597": "597 н. э.",
   "AD 410, when troops were withdrawn to defend Rome itself.":
     "В 410 году нашей эры, когда войска отозвали на защиту самого Рима.",
   "A Roman legal code": "Римский свод законов",
@@ -336,8 +336,8 @@ export const UK_QUESTION_BANK_RU: Record<string, string> = {
     "Стоунхендж, построенный в каменном веке и по сей день входящий в список Всемирного наследия.",
   "Where is the Stone Age settlement of Skara Brae?":
     "Где находится поселение каменного века Скара-Брей?",
-  "Cornwall": "В Корнуолле",
-  "Orkney": "На Оркнейских островах",
+  "Cornwall": "Корнуолл",
+  "Orkney": "Оркнейские острова",
   "Skara Brae is in Orkney, off the north coast of Scotland.":
     "Скара-Брей находится на Оркнейских островах, у северного берега Шотландии.",
   "The languages of which people gave rise to modern Welsh, Gaelic and Irish?":
@@ -457,14 +457,14 @@ export const UK_QUESTION_BANK_RU: Record<string, string> = {
     "Разрыв начался со спора о его первом браке. Он сделал себя главой Церкви Англии.",
   "In which year was the Spanish Armada defeated?":
     "В каком году была разбита Непобедимая армада?",
-  "1558": "В 1558",
+  "1558": "1558",
   "1588 — beaten off by the English navy and then scattered by storms.":
     "В 1588 году — её отбил английский флот, а затем разметали бури.",
   "Which of Henry VIII's wives was the mother of Elizabeth I?":
     "Какая из жён Генриха VIII была матерью Елизаветы I?",
   "Anne Boleyn, who was beheaded. Catherine of Aragon was Mary I's mother and Jane Seymour Edward VI's.":
     "Анна Болейн, которую обезглавили. Екатерина Арагонская была матерью Марии I, а Джейн Сеймур — Эдуарда VI.",
-  "Oxford": "В Оксфорде",
+  "Oxford": "Оксфорд",
   "Stratford-upon-Avon in 1564. He worked in London, at the Globe Theatre.":
     "В Стратфорде-на-Эйвоне в 1564 году. Работал он в Лондоне, в театре «Глобус».",
   "Which monarch was known as 'Bloody Mary'?": "Какого монарха прозвали Кровавой Мэри?",
@@ -516,7 +516,7 @@ export const UK_QUESTION_BANK_RU: Record<string, string> = {
   "Cavaliers, or Royalists, supported Charles I. The Roundheads supported Parliament.":
     "Кавалеры, они же роялисты, поддерживали Карла I. Круглоголовые поддерживали парламент.",
   "In which year was Charles I executed?": "В каком году казнили Карла I?",
-  "1642": "В 1642",
+  "1642": "1642",
   "1649 — the only English king put to death by his own subjects.":
     "В 1649 году — единственный английский король, преданный смерти собственными подданными.",
   "What title did Oliver Cromwell hold?": "Какой титул носил Оливер Кромвель?",
@@ -554,7 +554,7 @@ export const UK_QUESTION_BANK_RU: Record<string, string> = {
   "William of Orange and his wife Mary, James II's Protestant daughter.":
     "Вильгельм Оранский и его жена Мария, протестантская дочь Иакова II.",
   "In which year was the Great Fire of London?": "В каком году был Великий лондонский пожар?",
-  "1665": "В 1665",
+  "1665": "1665",
   "1666, the year after the Great Plague of 1665.":
     "В 1666 году, через год после Великой чумы 1665 года.",
   "What did Charles I believe about his authority?": "Что Карл I думал о своей власти?",
@@ -736,7 +736,7 @@ export const UK_QUESTION_BANK_RU: Record<string, string> = {
     "Референдум был в июне 2016 года; Соединённое Королевство вышло 31 января 2020 года, с переходным сроком до конца года.",
   "In which year did the UK join the European Economic Community?":
     "В каком году Соединённое Королевство вступило в Европейское экономическое сообщество?",
-  "1957": "В 1957",
+  "1957": "1957",
   "1973. The EEC later became the European Union.":
     "В 1973 году. Позже ЕЭС стало Европейским союзом.",
   "Who became the first woman Prime Minister of the UK?":
@@ -786,7 +786,7 @@ export const UK_QUESTION_BANK_RU: Record<string, string> = {
   "Which happened first: the founding of the NHS or the end of the Second World War?":
     "Что было раньше: основание NHS или конец Второй мировой войны?",
   "The end of the war": "Конец войны",
-  "The same year": "В один и тот же год",
+  "The same year": "Тот же год",
   "The NHS, by ten years": "NHS, на десять лет",
   "The war ended in 1945; the NHS opened in 1948, built by the government elected afterwards.":
     "Война кончилась в 1945 году; NHS открылась в 1948, и построило её правительство, избранное уже после.",
@@ -811,8 +811,8 @@ export const UK_QUESTION_BANK_RU: Record<string, string> = {
   "2012. London has hosted three times — 1908, 1948 and 2012 — more than any other city.":
     "В 2012 году. Лондон принимал их трижды — в 1908, 1948 и 2012 годах, больше любого другого города.",
   "In which year did Queen Elizabeth II die?": "В каком году умерла королева Елизавета II?",
-  "2021": "В 2021",
-  "2023": "В 2023",
+  "2021": "2021",
+  "2023": "2023",
   "September 2022, after 70 years — the longest reign in British history. Charles III succeeded her.":
     "В сентябре 2022 года, после 70 лет на престоле — самое долгое правление в британской истории. Ей наследовал Карл III.",
   "Which came first: the Peasants' Revolt or the Black Death?":
@@ -857,9 +857,9 @@ export const UK_QUESTION_BANK_RU: Record<string, string> = {
   "Charles III succeeded his mother, Elizabeth II, on her death.":
     "Карл III наследовал своей матери Елизавете II после её смерти.",
   "Where does a coronation take place?": "Где проходит коронация?",
-  "St Paul's Cathedral": "В соборе святого Павла",
-  "Westminster Abbey": "В Вестминстерском аббатстве",
-  "Buckingham Palace": "В Букингемском дворце",
+  "St Paul's Cathedral": "Собор святого Павла",
+  "Westminster Abbey": "Вестминстерское аббатство",
+  "Buckingham Palace": "Букингемский дворец",
   "Westminster Abbey, conducted by the Archbishop of Canterbury.":
     "В Вестминстерском аббатстве, её совершает архиепископ Кентерберийский.",
   "Since the law changed in 2013, who inherits the throne?":
@@ -1006,10 +1006,10 @@ export const UK_QUESTION_BANK_RU: Record<string, string> = {
   "Defence, foreign policy, immigration, the currency and national security are reserved. Health, education and housing are devolved.":
     "Оборона, внешняя политика, въезд в страну, валюта и государственная безопасность оставлены центру. Здравоохранение, образование и жильё переданы вниз.",
   "Where does the Scottish Parliament sit?": "Где заседает шотландский парламент?",
-  "Stormont": "В Стормонте",
-  "Holyrood": "В Холируде",
-  "The Senedd": "В Senedd",
-  "Westminster": "В Вестминстере",
+  "Stormont": "Стормонт",
+  "Holyrood": "Холируд",
+  "The Senedd": "Senedd",
+  "Westminster": "Вестминстер",
   "Holyrood in Edinburgh. Stormont is Northern Ireland's, the Senedd is Wales'.":
     "В Холируде в Эдинбурге. Стормонт — североирландский, Senedd — уэльский.",
   "What is the Welsh Parliament called?": "Как называется парламент Уэльса?",
@@ -1111,7 +1111,7 @@ export const UK_QUESTION_BANK_RU: Record<string, string> = {
   "Only in civil matters": "Только в гражданских делах",
   "Everyone is subject to the law, including the police. That is what the rule of law means.":
     "Закону подчинены все, включая полицию. В этом и состоит верховенство права.",
-  "Local council services": "Услуги местного совета",
+  "Local council services": "На услуги местного совета",
   "NI contributions build entitlement to the state pension and some benefits. Council tax pays for local services.":
     "Взносы National Insurance дают право на государственную пенсию и часть пособий. Council tax оплачивает местные услуги.",
   "How do most employees pay income tax?":
@@ -1174,7 +1174,7 @@ export const UK_QUESTION_BANK_RU: Record<string, string> = {
     "Открыто и для однополых, и для разнополых пар, с правами, схожими с брачными.",
   "When did same-sex marriage become legal in Northern Ireland?":
     "Когда однополый брак стал законным в Северной Ирландии?",
-  "2014": "В 2014",
+  "2014": "2014",
   "It is not legal there": "Он там не законен",
   "2020 in Northern Ireland; 2014 in England, Wales and Scotland.":
     "В 2020 году в Северной Ирландии; в 2014 — в Англии, Уэльсе и Шотландии.",
@@ -1370,7 +1370,7 @@ export const UK_QUESTION_BANK_RU: Record<string, string> = {
   "Charles Dickens, whose books exposed the poverty of industrial Britain.":
     "Чарльз Диккенс, чьи книги показали нищету промышленной Британии.",
   "Where is the National Gallery?": "Где находится Национальная галерея?",
-  "Trafalgar Square, London": "На Трафальгарской площади в Лондоне",
+  "Trafalgar Square, London": "Трафальгарская площадь в Лондоне",
   "Trafalgar Square in London. It holds the national collection of paintings and is free to enter.":
     "На Трафальгарской площади в Лондоне. Она хранит национальное собрание живописи, и вход в неё бесплатный.",
   "In which year was the British Museum founded?": "В каком году был основан Британский музей?",
@@ -1430,9 +1430,9 @@ export const UK_QUESTION_BANK_RU: Record<string, string> = {
   "Scotland, in 1996.": "В Шотландии, в 1996 году.",
   "In which country did the first successful IVF birth take place?":
     "В какой стране родился первый ребёнок, зачатый в пробирке?",
-  "The United States": "В Соединённых Штатах",
-  "France": "Во Франции",
-  "Australia": "В Австралии",
+  "The United States": "Соединённые Штаты",
+  "France": "Франция",
+  "Australia": "Австралия",
   "England, in 1978.": "В Англии, в 1978 году.",
   "Who laid the foundations of computer science and worked at Bletchley Park?":
     "Кто заложил основы науки о вычислениях и работал в Блетчли-парке?",

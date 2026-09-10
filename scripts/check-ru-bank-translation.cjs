@@ -40,9 +40,11 @@ const built = esbuild.buildSync({
       'export { UK_QUESTIONS } from "./src/lib/ukQuestionBank.ts";\n' +
       'export { DE_QUESTIONS } from "./src/lib/deQuestionBank.ts";\n' +
       'export { PL_QUESTIONS } from "./src/lib/plQuestionBank.ts";\n' +
+      'export { FR_QUESTIONS } from "./src/lib/frQuestionBank.ts";\n' +
       'export { UK_QUESTION_BANK_RU } from "./src/lib/ukQuestionBankTranslationsRu.ts";\n' +
       'export { DE_QUESTION_BANK_RU } from "./src/lib/deQuestionBankTranslationsRu.ts";\n' +
       'export { PL_QUESTION_BANK_RU } from "./src/lib/plQuestionBankTranslationsRu.ts";\n' +
+      'export { FR_QUESTION_BANK_RU } from "./src/lib/frQuestionBankTranslationsRu.ts";\n' +
       'export { LIFE_IN_THE_UK_RU } from "./src/lib/lifeInTheUkTranslationsRu.ts";\n' +
       'export { LEBEN_IN_DEUTSCHLAND_RU } from "./src/lib/lebenInDeutschlandTranslationsRu.ts";\n' +
       'export { VIVRE_EN_FRANCE_RU } from "./src/lib/vivreEnFranceTranslationsRu.ts";\n' +
@@ -145,6 +147,25 @@ const BANKS = [
       "KRUS",
       "RODO",
       "Wójt",
+    ],
+  },
+  {
+    label: "Vivre en France",
+    questions: M.FR_QUESTIONS,
+    table: M.FR_QUESTION_BANK_RU,
+    symbol: "FR_QUESTION_BANK_RU",
+    // The half that stays FRENCH, as VIVRE_EN_FRANCE_RU keeps it: the word
+    // on the form, the card or the payslip. The half that becomes Russian —
+    // Сенат, Защитник прав, префект, Конституционный совет — is left to the
+    // no-Russian rule above, because Russian declines those and a literal
+    // needle would accuse a correct sentence for writing Защитнику прав.
+    keep: [
+      "laïcité",
+      "SMIC",
+      "Assurance maladie",
+      "Sécurité sociale",
+      "carte Vitale",
+      "baccalauréat",
     ],
   },
 ];
