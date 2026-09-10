@@ -111,21 +111,34 @@ const BANDS = [
   { upTo: 12000 },
   { upTo: 16000 },
 ];
-// Italian is finished, and its floor now sits beside Spanish rather than under
-// it: the two cover the queue identically, so one number holds them both and a
-// drop in either reads as the loss it is. The floor lives here rather than only
-// in check-translation-coverage because a language with a table and no floor
-// here fails the build outright, which is how Italian announced itself on its
-// first day.
-// Russian is still at zero, because while a table is being written the rule
-// that matters is only that its number never falls.
-// CAVEAT on every number in this line except French: the inline fallback
-// below is built from item.fr alone and handed to EVERY language, so a card
-// with an inline French counts as translated for Italian, Portuguese and
-// Russian too. Russian measures 4,671 here against roughly 830 catalogue
-// entries of its own — the difference is that inflation. Correcting it would
-// move Italian and Portuguese below their floors in the same commit, so it
-// wants doing deliberately rather than as a side effect.
+// The floors are on the numbers now, with a hundred of headroom each.
+//
+// They were set one at a time while the tables were being written, and they
+// stayed where they were set. Portuguese stood at 4.370 against a table that
+// answers 24.432 of the queue; the line above Russian said it was still at
+// zero, which stopped being true a long time before its table did. A floor
+// five thousand below what a language reaches fails on nothing anybody would
+// call a loss — which is the same as not having one.
+//
+// Five of the six now cover the queue identically, so one number holds them
+// all and a drop in any of them reads as the loss it is. Russian is the
+// exception by 239 cards, all of them held on purpose by
+// scripts/russian-german-only.cjs, so it carries its own number.
+//
+// A hundred rather than four hundred: a pack leaving the spoken queue cost
+// Russian ten entries once, and ten such moves should not be a red main —
+// but a lost chapter of translations should be. The floor lives here rather
+// than only in check-translation-coverage because a language with a table
+// and no floor here fails the build outright, which is how Italian
+// announced itself on its first day.
+// The caveat that stood here is gone, and so is what it described. The
+// inline fallback below used to be built from item.fr alone and handed to
+// every language, so a card with an inline French counted as translated for
+// Italian, Portuguese and Russian too. It is now built per language. Five of
+// the six read identically either way — their tables have since filled in —
+// and only Russian moved, by the forty-seven cards that carry an inline
+// French and no Russian. Its floor has ten thousand of headroom, so the
+// correction cost nothing that had to be traded for it.
 // Russian's floor came down 10 when the texting pack left the spoken queue.
 // Its thirty sentences are translated in all six languages and still taught in
 // lessons; they are simply no longer read aloud, because chat shorthand has no
@@ -133,7 +146,7 @@ const BANDS = [
 // too little headroom to absorb it, so it is the only one that moved — the
 // translations are all still there, and the rule that its number never falls
 // on its own is intact.
-const TRANSLATED_QUEUE_FLOORS = { fr: 17300, pl: 18700, es: 24000, it: 24000, pt: 4370, ru: 14650 };
+const TRANSLATED_QUEUE_FLOORS = { fr: 24330, pl: 24330, es: 24330, it: 24330, pt: 24330, ru: 24090 };
 
 /**
  * How much of the word tracker the French course is allowed to be missing.
@@ -163,9 +176,18 @@ assert.ok(curated > 40,
 // Inline translations live on the catalogue entry; the tables are keyed by the
 // German text. translate() prefers inline, so both have to be offered here or
 // a card with a good inline French would read as missing.
+// One map per language, because translate() takes the inline for the
+// language it is asked about. Sharing French with the others answered a
+// question nobody asked: whether the card has a French.
 const inline = new Map();
 for (const item of buildCatalog(parts)) {
-  if (item.fr) inline.set(String(item.de), String(item.fr));
+  const de = String(item.de || "");
+  if (!de) continue;
+  for (const language of TRANSLATION_LANGUAGES) {
+    if (!item[language]) continue;
+    if (!inline.has(language)) inline.set(language, new Map());
+    inline.get(language).set(de, String(item[language]));
+  }
 }
 
 const queue = buildListenQueue(parts, loadGradeStore(null),
@@ -180,7 +202,8 @@ for (const language of TRANSLATION_LANGUAGES) {
   queue.forEach((item, index) => {
     const de = String(item.de || "");
     if (!de) return;
-    if (!translate(de, language, inline.get(de))) missingAt.push({ at: index + 1, de, en: item.en });
+    const own = inline.get(language)?.get(de);
+    if (!translate(de, language, own)) missingAt.push({ at: index + 1, de, en: item.en });
   });
 
   for (const band of BANDS) {
