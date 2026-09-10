@@ -12,9 +12,9 @@
  * Life in the UK is not in this list and never will be: its bank is written
  * in English already. The other six are arriving one at a time, so BANKS
  * holds the ones an English reader can already have — Leben in Deutschland,
- * Zycie w Polsce, Vivere in Italia and Vivir en España so far. A bank is
- * added to that list on the day its table ships, and from that day this
- * gate refuses to let a single string of it go missing.
+ * Zycie w Polsce, Vivere in Italia, Vivir en España and Vivre en France so
+ * far. A bank is added to that list on the day its table ships, and from
+ * that day this gate refuses to let a single string of it go missing.
  *
  * What this checks, for each bank listed:
  *
@@ -42,10 +42,12 @@ const built = esbuild.buildSync({
       'export { PL_QUESTIONS } from "./src/lib/plQuestionBank.ts";\n' +
       'export { IT_QUESTIONS } from "./src/lib/itQuestionBank.ts";\n' +
       'export { ES_QUESTIONS } from "./src/lib/esQuestionBank.ts";\n' +
+      'export { FR_QUESTIONS } from "./src/lib/frQuestionBank.ts";\n' +
       'export { DE_QUESTION_BANK_EN } from "./src/lib/deQuestionBankTranslationsEn.ts";\n' +
       'export { PL_QUESTION_BANK_EN } from "./src/lib/plQuestionBankTranslationsEn.ts";\n' +
       'export { IT_QUESTION_BANK_EN } from "./src/lib/itQuestionBankTranslationsEn.ts";\n' +
       'export { ES_QUESTION_BANK_EN } from "./src/lib/esQuestionBankTranslationsEn.ts";\n' +
+      'export { FR_QUESTION_BANK_EN } from "./src/lib/frQuestionBankTranslationsEn.ts";\n' +
       'export { LEBEN_IN_DEUTSCHLAND_EN } from "./src/lib/lebenInDeutschlandTranslationsEn.ts";\n' +
       'export { VIVRE_EN_FRANCE_EN } from "./src/lib/vivreEnFranceTranslationsEn.ts";\n' +
       'export { VIVERE_IN_ITALIA_EN } from "./src/lib/vivereInItaliaTranslationsEn.ts";\n' +
@@ -266,6 +268,66 @@ const BANKS = [
       ["castellano", "Castilian"],
     ],
   },
+  {
+    label: "Vivre en France",
+    questions: M.FR_QUESTIONS,
+    table: M.FR_QUESTION_BANK_EN,
+    symbol: "FR_QUESTION_BANK_EN",
+    // The half that stays FRENCH, as VIVRE_EN_FRANCE_EN keeps it: the name of
+    // the law or the institution the exam asks about, and the words with no
+    // English twin. What English already names takes its English name, and
+    // those are the pairs below: a mairie is a town hall and has to arrive as
+    // one, an Assemblée nationale the National Assembly.
+    //
+    // Measured against the finished table first. CPAM, PACS, mutuelle and the
+    // Journée défense et citoyenneté are each in fewer than three keys and sit
+    // under the threshold this gate fires at, so listing them would be
+    // decoration.
+    //
+    // Three needles that look as if they belong are deliberately out. "état
+    // civil" and "aide juridictionnelle" are renamed on purpose — the lesson
+    // says civil register and legal aid, and a gate watching the French would
+    // accuse every correct row. And "maire" hides inside primaire and
+    // caisse primaire: the needle inside a longer French word, correct English
+    // in the value. mairie, one letter longer, does not hide anywhere.
+    //
+    // "commune", "département", "député" and "grève" each drop a few times
+    // and stay in: a loi commune is a common law, a conseil départemental a
+    // departmental council, a député européen a member of the European
+    // Parliament, and one option says striking rather than the strike. All are
+    // far below the half this gate fires at.
+    keep: [
+      "laïcité",
+      "SMIC",
+      "Sécurité sociale",
+      "prud'hommes",
+      "carte Vitale",
+      "Assurance maladie",
+      "Défenseur des droits",
+      "Conseil constitutionnel",
+      "cour d'assises",
+      "tribunal correctionnel",
+      "Journal officiel",
+      "bloc de constitutionnalité",
+      "Code civil",
+      "baccalauréat",
+      "lycée",
+      "collège",
+      "commune",
+      "département",
+      "Marianne",
+      "Marseillaise",
+      "France Travail",
+      ["préfecture", "prefecture"],
+      ["préfet", "prefect"],
+      ["mairie", "town hall"],
+      ["Sénat", "Senate"],
+      ["Assemblée nationale", "National Assembly"],
+      ["Premier ministre", "prime minister"],
+      ["député", "deput"],
+      ["grève", "strik"],
+    ],
+  },
 ];
 
 const failures = [];
@@ -287,6 +349,7 @@ const JOINING = new Set([
   "il", "lo", "la", "le", "gli", "dei", "degli", "della", "delle", "di", "da",
   "e", "ed", "un", "una", "al", "alla", "nel", "nella", "dal", "dalla",
   "el", "los", "las", "del", "de", "y", "en", "con", "por", "para",
+  "et", "du", "des", "les", "le", "aux", "sur", "sous",
 ]);
 const looksLikeTitle = (text) => {
   const words = text.replace(/[.!?,]/g, " ").split(/\s+/).filter(Boolean);
@@ -338,9 +401,15 @@ for (const { label, questions, table, symbol, keep } of BANKS) {
     }
   }
 
-  for (const term of keep) {
+  for (const entry of keep) {
+    // A term the target language keeps unchanged is written once: the string
+    // to look for is the same on both sides. A term the lesson deliberately
+    // renames — castellano is Castilian, a préfecture a prefecture — gives
+    // the pair, so the gate watches the source word and the English one it
+    // has to arrive as.
+    const [term, kept] = Array.isArray(entry) ? entry : [entry, entry];
     const withTerm = Object.entries(table).filter(([key]) => key.includes(term));
-    const dropped = withTerm.filter(([, value]) => !value.includes(term));
+    const dropped = withTerm.filter(([, value]) => !value.includes(kept));
     if (withTerm.length >= 3 && dropped.length > withTerm.length / 2) {
       failures.push(
         `${label}: ${dropped.length} of ${withTerm.length} entries mentioning "${term}" no longer carry it. ` +
