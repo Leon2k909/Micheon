@@ -32,6 +32,13 @@ export function audioLanguagesInPlay(direction?: LearningDirection): TtsAudioLan
     AUDIO_LANGUAGE[sides.target.code],
     AUDIO_LANGUAGE[sides.meaning.code],
   ]);
+  // The meaning column is written in the app's language wherever a table
+  // reaches the card, and stays German or English where it does not — see
+  // stepsForLearningDirection. So on a French app reading a German course,
+  // most meanings are French and some are still English, and both get read
+  // out. Dropping the English row there would be audio nobody can turn down,
+  // which is the one thing this function exists to prevent.
+  inPlay.add(AUDIO_LANGUAGE[sides.meaning.code === "de" ? "de" : "en"]);
   inPlay.add(audioLanguageForVoiceTag(uiSpeechLang()));
   // A stable order rather than the order they happened to be added, so the
   // panel does not rearrange itself when the interface language changes.

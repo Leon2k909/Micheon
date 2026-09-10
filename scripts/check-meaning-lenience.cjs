@@ -121,8 +121,12 @@ for (const [typed, key] of [
 ]) {
   check(`and a different sentence is still a different sentence: ${typed}`, !sameEnglishAspect(typed, key));
 }
+// It used to be enough to ask "not German", because the meaning column was
+// German or English and nothing else. It can be any of the eight languages
+// now, so the condition has to name English rather than rule out German —
+// otherwise a Polish meaning would be handed to an English tense rule.
 check("the aspect is only ever forgiven on the side the learner is not learning",
-  /if \(!meaningIsGerman && sameEnglishAspect\(typed, displayEnglish\)\)/u.test(guided)
+  /if \(meaningIsEnglish && sameEnglishAspect\(typed, displayEnglish\)\)/u.test(guided)
   // The target side is matchEither, and it must never consult this.
   && !/matchEither[\s\S]{0,200}?sameEnglishAspect/u.test(guided),
   "somebody learning English is being taught this exact difference and must still be marked on it");

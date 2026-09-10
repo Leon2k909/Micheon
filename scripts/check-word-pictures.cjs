@@ -318,8 +318,13 @@ const session = fs.readFileSync(path.join(root, "src/GuidedSession.tsx"), "utf8"
 // is on depends on the course: learning English moves it to item.de, and the
 // French course with a German meaning column has no English on the card at
 // all, so it asks for nothing rather than looking a German string up.
+//
+// The meaning column is written in the app's language now, so on a Polish app
+// `en` holds Polish and the English survives in `originalEn` — a lookup key
+// rather than a line anybody reads. Falling back to `en` keeps every course
+// whose meaning column was already English working unchanged.
 assert.ok(
-  session.includes('? wordPicture(learnEn ? item?.de : meaningIsGerman ? "" : item?.en, item?.pos)'),
+  session.includes('? wordPicture(learnEn ? item?.de : meaningIsGerman ? "" : (item?.originalEn ?? item?.en), item?.pos)'),
   "the lesson card must take its picture from the word's own gloss and part of speech, "
   + 'from whichever side of the step the gloss is on in this direction'
 );

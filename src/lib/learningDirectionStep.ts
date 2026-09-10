@@ -1,4 +1,6 @@
+import { meaningLanguageFor, targetLanguage } from "@/lib/courseLanguages";
 import { getLearningDirection, type LearningDirection } from "@/lib/direction";
+import { translate, type TranslationLanguage } from "@/lib/translations";
 import { swapStepForFrench } from "@/lib/frenchCourse";
 import { swapStepForPolish } from "@/lib/polishCourse";
 import { swapStepForPortuguese } from "@/lib/portugueseCourse";
@@ -61,24 +63,81 @@ export function stepsForLearningDirection(
   steps: any[],
   direction: LearningDirection = getLearningDirection()
 ): any[] {
-  if (direction === "learn-en") return steps.map(swapStepForEnglish);
-  if (direction === "learn-fr") {
-    return steps.map((step) => swapStepForFrench(step)).filter((step) => step !== null);
-  }
-  if (direction === "learn-pl") {
-    return steps.map((step) => swapStepForPolish(step)).filter((step) => step !== null);
-  }
-  if (direction === "learn-es") {
-    return steps.map((step) => swapStepForSpanish(step)).filter((step) => step !== null);
-  }
-  if (direction === "learn-it") {
-    return steps.map((step) => swapStepForItalian(step)).filter((step) => step !== null);
-  }
-  if (direction === "learn-pt") {
-    return steps.map((step) => swapStepForPortuguese(step)).filter((step) => step !== null);
-  }
-  if (direction === "learn-ru") {
-    return steps.map((step) => swapStepForRussian(step)).filter((step) => step !== null);
-  }
-  return steps;
+  // One exit, so the meaning pass below cannot be forgotten by a direction
+  // added later — which is exactly how the older half of this file grew.
+  const swapped = ((): any[] => {
+    if (direction === "learn-en") return steps.map(swapStepForEnglish);
+    if (direction === "learn-fr") {
+      return steps.map((step) => swapStepForFrench(step)).filter((step) => step !== null);
+    }
+    if (direction === "learn-pl") {
+      return steps.map((step) => swapStepForPolish(step)).filter((step) => step !== null);
+    }
+    if (direction === "learn-es") {
+      return steps.map((step) => swapStepForSpanish(step)).filter((step) => step !== null);
+    }
+    if (direction === "learn-it") {
+      return steps.map((step) => swapStepForItalian(step)).filter((step) => step !== null);
+    }
+    if (direction === "learn-pt") {
+      return steps.map((step) => swapStepForPortuguese(step)).filter((step) => step !== null);
+    }
+    if (direction === "learn-ru") {
+      return steps.map((step) => swapStepForRussian(step)).filter((step) => step !== null);
+    }
+    return steps;
+  })();
+  return withMeaningInAppLanguage(swapped, direction);
+}
+
+/**
+ * Where the German of a card is, whichever course it has been put into.
+ *
+ * The courses keep it in three different places. A course read out of a table
+ * stores it as `originalDe`, because its own `de` now holds the target. The
+ * English course swaps the two columns, so its `en` is the German. The German
+ * course never moves anything.
+ */
+function germanOf(item: any, direction: LearningDirection): string {
+  const original = String(item?.originalDe ?? "").trim();
+  if (original) return original;
+  return String((direction === "learn-en" ? item?.en : item?.de) ?? "").trim();
+}
+
+/**
+ * Write the meaning column in the language the app is written in.
+ *
+ * The courses hand back a meaning that is German or English, because those
+ * are the two columns every card carries. A learner whose app is Polish was
+ * therefore reading English meanings in every course — the app spoke Polish
+ * to them everywhere except the one line that says what the sentence means.
+ *
+ * Every table is keyed by the same German, so the meaning in a third language
+ * is one lookup away. Where a table does not reach a card the English stays,
+ * rather than dropping the card: a course that shrinks by a tenth because of
+ * the interface language is a worse trade than a line that is occasionally
+ * still English.
+ */
+function withMeaningInAppLanguage(steps: any[], direction: LearningDirection): any[] {
+  const meaning = meaningLanguageFor(targetLanguage(direction));
+  if (meaning === "de" || meaning === "en") return steps;
+
+  const rewrite = (item: any): any => {
+    const german = germanOf(item, direction);
+    if (!german) return item;
+    const written = translate(german, meaning as TranslationLanguage);
+    if (!written || !written.trim()) return item;
+    // The word pictures are keyed on the English gloss, so the English has to
+    // survive being replaced on screen — it is a lookup key here, not a line
+    // the learner reads.
+    return { ...item, en: written.trim(), originalEn: item?.originalEn ?? item?.en };
+  };
+
+  return steps.map((step) => {
+    if (step?.type === "sentence" && step.item) return { ...step, item: rewrite(step.item) };
+    if (step?.type === "dialogue" && Array.isArray(step.dialogue?.lines)) {
+      return { ...step, dialogue: { ...step.dialogue, lines: step.dialogue.lines.map(rewrite) } };
+    }
+    return step;
+  });
 }

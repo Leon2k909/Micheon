@@ -52,18 +52,12 @@ import {
 } from "@/lib/guidedBackground";
 import { getCompanion } from "@/lib/companion";
 import { getLearningDirection, learningEnglish, targetLangTag } from "@/lib/direction";
-import { courseSides } from "@/lib/courseLanguages";
-import { frenchMeaningLanguage } from "@/lib/frenchCourse";
-import { polishMeaningLanguage } from "@/lib/polishCourse";
-import { matchFrenchSentence } from "@/lib/frenchTextMatch";
-import { matchPolishSentence, POLISH_SPECIAL_CHARACTERS } from "@/lib/polishTextMatch";
-import { spanishMeaningLanguage } from "@/lib/spanishCourse";
-import { matchSpanishSentence, SPANISH_SPECIAL_CHARACTERS } from "@/lib/spanishTextMatch";
-import { italianMeaningLanguage } from "@/lib/italianCourse";
-import { matchItalianSentence, ITALIAN_SPECIAL_CHARACTERS } from "@/lib/italianTextMatch";
-import { portugueseMeaningLanguage } from "@/lib/portugueseCourse";
-import { russianMeaningLanguage } from "@/lib/russianCourse";
-import { matchPortugueseSentence, PORTUGUESE_SPECIAL_CHARACTERS } from "@/lib/portugueseTextMatch";
+import { courseSides, LANGUAGE_LABEL, meaningLanguageFor, targetLanguage as courseTargetLanguage, type CourseLanguage } from "@/lib/courseLanguages";
+import { matchFrenchMeaning, matchFrenchSentence } from "@/lib/frenchTextMatch";
+import { matchPolishMeaning, matchPolishSentence, POLISH_SPECIAL_CHARACTERS } from "@/lib/polishTextMatch";
+import { matchSpanishMeaning, matchSpanishSentence, SPANISH_SPECIAL_CHARACTERS } from "@/lib/spanishTextMatch";
+import { matchItalianMeaning, matchItalianSentence, ITALIAN_SPECIAL_CHARACTERS } from "@/lib/italianTextMatch";
+import { matchPortugueseMeaning, matchPortugueseSentence, PORTUGUESE_SPECIAL_CHARACTERS } from "@/lib/portugueseTextMatch";
 import { matchRussianSentence } from "@/lib/russianTextMatch";
 import { INTERFACE_LANGUAGE_CHANGE_EVENT } from "@/lib/interfaceLanguage";
 import { formatRussianText, getRussianScript, resolveRussianScript, russianScriptLabel, russianScriptShows, russianSecondLine, RUSSIAN_SCRIPT_EVENT, RUSSIAN_SPECIAL_CHARACTERS, setRussianScript } from "@/lib/russianScript";
@@ -1300,6 +1294,26 @@ function LangBlock({ label, text, active, onHear, onKnown, onStruggle }: {
  * for every course, so it answers it here too; only the English variant is
  * this screen's own, because a British learner is marked against British.
  */
+/**
+ * Grade an answer typed into the meaning box, in whatever language that box
+ * is written in.
+ *
+ * Each language already has a matcher for this — it is what the country tests
+ * use — and they agree on their answer shape. Only the lesson still asked
+ * "German or English", because until the meaning column could be a third
+ * language there was nothing else to ask.
+ */
+function matchMeaningInLanguage(input: string, target: string, language: CourseLanguage) {
+  if (language === "fr") return matchFrenchMeaning(input, target);
+  if (language === "pl") return matchPolishMeaning(input, target);
+  if (language === "es") return matchSpanishMeaning(input, target);
+  if (language === "it") return matchItalianMeaning(input, target);
+  if (language === "pt") return matchPortugueseMeaning(input, target);
+  if (language === "ru") return matchRussianSentence(input, target);
+  if (language === "de") return matchGermanMeaning(input, target);
+  return matchEnglishMeaning(input, target);
+}
+
 function guidedTargetLanguageTag(): string {
   const direction = getLearningDirection();
   if (direction === "learn-en") {
@@ -2022,17 +2036,17 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const targetLanguage: "de" | "en" | "fr" | "pl" | "es" | "it" | "pt" | "ru" =
     learnFr ? "fr" : learnPl ? "pl" : learnEs ? "es" : learnIt ? "it" : learnPt ? "pt"
       : learnRu ? "ru" : learnEn ? "en" : "de";
-  // Which language the meaning column is written in: German in the English
-  // course, and in the French course whenever the app itself is in German.
-  const meaningLanguage: "de" | "en" = learnFr
-    ? frenchMeaningLanguage()
-    : learnPl ? polishMeaningLanguage()
-    : learnEs ? spanishMeaningLanguage()
-    : learnIt ? italianMeaningLanguage()
-    : learnPt ? portugueseMeaningLanguage()
-    : learnRu ? russianMeaningLanguage()
-    : learnEn ? "de" : "en";
+  // Which language the meaning column is written in.
+  //
+  // The app language, wherever a table can fill it — a Polish reader was
+  // getting English meanings in every course, which is the one line the app
+  // did not say in their language. courseLanguages answers this for the whole
+  // app and stepsForLearningDirection writes the column from the same answer,
+  // so the two cannot drift; the six per-course helpers that used to be asked
+  // here each narrowed it back to German or English.
+  const meaningLanguage = meaningLanguageFor(courseTargetLanguage(direction));
   const meaningIsGerman = meaningLanguage === "de";
+  const meaningIsEnglish = meaningLanguage === "en";
   // A picture of the word, where we have an honest one. It is a cue to the
   // MEANING, so any stage whose job is to produce or choose the meaning has to
   // go without: an apple beside "der Apfel" answers Translate before the
@@ -2043,7 +2057,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // moves it to item.de, and a French card whose meaning column is German has
   // no English on it at all.
   const picture = isWordItem
-    ? wordPicture(learnEn ? item?.de : meaningIsGerman ? "" : item?.en, item?.pos)
+    ? wordPicture(learnEn ? item?.de : meaningIsGerman ? "" : (item?.originalEn ?? item?.en), item?.pos)
     : null;
   // A German speaker learning English hears this on every stage, so it has to
   // honour their British/American choice — it was pinned to American, which
@@ -2057,14 +2071,18 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     : learnRu ? "Russian"
     : learnEn ? "English"
     : "German";
-  const meaningLabel = meaningIsGerman ? "German" : "English";
+  const meaningLabel = LANGUAGE_LABEL[meaningLanguage];
+  // The tag beside each column. A pair of literals did while the meaning was
+  // one of two; it is the language's own code now.
+  const meaningChip = meaningLanguage.toUpperCase();
+  const targetChip = courseTargetLanguage(direction).toUpperCase();
   // Spoken gap-fill: sentence with 1-2 words blanked, learner says the missing word(s).
   const gap = useMemo(() => computeGap(item.de), [item.de]);
   // The meaning text (item.en) is already English in normal mode (apply spelling
   // variant) but is German when learning English (show as-is).
   const displayEnglish = useMemo(
-    () => (meaningIsGerman ? item.en : formatEnglishText(item.en, englishVariant)),
-    [item.en, englishVariant, meaningIsGerman]
+    () => (meaningIsEnglish ? formatEnglishText(item.en, englishVariant) : item.en),
+    [item.en, englishVariant, meaningIsEnglish]
   );
   const listeningChoices = useMemo(
     () => buildListeningChoices(item.de, listeningChoicePool),
@@ -2158,7 +2176,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
         // the learner is not learning: somebody learning English is being
         // taught this exact difference, and matchMeaning is never their
         // target side.
-        if (!meaningIsGerman && sameEnglishAspect(typed, displayEnglish)) {
+        if (meaningIsEnglish && sameEnglishAspect(typed, displayEnglish)) {
           return { ...result, ok: true };
         }
         if (getMeaningLenience() !== "forgiving") return result;
@@ -2177,13 +2195,15 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
         }
         return forgiveSlips(primary);
       }
-      return forgiveSlips(meaningIsGerman
+      return forgiveSlips(!meaningIsGerman && !meaningIsEnglish
+        ? matchMeaningInLanguage(typed, displayEnglish, meaningLanguage)
+        : meaningIsGerman
         ? matchGermanSentence(typed, displayEnglish)
         : isWordItem
           ? matchEnglishMeaning(typed, displayEnglish)
           : matchEnglish(typed, displayEnglish));
     },
-    [displayEnglish, isWordItem, item.synonyms, meaningIsGerman]
+    [displayEnglish, isWordItem, item.synonyms, meaningIsGerman, meaningIsEnglish, meaningLanguage]
   );
   const recallBothTargetResult = useMemo(
     () => matchEither(recallBothTargetInput),
@@ -2199,9 +2219,11 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // the answer is German — each direction gets its own synonym/coach matcher.
   const shownEnglish = useMemo(
     () => isWordItem
-      ? meaningIsGerman ? primaryGermanMeaning(displayEnglish) : primaryEnglishMeaning(displayEnglish)
+      ? meaningIsGerman ? primaryGermanMeaning(displayEnglish)
+        : meaningIsEnglish ? primaryEnglishMeaning(displayEnglish)
+        : primaryAnswer(displayEnglish)
       : primaryAnswer(displayEnglish),
-    [displayEnglish, isWordItem, meaningIsGerman]
+    [displayEnglish, isWordItem, meaningIsGerman, meaningIsEnglish]
   );
   /**
    * The other language: on the card under the target, or in the row below it.
@@ -2226,11 +2248,13 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
 
   const meaningSelectPool = useMemo(
     () => translationChoicePool.map((value) => {
-      const displayValue = meaningIsGerman ? value : formatEnglishText(value, englishVariant);
+      const displayValue = meaningIsEnglish ? formatEnglishText(value, englishVariant) : value;
       if (!isWordItem) return primaryAnswer(displayValue);
-      return meaningIsGerman ? primaryGermanMeaning(displayValue) : primaryEnglishMeaning(displayValue);
+      if (meaningIsGerman) return primaryGermanMeaning(displayValue);
+      if (meaningIsEnglish) return primaryEnglishMeaning(displayValue);
+      return primaryAnswer(displayValue);
     }),
-    [translationChoicePool, meaningIsGerman, englishVariant, isWordItem]
+    [translationChoicePool, meaningIsGerman, meaningIsEnglish, englishVariant, isWordItem]
   );
   const meaningSelectChoices = useMemo(
     () => buildListeningChoices(shownEnglish, meaningSelectPool, 3),
@@ -3525,9 +3549,9 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   ? <TappableSentence text={item.de} lang={targetLang} meaningText={item.en} onWordAudio={restartReadingCountdown} />
                   : missingWord.display}
               </div>
-              {meaningOnCard && secondLanguage(meaningIsGerman ? "DE" : "EN", shownEnglish)}
+              {meaningOnCard && secondLanguage(meaningChip, shownEnglish)}
             </div>
-            {!meaningOnCard && secondLanguage(meaningIsGerman ? "DE" : "EN", shownEnglish)}
+            {!meaningOnCard && secondLanguage(meaningChip, shownEnglish)}
           </>
         ) : phase === "MeaningFirst" ? (
           /*
@@ -3550,12 +3574,12 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               {/* The inverse board, so what joins it here is the target. Same
                   rule either way: the two halves of the card stay together. */}
               {meaningOnCard && secondLanguage(
-                meaningIsGerman ? "EN" : "DE",
+                targetChip,
                 <TappableSentence text={item.de} lang={targetLang} meaningText={item.en} onWordAudio={restartReadingCountdown} />
               )}
             </div>
             {!meaningOnCard && secondLanguage(
-              meaningIsGerman ? "EN" : "DE",
+              targetChip,
               <TappableSentence text={item.de} lang={targetLang} meaningText={item.en} onWordAudio={restartReadingCountdown} />
             )}
           </>
@@ -3655,7 +3679,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               {/* Translate is the exception, here as below: there the meaning
                   is the answer, so the card cannot be the one to give it. */}
               {meaningOnCard && phase !== "Translate"
-                && secondLanguage(meaningIsGerman ? "DE" : "EN", shownEnglish)}
+                && secondLanguage(meaningChip, shownEnglish)}
             </div>
             <AnimatePresence>
               {/*
@@ -3672,10 +3696,10 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 has: there the meaning is the answer.
               */}
               {phase !== "Translate" && !meaningOnCard
-                && secondLanguage(meaningIsGerman ? "DE" : "EN", shownEnglish)}
+                && secondLanguage(meaningChip, shownEnglish)}
               {phase === "Translate" && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="fs-trow">
-                  <span className="fs-chip">{meaningIsGerman ? "DE" : "EN"}</span>
+                  <span className="fs-chip">{meaningChip}</span>
                   <p className="text-sm">
                     {uiFmt("What does this mean in {language}?", { language: ui(meaningLabel) })}
                   </p>

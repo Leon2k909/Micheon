@@ -42,6 +42,11 @@ const CYRILLIC_LOCALES = new Set(["ru", "uk", "be", "bg", "sr", "mk", "kk", "ky"
  * otherwise, and the switch is one tap away on the typing prompt.
  */
 function detectRussianScript(): ResolvedRussianScript {
+  // Somebody who has put the app itself into Russian reads Cyrillic, whatever
+  // their machine is set to. That used to be a question only about the course
+  // side; the meaning column can be Russian now, and offering a Russian reader
+  // their own language in transcription is nonsense.
+  if (resolveInterfaceLanguage() === "ru") return "cyrillic";
   if (typeof navigator === "undefined") return "latin";
 
   const languages = [navigator.language, ...(navigator.languages ?? [])]

@@ -137,41 +137,19 @@ export function translationLanguagesNeeded(
   return [...wanted];
 }
 
+/**
+ * The two columns of a course: what is being learned, and what it means.
+ *
+ * Each direction used to answer separately, and five of them narrowed the
+ * meaning column back to German or English on the grounds that those are the
+ * only two every card carries. That was true of the card and not of the
+ * tables: they are all keyed by the same German, so the meaning in a third
+ * language is one lookup away, and stepsForLearningDirection now does it.
+ * With the narrowing gone every direction gives the same answer, so it is
+ * given once — a branch per course is a branch that can drift.
+ */
 export function courseSides(direction: LearningDirection = getLearningDirection()): CourseSides {
-  if (direction === "learn-en") return { target: courseSide("en"), meaning: courseSide("de") };
-  if (direction === "learn-fr") return { target: courseSide("fr"), meaning: courseSide(meaningLanguageFor("fr")) };
-  if (direction === "learn-pl") {
-    // Narrowed to the two columns every entry carries. A French interface
-    // would otherwise ask for a French meaning beside a Polish card, and the
-    // Polish table is keyed by the German — there is no French to put there,
-    // so the row would be labelled French and filled with English.
-    const app = meaningLanguageFor("pl");
-    return { target: courseSide("pl"), meaning: courseSide(app === "de" ? "de" : "en") };
-  }
-  if (direction === "learn-es") {
-    // Same narrowing as Polish, and for the same reason: the Spanish
-    // table is keyed by the German, so German and English are the only
-    // two meanings that exist for every card.
-    const app = meaningLanguageFor("es");
-    return { target: courseSide("es"), meaning: courseSide(app === "de" ? "de" : "en") };
-  }
-  if (direction === "learn-it") {
-    // Same narrowing again, same reason: the Italian table is keyed by the
-    // German, so German and English are the only two meanings every card has.
-    const app = meaningLanguageFor("it");
-    return { target: courseSide("it"), meaning: courseSide(app === "de" ? "de" : "en") };
-  }
-  if (direction === "learn-pt") {
-    const app = meaningLanguageFor("pt");
-    return { target: courseSide("pt"), meaning: courseSide(app === "de" ? "de" : "en") };
-  }
-  if (direction === "learn-ru") {
-    // Same narrowing again. It matters more here than anywhere else: the
-    // Russian card is the only target written in an alphabet the meaning row
-    // never uses, so a meaning language the table cannot fill would put
-    // Cyrillic on both rows and label one of them French.
-    const app = meaningLanguageFor("ru");
-    return { target: courseSide("ru"), meaning: courseSide(app === "de" ? "de" : "en") };
-  }
-  return { target: courseSide("de"), meaning: courseSide("en") };
+  const target = targetLanguage(direction);
+  return { target: courseSide(target), meaning: courseSide(meaningLanguageFor(target)) };
 }
+
