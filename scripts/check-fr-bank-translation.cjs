@@ -40,6 +40,8 @@ const built = esbuild.buildSync({
       'export { UK_QUESTIONS } from "./src/lib/ukQuestionBank.ts";\n' +
       'export { DE_QUESTIONS } from "./src/lib/deQuestionBank.ts";\n' +
       'export { PL_QUESTIONS } from "./src/lib/plQuestionBank.ts";\n' +
+      'export { IT_QUESTIONS } from "./src/lib/itQuestionBank.ts";\n' +
+      'export { IT_QUESTION_BANK_FR } from "./src/lib/itQuestionBankTranslationsFr.ts";\n' +
       'export { UK_QUESTION_BANK_FR } from "./src/lib/ukQuestionBankTranslationsFr.ts";\n' +
       'export { DE_QUESTION_BANK_FR } from "./src/lib/deQuestionBankTranslationsFr.ts";\n' +
       'export { PL_QUESTION_BANK_FR } from "./src/lib/plQuestionBankTranslationsFr.ts";\n' +
@@ -189,6 +191,33 @@ const BANKS = [
       "NFZ",
       "KRUS",
       "RODO",
+    ],
+  },
+  {
+    label: "Vivere in Italia",
+    questions: M.IT_QUESTIONS,
+    table: M.IT_QUESTION_BANK_FR,
+    symbol: "IT_QUESTION_BANK_FR",
+    // The half that stays ITALIAN, as VIVERE_IN_ITALIA_FR keeps it: the word
+    // that IS the answer and that French has no word for. What French does
+    // name takes its French form — the Camera dei deputati is the Chambre des
+    // députés, the Quirinale the Quirinal — and that half is left to the
+    // no-French rule above.
+    //
+    // "Consulta" is on the list because a question asking what the Corte
+    // costituzionale is commonly called cannot be answered in French.
+    //
+    // "primo" and "secondo" are deliberately absent although they are the two
+    // courses of an Italian meal: they hide inside primo grado and secondo
+    // l'articolo, and a gate watching them would accuse the whole chapter on
+    // the courts of dropping a word it never carried.
+    keep: [
+      "codice fiscale",
+      "permesso di soggiorno",
+      "INPS",
+      "INAIL",
+      "CCNL",
+      "Consulta",
     ],
   },
 ];
