@@ -4173,7 +4173,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
           <motion.div key="write-from-memory" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             className="space-y-4">
             <p className="text-center text-sm font-semibold text-zinc-500">
-              {`Type the whole ${targetLabel} sentence — from the ${meaningLabel} above.`}
+              {ui(`Type the whole ${targetLabel} sentence — from the ${meaningLabel} above.`)}
             </p>
             <motion.div animate={shakeControls}>
               <div className={cn("fs-panel",
@@ -4185,7 +4185,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 </div>
                 <Input ref={sayRef}
                   className="fs-input"
-                  placeholder={`Type the ${targetLabel} sentence...`}
+                  placeholder={ui(`Type the ${targetLabel} sentence...`)}
                   autoFocus
                   spellCheck={false}
                   value={sayInput}
@@ -4576,7 +4576,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                       </div>
                       <Input ref={enInputRef}
                         className="fs-input"
-                        placeholder={`Type the ${meaningLabel} meaning...`}
+                        placeholder={ui(`Type the ${meaningLabel} meaning...`)}
                         autoFocus
                         spellCheck={false}
                         value={enInput}
