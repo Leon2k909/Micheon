@@ -11,10 +11,10 @@
  *
  * Life in the UK is not in this list and never will be: its bank is written
  * in English already. The other six are arriving one at a time, so BANKS
- * holds the ones an English reader can already have — Leben in Deutschland
- * and Zycie w Polsce so far. A bank is added to that list on the day its
- * table ships, and from that day this gate refuses to let a single string of
- * it go missing.
+ * holds the ones an English reader can already have — Leben in Deutschland,
+ * Zycie w Polsce and Vivere in Italia so far. A bank is added to that list
+ * on the day its table ships, and from that day this gate refuses to let a
+ * single string of it go missing.
  *
  * What this checks, for each bank listed:
  *
@@ -40,8 +40,10 @@ const built = esbuild.buildSync({
     contents:
       'export { DE_QUESTIONS } from "./src/lib/deQuestionBank.ts";\n' +
       'export { PL_QUESTIONS } from "./src/lib/plQuestionBank.ts";\n' +
+      'export { IT_QUESTIONS } from "./src/lib/itQuestionBank.ts";\n' +
       'export { DE_QUESTION_BANK_EN } from "./src/lib/deQuestionBankTranslationsEn.ts";\n' +
       'export { PL_QUESTION_BANK_EN } from "./src/lib/plQuestionBankTranslationsEn.ts";\n' +
+      'export { IT_QUESTION_BANK_EN } from "./src/lib/itQuestionBankTranslationsEn.ts";\n' +
       'export { LEBEN_IN_DEUTSCHLAND_EN } from "./src/lib/lebenInDeutschlandTranslationsEn.ts";\n' +
       'export { VIVRE_EN_FRANCE_EN } from "./src/lib/vivreEnFranceTranslationsEn.ts";\n' +
       'export { VIVERE_IN_ITALIA_EN } from "./src/lib/vivereInItaliaTranslationsEn.ts";\n' +
@@ -171,6 +173,41 @@ const BANKS = [
       "KRUS",
     ],
   },
+  {
+    label: "Vivere in Italia",
+    questions: M.IT_QUESTIONS,
+    table: M.IT_QUESTION_BANK_EN,
+    symbol: "IT_QUESTION_BANK_EN",
+    // The half that stays ITALIAN, as VIVERE_IN_ITALIA_EN keeps it: the word
+    // printed on the form, and the palace the newspapers use in place of the
+    // institution. What English already names takes its English name — the
+    // Camera dei deputati is the Chamber of Deputies, a comune a commune —
+    // and that half is left to the no-English rule above.
+    //
+    // Measured against the finished table first. questura, liceo, maturità,
+    // SPID and CNEL are each in fewer than three keys and sit under the
+    // threshold this gate fires at, so listing them would be decoration.
+    //
+    // "primo" and "secondo" are deliberately absent although they are the two
+    // courses of an Italian meal: they hide inside primo grado, primo comma
+    // and secondo l'articolo, and a gate watching them would accuse the whole
+    // chapter on the courts of dropping a word it never carried.
+    keep: [
+      "codice fiscale",
+      "permesso di soggiorno",
+      "INPS",
+      "INAIL",
+      "CCNL",
+      "CGIL",
+      "CISL",
+      "UIL",
+      "Consulta",
+      "Quirinale",
+      "Montecitorio",
+      "Palazzo Madama",
+      "Palazzo Chigi",
+    ],
+  },
 ];
 
 const failures = [];
@@ -189,6 +226,8 @@ const JOINING = new Set([
   "a", "an", "and", "as", "at", "by", "for", "in", "of", "on", "or", "the", "to",
   "am", "auf", "der", "die", "das", "im", "ob", "und", "van", "von", "zu", "zur",
   "i", "w", "we", "z", "ze", "na", "do", "od", "po", "pod", "nad",
+  "il", "lo", "la", "le", "gli", "dei", "degli", "della", "delle", "di", "da",
+  "e", "ed", "un", "una", "al", "alla", "nel", "nella", "dal", "dalla",
 ]);
 const looksLikeTitle = (text) => {
   const words = text.replace(/[.!?,]/g, " ").split(/\s+/).filter(Boolean);
