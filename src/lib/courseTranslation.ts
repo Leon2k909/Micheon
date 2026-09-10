@@ -40,6 +40,7 @@ import { IT_QUESTION_BANK_FR } from "@/lib/itQuestionBankTranslationsFr";
 import { ES_QUESTION_BANK_FR } from "@/lib/esQuestionBankTranslationsFr";
 import { RU_QUESTION_BANK_FR } from "@/lib/ruQuestionBankTranslationsFr";
 import { DE_QUESTION_BANK_EN } from "@/lib/deQuestionBankTranslationsEn";
+import { PL_QUESTION_BANK_EN } from "@/lib/plQuestionBankTranslationsEn";
 import { LEBEN_IN_DEUTSCHLAND_FR } from "@/lib/lebenInDeutschlandTranslationsFr";
 import { ZYCIE_W_POLSCE_FR } from "@/lib/zycieWPolsceTranslationsFr";
 import { VIVERE_IN_ITALIA_FR } from "@/lib/vivereInItaliaTranslationsFr";
@@ -157,6 +158,7 @@ const TRANSLATIONS: Partial<Record<TranslationLanguage, Record<string, string>>>
     // The practice questions, the same second body of text the German,
     // Polish, Russian and French tables answer.
     ...DE_QUESTION_BANK_EN,
+    ...PL_QUESTION_BANK_EN,
   },
   pl: {
     ...LIFE_IN_THE_UK_PL, ...LEBEN_IN_DEUTSCHLAND_PL, ...VIVRE_EN_FRANCE_PL,

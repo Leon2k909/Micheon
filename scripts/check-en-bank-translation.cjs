@@ -11,9 +11,10 @@
  *
  * Life in the UK is not in this list and never will be: its bank is written
  * in English already. The other six are arriving one at a time, so BANKS
- * holds the ones an English reader can already have. A bank is added to that
- * list on the day its table ships, and from that day this gate refuses to let
- * a single string of it go missing.
+ * holds the ones an English reader can already have — Leben in Deutschland
+ * and Zycie w Polsce so far. A bank is added to that list on the day its
+ * table ships, and from that day this gate refuses to let a single string of
+ * it go missing.
  *
  * What this checks, for each bank listed:
  *
@@ -38,7 +39,9 @@ const built = esbuild.buildSync({
   stdin: {
     contents:
       'export { DE_QUESTIONS } from "./src/lib/deQuestionBank.ts";\n' +
+      'export { PL_QUESTIONS } from "./src/lib/plQuestionBank.ts";\n' +
       'export { DE_QUESTION_BANK_EN } from "./src/lib/deQuestionBankTranslationsEn.ts";\n' +
+      'export { PL_QUESTION_BANK_EN } from "./src/lib/plQuestionBankTranslationsEn.ts";\n' +
       'export { LEBEN_IN_DEUTSCHLAND_EN } from "./src/lib/lebenInDeutschlandTranslationsEn.ts";\n' +
       'export { VIVRE_EN_FRANCE_EN } from "./src/lib/vivreEnFranceTranslationsEn.ts";\n' +
       'export { VIVERE_IN_ITALIA_EN } from "./src/lib/vivereInItaliaTranslationsEn.ts";\n' +
@@ -129,6 +132,45 @@ const BANKS = [
       "Rundfunkbeitrag",
     ],
   },
+  {
+    label: "Zycie w Polsce",
+    questions: M.PL_QUESTIONS,
+    table: M.PL_QUESTION_BANK_EN,
+    symbol: "PL_QUESTION_BANK_EN",
+    // The half that stays POLISH, as ZYCIE_W_POLSCE_EN keeps it: the word
+    // that IS the answer and that English has no short name for. What
+    // English does name takes its English name — the Trybunał Konstytucyjny
+    // is the Constitutional Tribunal, a województwo a voivodeship — and that
+    // half is left to the no-English rule above, because a literal needle
+    // would accuse a correct sentence for declining them.
+    //
+    // Measured against the finished table first. PESEL, NIP, KRS, CEIDG,
+    // liceum and technikum are each in fewer than three keys and sit under
+    // the threshold this gate fires at, so listing them would be decoration.
+    //
+    // Two needles that look as if they belong are deliberately out. "RODO"
+    // is the European regulation, and English calls it the GDPR — the lesson
+    // does too, so the bank follows. "wojewoda" is the voivode in English,
+    // and the whole chapter on the regions would be accused of dropping a
+    // word it correctly translated.
+    //
+    // Sejm and Senat stay in even though three entries appear to drop them:
+    // those are "sejmik", the voivodeship assembly, and "Senatorem" and
+    // "Senatorów", the person rather than the chamber — the needle hiding
+    // inside a longer Polish word, correct English in the value.
+    keep: [
+      "Sejm",
+      "Senat",
+      "gmina",
+      "powiat",
+      "Marszałek",
+      "Solidarność",
+      "REGON",
+      "ZUS",
+      "NFZ",
+      "KRUS",
+    ],
+  },
 ];
 
 const failures = [];
@@ -146,6 +188,7 @@ const failures = [];
 const JOINING = new Set([
   "a", "an", "and", "as", "at", "by", "for", "in", "of", "on", "or", "the", "to",
   "am", "auf", "der", "die", "das", "im", "ob", "und", "van", "von", "zu", "zur",
+  "i", "w", "we", "z", "ze", "na", "do", "od", "po", "pod", "nad",
 ]);
 const looksLikeTitle = (text) => {
   const words = text.replace(/[.!?,]/g, " ").split(/\s+/).filter(Boolean);
