@@ -9,11 +9,10 @@
  * shared by all seven countries — show every bank. A lesson was being read in
  * French and then asking its questions in English.
  *
- * The German and Polish siblings list all six banks because those languages
- * have all six. French is arriving one bank at a time, so BANKS holds the
- * ones a French reader can already have. A bank is added to that list on the
- * day its table ships, and from that day this gate refuses to let a single
- * string of it go missing.
+ * BANKS lists all six, the same as the German and Polish siblings: French
+ * arrived one bank at a time and Zhizn v Rossii closed the set. From the day
+ * a bank joined that list this gate has refused to let a single string of it
+ * go missing.
  *
  * What this checks, for each bank listed:
  *
@@ -42,11 +41,13 @@ const built = esbuild.buildSync({
       'export { PL_QUESTIONS } from "./src/lib/plQuestionBank.ts";\n' +
       'export { IT_QUESTIONS } from "./src/lib/itQuestionBank.ts";\n' +
       'export { ES_QUESTIONS } from "./src/lib/esQuestionBank.ts";\n' +
+      'export { RU_QUESTIONS } from "./src/lib/ruQuestionBank.ts";\n' +
       'export { IT_QUESTION_BANK_FR } from "./src/lib/itQuestionBankTranslationsFr.ts";\n' +
       'export { ES_QUESTION_BANK_FR } from "./src/lib/esQuestionBankTranslationsFr.ts";\n' +
       'export { UK_QUESTION_BANK_FR } from "./src/lib/ukQuestionBankTranslationsFr.ts";\n' +
       'export { DE_QUESTION_BANK_FR } from "./src/lib/deQuestionBankTranslationsFr.ts";\n' +
       'export { PL_QUESTION_BANK_FR } from "./src/lib/plQuestionBankTranslationsFr.ts";\n' +
+      'export { RU_QUESTION_BANK_FR } from "./src/lib/ruQuestionBankTranslationsFr.ts";\n' +
       'export { LIFE_IN_THE_UK_FR } from "./src/lib/lifeInTheUkTranslationsFr.ts";\n' +
       'export { LEBEN_IN_DEUTSCHLAND_FR } from "./src/lib/lebenInDeutschlandTranslationsFr.ts";\n' +
       'export { VIVERE_IN_ITALIA_FR } from "./src/lib/vivereInItaliaTranslationsFr.ts";\n' +
@@ -249,6 +250,45 @@ const BANKS = [
       "Instituto Cervantes",
     ],
   },
+  {
+    label: "Zhizn v Rossii",
+    questions: M.RU_QUESTIONS,
+    table: M.RU_QUESTION_BANK_FR,
+    symbol: "RU_QUESTION_BANK_FR",
+    // The five banks above are written in a Latin alphabet, so the word to
+    // look for is the same on both sides and one string says it. Russian is
+    // not: nothing here can survive into the French character for character,
+    // so this bank names both halves — СНИЛС in the question has to come back
+    // as SNILS. What is kept is what ZHIZN_V_ROSSII_FR keeps, because the
+    // lesson and its questions are read one after the other and a word
+    // glossed two ways between them teaches nothing.
+    //
+    // Every pair was measured against the finished table first. СНИЛС, МРОТ,
+    // ЕГЭ, ИНН, ЗАТО, ГУЛАГ, прописка, маршрутка and Росреестр are each in
+    // fewer than three keys and sit under the threshold this gate fires at,
+    // so listing them would only be decoration — the header of the table
+    // records the convention for them instead.
+    //
+    // "дача" is deliberately absent although the six ares of a datcha are
+    // exactly the kind of word this list is for: its stem hides inside
+    // задача, передача, раздача, подача, выдача and удачный, and a gate
+    // watching it would accuse nine correct sentences of dropping a word
+    // they never carried.
+    keep: [
+      ["Дума", "Doum"],
+      ["Совет Федерации", "Conseil de la Fédération"],
+      ["Конституционный Суд", "Cour constitutionnelle"],
+      ["Транссиб", "Transsibérien"],
+      ["отчеств", "patronyme"],
+      ["поликлиник", "polyclinique"],
+      ["Кремл", "Kremlin"],
+      ["СССР", "URSS"],
+      ["ЮНЕСКО", "UNESCO"],
+      ["Байкал", "Baïkal"],
+      ["Ленинград", "Leningrad"],
+      ["рубл", "rouble"],
+    ],
+  },
 ];
 
 const failures = [];
@@ -316,9 +356,12 @@ for (const { label, questions, table, symbol, keep } of BANKS) {
     }
   }
 
-  for (const term of keep) {
+  for (const entry of keep) {
+    // A Latin-alphabet bank says the word once: the string to look for is the
+    // same on both sides. A Cyrillic one cannot, so it gives the pair.
+    const [term, kept] = Array.isArray(entry) ? entry : [entry, entry];
     const withTerm = Object.entries(table).filter(([key]) => key.includes(term));
-    const dropped = withTerm.filter(([, value]) => !value.includes(term));
+    const dropped = withTerm.filter(([, value]) => !value.includes(kept));
     if (withTerm.length >= 3 && dropped.length > withTerm.length / 2) {
       failures.push(
         `${label}: ${dropped.length} of ${withTerm.length} entries mentioning "${term}" no longer carry it. ` +
