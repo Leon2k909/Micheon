@@ -42,11 +42,13 @@ const built = esbuild.buildSync({
       'export { PL_QUESTIONS } from "./src/lib/plQuestionBank.ts";\n' +
       'export { FR_QUESTIONS } from "./src/lib/frQuestionBank.ts";\n' +
       'export { IT_QUESTIONS } from "./src/lib/itQuestionBank.ts";\n' +
+      'export { ES_QUESTIONS } from "./src/lib/esQuestionBank.ts";\n' +
       'export { UK_QUESTION_BANK_RU } from "./src/lib/ukQuestionBankTranslationsRu.ts";\n' +
       'export { DE_QUESTION_BANK_RU } from "./src/lib/deQuestionBankTranslationsRu.ts";\n' +
       'export { PL_QUESTION_BANK_RU } from "./src/lib/plQuestionBankTranslationsRu.ts";\n' +
       'export { FR_QUESTION_BANK_RU } from "./src/lib/frQuestionBankTranslationsRu.ts";\n' +
       'export { IT_QUESTION_BANK_RU } from "./src/lib/itQuestionBankTranslationsRu.ts";\n' +
+      'export { ES_QUESTION_BANK_RU } from "./src/lib/esQuestionBankTranslationsRu.ts";\n' +
       'export { LIFE_IN_THE_UK_RU } from "./src/lib/lifeInTheUkTranslationsRu.ts";\n' +
       'export { LEBEN_IN_DEUTSCHLAND_RU } from "./src/lib/lebenInDeutschlandTranslationsRu.ts";\n' +
       'export { VIVRE_EN_FRANCE_RU } from "./src/lib/vivreEnFranceTranslationsRu.ts";\n' +
@@ -192,6 +194,34 @@ const BANKS = [
       "IRPEF",
       "CCNL",
       "Ferragosto",
+    ],
+  },
+  {
+    label: "Vivir en Espana",
+    questions: M.ES_QUESTIONS,
+    table: M.ES_QUESTION_BANK_RU,
+    symbol: "ES_QUESTION_BANK_RU",
+    // The half that stays SPANISH, as VIVIR_EN_ESPANA_RU keeps it: the word
+    // printed on the card, the form or the exam slip. The half that becomes
+    // Russian — Конституция, Конгресс депутатов, кортесы, автономное
+    // сообщество — is left to the no-Russian rule above, because Russian
+    // declines those and a literal needle would accuse a correct sentence
+    // for writing автономными сообществами.
+    //
+    // Every term here was measured against the finished table before it was
+    // written down. Three are missing that look as if they belong: TIE, IRPF
+    // and SEPE are each in fewer than three keys, under the threshold this
+    // gate fires at, so listing them would only be decoration. And "tapa" is
+    // deliberately absent — it hides inside "etapas", so it would count the
+    // school-stage questions as flag-bearers and accuse them of dropping a
+    // word they never carried.
+    keep: [
+      "DNI",
+      "NIE",
+      "Seguridad Social",
+      "empadronamiento",
+      "DELE",
+      "CCSE",
     ],
   },
 ];

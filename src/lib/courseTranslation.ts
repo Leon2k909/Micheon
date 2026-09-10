@@ -27,6 +27,7 @@ import { DE_QUESTION_BANK_RU } from "@/lib/deQuestionBankTranslationsRu";
 import { PL_QUESTION_BANK_RU } from "@/lib/plQuestionBankTranslationsRu";
 import { FR_QUESTION_BANK_RU } from "@/lib/frQuestionBankTranslationsRu";
 import { IT_QUESTION_BANK_RU } from "@/lib/itQuestionBankTranslationsRu";
+import { ES_QUESTION_BANK_RU } from "@/lib/esQuestionBankTranslationsRu";
 import { ZYCIE_W_POLSCE_RU } from "@/lib/zycieWPolsceTranslationsRu";
 import { VIVRE_EN_FRANCE_RU } from "@/lib/vivreEnFranceTranslationsRu";
 import { VIVERE_IN_ITALIA_RU } from "@/lib/vivereInItaliaTranslationsRu";
@@ -167,6 +168,7 @@ const TRANSLATIONS: Partial<Record<TranslationLanguage, Record<string, string>>>
     ...PL_QUESTION_BANK_RU,
     ...FR_QUESTION_BANK_RU,
     ...IT_QUESTION_BANK_RU,
+    ...ES_QUESTION_BANK_RU,
   },
 };
 
