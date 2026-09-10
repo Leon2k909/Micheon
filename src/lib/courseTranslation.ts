@@ -37,6 +37,7 @@ import { UK_QUESTION_BANK_FR } from "@/lib/ukQuestionBankTranslationsFr";
 import { DE_QUESTION_BANK_FR } from "@/lib/deQuestionBankTranslationsFr";
 import { PL_QUESTION_BANK_FR } from "@/lib/plQuestionBankTranslationsFr";
 import { IT_QUESTION_BANK_FR } from "@/lib/itQuestionBankTranslationsFr";
+import { ES_QUESTION_BANK_FR } from "@/lib/esQuestionBankTranslationsFr";
 import { LEBEN_IN_DEUTSCHLAND_FR } from "@/lib/lebenInDeutschlandTranslationsFr";
 import { ZYCIE_W_POLSCE_FR } from "@/lib/zycieWPolsceTranslationsFr";
 import { VIVERE_IN_ITALIA_FR } from "@/lib/vivereInItaliaTranslationsFr";
@@ -170,6 +171,7 @@ const TRANSLATIONS: Partial<Record<TranslationLanguage, Record<string, string>>>
     ...DE_QUESTION_BANK_FR,
     ...PL_QUESTION_BANK_FR,
     ...IT_QUESTION_BANK_FR,
+    ...ES_QUESTION_BANK_FR,
   },
   ru: {
     ...LEBEN_IN_DEUTSCHLAND_RU, ...LIFE_IN_THE_UK_RU, ...ZYCIE_W_POLSCE_RU,

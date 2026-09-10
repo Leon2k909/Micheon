@@ -41,7 +41,9 @@ const built = esbuild.buildSync({
       'export { DE_QUESTIONS } from "./src/lib/deQuestionBank.ts";\n' +
       'export { PL_QUESTIONS } from "./src/lib/plQuestionBank.ts";\n' +
       'export { IT_QUESTIONS } from "./src/lib/itQuestionBank.ts";\n' +
+      'export { ES_QUESTIONS } from "./src/lib/esQuestionBank.ts";\n' +
       'export { IT_QUESTION_BANK_FR } from "./src/lib/itQuestionBankTranslationsFr.ts";\n' +
+      'export { ES_QUESTION_BANK_FR } from "./src/lib/esQuestionBankTranslationsFr.ts";\n' +
       'export { UK_QUESTION_BANK_FR } from "./src/lib/ukQuestionBankTranslationsFr.ts";\n' +
       'export { DE_QUESTION_BANK_FR } from "./src/lib/deQuestionBankTranslationsFr.ts";\n' +
       'export { PL_QUESTION_BANK_FR } from "./src/lib/plQuestionBankTranslationsFr.ts";\n' +
@@ -218,6 +220,33 @@ const BANKS = [
       "INAIL",
       "CCNL",
       "Consulta",
+    ],
+  },
+  {
+    label: "Vivir en Espana",
+    questions: M.ES_QUESTIONS,
+    table: M.ES_QUESTION_BANK_FR,
+    symbol: "ES_QUESTION_BANK_FR",
+    // The half that stays SPANISH, as VIVIR_EN_ESPANA_FR keeps it: the word
+    // printed on the form, the card or the exam slip. What French names takes
+    // its French form — the Congreso de los Diputados is the Congrès des
+    // députés — and that half is left to the no-French rule above.
+    //
+    // Measured against the finished table first: TIE, IRPF, SEPE, Cl@ve and
+    // selectividad are each in fewer than three keys and sit under the
+    // threshold this gate fires at, so listing them would be decoration.
+    keep: [
+      "DNI",
+      "NIE",
+      "Seguridad Social",
+      "empadronamiento",
+      "padrón",
+      "arraigo",
+      "Cortes",
+      "DELE",
+      "CCSE",
+      "ESO",
+      "Instituto Cervantes",
     ],
   },
 ];
