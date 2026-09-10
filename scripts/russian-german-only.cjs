@@ -54,8 +54,13 @@ const INSTITUTIONS = [
   // this list already made once and had to be narrowed.
   /(?<!der )Tatort/, "DB-App",
   // German regional words for the same thing. The lesson is which German
-  // region you are standing in, which is not a lesson in Russian.
-  "Buletten", "Fleischpflanzerl",
+  // region you are standing in, which is not a lesson in Russian. The
+  // singular needs its own entry: these are substrings, and "die Bulette"
+  // does not contain "Buletten", so the card read as free and was given
+  // биток — a real Russian word, and a distinction the German pair does not
+  // make, because a Frikadelle is the same thing and already teaches котлета.
+  "Buletten", "Bulette", "Fleischpflanzerl",
+  "Krapfen, Berliner", "Kirmes, Kerwe",
 ];
 
 /**
@@ -108,7 +113,21 @@ const LANGUAGE = [
   "Durchwachsen heißt beim Fleisch", "Halb und halb heißt",
   "Eventuell heißt vielleicht", "Stimmt so heißt",
   "Im Süden sagt man Geldbeutel", "Ich hab ein Gift für dich",
-  "Ein Gift?!",
+  "Ein Gift?!", "Gift heißt Poison",
+  // The German spelling alphabet, name by name. Russia has its own —
+  // Анна, Борис, Василий — so the lesson is not the idea of spelling
+  // something out, it is which German first name stands for which letter.
+  "wie Martha", "wie Anton", "wie Aachen", "wie Viktor", "wie Kaufmann",
+  "Meier kann man", "Meier mit E-I", "Mit E-I —", "mit Ypsilon",
+  "mit Ü oder mit U-E", "kein ß", "ß gibt es nur",
+  // The cases, taught as a subject. Russian has six of its own and none of
+  // them is the German accusative, so a card explaining der Tisch against
+  // den Tisch teaches a learner of Russian nothing they can say.
+  "gleich mit Artikel", "aus der Tisch auf einmal", "Der Nominativ nennt",
+  "Dativ und Genitiv", "Ein Fall pro Woche",
+  // The Zeugnis formula, which is a German document convention and sits
+  // beside "stets bemüht" below.
+  "Er bemühte sich heißt",
 ];
 
 /** German letter and reference conventions. */
