@@ -1555,7 +1555,7 @@ const CAPSTONE_DIALOGUES: Record<string, Dialogue[]> = {
       lines: [
         { speaker: "A", de: "Bevor ich in den Urlaub gehe, machen wir noch die Übergabe.", en: "Before I go on holiday, let's do the handover." },
         { speaker: "B", de: "Gut. Wer macht deine Vertretung, während du weg bist?", en: "Good. Who's covering for you while you're away?" },
-        { speaker: "A", de: "Der Kollege aus dem Büro nebenan, der hat noch Puffer.", en: "The colleague from the office next door — he's still got some slack." },
+        { speaker: "A", de: "Der Kollege aus dem Büro nebenan, der hat noch Puffer.", en: "The colleague from the office next door — he's still got a bit of breathing space." },
         { speaker: "B", de: "Und dein Resturlaub? Der ist sonst einfach weg.", en: "And your remaining leave? Otherwise it'll just be gone." },
         { speaker: "A", de: "Schon eingetragen. Ab morgen habe ich Feierabend.", en: "Already booked in. As of tomorrow, I'm off the clock." },
       ],

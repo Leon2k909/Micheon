@@ -117,6 +117,10 @@ const AMERICAN = [
   [/\bso-so\b/g, "not said here — could be better, middling"],
   [/\bhow's tricks\b/g, "not said here"],
   [/\bpatchil(y|ie)\b/g, "not said here — now and then, on and off"],
+  // der Puffer is spare time in a schedule, and the course glosses it as
+  // buffer. On its own in English, slack is leniency — cut him some slack —
+  // so a line about who has room to cover said nothing of the kind.
+  [/\bgot (some|a bit of) slack\b/g, "not this sense here — buffer, breathing space, room"],
   [/\bfroze (me|him|her|them|us) out\b/g, "shut out"],
   [/\bdifferent than\b/g, "different from"],
   [/\bcould care less\b/g, "couldn't care less"],
