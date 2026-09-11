@@ -4115,7 +4115,7 @@ export const IT: Record<string, string> = {
   "Frequency-ranked everyday German, bank ranks 1155–1225.": "Tedesco quotidiano ordinato per frequenza, posizioni 1155–1225 della banca.",
   "Vehicles and the parts of a car every driver ends up naming — at the garage, at the checkpoint, in the breakdown lane.": "I veicoli e quelle parti dell'auto che ogni automobilista prima o poi deve nominare: in officina, al controllo, in corsia d'emergenza.",
   "Playing, training, winning — and the instruments and ensembles of making music.": "Giocare, allenarsi, vincere — e gli strumenti e i gruppi di chi fa musica.",
-  "Symptoms, injuries and the things a German doctor's visit is made of.": "Sintomi, infortuni e tutto ciò di cui è fatta una visita dal medico in Germania.",
+  "Symptoms, injuries and the things a German doctor's visit is made of.": "Sintomi, infortuni e tutto ciò di cui è fatta una visita da un medico tedesco.",
   "The whole family tree — in-laws, steps, halves and the words for life's married and unmarried states.": "L'albero genealogico intero: suoceri, acquisiti, fratellastri e le parole per sposato, celibe e tutto il resto.",
   "What things are made of — from the toolbox to the building site.": "Di cosa sono fatte le cose: dalla cassetta degli attrezzi al cantiere.",
   "Beds, buds and the shed full of tools German gardens run on.": "Aiuole, gemme e il capanno pieno di attrezzi su cui vivono i giardini tedeschi.",
