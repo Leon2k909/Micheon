@@ -19,11 +19,10 @@
  * the assembled catalogue knows it exists, which is why this check assembles
  * the catalogue rather than reading source text.
  *
- * THEMES FAIL THE BUILD. DESCRIPTIONS ARE COUNTED OUT LOUD, for now: they are
- * being written, and until they are done the shortfall is printed on every run
- * rather than hidden behind a pass. Meet it or keep printing it — a quiet
- * exemption is how a check stops meaning anything. When the number reaches
- * zero, turn the second half into an assertion like the first.
+ * BOTH FIELDS FAIL THE BUILD. The descriptions were counted out loud while
+ * they were being written — the shortfall printed on every run so the number
+ * could not quietly be forgotten — and now that it has reached zero the second
+ * half asserts like the first. Nothing in here is exempt any more.
  */
 const assert = require("assert");
 const fs = require("fs");
@@ -105,37 +104,36 @@ for (const [key, part] of Object.entries(parts)) {
 assert.ok(themes.size > 400,
   `only found ${themes.size} lesson names — the catalogue did not assemble, so this check proves nothing`);
 
+assert.ok(descriptions.size > 400,
+  `only found ${descriptions.size} lesson descriptions — the catalogue did not assemble, so this check proves nothing`);
+
+const FIELDS = [
+  { name: "lesson name", values: themes, reads: "Konversationsmodul" },
+  { name: "lesson description", values: descriptions, reads: "the conversation-module sentence" },
+];
+
 let failed = 0;
-for (const [language, table] of Object.entries(TABLES)) {
-  const missing = [...themes.entries()].filter(([theme]) => !(theme in table));
-  if (!missing.length) continue;
-  failed += 1;
-  console.error(
-    `FAIL ${missing.length} lesson name(s) have no ${language}, so those rows are all titled Konversationsmodul:`
-  );
-  missing.slice(0, 6).forEach(([theme, key]) => console.error(`     ${key}  ${JSON.stringify(theme.slice(0, 62))}`));
+for (const field of FIELDS) {
+  for (const [language, table] of Object.entries(TABLES)) {
+    const missing = [...field.values.entries()].filter(([text]) => !(text in table));
+    if (!missing.length) continue;
+    failed += 1;
+    console.error(
+      `FAIL ${missing.length} ${field.name}(s) have no ${language}, so those rows all read ${field.reads}:`
+    );
+    missing.slice(0, 6).forEach(([text, key]) => console.error(`     ${key}  ${JSON.stringify(text.slice(0, 62))}`));
+  }
 }
 
 if (failed) {
   console.error(
-    "\nuiOr returns table[value] ?? table[fallback] ?? fallback, so a name with no entry is not shown in English —\n"
+    "\nuiOr returns table[value] ?? table[fallback] ?? fallback, so a value with no entry is not shown in English —\n"
     + "it is replaced by the fallback, and every lesson without one reads the same."
   );
   process.exit(1);
 }
 
-const shortfall = Object.entries(TABLES)
-  .map(([language, table]) => [language, [...descriptions.keys()].filter((text) => !(text in table)).length])
-  .filter(([, n]) => n > 0);
-
 console.log(
-  `check-lesson-names: all ${themes.size} lesson names have German, French, Polish, Spanish, Italian, Portuguese, Russian`
+  `check-lesson-names: all ${themes.size} lesson names and all ${descriptions.size} descriptions have `
+  + "German, French, Polish, Spanish, Italian, Portuguese, Russian"
 );
-if (shortfall.length) {
-  console.log(
-    `     and ${shortfall[0][1]} of ${descriptions.size} lesson descriptions are still unwritten `
-    + `(${shortfall.map(([language, n]) => `${language} ${n}`).join(", ")}) — those rows share one sentence`
-  );
-} else {
-  console.log(`     and all ${descriptions.size} lesson descriptions do too`);
-}
