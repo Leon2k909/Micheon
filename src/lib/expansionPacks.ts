@@ -10972,7 +10972,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "Nach langer Krankheit gibt es die Wiedereingliederung.", en: "After a long illness there's a phased return.", use: "die Wiedereingliederung — the Hamburger Modell: two hours a day, building up over weeks.", group: "zurueck" },
       { de: "Beim Hamburger Modell fängst du mit zwei Stunden am Tag an.", en: "With the phased model you start with two hours a day.", use: "The scheme's everyday name. Paid by the insurer, not the employer, during the ramp-up.", group: "zurueck" },
       { de: "Sag ehrlich, wenn die Belastung noch zu hoch ist.", en: "Say honestly if the workload is still too much.", use: "die Belastung — the strain. The sentence that prevents a second sick note.", group: "zurueck" },
-      { de: "Die Kollegen haben alles aufgefangen, ohne zu murren.", en: "The colleagues absorbed everything without grumbling.", use: "auffangen — catching, covering. The thing to thank people for on your first day back.", group: "zurueck" },
+      { de: "Die Kollegen haben alles aufgefangen, ohne zu murren.", en: "The colleagues covered everything without a grumble.", use: "auffangen — catching, covering. The thing to thank people for on your first day back.", group: "zurueck" },
       { de: "Danke, dass ihr das übernommen habt.", en: "Thank you all for taking that on.", use: "The sentence to say out loud, not just think, on the first morning back.", group: "zurueck" },
       { de: "Schön, dass du wieder da bist.", en: "Good to have you back.", use: "The greeting that makes returning easy. Say it to others too.", group: "zurueck" },
       { de: "Bleib bloß zu Hause, wenn du ansteckend bist.", en: "Do stay at home if you're contagious.", use: "ansteckend from the children's illness pack. Presenteeism is genuinely frowned upon.", group: "zurueck" },
@@ -10987,7 +10987,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       ]},
       { title: "Coming back", lines: [
         { speaker: "A", de: "Schön, dass du wieder da bist!", en: "Good to have you back!" },
-        { speaker: "B", de: "Danke. Und danke, dass ihr alles aufgefangen habt.", en: "Thanks. And thank you all for absorbing everything." },
+        { speaker: "B", de: "Danke. Und danke, dass ihr alles aufgefangen habt.", en: "Thanks. And thank you all for covering everything.", use: "auffangen — catching, covering. The thing to thank people for on your first day back." },
         { speaker: "A", de: "Kein Thema. Fang langsam an, ja?", en: "No problem at all. Start slowly, yeah?" },
         { speaker: "B", de: "Mache ich. Sonst kommt der Rückfall.", en: "I will. Otherwise the relapse comes." },
       ]},

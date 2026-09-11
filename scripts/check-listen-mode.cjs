@@ -1794,8 +1794,11 @@ check("German and English repeat independently",
   && sides({ targetRepeats: 1, meaningRepeats: 4 }) === "meaning meaning meaning meaning target");
 // Through usageNote, so the explanation is in the language the card is in.
 // It was printed raw, which put an English sentence under a Portuguese card.
-check("reviewed word cards explain important secondary meanings on screen",
-  view.includes('item.kind === "word" && item.use') && view.includes("{usageNote(item.use)}"));
+// Not word-only: a sentence heard with no pack around it is the card with
+// the least context, and its note was the one being withheld.
+check("a reviewed card explains itself on screen, sentence as well as word",
+  view.includes("{item.use ? (") && view.includes("{usageNote(item.use)}")
+  && !view.includes('item.kind === "word" && item.use'));
 // The player has to agree with the queue about which slot holds which
 // language, or the labels, the voice and the mute switch all name a language
 // the lines are not in. And the queue has to rebuild when the app language

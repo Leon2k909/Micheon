@@ -1909,9 +1909,9 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               </span>
             </p>
           ) : null}
-          {/* Register warning. Not word-only, unlike the use note below it:
-              the 762 items this can appear on are mostly sentences, and
-              "Ich komm." is exactly the card that needs it. */}
+          {/* Register warning. Like the use note below it, this is not
+              word-only: the 762 items it can appear on are mostly
+              sentences, and "Ich komm." is exactly the card that needs it. */}
           {item.tierNote ? (
             <p className="flex justify-center">
               <span
@@ -1922,7 +1922,14 @@ export function ListenView({ active, apiParts, learningDirection, onOpen, profil
               </span>
             </p>
           ) : null}
-          {item.kind === "word" && item.use ? (
+          {/* The note, on a sentence as well as on a word. Listen is where
+              a card arrives with the least context — no pack around it, no
+              scene, often no screen — and 12,490 sentences carry a note that
+              was being withheld exactly there. Length was the worry and it
+              does not hold: a sentence note runs 83 characters at the median
+              against a word's 61, and 147 against 133 at the ninetieth, so it
+              is the same line or two in the same box. */}
+          {item.use ? (
             <p className="mx-auto max-w-3xl rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-4 py-2 text-sm font-semibold leading-relaxed text-[var(--text-3)]">
               {usageNote(item.use)}
             </p>
