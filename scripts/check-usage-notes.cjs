@@ -31,15 +31,34 @@ const root = path.resolve(__dirname, "..");
 const libDir = path.join(root, "src/lib");
 
 // ── every note a card actually carries ────────────────────────────────────
+/**
+ * Three fields, not one.
+ *
+ * `use` was the whole job while the other two were drawn through uiOr() with a
+ * German fallback — which never returns the value it was handed, so `when` and
+ * `say` were never shown at all outside English and needed no table. They are
+ * drawn through usageNote() now, like the note, so they belong here: same
+ * screens, same load, same honest English until a translation lands.
+ */
+const FIELDS = ["use", "when", "say"];
+const byField = new Map(FIELDS.map((field) => [field, new Set()]));
 const cardNotes = new Set();
 for (const name of fs.readdirSync(libDir)) {
   if (!name.endsWith(".ts") || name.startsWith("usageNotes")) continue;
   const source = fs.readFileSync(path.join(libDir, name), "utf8");
-  for (const match of source.matchAll(/\buse: "((?:[^"\\]|\\.)*)"/g)) {
-    try { cardNotes.add(JSON.parse('"' + match[1] + '"')); } catch { /* not a plain literal */ }
+  for (const match of source.matchAll(/\b(use|when|say): "((?:[^"\\]|\\.)*)"/g)) {
+    try {
+      const text = JSON.parse('"' + match[2] + '"');
+      byField.get(match[1]).add(text);
+      cardNotes.add(text);
+    } catch { /* not a plain literal */ }
   }
 }
-assert.ok(cardNotes.size > 10000, `expected the card notes, found ${cardNotes.size}`);
+assert.ok(cardNotes.size > 10000, `expected the card prose, found ${cardNotes.size}`);
+for (const field of FIELDS) {
+  assert.ok(byField.get(field).size > 100,
+    `only found ${byField.get(field).size} ${field} value(s) — the scan is not reading that field`);
+}
 
 // ── what each language has so far ─────────────────────────────────────────
 const LANGUAGES = [
@@ -132,7 +151,14 @@ if (failures.length) {
 
 const done = first ? first.size : 0;
 const pct = ((done / cardNotes.size) * 100).toFixed(1);
+// Per field as well as in total: `use` finished long before `when` and `say`
+// joined the tables, and one number over all three would hide which is which.
+const perField = FIELDS.map((field) => {
+  const values = byField.get(field);
+  const have = first ? [...values].filter((text) => first.has(text)).length : 0;
+  return `${field} ${have}/${values.size}`;
+}).join(", ");
 console.log(
-  `check-usage-notes: ${done} of ${cardNotes.size} card notes translated (${pct}%), `
+  `check-usage-notes: ${done} of ${cardNotes.size} lines of card prose translated (${pct}%) — ${perField} — `
   + `the same set in all seven languages, every key matches a card, and all five places ask for them`
 );
