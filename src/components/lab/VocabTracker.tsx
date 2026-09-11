@@ -17,7 +17,7 @@ import { tts } from "@/lib/voice";
 import { CEFR_STEPS, cefrStep, cefrStepLabel, type CefrStep } from "@/lib/cefr";
 import { ui, uiFmt, uiIsEnglish, uiNumber } from "@/lib/i18n";
 import { targetLangTag } from "@/lib/direction";
-import { courseSides, type CourseSides } from "@/lib/courseLanguages";
+import { meaningTextFor, courseSides, type CourseSides } from "@/lib/courseLanguages";
 import { frenchFor } from "@/lib/frenchCourse";
 import { polishFor } from "@/lib/polishCourse";
 import { portugueseFor } from "@/lib/portugueseCourse";
@@ -221,7 +221,7 @@ const TrackerRow = React.memo(
     const italian = sides.target.code === "it" ? italianFor(item.de) : null;
     const portuguese = sides.target.code === "pt" ? portugueseFor(item.de) : null;
     const primaryText = french ?? polish ?? spanish ?? italian ?? portuguese ?? (sides.target.code === "en" ? item.en : item.de);
-    const meaningText = sides.meaning.code === "de" ? item.de : item.en;
+    const meaningText = meaningTextFor(item.de, item.en, sides.meaning.code);
     const listens = Number(record?.listens) || 0;
     return (
       <div className="tracker-row flex flex-wrap items-center gap-3 py-3">

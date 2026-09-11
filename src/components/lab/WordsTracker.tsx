@@ -38,7 +38,7 @@ import { packNoteForWord } from "@/lib/curriculum";
 import { detectRegister, REGISTER_SHORT, REGISTER_TONE } from "@/lib/register";
 import { tts } from "@/lib/voice";
 import { targetLangTag } from "@/lib/direction";
-import { courseSides } from "@/lib/courseLanguages";
+import { meaningTextFor, courseSides } from "@/lib/courseLanguages";
 import { frenchFor } from "@/lib/frenchCourse";
 import { polishFor } from "@/lib/polishCourse";
 import { portugueseFor } from "@/lib/portugueseCourse";
@@ -624,7 +624,7 @@ export function WordsTracker({ apiParts, user }: {
             const italian = sides.target.code === "it" ? italianFor(word.de) : null;
             const portuguese = sides.target.code === "pt" ? portugueseFor(word.de) : null;
             const primaryText = french ?? polish ?? spanish ?? italian ?? portuguese ?? (learnsEnglish ? word.en : word.de);
-            const meaningText = sides.meaning.code === "de" ? word.de : word.en;
+            const meaningText = meaningTextFor(word.de, word.en, sides.meaning.code);
             const example = exampleIndex.exampleFor(word);
             return (
               <div key={word.id} className="tracker-row flex flex-wrap items-center gap-3 py-3">

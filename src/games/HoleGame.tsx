@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Clock, Maximize, Minimize, RotateCcw, Trophy } from "lucide-react";
 import { recordWordMastery } from "@/lib/mastery";
 import { useGameContent } from "@/games/gameContent";
-import { courseSides } from "@/lib/courseLanguages";
+import { meaningTextFor, courseSides } from "@/lib/courseLanguages";
 import { ui } from "@/lib/i18n";
 import {
   areaForRadius,
@@ -347,7 +347,7 @@ export default function HoleGame() {
             scoreRef.current = owner.score;
             setScore(owner.score);
             setLastEaten({ target: sides.target.code === "fr" ? prop.spec.fr : sides.target.code === "en" ? prop.spec.en : prop.spec.de,
-              clue: sides.meaning.code === "de" ? prop.spec.de : prop.spec.en });
+              clue: meaningTextFor(prop.spec.de, prop.spec.en, sides.meaning.code) });
             recordWordMastery(prop.spec.de);
           }
           continue; // swallowed — drop it

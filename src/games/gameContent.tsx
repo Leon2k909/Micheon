@@ -14,7 +14,7 @@ import {
   getLearningDirection,
   type LearningDirection,
 } from "@/lib/direction";
-import { courseSides, type CourseLanguage, type VoiceTag } from "@/lib/courseLanguages";
+import { meaningTextFor, courseSides, type CourseLanguage, type VoiceTag } from "@/lib/courseLanguages";
 import { frenchFor } from "@/lib/frenchCourse";
 import { polishFor } from "@/lib/polishCourse";
 import { portugueseFor } from "@/lib/portugueseCourse";
@@ -152,7 +152,7 @@ function buildGameEntries(
 
     entries.push({
       ...item,
-      clue: sides.meaning.code === "de" ? de : en,
+      clue: meaningTextFor(de, en, sides.meaning.code),
       clueLanguage: sides.meaning.code,
       de,
       en,
@@ -228,7 +228,7 @@ export function buildGameWords(
     const bareFr = french && frenchArticle ? french.slice(frenchArticle[0].length).trim() : french;
 
     const target = learnsFrench ? (bareFr ?? "") : learnsPolish ? (polish ?? "") : learnsEnglish ? bareEn : bareDe;
-    const clue = sides.meaning.code === "de" ? de : en;
+    const clue = meaningTextFor(de, en, sides.meaning.code);
 
     // One token only. "sich freuen" spelled SICHFREUEN reads as a typo rather
     // than a word, and the space is gone by the time it reaches the board.

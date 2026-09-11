@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { allPartBlueprints } from "@/lib/data";
 import { normalize } from "@/lib/api";
 import { learningEnglish } from "@/lib/direction";
-import { courseSides } from "@/lib/courseLanguages";
+import { meaningTextFor, courseSides } from "@/lib/courseLanguages";
 import { matchFrenchPhrase } from "@/lib/frenchTextMatch";
 import { matchPolishPhrase } from "@/lib/polishTextMatch";
 import { matchSpanishPhrase } from "@/lib/spanishTextMatch";
@@ -50,7 +50,7 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
   const learnPt = sides.target.code === "pt";
   const reverse = learningEnglish();
   const prompt = learnFr || learnPl || learnPt
-    ? (sides.meaning.code === "de" ? current.de : current.en)
+    ? meaningTextFor(current.de, current.en, sides.meaning.code)
     : reverse ? current.de : current.en;
   const target = learnFr ? current.fr : learnPl ? current.pl : learnPt ? current.pt : reverse ? current.en : current.de;
   // A missing accent is a spelling slip in French, and a missing ą or ł is one

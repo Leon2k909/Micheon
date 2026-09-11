@@ -154,9 +154,15 @@ for (const [name, source] of [["word and sentence tracker", vocabTracker], ["wor
     // Asked of courseSides() rather than of a learning-English boolean: with
     // three courses the first line is not "English or German", it is whichever
     // language this course teaches.
+    //
+    // The second line used to be picked with `meaning.code === "de" ? de : en`,
+    // which answered English for everything that was not German. The meaning
+    // column follows the app's language now, so it is asked for rather than
+    // chosen between — otherwise the tracker labels a line Polish and shows
+    // English underneath it.
     source.includes("courseSides()")
       && /const primaryText = (french \?\? \()?learnsEnglish \?|const primaryText = french \?\?/.test(source)
-      && source.includes("const meaningText = sides.meaning.code === \"de\" ? ")
+      && /const meaningText = meaningTextFor\(/.test(source)
       && !source.includes("const primaryText = uiIsGerman()")
   );
 }

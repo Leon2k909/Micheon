@@ -1,5 +1,5 @@
 import { targetLangTag } from "@/lib/direction";
-import { courseSides } from "@/lib/courseLanguages";
+import { meaningTextFor, courseSides } from "@/lib/courseLanguages";
 import { frenchFor } from "@/lib/frenchCourse";
 import { polishFor } from "@/lib/polishCourse";
 import { portugueseFor } from "@/lib/portugueseCourse";
@@ -128,7 +128,7 @@ export function practiceCandidates(items: readonly CatalogItem[]): PracticeCandi
     const portuguese = toPortuguese ? portugueseFor(item.de ?? "") : null;
     if (toPortuguese && !portuguese) continue;
     const answer = firstWording(french ?? polish ?? spanish ?? italian ?? portuguese ?? ((toEnglish ? item.en : item.de) ?? ""));
-    const prompt = firstWording((sides.meaning.code === "de" ? item.de : item.en) ?? "");
+    const prompt = firstWording(meaningTextFor(item.de, item.en, sides.meaning.code));
     if (!usable(answer) || !usable(prompt)) continue;
     // Same wording on both sides teaches nothing and reads as a bug.
     if (answer.toLowerCase() === prompt.toLowerCase()) continue;

@@ -1,5 +1,5 @@
 import { loadGradeStore, statusForId } from "@/lib/activity";
-import { courseSides } from "@/lib/courseLanguages";
+import { meaningTextFor, courseSides } from "@/lib/courseLanguages";
 import { CURRICULUM_ORDER } from "@/lib/curriculum";
 import { formatEnglishText, getEnglishVariant } from "@/lib/englishVariant";
 import { frenchFor } from "@/lib/frenchCourse";
@@ -166,7 +166,11 @@ function buildPool(apiParts: Record<string, unknown>, profile: UserProfile | nul
   }) => {
     const target = translate ? translate(item.de) : item.de;
     if (!target || !target.trim()) return;
-    const meaning = meaningIsGerman ? item.de : formatEnglishText(item.en, variant);
+    // English is the only side that takes the British/American pass; the
+    // others are written the way their table writes them.
+    const meaning = meaningIsGerman ? item.de
+      : sides.meaning.code === "en" ? formatEnglishText(item.en, variant)
+      : meaningTextFor(item.de, item.en, sides.meaning.code);
     if (!meaning.trim()) return;
     const list = byPack.get(item.packKey) ?? [];
     list.push({

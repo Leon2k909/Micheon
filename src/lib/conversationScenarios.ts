@@ -1,5 +1,5 @@
 import { conversationPriorityScore } from "@/lib/conversationPriority";
-import { courseSides } from "@/lib/courseLanguages";
+import { meaningTextFor, courseSides } from "@/lib/courseLanguages";
 import { frenchFor } from "@/lib/frenchCourse";
 import { polishFor } from "@/lib/polishCourse";
 import { portugueseFor } from "@/lib/portugueseCourse";
@@ -101,7 +101,7 @@ export function buildScenarios(apiParts: Record<string, any>): Scenario[] {
         turns.push({
           side: String(line?.speaker ?? "").toUpperCase() === LEARNER_SIDE ? "you" : "them",
           de: translated ?? de,
-          en: translatedCourse && meaningIsGerman ? de : en,
+          en: translatedCourse && meaningIsGerman ? de : meaningTextFor(de, en, sides.meaning.code),
           fr: line?.fr ? String(line.fr) : undefined,
         });
       }

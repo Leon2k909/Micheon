@@ -2,6 +2,7 @@ import type { TtsAudioLanguage } from "@/lib/audioMute";
 import { getLearningDirection, type LearningDirection } from "@/lib/direction";
 import { getEnglishVariant, resolveEnglishVariant } from "@/lib/englishVariant";
 import { resolveInterfaceLanguage } from "@/lib/interfaceLanguage";
+import { translate, type TranslationLanguage } from "@/lib/translations";
 
 /**
  * The two sides of a card, named — for every screen that shows both.
@@ -151,5 +152,31 @@ export function translationLanguagesNeeded(
 export function courseSides(direction: LearningDirection = getLearningDirection()): CourseSides {
   const target = targetLanguage(direction);
   return { target: courseSide(target), meaning: courseSide(meaningLanguageFor(target)) };
+}
+
+/**
+ * What a card means, written in the meaning column's own language.
+ *
+ * Every screen that shows both sides used to write
+ * `meaning.code === "de" ? de : en`, which was the whole truth while the
+ * column could only be one of those two. It can be any of the eight now, and
+ * the shorthand quietly answers English while the label above it and the
+ * voice reading it say something else — the one state worse than not
+ * following the setting at all.
+ *
+ * Where a table does not reach the card the English stays, which is the same
+ * trade stepsForLearningDirection makes for the lesson.
+ */
+export function meaningTextFor(
+  german: string | null | undefined,
+  english: string | null | undefined,
+  meaning: CourseLanguage = meaningLanguageFor(targetLanguage())
+): string {
+  const de = String(german ?? "");
+  const en = String(english ?? "");
+  if (meaning === "de") return de;
+  if (meaning === "en") return en;
+  const written = translate(de, meaning as TranslationLanguage);
+  return written && written.trim() ? written.trim() : en;
 }
 
