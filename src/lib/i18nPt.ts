@@ -3663,4 +3663,20 @@ export const PT: Record<string, string> = {
   "Board cleared — that is every phrase in this lesson": "Grelha concluída — são todas as frases desta lição",
   "Start sentence practice whenever you are ready.": "Começa a prática de frases quando quiseres.",
   "Or use the number keys: one press for the left column, then one for the right. Escape undoes a half-made pair.": "Ou com as teclas numéricas: uma tecla para a coluna da esquerda, depois outra para a direita. Escape desfaz um par a meio.",
+
+  // ── The German fallbacks uiOr() is handed ──────────────────────────────
+  // 
+  // These seven keys are German, not English. They are the second argument at
+  // uiOr's call sites, reached when the first has no entry — a part with no
+  // heading at all, a card with no usage note. French and Polish have carried
+  // them since they were written; this table did not, so those few places read
+  // in German. check-french-interface allows a handful of German keys for
+  // exactly this reason.
+  "Konversationsmodul": "Módulo de conversação",
+  "Praktische Sätze und Wörter für natürliche Gespräche zu diesem Thema.": "Frases e palavras úteis para falar com naturalidade sobre este tema.",
+  "Besonderer Sprachgebrauch": "Uso especial",
+  "Hinweis zur Wortwahl": "Nota sobre a escolha das palavras",
+  "Hinweis zur Verwendung": "Nota de utilização",
+  "Typischer Gesprächskontext": "Contexto habitual de conversa",
+  "Achte auf eine natürliche Aussprache.": "Cuida de uma pronúncia natural.",
 };
