@@ -11296,6 +11296,34 @@ html[data-theme="dark"] {
   text-align: left;
 }
 
+/* ...and it keeps out of the waveform's lane.
+
+   Every other card here is a short centred line, so the bars at the card's
+   edges had nothing to collide with. A conversation is the first thing on
+   this card that wants the whole width, and it took it: the bars ended up
+   behind the second turn, drawn through the words as a dotted line nobody
+   could read as a waveform.
+
+   Each row of bars is 217px — forty-four of them, 2px wide with 3px between
+   — and 28px more keeps the conversation off them rather than up against
+   them. So the exchange sits in the lane between, centred as a block while
+   its turns stay left-aligned to each other, which is what makes it read as
+   an exchange at all.
+
+   Only where the bars are drawn. Below 1100px they are not, and the
+   conversation takes the width it had. */
+@media (min-width: 1100px) {
+  .listen-turns {
+    /* The width is taken, not left to the content. Auto margins on a flex
+       item shrink it to fit, so a short exchange sat narrower than a long
+       one and the whole conversation started at a different place on every
+       card. Same column every time, wherever the turns end. */
+    width: 100%;
+    max-width: calc(100% - 490px);
+    margin-inline: auto;
+  }
+}
+
 .listen-turn {
   display: grid;
   grid-template-columns: 22px minmax(0, 1fr);

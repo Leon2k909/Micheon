@@ -2341,6 +2341,54 @@ void (async () => {
     // the card sits on the panel now and has no fill of its own.
     && reviewRule.includes("background: var(--surface);")
   );
+  // ── the conversation keeps out of the bars ────────────────────────────
+  // Every other card here is one short line in the middle, so the two rows
+  // of bars at the card's edges had nothing to run into. A conversation is
+  // the first item that wants the whole width, and it took it: the bars went
+  // behind the turns and were drawn through the words.
+  //
+  // What the lane has to clear is read from the bars rather than written
+  // down, so raising the bar count or widening a bar moves the requirement
+  // and this fails, instead of the two quietly meeting again.
+  const bars = Number((listenView.match(/<TtsWaveform active bars=\{(\d+)\}/) || [])[1]);
+  const sliceRule = (open) => {
+    const at = listenCss.indexOf(open);
+    return at < 0 ? "" : listenCss.slice(at, listenCss.indexOf("}", at));
+  };
+  const barGap = Number((sliceRule(".listen-wave {").match(/gap: (\d+)px/) || [])[1]);
+  const barWidth = Number((sliceRule(".listen-wave i {").match(/width: (\d+)px/) || [])[1]);
+  const rowWidth = bars * barWidth + (bars - 1) * barGap;
+  const laneRule = sliceRule("  .listen-turns {");
+  const reserved = Number((laneRule.match(/max-width: calc\(100% - (\d+)px\)/) || [])[1]);
+  check(
+    "the conversation leaves both rows of bars their own width",
+    Number.isFinite(rowWidth) && Number.isFinite(reserved) && reserved >= rowWidth * 2,
+    `${bars} bars of ${barWidth}px, ${barGap}px apart, are ${rowWidth}px per side, ` +
+      `so the conversation has to give up ${rowWidth * 2}px and gives up ${reserved}`
+  );
+  // Centred is not enough on its own. Auto margins on a flex item shrink it
+  // to its contents, so a two-line exchange sat narrower than a six-line one
+  // and the conversation began at a different place on every card - the same
+  // walking about the fixed card height was added to stop.
+  check(
+    "the conversation takes its column rather than its content's width",
+    laneRule.includes("width: 100%") && laneRule.includes("margin-inline: auto"),
+    "without a width the turns shrink-wrap and the block moves from card to card"
+  );
+  // And the lane is only claimed where the bars are actually drawn. Below
+  // that width they are display: none and the conversation should have the
+  // card, not a 490px hole either side of it.
+  const openedAt = (at) => {
+    const mq = listenCss.lastIndexOf("@media (min-width: ", at);
+    return mq < 0 ? null : Number(listenCss.slice(mq + 19).match(/^(\d+)/)[1]);
+  };
+  check(
+    "the conversation gives up that width only where the bars are drawn",
+    openedAt(listenCss.indexOf("  .listen-turns {")) ===
+      openedAt(listenCss.indexOf(".listen-wave { display: flex; }")),
+    "the lane and the bars appear at different widths, so one exists without the other"
+  );
+
   // Every word is its own box so it can be hovered, and a box has padding.
   // Padding is width: at this size it put half a space again between every
   // pair of words, and "Setz dich doch" read as three separate things. The
