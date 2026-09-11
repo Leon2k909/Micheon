@@ -356,7 +356,15 @@ function UsageChips({ de, use: rawUse, lookup, tierNote, hideUse, short, shortLa
             // sat on the dark session as a cream island.
             : "bg-[var(--surface-3)] text-[var(--text-3)] border-transparent"
         )}>
-          {uiOr(use, "Hinweis zur Verwendung")}
+          {/* usageNote() above already gave this back in the reader's
+              language. It used to be handed to uiOr() as well, from before
+              the notes had tables of their own — and uiOr returns
+              table[value] ?? table[fallback] ?? fallback, never the value it
+              was given. A translated sentence is not a key in the INTERFACE
+              table, so every note that came back translated was thrown away
+              and the chip drew the words "Hinweis zur Verwendung" instead, in
+              all seven languages, over fourteen thousand cards. */}
+          {use}
         </span>
       )}
       {showShort && (
@@ -1824,6 +1832,10 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   /** Press a lit button again to take its mark off. */
   onClearMark?: () => void;
 }) {
+  // The when- and say-boxes below draw card prose through usageNote(), which
+  // is a plain lookup: the table for this language may land after the first
+  // paint, and a subscription inside UsageChips would only redraw UsageChips.
+  useUsageNotes();
   const shakeControls = useAnimationControls();
   const reactToAnswer = (ok: boolean, gentle = false, animate = true) => {
     onAnswer?.(ok);
@@ -3495,7 +3507,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
         {item.when && phase !== "MeaningSelect" && phase !== "ListenPick" && phase !== "MissingWord" && phase !== "Translate" && !isClosedBookPhase(phase) && (
           <div className="fs-when">
             <span className="fs-when-label">{ui("When you'd say it")}</span>
-            <p>{uiOr(item.when, "Typischer Gesprächskontext")}</p>
+            <p>{usageNote(item.when)}</p>
           </div>
         )}
 
@@ -3507,7 +3519,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
         {item.say && phase === "Read" && (
           <div className="fs-say">
             <span className="fs-when-label">{ui("How it's really said")}</span>
-            <p>{uiOr(item.say, "Achte auf eine natürliche Aussprache.")}</p>
+            <p>{usageNote(item.say)}</p>
           </div>
         )}
 
