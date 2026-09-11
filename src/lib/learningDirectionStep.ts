@@ -124,13 +124,22 @@ function withMeaningInAppLanguage(steps: any[], direction: LearningDirection): a
 
   const rewrite = (item: any): any => {
     const german = germanOf(item, direction);
-    if (!german) return item;
+    // `meaningCode` says what the meaning line is REALLY in, so the chip
+    // beside it can read EN on the cards the table did not reach rather than
+    // promising a language that is not there. Everything downstream — the
+    // label, the chip and which matcher grades a typed answer — follows it.
+    if (!german) return { ...item, meaningCode: "en" };
     const written = translate(german, meaning as TranslationLanguage);
-    if (!written || !written.trim()) return item;
+    if (!written || !written.trim()) return { ...item, meaningCode: "en" };
     // The word pictures are keyed on the English gloss, so the English has to
     // survive being replaced on screen — it is a lookup key here, not a line
     // the learner reads.
-    return { ...item, en: written.trim(), originalEn: item?.originalEn ?? item?.en };
+    return {
+      ...item,
+      en: written.trim(),
+      originalEn: item?.originalEn ?? item?.en,
+      meaningCode: meaning,
+    };
   };
 
   return steps.map((step) => {

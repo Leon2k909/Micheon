@@ -52,7 +52,7 @@ import {
 } from "@/lib/guidedBackground";
 import { getCompanion } from "@/lib/companion";
 import { getLearningDirection, learningEnglish, targetLangTag } from "@/lib/direction";
-import { courseSides, LANGUAGE_LABEL, meaningLanguageFor, targetLanguage as courseTargetLanguage, type CourseLanguage } from "@/lib/courseLanguages";
+import { courseSide, courseSides, LANGUAGE_LABEL, meaningLanguageFor, targetLanguage as courseTargetLanguage, type CourseLanguage } from "@/lib/courseLanguages";
 import { matchFrenchMeaning, matchFrenchSentence } from "@/lib/frenchTextMatch";
 import { matchPolishMeaning, matchPolishSentence, POLISH_SPECIAL_CHARACTERS } from "@/lib/polishTextMatch";
 import { matchSpanishMeaning, matchSpanishSentence, SPANISH_SPECIAL_CHARACTERS } from "@/lib/spanishTextMatch";
@@ -2044,7 +2044,15 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // app and stepsForLearningDirection writes the column from the same answer,
   // so the two cannot drift; the six per-course helpers that used to be asked
   // here each narrowed it back to German or English.
-  const meaningLanguage = meaningLanguageFor(courseTargetLanguage(direction));
+  // Per CARD, not per course. stepsForLearningDirection stamps every item
+  // with the language its meaning line really came out in, because a table
+  // that does not reach a card leaves the English standing — and a chip that
+  // says PL over an English line is a promise the card does not keep. The
+  // label, the chips and the matcher that grades a typed meaning all read
+  // this, so they cannot disagree with each other or with the line.
+  const meaningLanguage: CourseLanguage =
+    (item as { meaningCode?: CourseLanguage })?.meaningCode
+    ?? meaningLanguageFor(courseTargetLanguage(direction));
   const meaningIsGerman = meaningLanguage === "de";
   const meaningIsEnglish = meaningLanguage === "en";
   // A picture of the word, where we have an honest one. It is a cue to the
@@ -5621,6 +5629,8 @@ type SessionPreviewCard = {
   target: string;
   /** What it means, in the learner's own language — item.en after the swap. */
   meaning: string;
+  /** What the meaning line is really in — see meaningLineFor. */
+  meaningCode: CourseLanguage;
   use?: string;
   review: boolean;
   /** The pack's CEFR label, carried so the card can show what level this is. */
@@ -5641,7 +5651,8 @@ function buildSessionPreviewCards(steps: any[]): SessionPreviewCard[] {
     const rawTarget = String(step.item.de ?? "").trim();
     const rawMeaning = String(step.item.en ?? "").trim();
     const target = sides.target.code === "en" ? formatEnglishText(rawTarget, englishVariant) : rawTarget;
-    const meaning = sides.meaning.code === "en" ? formatEnglishText(rawMeaning, englishVariant) : rawMeaning;
+    const meaningCode: CourseLanguage = step.item?.meaningCode ?? sides.meaning.code;
+    const meaning = meaningCode === "en" ? formatEnglishText(rawMeaning, englishVariant) : rawMeaning;
     if (!target || !meaning) continue;
     const keys = matchingVisibleKeys(target, meaning);
     if (keys.length !== 2 || keys.some((key) => seen.has(key))) continue;
@@ -5651,6 +5662,7 @@ function buildSessionPreviewCards(steps: any[]): SessionPreviewCard[] {
       id: String(step.item.id ?? key),
       target,
       meaning,
+      meaningCode,
       use: step.item.use ? formatEnglishText(step.item.use, englishVariant) : step.item.use,
       review: Boolean(step.review),
       level: step.item.level,
@@ -5831,7 +5843,8 @@ function SessionFlashcardPreview({
   // German speaker learning English was shown the German side first with the
   // English hidden behind the flip — the card testing her on her own language.
   const targetRow = () => languageRow(sides.target.label, card.target, sides.target.voice, sides.target.htmlLang);
-  const meaningRow = () => languageRow(sides.meaning.label, card.meaning, sides.meaning.voice, sides.meaning.htmlLang);
+  const meaningSide = courseSide(card.meaningCode);
+  const meaningRow = () => languageRow(meaningSide.label, card.meaning, meaningSide.voice, meaningSide.htmlLang);
   const frontSide = face === "target" ? targetRow() : meaningRow();
   const backSide = face === "target" ? meaningRow() : targetRow();
 

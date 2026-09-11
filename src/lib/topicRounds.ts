@@ -1,5 +1,5 @@
 import { loadGradeStore, statusForId } from "@/lib/activity";
-import { meaningTextFor, courseSides } from "@/lib/courseLanguages";
+import { meaningLineFor, courseSides, type CourseLanguage } from "@/lib/courseLanguages";
 import { CURRICULUM_ORDER } from "@/lib/curriculum";
 import { formatEnglishText, getEnglishVariant } from "@/lib/englishVariant";
 import { frenchFor } from "@/lib/frenchCourse";
@@ -110,6 +110,8 @@ type TopicCard = {
   de: string;
   /** What it means, in the language the app explains things in. */
   en: string;
+  /** Which language that turned out to be — see meaningLineFor. */
+  meaningCode: CourseLanguage;
   kind: "word" | "sentence";
   belongs: boolean;
   packKey: string;
@@ -168,15 +170,21 @@ function buildPool(apiParts: Record<string, unknown>, profile: UserProfile | nul
     if (!target || !target.trim()) return;
     // English is the only side that takes the British/American pass; the
     // others are written the way their table writes them.
-    const meaning = meaningIsGerman ? item.de
-      : sides.meaning.code === "en" ? formatEnglishText(item.en, variant)
-      : meaningTextFor(item.de, item.en, sides.meaning.code);
+    // The line and the tag it is marked with come from the same answer, so a
+    // card the table did not reach is marked English rather than promised in
+    // a language it is not written in.
+    const line = meaningIsGerman
+      ? { text: item.de, code: "de" as const }
+      : meaningLineFor(item.de, item.en, sides.meaning.code);
+    const meaning = line.code === "en" ? formatEnglishText(line.text, variant) : line.text;
+    const meaningCode = line.code;
     if (!meaning.trim()) return;
     const list = byPack.get(item.packKey) ?? [];
     list.push({
       id: item.id,
       de: target.trim(),
       en: meaning.trim(),
+      meaningCode,
       kind: item.kind,
       packKey: item.packKey,
       seen: statusForId(grades, item.id, item.aliases ?? []) !== "new",

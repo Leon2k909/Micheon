@@ -172,11 +172,31 @@ export function meaningTextFor(
   english: string | null | undefined,
   meaning: CourseLanguage = meaningLanguageFor(targetLanguage())
 ): string {
+  return meaningLineFor(german, english, meaning).text;
+}
+
+/** A meaning, and the language it actually came out in. */
+type MeaningLine = { text: string; code: CourseLanguage };
+
+/**
+ * The same answer, with the language it is really in.
+ *
+ * The fallback is the reason this exists. Asking for a Polish meaning and
+ * getting English back is fine — the card stays rather than being dropped —
+ * but the chip beside that line then has to read EN, not PL. A label is a
+ * promise about the line under it, so it is made per card and not per course.
+ */
+export function meaningLineFor(
+  german: string | null | undefined,
+  english: string | null | undefined,
+  meaning: CourseLanguage = meaningLanguageFor(targetLanguage())
+): MeaningLine {
   const de = String(german ?? "");
   const en = String(english ?? "");
-  if (meaning === "de") return de;
-  if (meaning === "en") return en;
+  if (meaning === "de") return { text: de, code: "de" };
+  if (meaning === "en") return { text: en, code: "en" };
   const written = translate(de, meaning as TranslationLanguage);
-  return written && written.trim() ? written.trim() : en;
+  if (written && written.trim()) return { text: written.trim(), code: meaning };
+  return { text: en, code: "en" };
 }
 

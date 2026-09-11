@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Check, ChevronRight, RotateCcw, Volume2 } from "lucide-react";
-import { courseSides } from "@/lib/courseLanguages";
+import { courseSide, courseSides } from "@/lib/courseLanguages";
 import { ui, uiFmt, uiNumber } from "@/lib/i18n";
 import type { UserProfile } from "@/lib/profileStorage";
 import {
@@ -122,7 +122,7 @@ export function TopicRoundView({
                   }}
                 >
                   <span className="np-topic-card-de" lang={sides.target.htmlLang}>{card.de}</span>
-                  {checked && <span className="np-topic-card-en" lang={sides.meaning.htmlLang}>{card.en}</span>}
+                  {checked && <span className="np-topic-card-en" lang={courseSide(card.meaningCode).htmlLang}>{card.en}</span>}
                   {checked && state === "missed" && <span className="np-topic-card-tag">{ui("Missed")}</span>}
                   {checked && state === "wrong" && <span className="np-topic-card-tag">{ui("Not this one")}</span>}
                   {checked && <Volume2 aria-hidden="true" className="np-topic-card-speaker" />}
