@@ -3318,7 +3318,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
         { speaker: "A", de: "Da vorne ist eine Lücke.", en: "There's a space up ahead." },
         { speaker: "B", de: "Die ist doch viel zu klein.", en: "That's far too small." },
         { speaker: "A", de: "Du schaffst das, ich weise dich ein.", en: "You'll manage — I'll guide you in." },
-        { speaker: "B", de: "Wehe, es gibt einen Kratzer.", en: "Woe betide if there's a scratch." },
+        { speaker: "B", de: "Wehe, es gibt einen Kratzer.", en: "There'd better not be a scratch." },
       ]},
     ],
   },

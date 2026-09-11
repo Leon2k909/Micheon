@@ -121,6 +121,10 @@ const AMERICAN = [
   // buffer. On its own in English, slack is leniency — cut him some slack —
   // so a line about who has room to cover said nothing of the kind.
   [/\bgot (some|a bit of) slack\b/g, "not this sense here — buffer, breathing space, room"],
+  // Archaic, and read as a costume-drama line rather than a threat between
+  // friends. It also takes an object — woe betide YOU — so a bare one was
+  // not even well-formed.
+  [/\bwoe betide\b/gi, "not said here — there'd better not be, don't you dare"],
   [/\bfroze (me|him|her|them|us) out\b/g, "shut out"],
   [/\bdifferent than\b/g, "different from"],
   [/\bcould care less\b/g, "couldn't care less"],
