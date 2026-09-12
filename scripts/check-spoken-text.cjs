@@ -55,6 +55,12 @@ const cases = [
   ["client leaves the weather alone", "The wind knocked the tree over.", "The wind knocked the tree over."],
   ["client leaves the weather alone even before up", "The wind whistles up top", "The wind whistles up top"],
   ["client leaves German Wind alone", "Bei dem Wind ist es am schlimmsten.", "Bei dem Wind ist es am schlimmsten."],
+  // One spelling, two readings again: the adjective has a poetic two-syllable
+  // form the voice preferred, which is how the gloss on verflucht was read.
+  ["client respells the adjective so it is one syllable", "cursed", "curst"],
+  ["client respells it mid-sentence", "This place is cursed.", "This place is curst."],
+  ["client keeps the capital where the word starts a line", "Cursed thing.", "Curst thing."],
+  ["client leaves accursed its own syllables", "the accursed thing", "the accursed thing"],
 ];
 
 for (const [name, input, expected] of cases) {

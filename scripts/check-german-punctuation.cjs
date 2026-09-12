@@ -159,6 +159,66 @@ for (const sentence of [
 
 check("the punctuation audit covers thousands of German fields", learnerGerman.length > 10_000, `found ${learnerGerman.length}`);
 
+// The comma before und that joins two main clauses.
+//
+// It is permitted — the rules let it stand to mark the boundary — but it is
+// optional, the catalogue goes without it three times out of four, and a
+// learner who meets the exception cannot tell which one is the rule. Only
+// the plain case is refused. A comma closing a subordinate, relative or
+// zu-clause is required and stays. So does the idiom built on the pause:
+// "Zehn Euro, und wir sind im Geschäft" is not two clauses, it is a beat.
+const KOMMA_SUBORDINATOR = /\b(dass|weil|wenn|als|ob|obwohl|damit|während|bevor|nachdem|seit|seitdem|falls|sobald|solange|bis|indem)\b/i;
+const KOMMA_PARTICLE = /^(ja|nein|klar|genau|doch|stimmt|okay|ok|gut|bitte|danke|na klar|mache ich|alles gut|logisch|sicher|gerne|jein)\b/i;
+// Enough everyday finite forms to tell a clause from a verbless fragment.
+const KOMMA_FINITE = new RegExp("\\b(" + [
+  "ist", "sind", "bin", "bist", "seid", "war", "waren",
+  "hat", "habe", "hab", "hast", "haben", "habt", "hatte", "hatten",
+  "wird", "werden", "wirst", "werde", "wurde", "wurden",
+  "kann", "kannst", "können", "könnt", "konnte", "konnten",
+  "muss", "musst", "müssen", "müsst", "musste", "mussten",
+  "will", "willst", "wollen", "wollt", "wollte", "wollten",
+  "soll", "sollst", "sollen", "sollt", "sollte", "sollten",
+  "darf", "darfst", "dürfen", "dürft", "durfte",
+  "mag", "magst", "mögen", "möchte", "möchten",
+  "geht", "gehe", "gehen", "kommt", "komme", "kommen",
+  "macht", "mache", "machen", "gibt", "gebe", "geben",
+  "sagt", "sage", "sagen", "steht", "stehe", "stehen",
+  "liegt", "liegen", "bleibt", "bleiben", "sieht", "sehe", "sehen",
+  "weiß", "wissen", "nimmt", "nehme", "nehmen", "findet", "finde",
+  "läuft", "laufen", "fährt", "fahre", "fahren", "tut", "tue", "tun",
+  "heiße", "heißt", "brauche", "braucht", "brauchen",
+  "quietscht", "hakt", "klemmt", "zieht", "ziehen",
+  "passt", "passen", "klappt", "klappen", "funktioniert", "stimmt", "fehlt", "fehlen",
+  "dauert", "kostet", "hilft", "stört", "wartet", "warten", "sucht", "suchen",
+  "spielt", "spielen", "arbeitet", "arbeiten", "wohnt", "wohnen", "lernt", "lernen",
+  "schreibt", "schreiben", "liest", "lesen", "isst", "essen", "trinkt", "trinken",
+  "schläft", "schlafen", "redet", "reden", "fragt", "fragen", "hört", "hören",
+].join("|") + ")\\b", "i");
+
+const optionalKomma = [];
+// Tatoeba is an imported corpus of sentences real people wrote, and the comma
+// is correct in them; the rule is about the voice this catalogue authors, so
+// it is asked of authored content only.
+for (const { text: sentence, location } of learnerGerman) {
+  if (location.startsWith("tatoeba")) continue;
+  const at = sentence.indexOf(", und ");
+  if (at === -1) continue;
+  if (sentence.indexOf(", und ", at + 1) !== -1) continue;
+  const before = sentence.slice(0, at);
+  const after = sentence.slice(at + ", und ".length);
+  if (/[,—;:]/.test(before)) continue;
+  const first = before.trim();
+  const second = after.split(/[.!?…]/)[0].trim();
+  if (KOMMA_SUBORDINATOR.test(first) || KOMMA_SUBORDINATOR.test(second)) continue;
+  if (KOMMA_PARTICLE.test(first)) continue;
+  if (!KOMMA_FINITE.test(first) || !KOMMA_FINITE.test(second)) continue;
+  optionalKomma.push(`${location}: ${sentence}`);
+}
+check(
+  "und joining two main clauses is not preceded by an optional comma",
+  optionalKomma.length === 0,
+  optionalKomma.slice(0, 12).join(" | ")
+);
 if (failures) {
   console.error(`\n${failures} German punctuation regression${failures === 1 ? "" : "s"}`);
   process.exit(1);

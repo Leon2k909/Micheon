@@ -339,7 +339,7 @@ const CAPSTONE_DIALOGUES: Record<string, Dialogue[]> = {
     {
       title: "Verspannt vom Sitzen",
       lines: [
-        { speaker: "A", de: "Mein Nacken ist total verspannt, und die Schulter tut auch weh.", en: "My neck is completely seized up, and my shoulder hurts too." },
+        { speaker: "A", de: "Mein Nacken ist total verspannt und die Schulter tut auch weh.", en: "My neck is completely seized up, and my shoulder hurts too." },
         { speaker: "B", de: "Zu viel am Schreibtisch? Beweg mal die Finger — tut da was weh?", en: "Too long at the desk? Move your fingers — does anything hurt?" },
         { speaker: "A", de: "Nein, aber das Handgelenk ist ein bisschen geschwollen.", en: "No, but my wrist is a little swollen." },
         { speaker: "B", de: "Dann leg heute eine Pause ein und kühl das Gelenk.", en: "Then take a break today and put something cold on the joint." },
@@ -472,7 +472,7 @@ const CAPSTONE_DIALOGUES: Record<string, Dialogue[]> = {
       title: "Rost am Fahrrad",
       lines: [
         { speaker: "A", de: "Mein Fahrrad ist voller Rost. Was mache ich dagegen?", en: "My bike is covered in rust. What do I do about it?" },
-        { speaker: "B", de: "Der Lack ist ab, und Wasser plus Sauerstoff macht den Rest.", en: "The paint's come off, and water plus oxygen does the rest." },
+        { speaker: "B", de: "Der Lack ist ab und Wasser plus Sauerstoff macht den Rest.", en: "The paint's come off, and water plus oxygen does the rest." },
         { speaker: "A", de: "Hilft die Flüssigkeit hier? Auf der Flasche steht was von Säure.", en: "Will this liquid help? The bottle says something about acid." },
         { speaker: "B", de: "Ja, aber vorsichtig — die Säure kann auch den Lack ätzen.", en: "Yes, but be careful — the acid can eat into the paint too." },
         { speaker: "A", de: "Dann probiere ich das erst an einer kleinen Stelle am Rahmen aus.", en: "Then I'll try it out on one small spot on the frame first." },
@@ -747,7 +747,7 @@ const CAPSTONE_DIALOGUES: Record<string, Dialogue[]> = {
     {
       title: "Wetterumschwung am Berg",
       lines: [
-        { speaker: "A", de: "Der Aufwind wird kalt, und da hinten wird es schwarz.", en: "The updraught's turning cold, and it's going black over there." },
+        { speaker: "A", de: "Der Aufwind wird kalt und da hinten wird es schwarz.", en: "The updraught's turning cold, and it's going black over there." },
         { speaker: "B", de: "Dann runter. Bei Gewitter hat man auf dem Grat nichts verloren.", en: "Down we go, then. In a thunderstorm you've no business being on the ridge." },
         { speaker: "A", de: "Die Hütte meldet Graupel und Böen. Lawinengefahr ist zum Glück keine.", en: "The hut is reporting soft hail and gusts. Thankfully no avalanche risk." },
         { speaker: "B", de: "Trotzdem: Steinschlag nach dem Regen. Helm auf.", en: "All the same: rockfall after rain. Helmet on." },

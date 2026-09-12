@@ -523,6 +523,12 @@ const WIND_VERB = new RegExp(
   "giu"
 );
 
+// The adjective carries an old two-syllable reading — the cursèd earth —
+// and the voice reaches for it, which turned the gloss on verflucht into
+// curs-id. Modern English says adjective and verb alike as one syllable.
+// Word-bounded, so accursed keeps its own three.
+const CURSED_ADJECTIVE = /\bcursed\b/giu;
+
 function applyPronunciationOverrides(value) {
   // Keep display spelling intact while steering German neural voices around
   // the doubled "st" seam that they can over-articulate in selbstständig.
@@ -532,6 +538,9 @@ function applyPronunciationOverrides(value) {
     )
     .replace(WIND_VERB, (match) =>
       (match.startsWith("W") ? "Wynd" : "wynd") + match.slice(4)
+    )
+    .replace(CURSED_ADJECTIVE, (match) =>
+      match.startsWith("C") ? "Curst" : "curst"
     );
 }
 

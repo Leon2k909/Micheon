@@ -44,6 +44,21 @@ const WIND_VERB = new RegExp(
   "giu"
 );
 
+/**
+ * "cursed", said the way people say it now.
+ *
+ * The adjective carries an old two-syllable reading — the cursèd earth, in
+ * hymns and in Shakespeare — and the voice reaches for it, so the gloss on
+ * verflucht came out as curs-id: poetry, where the card wants the ordinary
+ * word. Modern English says the adjective and the verb alike as one
+ * syllable, so nothing is lost by fixing it there. Edge's endpoint rejects
+ * custom SSML, so the only lever is the spelling sent to it, and curst is
+ * the attested one-syllable form.
+ *
+ * Word-bounded, so accursed keeps its own three syllables.
+ */
+const CURSED_ADJECTIVE = /\bcursed\b/giu;
+
 function applyPronunciationOverrides(value: string): string {
   // Microsoft's German neural voices can over-articulate the doubled "st"
   // seam in selbstständig. The accepted spelling selbständig has the same
@@ -55,6 +70,9 @@ function applyPronunciationOverrides(value: string): string {
     )
     .replace(WIND_VERB, (match) =>
       (match.startsWith("W") ? "Wynd" : "wynd") + match.slice(4)
+    )
+    .replace(CURSED_ADJECTIVE, (match) =>
+      match.startsWith("C") ? "Curst" : "curst"
     );
 }
 

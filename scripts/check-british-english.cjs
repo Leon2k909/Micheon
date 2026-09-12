@@ -125,6 +125,10 @@ const AMERICAN = [
   // friends. It also takes an object — woe betide YOU — so a bare one was
   // not even well-formed.
   [/\bwoe betide\b/gi, "not said here — there'd better not be, don't you dare"],
+  // German names the event — beim Einzug — and American estate agents name
+  // it too. English speakers use a clause instead: when we moved in.
+  [/\b(at|upon|before|after) move-?(in|out)\b/gi, "when we moved in, when we move out"],
+  [/\bmove-?in ready\b/gi, "ready to move into"],
   [/\bfroze (me|him|her|them|us) out\b/g, "shut out"],
   [/\bdifferent than\b/g, "different from"],
   [/\bcould care less\b/g, "couldn't care less"],

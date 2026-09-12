@@ -398,7 +398,7 @@ export const advancedWordPartBlueprints2: Record<string, Blueprint> = {
     noun("das", "Umsatzziel", "sales target"),
     noun("das", "Fremdkapital", "borrowed capital"),
   ], [
-    { de: "Wer ist die Zielgruppe, und was liest sie wirklich?", en: "Who is the target audience, and what do they actually read?", use: "The marketing double question; sie agrees with die Zielgruppe — singular, though it names many people." },
+    { de: "Wer ist die Zielgruppe und was liest sie wirklich?", en: "Who is the target audience, and what do they actually read?", use: "The marketing double question; sie agrees with die Zielgruppe — singular, though it names many people." },
     { de: "Der Marktanteil wächst, die Marge schrumpft.", en: "Market share is growing; the margin is shrinking.", use: "Four words a side, no connector — the classic trade-off stated as a bare parallel." },
     { de: "Der Vertrieb verspricht Termine, die die Lieferkette nicht halten kann.", en: "Sales promises delivery dates the supply chain cannot keep.", use: "die die — relative pronoun straight after its article twin; Termine halten = to keep dates." },
     { de: "Der Bestand reicht noch für zwei Wochen.", en: "Stock will last another two weeks.", use: "reichen für + time span = to last for; noch adds the countdown feel." },
