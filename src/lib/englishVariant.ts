@@ -141,6 +141,52 @@ const DISPLAY_WORD_PAIRS: Array<[string, string]> = [
   ["freeways", "motorways"],
 ];
 
+/**
+ * Whole-gloss pairs (American form, British form).
+ *
+ * Some cards differ by the word chosen rather than by a letter of it: der
+ * Mist is darn to an American reader and crap to a British one. That swap
+ * cannot join DISPLAY_WORD_PAIRS, which rewrites a word wherever it stands —
+ * darn is also what you do to a sock, and crap is also plain rubbish, so a
+ * mid-sentence rewrite ruins both:
+ *
+ *     Could you darn the hole at the elbow?   ->   crap the hole
+ *     That's really crap.                     ->   That's really darn.
+ *
+ * These match the WHOLE gloss instead, ignoring a trailing note in brackets,
+ * so only a card whose entire meaning IS the word is touched. A sentence
+ * cannot match one, which is what makes the pair safe where the other list
+ * would not be.
+ */
+const WHOLE_GLOSS_PAIRS: Array<[string, string]> = [
+  ["darn", "crap"],
+  ["Darn!", "Crap!"],
+];
+
+const GLOSS_NOTE = /\s*\([^()]*\)\s*$/u;
+const AMERICAN_GLOSSES = new Map(WHOLE_GLOSS_PAIRS);
+const BRITISH_GLOSSES = new Map(WHOLE_GLOSS_PAIRS.map(([us, uk]) => [uk, us] as [string, string]));
+
+/** The paired gloss, or null when this value is not one of them. */
+function swapWholeGloss(text: string, pairs: Map<string, string>): string | null {
+  const value = String(text ?? "").trim();
+  if (!value) return null;
+  const note = GLOSS_NOTE.exec(value);
+  const head = note ? value.slice(0, note.index).trim() : value;
+  const swapped = pairs.get(head);
+  if (!swapped) return null;
+  return note ? `${swapped} ${note[0].trim()}` : swapped;
+}
+
+/**
+ * Both readings of a gloss, for matching rather than for display: a learner
+ * may type the word their own variant uses whichever one the card shows.
+ */
+export function variantGlossAlternatives(text: string): string[] {
+  const both = [swapWholeGloss(text, AMERICAN_GLOSSES), swapWholeGloss(text, BRITISH_GLOSSES)];
+  return both.filter((value): value is string => Boolean(value));
+}
+
 const AMERICAN_TO_BRITISH = new Map(DISPLAY_WORD_PAIRS);
 const BRITISH_TO_AMERICAN = new Map(DISPLAY_WORD_PAIRS.map(([us, uk]) => [uk, us] as [string, string]));
 const AMERICAN_WORDS_RE = new RegExp(`\\b(${DISPLAY_WORD_PAIRS.map(([us]) => us).join("|")})\\b`, "gi");
@@ -148,6 +194,8 @@ const BRITISH_WORDS_RE = new RegExp(`\\b(${DISPLAY_WORD_PAIRS.map(([, uk]) => uk
 
 /** Rewrite American spellings to British for display, preserving case. */
 function britishiseEnglishSpelling(text: string) {
+  const gloss = swapWholeGloss(text, AMERICAN_GLOSSES);
+  if (gloss) return gloss;
   return String(text ?? "")
     .replace(AMERICAN_WORDS_RE, (m) => {
       const uk = AMERICAN_TO_BRITISH.get(m.toLowerCase());
@@ -165,6 +213,8 @@ function britishiseEnglishSpelling(text: string) {
 
 /** Rewrite British spellings to American for display, preserving case. */
 function americaniseEnglishSpelling(text: string) {
+  const gloss = swapWholeGloss(text, BRITISH_GLOSSES);
+  if (gloss) return gloss;
   return String(text ?? "")
     .replace(BRITISH_WORDS_RE, (m) => {
       const us = BRITISH_TO_AMERICAN.get(m.toLowerCase());

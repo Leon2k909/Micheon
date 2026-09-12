@@ -8636,7 +8636,7 @@ export const USE_FR: Record<string, string> = {
   "Mild — frustration at a situation, not a person. Safe anywhere.": "Doux — de l'agacement contre une situation, pas contre une personne. Sans risque partout.",
   "mild and all-purpose, but can sound patronising — tone matters": "doux et passe-partout, mais cela peut sonner condescendant — le ton compte",
   "Mild disagreement": "Désaccord léger",
-  "Mild expletive, literally manure: So ein Mist! = darn it! Mist bauen = to mess up.": "Juron doux, littéralement le fumier : So ein Mist ! = zut ! Mist bauen = faire une bêtise.",
+  "Mild expletive, literally manure: So ein Mist! = crap! Mist bauen = to mess up.": "Juron doux, littéralement le fumier : So ein Mist ! = zut ! Mist bauen = faire une bêtise.",
   "MILD-MEDIUM — dismissive ('you're not right in the head') rather than aggressive. Banter-safe among friends.": "DOUX À MOYEN — dédaigneux ('tu n'as pas toute ta tête') plutôt qu'agressif. Passe en plaisanterie entre amis.",
   "mild-medium — dismissive rather than aggressive": "doux à moyen — méprisant plutôt qu'agressif",
   "MILD-MEDIUM — often affectionate among friends and family ('you silly thing'). Still rude to strangers.": "DOUX À MOYEN — souvent affectueux entre amis et en famille ('espèce de nigaud'). Reste impoli envers des inconnus.",

@@ -8636,7 +8636,7 @@ export const USE_IT: Record<string, string> = {
   "Mild — frustration at a situation, not a person. Safe anywhere.": "Lieve — irritazione verso una situazione, non verso una persona. Sicuro ovunque.",
   "mild and all-purpose, but can sound patronising — tone matters": "lieve e buono per tutto, ma può suonare condiscendente — conta il tono",
   "Mild disagreement": "Disaccordo lieve",
-  "Mild expletive, literally manure: So ein Mist! = darn it! Mist bauen = to mess up.": "Imprecazione lieve, letteralmente il letame: So ein Mist! = accidenti! Mist bauen = fare una frittata.",
+  "Mild expletive, literally manure: So ein Mist! = crap! Mist bauen = to mess up.": "Imprecazione lieve, letteralmente il letame: So ein Mist! = accidenti! Mist bauen = fare una frittata.",
   "MILD-MEDIUM — dismissive ('you're not right in the head') rather than aggressive. Banter-safe among friends.": "LIEVE-MEDIO — sprezzante ('non ci stai con la testa') più che aggressivo. Va per scherzo tra amici.",
   "mild-medium — dismissive rather than aggressive": "da lieve a medio — sprezzante più che aggressivo",
   "MILD-MEDIUM — often affectionate among friends and family ('you silly thing'). Still rude to strangers.": "LIEVE-MEDIO — spesso affettuoso tra amici e in famiglia ('sciocchino'). Con gli estranei resta scortese.",

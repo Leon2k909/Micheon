@@ -1,4 +1,4 @@
-import { normalizeEnglishSpelling } from "@/lib/englishVariant";
+import { normalizeEnglishSpelling, variantGlossAlternatives } from "@/lib/englishVariant";
 import { foldClockTimes, foldEnglishSynonyms } from "@/lib/englishSynonyms";
 
 /**
@@ -149,7 +149,11 @@ export function matchEnglishMeaning(input: string, target: string) {
   const whole = matchEnglishPhrase(input, target);
   if (whole.ok) return whole;
 
-  for (const alternative of acceptedMeaningAlternatives(target, ENGLISH_MEANING_SEPARATOR)) {
+  // The card shows one variant's word; the learner may type their own.
+  for (const alternative of [
+    ...acceptedMeaningAlternatives(target, ENGLISH_MEANING_SEPARATOR),
+    ...variantGlossAlternatives(target),
+  ]) {
     const result = matchEnglishPhrase(input, alternative);
     if (result.ok) return result;
   }

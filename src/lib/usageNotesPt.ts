@@ -8636,7 +8636,7 @@ export const USE_PT: Record<string, string> = {
   "Mild — frustration at a situation, not a person. Safe anywhere.": "Suave — irritação com uma situação, não com uma pessoa. Seguro em qualquer lado.",
   "mild and all-purpose, but can sound patronising — tone matters": "suave e para tudo, mas pode soar condescendente — o tom conta",
   "Mild disagreement": "Discordância ligeira",
-  "Mild expletive, literally manure: So ein Mist! = darn it! Mist bauen = to mess up.": "Praga suave, literalmente o estrume: So ein Mist! = que chatice! Mist bauen = fazer asneira.",
+  "Mild expletive, literally manure: So ein Mist! = crap! Mist bauen = to mess up.": "Praga suave, literalmente o estrume: So ein Mist! = que chatice! Mist bauen = fazer asneira.",
   "MILD-MEDIUM — dismissive ('you're not right in the head') rather than aggressive. Banter-safe among friends.": "SUAVE A MÉDIO — desdenhoso ('não estás bom da cabeça') e não agressivo. Vale como brincadeira entre amigos.",
   "mild-medium — dismissive rather than aggressive": "suave a médio — desdenhoso mais do que agressivo",
   "MILD-MEDIUM — often affectionate among friends and family ('you silly thing'). Still rude to strangers.": "SUAVE A MÉDIO — muitas vezes afetuoso entre amigos e família ('meu tolinho'). Com desconhecidos continua a ser malcriado.",

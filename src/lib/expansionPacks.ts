@@ -2787,7 +2787,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
     seeds: [
       { de: "die Reaktion", lookup: "Reaktion", fallbackEn: "reaction", tip: "noun", article: "die" },
       { de: "der Quatsch", lookup: "Quatsch", fallbackEn: "nonsense", tip: "noun", article: "der" },
-      { de: "der Mist", lookup: "Mist", fallbackEn: "darn it (lit. manure)", tip: "noun", article: "der" },
+      { de: "der Mist", lookup: "Mist", fallbackEn: "crap (lit. manure)", tip: "noun", article: "der" },
       { de: "der Seufzer", lookup: "Seufzer", fallbackEn: "sigh", tip: "noun", article: "der" },
       { de: "die Überraschung", lookup: "Überraschung", fallbackEn: "surprise", tip: "noun", article: "die" },
       { de: "der Schreck", lookup: "Schreck", fallbackEn: "fright, shock", tip: "noun", article: "der" },

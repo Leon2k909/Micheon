@@ -8636,7 +8636,7 @@ export const USE_DE: Record<string, string> = {
   "Mild — frustration at a situation, not a person. Safe anywhere.": "Mild — Ärger über eine Lage, nicht über einen Menschen. Überall unbedenklich.",
   "mild and all-purpose, but can sound patronising — tone matters": "mild und für alles brauchbar, kann aber herablassend klingen — der Ton entscheidet",
   "Mild disagreement": "Sanfter Widerspruch",
-  "Mild expletive, literally manure: So ein Mist! = darn it! Mist bauen = to mess up.": "Milder Fluch, wörtlich der Dung: So ein Mist! = so ein Ärger! Mist bauen = etwas verbocken.",
+  "Mild expletive, literally manure: So ein Mist! = crap! Mist bauen = to mess up.": "Milder Fluch, wörtlich der Dung: So ein Mist! = so ein Ärger! Mist bauen = etwas verbocken.",
   "MILD-MEDIUM — dismissive ('you're not right in the head') rather than aggressive. Banter-safe among friends.": "MILD BIS MITTEL — abwertend ('du bist nicht ganz richtig im Kopf') statt aggressiv. Unter Freunden als Spaß okay.",
   "mild-medium — dismissive rather than aggressive": "mild bis mittel — eher abwertend als aggressiv",
   "MILD-MEDIUM — often affectionate among friends and family ('you silly thing'). Still rude to strangers.": "MILD BIS MITTEL — unter Freunden und Familie oft liebevoll ('du Dummerchen'). Fremden gegenüber trotzdem unhöflich.",

@@ -554,6 +554,15 @@ check(
     && matchEnglishMeaning("to catch a ball", "to catch (a ball or animal)").ok
     && matchEnglishMeaning("to catch (a ball or animal)", "to catch (a ball or animal)").ok
 );
+// The card shows one variant's word for der Mist. A learner typing the
+// other one has not got it wrong, so both pass whichever is on screen.
+check(
+  "either side of the Atlantic may type its own word for the mild expletive",
+  matchEnglishMeaning("darn", "crap").ok
+    && matchEnglishMeaning("crap", "crap").ok
+    && matchEnglishMeaning("Darn!", "Crap!").ok
+    && matchEnglishMeaning("darn", "crap (lit. manure)").ok
+);
 if (failures) {
   console.error(`\n${failures} answer-matching regression${failures === 1 ? "" : "s"}`);
   process.exit(1);

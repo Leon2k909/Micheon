@@ -331,6 +331,25 @@ check(
     && formatEnglishText("motorway", "american") === "freeway"
     && formatEnglishText("Freeway", "british") === "Motorway"
 );
+// der Mist is a different WORD on each side, not a different spelling, and
+// the pair that carries it could not join the list above: darn is also what
+// you do to a sock and crap is also plain rubbish, so a mid-sentence rewrite
+// ruins both. Matching the whole gloss instead is what makes it safe, which
+// is why the sentences are asserted right beside the glosses.
+check(
+  "the mild expletive reads as the word each variant actually uses",
+  formatEnglishText("crap", "american") === "darn"
+    && formatEnglishText("crap", "british") === "crap"
+    && formatEnglishText("Crap!", "american") === "Darn!"
+    && formatEnglishText("crap (lit. manure)", "american") === "darn (lit. manure)"
+);
+check(
+  "and a sentence carrying either word is left exactly as written",
+  formatEnglishText("Could you darn the hole at the elbow?", "british") === "Could you darn the hole at the elbow?"
+    && formatEnglishText("That's really crap.", "american") === "That's really crap."
+    && formatEnglishText("crappy weather", "american") === "crappy weather"
+);
+
 // The reversal is what makes an ambiguous pair dangerous, so the ones that
 // would break under it must stay out.
 for (const [text, variant] of [["the pavement", "american"], ["a flat tyre", "american"],

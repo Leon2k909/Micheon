@@ -817,8 +817,8 @@ const REVIEWED_WORD_SENSES: Record<string, CanonicalWordSense> = {
   },
   mist: {
     de: "der Mist",
-    en: "darn or crap",
-    use: "Mild expletive, literally manure: So ein Mist! = darn it! Mist bauen = to mess up.",
+    en: "crap",
+    use: "Mild expletive, literally manure: So ein Mist! = crap! Mist bauen = to mess up.",
     pos: "noun",
   },
   verarschen: {

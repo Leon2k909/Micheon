@@ -8643,7 +8643,7 @@ export const USE_RU: Record<string, string> = {
   "Mild — frustration at a situation, not a person. Safe anywhere.": "Мягко: досада на обстоятельства, а не на человека. Безопасно везде.",
   "mild and all-purpose, but can sound patronising — tone matters": "мягко и на все случаи, но может прозвучать снисходительно; решает тон",
   "Mild disagreement": "Мягкое несогласие",
-  "Mild expletive, literally manure: So ein Mist! = darn it! Mist bauen = to mess up.": "Мягкая брань, буквально «навоз»: So ein Mist! — вот незадача! Mist bauen — напортачить.",
+  "Mild expletive, literally manure: So ein Mist! = crap! Mist bauen = to mess up.": "Мягкая брань, буквально «навоз»: So ein Mist! — вот незадача! Mist bauen — напортачить.",
   "MILD-MEDIUM — dismissive ('you're not right in the head') rather than aggressive. Banter-safe among friends.": "МЯГКО-СРЕДНЕ: скорее пренебрежительно («ты не в себе»), чем враждебно. Среди друзей сойдёт за подначку.",
   "mild-medium — dismissive rather than aggressive": "мягко-средне: скорее пренебрежительно, чем враждебно",
   "MILD-MEDIUM — often affectionate among friends and family ('you silly thing'). Still rude to strangers.": "МЯГКО-СРЕДНЕ: среди друзей и родни часто звучит ласково («глупенький ты мой»). Незнакомым всё равно грубо.",

@@ -8636,7 +8636,7 @@ export const USE_PL: Record<string, string> = {
   "Mild — frustration at a situation, not a person. Safe anywhere.": "Łagodne — złość na sytuację, nie na człowieka. Bezpieczne wszędzie.",
   "mild and all-purpose, but can sound patronising — tone matters": "łagodne i uniwersalne, ale może brzmieć protekcjonalnie — decyduje ton",
   "Mild disagreement": "Łagodny sprzeciw",
-  "Mild expletive, literally manure: So ein Mist! = darn it! Mist bauen = to mess up.": "Łagodne przekleństwo, dosłownie obornik: So ein Mist! = a niech to! Mist bauen = nawalić.",
+  "Mild expletive, literally manure: So ein Mist! = crap! Mist bauen = to mess up.": "Łagodne przekleństwo, dosłownie obornik: So ein Mist! = a niech to! Mist bauen = nawalić.",
   "MILD-MEDIUM — dismissive ('you're not right in the head') rather than aggressive. Banter-safe among friends.": "ŁAGODNE DO ŚREDNIEGO — lekceważące ('nie masz wszystkich w domu'), a nie agresywne. W żartach wśród przyjaciół w porządku.",
   "mild-medium — dismissive rather than aggressive": "łagodne do średniego — raczej lekceważące niż agresywne",
   "MILD-MEDIUM — often affectionate among friends and family ('you silly thing'). Still rude to strangers.": "ŁAGODNE DO ŚREDNIEGO — wśród przyjaciół i rodziny często czułe ('ty gapo'). Wobec obcych mimo to niegrzeczne.",

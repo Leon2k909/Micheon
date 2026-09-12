@@ -1697,7 +1697,7 @@ const partBlueprintsBase: Record<string, Blueprint> = {
     description: "Understand real German swearing and insults — from harmless \"Mist\" to never-safe \"Fick dich\" — with honest severity labels for every word, the insults you will actually hear, how to react when someone insults you, and why public insults (Beleidigung) can literally land you in court in Germany. Comprehension-first: know exactly how strong each word is before you ever consider using it.",
     focus: "The profanity ladder from mild to severe with true severity labels; common real-life insults and their bite; banter-safe vs never-safe words; reacting when insulted; German insult law (Beleidigung as a criminal offence, middle-finger fines in traffic)",
     seeds: [
-      { de: "der Mist", lookup: "Mist", fallbackEn: "crap, darn (mild expletive; literally: manure)", tip: "noun", article: "der", use: "Level 1, mild — safe at work, with strangers, in front of children" },
+      { de: "der Mist", lookup: "Mist", fallbackEn: "crap (mild expletive; literally: manure)", tip: "noun", article: "der", use: "Level 1, mild — safe at work, with strangers, in front of children" },
       { de: "verdammt", lookup: "verdammt", fallbackEn: "damn, damned", tip: "adjective", use: "Level 2, medium-mild — like English 'damn'; fine among adults, avoid formal settings" },
       { de: "die Scheiße", lookup: "Scheiße", fallbackEn: "shit", tip: "noun", article: "die", use: "Level 3, medium — extremely common; also as prefix Scheiß- on any noun (Scheißwetter)" },
       { de: "das Arschloch", lookup: "Arschloch", fallbackEn: "asshole", tip: "noun", article: "das", use: "Level 5, strong insult — never banter-safe with strangers; legally prosecutable" },
@@ -1756,7 +1756,7 @@ const partBlueprintsBase: Record<string, Blueprint> = {
       ]},
     ],
     phrases: [
-      { de: "Mist!", en: "Darn! / Crap!", use: "Ladder level 1, MILD — like 'darn'. Completely safe: at work, with strangers, in front of children. The all-purpose harmless curse.", fr: "Zut !" },
+      { de: "Mist!", en: "Crap!", use: "Ladder level 1, MILD — like 'darn'. Completely safe: at work, with strangers, in front of children. The all-purpose harmless curse.", fr: "Zut !" },
       { de: "So ein Mist!", en: "What a pain! / Oh, crap!", use: "Mild — frustration at a situation, not a person. Safe anywhere.", fr: "Quelle poisse !" },
       { de: "Verdammt!", en: "Damn it!", use: "Ladder level 2, MEDIUM-MILD — like 'damn'. Fine among adults and colleagues you know; avoid in formal or religious settings.", fr: "Bon sang !" , say: "sounds like: fuh-DAMT — the v is an f, never an English v" },
       { de: "Verdammt noch mal!", en: "God damn it!", use: "Medium — intensified 'verdammt' for real annoyance. Everyday among adults, not for formal situations.", fr: "Bordel !" },
