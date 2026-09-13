@@ -179,7 +179,7 @@ export const roundingWordPartBlueprints: Record<string, Blueprint> = {
     { de: "endlich", lookup: "endlich", fallbackEn: "finally", tip: "adjective" },
     { de: "froh", lookup: "froh", fallbackEn: "glad", tip: "adjective" },
     { de: "härter", lookup: "härter", fallbackEn: "harder", tip: "adjective" },
-    { de: "fantastisch", lookup: "fantastisch", fallbackEn: "incredible", tip: "adjective" },
+    { de: "fantastisch", lookup: "fantastisch", fallbackEn: "fantastic, incredible", tip: "adjective" },
     { de: "gebildet", lookup: "gebildet", fallbackEn: "educated", tip: "adjective" },
     { de: "gefälscht", lookup: "gefälscht", fallbackEn: "fake", tip: "adjective" },
     { de: "gotisch", lookup: "gotisch", fallbackEn: "gothic", tip: "adjective" },

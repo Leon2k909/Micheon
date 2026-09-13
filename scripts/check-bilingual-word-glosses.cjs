@@ -201,6 +201,85 @@ check(
   cutMidNote.length === 0,
   cutMidNote.slice(0, 20).join(" | ")
 );
+// Where the two languages share the word, the card leads with the shared
+// word. A learner who already owns fantastic should be handed it, not set to
+// memorise a synonym for a word they know — and the free win is most of what
+// makes a cognate worth teaching at all.
+//
+// The catalogue does this everywhere: romantic, logical, chaotic, optimistic,
+// realistic, practical, relevant, tolerant, active, creative, normal, modern,
+// interesting, nervous, correct, perfect, direct, flexible, stable. One card
+// glossed fantastisch as incredible and was the only one out of step.
+//
+// Listed rather than derived, because the family is full of words that only
+// look shared, and the catalogue is careful about those too — eventuell is
+// possibly and says NOT eventually, sensibel is sensitive and says NOT
+// sensible, brav is well-behaved and says NOT brave. A rule that guessed
+// from spelling would break exactly those cards.
+const COGNATE_LEADS = [
+  ["fantastisch", "fantastic"],
+  ["romantisch", "romantic"],
+  ["logisch", "logical"],
+  ["chaotisch", "chaotic"],
+  ["optimistisch", "optimistic"],
+  ["realistisch", "realistic"],
+  ["praktisch", "practical"],
+  ["relevant", "relevant"],
+  ["tolerant", "tolerant"],
+  ["aktiv", "active"],
+  ["kreativ", "creative"],
+  ["nervös", "nervous"],
+  ["korrekt", "correct"],
+  ["perfekt", "perfect"],
+  ["direkt", "direct"],
+  ["interessant", "interesting"],
+];
+const cognateMisses = [];
+for (const [german, shared] of COGNATE_LEADS) {
+  const word = byGerman.get(normalise(german));
+  if (!word) continue;
+  if (!normalise(word.en).startsWith(normalise(shared))) {
+    cognateMisses.push(`${german} => ${word.en} (expected ${shared})`);
+  }
+}
+check(
+  `all ${COGNATE_LEADS.length} shared words are taught as the shared word`,
+  cognateMisses.length === 0,
+  cognateMisses.join(" | ")
+);
+// The first word of a gloss is the one the card shows and the one the
+// learner will carry away, so it has to be a word they will actually hear
+// said. Bookish is not wrong — it is just unusable: nobody answers how are
+// you with listless, and a learner who learns it that way has been handed a
+// word with no situations in it.
+//
+// Only the LEAD is refused, never the gloss. A rare word sitting behind a
+// plain one is doing useful work, which is why feststellen keeps ascertain
+// after to determine, and beginnen keeps commence after to begin.
+const BOOKISH_ENGLISH = [
+  "listless", "indolent", "torpid", "languid", "enervated", "slothful",
+  "wan", "pallid", "doleful", "lugubrious", "disconsolate", "querulous",
+  "taciturn", "garrulous", "loquacious", "obstreperous", "recalcitrant",
+  "obdurate", "intransigent", "peevish", "irksome", "wearisome",
+  "perspicacious", "munificent", "parsimonious", "penurious", "impecunious",
+  "salubrious", "fortuitous", "propitious", "egregious", "vexatious",
+  "plethora", "surfeit", "paucity", "assiduous", "diffident", "voluble",
+  "truculent", "saturnine", "phlegmatic", "choleric",
+  // Alive only inside one fixed phrase (in all its splendour), which is not
+  // a gloss a learner can use anywhere else.
+  "splendour", "splendor",
+];
+const BOOKISH_LEAD = new RegExp(`^(?:to\\s+|a\\s+|an\\s+|the\\s+)?(?:${BOOKISH_ENGLISH.join("|")})\\b`, "i");
+const bookishLeads = [];
+for (const word of words) {
+  const first = String(word.en ?? "").split(/\s+\/\s+|[,;]|\s+or\s+/i)[0].trim();
+  if (BOOKISH_LEAD.test(first)) bookishLeads.push(`${word.de} => ${word.en}`);
+}
+check(
+  "no card leads its meaning with a word nobody says out loud",
+  bookishLeads.length === 0,
+  bookishLeads.slice(0, 12).join(" | ")
+);
 if (failures) {
   console.error(`\n${failures} bilingual word-gloss regression${failures === 1 ? "" : "s"}`);
   process.exit(1);

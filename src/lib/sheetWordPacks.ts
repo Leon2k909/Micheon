@@ -383,7 +383,7 @@ export const sheetWordPartBlueprints: Record<string, Blueprint> = {
     { de: "fröhlich", lookup: "fröhlich", fallbackEn: "cheerful, merry", tip: "adjective", use: "Fröhliche Weihnachten = merry Christmas" },
     { de: "gesellig", lookup: "gesellig", fallbackEn: "sociable", tip: "adjective", use: "someone who likes company" },
     { de: "redselig", lookup: "redselig", fallbackEn: "talkative", tip: "adjective" },
-    { de: "wortkarg", lookup: "wortkarg", fallbackEn: "taciturn, of few words", tip: "adjective" },
+    { de: "wortkarg", lookup: "wortkarg", fallbackEn: "of few words, taciturn", tip: "adjective" },
     { de: "offenherzig", lookup: "offenherzig", fallbackEn: "open-hearted, candid", tip: "adjective" },
     { de: "liebevoll", lookup: "liebevoll", fallbackEn: "loving, affectionate", tip: "adjective" },
     { de: "lieblos", lookup: "lieblos", fallbackEn: "unloving, careless", tip: "adjective", use: "done without any care" },

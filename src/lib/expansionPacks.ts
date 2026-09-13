@@ -9312,7 +9312,7 @@ export const expansionPartBlueprints: Record<string, Blueprint> = {
       { de: "schonen", lookup: "schonen", fallbackEn: "to take it easy, to rest", tip: "verb" },
       { de: "die Ohrenschmerzen", lookup: "Ohrenschmerzen", fallbackEn: "earache", tip: "noun", article: "die" },
       { de: "das Impfbuch", lookup: "Impfbuch", fallbackEn: "vaccination booklet", tip: "noun", article: "das" },
-      { de: "schlapp", lookup: "schlapp", fallbackEn: "listless, washed out", tip: "adjective" },
+      { de: "schlapp", lookup: "schlapp", fallbackEn: "washed out, drained, listless", tip: "adjective" },
       { de: "der Infekt", lookup: "Infekt", fallbackEn: "infection, bug", tip: "noun", article: "der" },
       { de: "krankmelden", lookup: "krankmelden", fallbackEn: "to report as ill", tip: "verb" },
     ],

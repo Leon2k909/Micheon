@@ -82,7 +82,7 @@ export const immersionWordPartBlueprints: Record<string, Blueprint> = {
       { de: "absolut", lookup: "absolut", fallbackEn: "absolute, absolutely", tip: "adjective" },
       { de: "großartig", lookup: "großartig", fallbackEn: "great, magnificent", tip: "adjective" },
       { de: "immer", lookup: "immer", fallbackEn: "always", tip: "adverb", use: "immer noch = still; immer mehr = more and more" },
-      { de: "die Pracht", lookup: "Pracht", fallbackEn: "splendour, magnificence", tip: "noun", article: "die", use: "elevated register; adjective prächtig = splendid" },
+      { de: "die Pracht", lookup: "Pracht", fallbackEn: "magnificence, grandeur, splendour", tip: "noun", article: "die", use: "elevated register; adjective prächtig = splendid" },
       { de: "sagen", lookup: "sagen", fallbackEn: "to say, to tell", tip: "verb" },
       { de: "sogar", lookup: "sogar", fallbackEn: "even (intensifier)", tip: "adverb", use: "sogar noch besser = even better" },
       { de: "unglaublich", lookup: "unglaublich", fallbackEn: "unbelievable, incredible", tip: "adjective" },
