@@ -73,8 +73,11 @@ import {
   MASTERED_SENTENCE_PHASES as MASTERED_PHASES,
   replacementSentencePhaseWhenMuted,
   SENTENCE_PHASES,
+  sentenceStageHeading,
+  sentenceStageLabel,
   type SentencePhase as Phase,
 } from "@/lib/guidedLessonPhases";
+import { customStageRoute, getLessonStages } from "@/lib/lessonStages";
 import { wordOrderTokensMatchSentence } from "@/lib/wordOrder";
 import { wordPicture } from "@/lib/wordPictures";
 import { wordPictureAsset } from "@/lib/wordPictureAssets";
@@ -780,42 +783,16 @@ function buildMissingWordChoices(answer: string, pool: string[], limit = 3): str
     .sort((a, b) => choiceHash(`missing-position|${answer}|${a}`) - choiceHash(`missing-position|${answer}|${b}`));
 }
 
+// The names live beside the route so settings can show the same ones.
 function phaseLabel(p: Phase, withFrench: boolean) {
   if (withFrench && p === "Type") return "German";
-  if (p === "MeaningSelect") return "Select";
-  if (p === "MeaningFirst") return "Meaning first";
-  if (p === "ListenPick") return "Hear & write";
-  if (p === "MissingWord") return "Missing word";
-  if (p === "Gap") return "Fill in";
-  if (p === "Order") return "Reorder";
-  if (p === "WriteFromMemory") return "Write it";
-  if (p === "RecallBoth") return "Recall both";
-  return p;
+  return sentenceStageLabel(p);
 }
 
 // Big stage title for the lesson heading ("Build the sentence" style).
 function phaseHeading(p: Phase, withFrench: boolean): string {
-  switch (p) {
-    case "Read": return "Read & listen";
-    case "MeaningSelect": return "Select the correct meaning";
-    // No language names in here on purpose. An interpolated heading is baked
-    // out into the tables one combination at a time — "Recall the German",
-    // "Recall the French" — and this one would need every meaning-to-target
-    // pair the courses can make. The instruction underneath names the
-    // language through a slot, which costs one key instead of dozens.
-    case "MeaningFirst": return "Now the other way round";
-    case "ListenPick": return "Write what you hear";
-    case "MissingWord": return "Listen for the missing word";
-    case "Type": return withFrench ? "Type the German" : "Type the sentence";
-    case "Translate": return "Translate this sentence";
-    case "Gap": return "Fill the blank";
-    case "Order": return "Reorder the sentence";
-    case "WriteFromMemory": return "Build from memory";
-    case "RecallBoth": return "Recall both sides";
-    case "French": return "Type the French";
-    case "Memory": return "Recall both languages";
-    default: return "Sentence practice";
-  }
+  if (withFrench && p === "Type") return "Type the German";
+  return sentenceStageHeading(p);
 }
 
 // The sentence as tappable words — click any word to hear just that word.
@@ -834,11 +811,15 @@ function phaseHeading(p: Phase, withFrench: boolean): string {
  * The structure notes sit beside it because the beta chooses sentences BY
  * their grammar, so saying which grammar is the point.
  */
-function StageRoute({ current, withFrench = false, locked = false, onClickPhase, phases }: {
+function StageRoute({ current, currentIndex, withFrench = false, locked = false, onClickPhase, onClickStage, phases }: {
   current: Phase;
+  /** The position in the route. A stage that runs twice has two positions and
+   *  one name, so the name alone cannot say which of them is lit. */
+  currentIndex?: number;
   withFrench?: boolean;
   locked?: boolean;
   onClickPhase?: (p: Phase) => void;
+  onClickStage?: (index: number) => void;
   /** Overrides the default route, for a phrase taking the short mastered path. */
   phases?: Phase[];
 }) {
@@ -848,8 +829,17 @@ function StageRoute({ current, withFrench = false, locked = false, onClickPhase,
   const allPhases: Phase[] = phases
     ? [...phases]
     : withFrench ? [...BILINGUAL_SENTENCE_PHASES] : [...SENTENCE_PHASES];
-  const idx = allPhases.indexOf(current);
+  const idx = currentIndex !== undefined && allPhases[currentIndex] === current
+    ? currentIndex
+    : allPhases.indexOf(current);
   const n = allPhases.length;
+  // A stage run again is named as a repeat, the way the old route said Type
+  // again. Two identical labels side by side read as the bar breaking.
+  const stageNameAt = (p: Phase, index: number) => {
+    const name = ui(phaseLabel(p, withFrench));
+    const earlier = allPhases.slice(0, Math.max(0, index)).filter((q) => q === p).length;
+    return earlier > 0 ? uiFmt("{stage} again", { stage: name }) : name;
+  };
   const activeStageRef = useRef<HTMLButtonElement>(null);
   const shortcutMenuRef = useRef<HTMLDivElement>(null);
   const shortcutTriggerRef = useRef<HTMLButtonElement>(null);
@@ -894,7 +884,7 @@ function StageRoute({ current, withFrench = false, locked = false, onClickPhase,
       <div className="fs-stagemeta">
         <div>
           <span>{ui("Stage")} {idx + 1} {ui("of")} {n}</span>
-          <strong>{ui(phaseLabel(current, withFrench))}</strong>
+          <strong>{stageNameAt(current, idx)}</strong>
         </div>
         <div className="fs-stage-tools" ref={shortcutMenuRef}>
           <button
@@ -1004,17 +994,17 @@ function StageRoute({ current, withFrench = false, locked = false, onClickPhase,
           </div>
           {allPhases.map((p, i) => {
             const stageShortcut = shortcutForStage(i);
-            const stageName = ui(phaseLabel(p, withFrench));
+            const stageName = stageNameAt(p, i);
             return (
               <button
-                key={p}
+                key={`${p}-${i}`}
                 ref={i === idx ? activeStageRef : undefined}
                 type="button"
                 title={`${ui("Stage")} ${i + 1}: ${stageName} · ${stageShortcut.label}`}
                 aria-label={`${ui("Stage")} ${i + 1}: ${stageName}. ${stageShortcut.label}`}
                 aria-keyshortcuts={stageShortcut.aria}
                 aria-current={i === idx ? "step" : undefined}
-                onClick={() => onClickPhase?.(p)}
+                onClick={() => (onClickStage ? onClickStage(i) : onClickPhase?.(p))}
                 disabled={locked}
                 className={cn(
                   "fs-stagebtn",
@@ -1894,6 +1884,21 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   );
   const currentPhaseRef = useRef<Phase>(phase);
   useEffect(() => { currentPhaseRef.current = phase; }, [phase]);
+  /**
+   * Where in the route the lesson is, by position.
+   *
+   * The stage used to be tracked by name alone, and moving on meant finding
+   * that name in the route and taking the one after. That breaks the moment a
+   * stage appears twice: from the second Type it finds the first, hands back
+   * Type again, and never gets past it. The name still says WHAT to show —
+   * which is all the stage branches below ever ask — and the step says WHERE,
+   * which is what moving on needs.
+   */
+  const [step, setStep] = useState(0);
+  const stepRef = useRef(0);
+  // Read once per card: the stages are a settings decision, and a card half
+  // way through them is not where a change should take effect.
+  const customRoute = useMemo(() => customStageRoute(getLessonStages()), []);
   /** The stages this phrase actually runs through. */
   // A vocabulary sitting reuses these exercises but not the whole march:
   // a single word runs the short word route (see guidedLessonPhases).
@@ -1912,6 +1917,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     // cards earlier: the introduce-from-cold stages are already spent.
     chained: Boolean(item?.chainedFromLesson),
     typingFailed,
+    custom: customRoute,
   });
   // True while the app voice is actually speaking — drives the waveform accent.
   const [ttsOn, setTtsOn] = useState(false);
@@ -2326,11 +2332,22 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       bilingual: hasFr,
       word: isWordItem,
       orderable: isOrderable,
+      custom: customRoute,
       });
     if (!replacement || replacement === phase) return;
     currentPhaseRef.current = replacement;
     setPhase(replacement);
   }, [audioMuted, hasFr, masteredRoute, phase]);
+
+  useEffect(() => {
+    const route = phaseRoute();
+    if (route[stepRef.current] === phase) return;
+    const at = route.indexOf(phase);
+    if (at === -1) return;
+    stepRef.current = at;
+    setStep(at);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, masteredRoute, hasFr, audioMuted]);
 
   // A phase outside the current route renders NOTHING: every stage branch is
   // false, the header stays up, and the lesson looks dead. Routes change under
@@ -2371,7 +2388,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     else lessonSpeak(item.de, 0.88, targetLang);
     /* eslint-disable-next-line no-useless-return */
     return;
-  }, [phase, item.de, item.fr, hasFr, audioMuted, targetLang]);
+  }, [phase, step, item.de, item.fr, hasFr, audioMuted, targetLang]);
 
   // Focus input when entering Type or Translate phase
   useEffect(() => {
@@ -2385,30 +2402,33 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     if (phase === "RecallBoth") setTimeout(() => recallBothTargetRef.current?.focus(), 100);
     if (phase === "French")    setTimeout(() => frInputRef.current?.focus(), 100);
     if (phase === "Memory")    setTimeout(() => memDeRef.current?.focus(), 100);
-  }, [phase, translationMode, listeningMode]);
+  }, [phase, step, translationMode, listeningMode]);
+
+  /** Go to a position in the route. False when there is nothing there. */
+  const moveToStep = (index: number): boolean => {
+    const next = phaseRoute()[index];
+    if (!next) return false;
+    currentPhaseRef.current = next;
+    stepRef.current = index;
+    setStep(index);
+    setPhase(next);
+    return true;
+  };
 
   const advance = () => {
     // Ignore a delayed auto-advance if the learner manually jumped elsewhere
-    // during the success animation.
-    if (currentPhaseRef.current !== phase) return;
-    const order: Phase[] = phaseRoute();
-    const next = order[order.indexOf(phase) + 1];
-    if (next) {
-      currentPhaseRef.current = next;
-      setPhase(next);
-    }
+    // during the success animation — checked by position as well as by name,
+    // because a repeated stage shares its name with the step before it and a
+    // late tick from the first would otherwise skip the second.
+    if (currentPhaseRef.current !== phase || stepRef.current !== step) return;
+    moveToStep(step + 1);
   };
 
   // Advance to the next phase, or finish the exercise if this was the last one.
   // Used by the typing steps so the second Translate round ends the exercise.
   const advanceOrFinish = () => {
-    if (currentPhaseRef.current !== phase) return;
-    const order: Phase[] = phaseRoute();
-    const next = order[order.indexOf(phase) + 1];
-    if (next) {
-      currentPhaseRef.current = next;
-      setPhase(next);
-    } else finishOrFrench();
+    if (currentPhaseRef.current !== phase || stepRef.current !== step) return;
+    if (!moveToStep(step + 1)) finishOrFrench();
   };
 
   // The second Type / Translate rounds reuse the first round's input state, so
@@ -2468,7 +2488,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       setRecallBothTargetChecked(false);
       setRecallBothChecked(false);
     }
-  }, [phase, item.de]);
+  }, [phase, step, item.de]);
 
   useEffect(() => () => {
     recallAdvanceTokenRef.current += 1;
@@ -2584,19 +2604,12 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
 
   const goBack = () => {
     if (recallTransitionPendingRef.current || recallCompletionScheduledRef.current) return;
-    const order: Phase[] = phaseRoute();
-    const prev = order[order.indexOf(phase) - 1];
-    if (prev) {
-      currentPhaseRef.current = prev;
-      setPhase(prev);
-    }
+    moveToStep(stepRef.current - 1);
   };
 
-  const goToPhase = (p: Phase) => {
-    if (!recallTransitionPendingRef.current && !recallCompletionScheduledRef.current) {
-      currentPhaseRef.current = p;
-      setPhase(p);
-    }
+  const goToStep = (index: number) => {
+    if (recallTransitionPendingRef.current || recallCompletionScheduledRef.current) return;
+    moveToStep(index);
   };
 
   useEffect(() => {
@@ -2612,11 +2625,10 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       const route = phaseRoute();
       const directIndex = directStageShortcutIndex(event);
       if (directIndex !== null) {
-        const destination = route[directIndex];
-        if (!destination) return;
+        if (!route[directIndex]) return;
         event.preventDefault();
         event.stopPropagation();
-        goToPhase(destination);
+        goToStep(directIndex);
         return;
       }
 
@@ -2630,13 +2642,11 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       ) return;
       if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
 
-      const currentIndex = route.indexOf(phase);
       const offset = event.key === "ArrowLeft" ? -1 : 1;
-      const destination = route[currentIndex + offset];
-      if (!destination) return;
+      if (!route[stepRef.current + offset]) return;
       event.preventDefault();
       event.stopPropagation();
-      goToPhase(destination);
+      goToStep(stepRef.current + offset);
     };
 
     window.addEventListener("keydown", handleStageShortcut);
@@ -3102,7 +3112,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     }, 1000);
     return () => window.clearInterval(tick);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, ttsOn]);
+  }, [phase, step, ttsOn]);
 
   const previewMissingWord = (choice: string) => {
     setMissingWordPreview(choice);
@@ -3390,10 +3400,11 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       {/* Stage route (full-bleed inside the card) */}
       <StageRoute
         current={phase}
+        currentIndex={step}
         phases={phaseRoute()}
         withFrench={hasFr}
         locked={recallTransitionPending || recallCompletionScheduledRef.current}
-        onClickPhase={goToPhase}
+        onClickStage={goToStep}
       />
 
       <div className="fs-card-body space-y-4">

@@ -42,6 +42,8 @@ const {
   SENTENCE_PHASES,
   NON_WRITING_SENTENCE_PHASES,
   LEAN_SENTENCE_PHASES,
+  sentenceStageLabel,
+  sentenceStageHeading,
 } = mod.exports;
 
 let failed = 0;
@@ -125,9 +127,14 @@ check("it plays the target rather than leaving it silent",
 check("it has no input of its own",
   !/phase === "MeaningFirst"[\s\S]{0,1200}<(input|textarea)/u.test(guided),
   "the stage grew a text box, which is the one thing it must not have");
+// Asked of the names themselves, not of where they are written: they moved
+// beside the route so the stages setting can show the same ones, and a check
+// that pinned the old spot would have failed on a change that broke nothing.
 check("it is named in the stage bar and in the heading",
-  guided.includes('if (p === "MeaningFirst") return "Meaning first";')
-    && guided.includes('case "MeaningFirst": return "Now the other way round";'));
+  sentenceStageLabel("MeaningFirst") === "Meaning first"
+    && sentenceStageHeading("MeaningFirst") === "Now the other way round"
+    && guided.includes("return sentenceStageLabel(p);")
+    && guided.includes("return sentenceStageHeading(p);"));
 
 const TABLES = {
   German: "src/lib/i18nDe.ts",

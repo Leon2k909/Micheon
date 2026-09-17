@@ -193,7 +193,29 @@ interface SentencePhaseRouteOptions {
    * removed from the app — they are what a wrong answer is for.
    */
   typingFailed?: boolean;
+  /**
+   * A route set by hand in settings, one entry per step — a stage set to run
+   * twice appears twice.
+   *
+   * New material only. A phrase already known, an extension of one taught a
+   * few cards ago, and the French companion keep their own shorter routes
+   * whatever this says: each is short for a reason a setting about drilling
+   * new phrases should not override. The hard limits below apply to it as
+   * to everything else.
+   */
+  custom?: readonly SentencePhase[];
 }
+
+/**
+ * The stages a single word can run: every stage that appears in any of the
+ * word routes. Derived from those routes rather than listed again, so a stage
+ * that becomes possible for a word becomes choosable for one too.
+ */
+const WORD_CAPABLE_PHASE_SET = new Set<SentencePhase>([
+  ...LEAN_WORD_PHASES,
+  ...WORD_PHASES,
+  ...MASTERED_WORD_PHASES,
+]);
 
 export function buildSentencePhaseRoute({
   mastered,
@@ -203,18 +225,30 @@ export function buildSentencePhaseRoute({
   orderable = true,
   chained = false,
   typingFailed = false,
+  custom,
 }: SentencePhaseRouteOptions): SentencePhase[] {
-  const route: readonly SentencePhase[] = word
-    ? (mastered ? MASTERED_WORD_PHASES : typingFailed ? WORD_PHASES : LEAN_WORD_PHASES)
-    : mastered
-    ? MASTERED_SENTENCE_PHASES
-    : chained
-      ? CHAINED_SENTENCE_PHASES
-      : bilingual
-        ? BILINGUAL_SENTENCE_PHASES
-        : typingFailed
-          ? SENTENCE_PHASES
-          : LEAN_SENTENCE_PHASES;
+  // A word never takes the chained or bilingual routes, so for a word only
+  // being known keeps the hand-set route away.
+  const customApplies = !mastered && (word || (!chained && !bilingual));
+  // A sentence-only stage chosen in settings is skipped for a single word,
+  // which has no gap to fill and nothing to reorder.
+  const customRoute = customApplies && custom?.length
+    ? custom.filter((phase) => !word || WORD_CAPABLE_PHASE_SET.has(phase))
+    : [];
+  const useCustom = customRoute.length > 0;
+  const route: readonly SentencePhase[] = useCustom
+    ? customRoute
+    : word
+      ? (mastered ? MASTERED_WORD_PHASES : typingFailed ? WORD_PHASES : LEAN_WORD_PHASES)
+      : mastered
+      ? MASTERED_SENTENCE_PHASES
+      : chained
+        ? CHAINED_SENTENCE_PHASES
+        : bilingual
+          ? BILINGUAL_SENTENCE_PHASES
+          : typingFailed
+            ? SENTENCE_PHASES
+            : LEAN_SENTENCE_PHASES;
 
   /**
    * With the sound off, a stage that needs it is REPLACED, not removed.
@@ -245,6 +279,11 @@ export function buildSentencePhaseRoute({
     })
     .filter((phase) => {
       if (!orderable && phase === "Order") return false;
+      // The de-duplication exists so a stand-in never lands on a stage the
+      // route already has. In a hand-set route a stage appearing twice is the
+      // setting working, not a collision — and stand-ins are already kept off
+      // stages the route contains, above.
+      if (useCustom) return true;
       if (seen.has(phase)) return false;
       seen.add(phase);
       return true;
@@ -276,4 +315,49 @@ export function replacementSentencePhaseWhenMuted(
     ?? fullRoute.slice(0, currentIndex).reverse().find((phase) => mutedRoute.includes(phase))
     ?? mutedRoute[0]
     ?? null;
+}
+
+/**
+ * The short name a stage goes by — on the stage bar during a lesson, and in
+ * settings when choosing the route. One list, so the two cannot drift apart
+ * and a stage is never called one thing in the lesson and another in the
+ * place you switch it off.
+ */
+export function sentenceStageLabel(phase: SentencePhase): string {
+  switch (phase) {
+    case "MeaningSelect": return "Select";
+    case "MeaningFirst": return "Meaning first";
+    case "ListenPick": return "Hear & write";
+    case "MissingWord": return "Missing word";
+    case "Gap": return "Fill in";
+    case "Order": return "Reorder";
+    case "WriteFromMemory": return "Write it";
+    case "RecallBoth": return "Recall both";
+    default: return phase;
+  }
+}
+
+/** What a stage asks for, as the lesson's big heading puts it. */
+export function sentenceStageHeading(phase: SentencePhase): string {
+  switch (phase) {
+    case "Read": return "Read & listen";
+    case "MeaningSelect": return "Select the correct meaning";
+    // No language names in here on purpose. An interpolated heading is baked
+    // out into the tables one combination at a time — "Recall the German",
+    // "Recall the French" — and this one would need every meaning-to-target
+    // pair the courses can make. The instruction underneath names the
+    // language through a slot, which costs one key instead of dozens.
+    case "MeaningFirst": return "Now the other way round";
+    case "ListenPick": return "Write what you hear";
+    case "MissingWord": return "Listen for the missing word";
+    case "Type": return "Type the sentence";
+    case "Translate": return "Translate this sentence";
+    case "Gap": return "Fill the blank";
+    case "Order": return "Reorder the sentence";
+    case "WriteFromMemory": return "Build from memory";
+    case "RecallBoth": return "Recall both sides";
+    case "French": return "Type the French";
+    case "Memory": return "Recall both languages";
+    default: return "Sentence practice";
+  }
 }

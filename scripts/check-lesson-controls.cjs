@@ -12,8 +12,23 @@
 //     than 2x would promise something that silently comes back at 2x.
 const fs = require("fs");
 const path = require("path");
+const Module = require("module");
+const esbuild = require("esbuild");
 
 const root = path.resolve(__dirname, "..");
+
+// The stage names, asked directly rather than looked for in a file.
+const stageNames = (() => {
+  const built = esbuild.buildSync({
+    stdin: { contents: 'export { sentenceStageLabel, sentenceStageHeading } from "./src/lib/guidedLessonPhases.ts";', resolveDir: root, sourcefile: "stage-names.ts", loader: "ts" },
+    alias: { "@": path.resolve(root, "src") },
+    bundle: true, write: false, format: "cjs", platform: "node", logLevel: "silent",
+  });
+  const mod = new Module("stage-names", null);
+  mod.paths = Module._nodeModulePaths(root);
+  mod._compile(built.outputFiles[0].text, path.join(root, "stage-names.cjs"));
+  return mod.exports;
+})();
 const read = (rel) => fs.readFileSync(path.join(root, rel), "utf8");
 const guided = read("src/GuidedSession.tsx");
 const css = read("src/index.css");
@@ -73,8 +88,8 @@ check(
 // ── 2b. word order is presented as a focused reorder exercise ─────────────
 check(
   "the word-order stage names the learner's actual task",
-  guided.includes('case "Order": return "Reorder the sentence";')
-    && guided.includes('if (p === "Order") return "Reorder";')
+  stageNames.sentenceStageHeading("Order") === "Reorder the sentence"
+    && stageNames.sentenceStageLabel("Order") === "Reorder"
 );
 check(
   "reorder shows the meaning cue instead of an anonymous dot placeholder",

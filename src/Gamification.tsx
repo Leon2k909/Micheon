@@ -94,6 +94,7 @@ import { VoicePicker } from "@/components/VoicePicker";
 import { UpdateStatusCard } from "@/components/UpdateStatusCard";
 import { SettingsCategory, SettingsCategoryLayout } from "@/components/SettingsCategory";
 import { InterestsSetting } from "@/components/settings/InterestsSetting";
+import { LessonStagesSetting } from "@/components/settings/LessonStagesSetting";
 import { getMeaningLenience, setMeaningLenience, type MeaningLenience } from "@/lib/meaningLenience";
 import { getMeaningPlacement, setMeaningPlacement, type MeaningPlacement } from "@/lib/meaningPlacement";
 import { AppLanguagePicker } from "@/components/AppLanguagePicker";
@@ -499,7 +500,7 @@ const SETTINGS_SEARCH_INDEX: Record<string, string> = {
   // Flashcards were a category of their own once. The search terms came into
   // this one along with the setting, so typing flip or front still lands on
   // the drawer it now lives in.
-  "Learning options": "learning style direction german english words learned elsewhere external vocabulary count mode flashcard card side front back reveal flip order behaviour meaning translation english on card underneath bigger size placement interests interested topics subjects cooking kitchen football sport skip last priority deprioritise deprioritize",
+  "Learning options": "learning style direction german english words learned elsewhere external vocabulary count mode flashcard card side front back reveal flip order behaviour meaning translation english on card underneath bigger size placement interests interested topics subjects cooking kitchen football sport skip last priority deprioritise deprioritize stages stage steps route long route fifteen 15 custom repeat repeats again drill lesson length type translate recall",
   "Language & voice": "audio audioeinstellungen ton sound sprache stimme english spelling british american tyre tire colour spoken voice speaker accent app language german deutsch tts",
   "Pet & mascot": "pet mascot monkey desk companion talk frequency messages tips questions greetings mute hide",
   "Data & storage": "data storage space disk size used delete remove clear erase wipe cache reset progress download install uninstall language pack privacy gdpr export import transfer backup",
@@ -1775,6 +1776,11 @@ export default function GamificationPanel({
                       })}
                     </div>
                   </div>
+
+                  {/* How much drilling a lesson does is the learner's call. The
+                      default picks per phrase; this is where the old long route
+                      lives, and where any other route can be built. */}
+                  <LessonStagesSetting />
 
                   {/* What you would rather not learn is as much a setting as
                       how you learn it, and it belongs beside the rest of what
