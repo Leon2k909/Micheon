@@ -1076,10 +1076,12 @@ function buildRecallHint(answer: string): string {
   const words = primaryAnswer(answer).trim().split(/\s+/).filter(Boolean);
   if (words.length === 0) return "";
 
-  return words.map((word, wordIndex) => {
-    if (words.length > 1 && wordIndex === 0) return word;
-
-    let revealedLetter = false;
+  // Every word gets its first letter and no more. Handing over a whole first
+  // word gave most of a two-word answer away, and a word of one letter is
+  // nothing but its first letter, so it stays hidden too.
+  return words.map((word) => {
+    const letters = Array.from(word).filter((character) => /[\p{L}\p{N}]/u.test(character)).length;
+    let revealedLetter = letters < 2;
     return Array.from(word).map((character) => {
       if (!/[\p{L}\p{N}]/u.test(character)) return character;
       if (!revealedLetter) {
@@ -4256,7 +4258,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             </motion.div>
             <AccentRow language={targetLanguage} onInsert={(c) => insertAt(sayRef.current, c, setSayInput)} />
             {!(sayChecked && sayResult.ok) && (
-              <RecallHelp key={`${item.id}-write-${phase}`} answer={item.de} />
+              <RecallHelp key={`${item.id}-write-${step}`} answer={item.de} />
             )}
 
             <AnimatePresence>
@@ -4337,7 +4339,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 </div>
                 {!recallBothTargetReady && (
                   <RecallHelp
-                    key={`${item.id}-recall-both-target`}
+                    key={`${item.id}-recall-both-target-${step}`}
                     answer={item.de}
                     label={targetLabel}
                     onHelp={noteRecallStruggle}
@@ -4378,7 +4380,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 </div>
                 {!(recallBothChecked && recallBothMeaningResult.ok) && (
                   <RecallHelp
-                    key={`${item.id}-recall-both-meaning`}
+                    key={`${item.id}-recall-both-meaning-${step}`}
                     answer={displayEnglish}
                     label={meaningLabel}
                     onHelp={noteRecallStruggle}
@@ -4650,7 +4652,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               )}
             </AnimatePresence>
             {!(enChecked && enResult.ok) && (
-              <RecallHelp key={`${item.id}-translate-${phase}`} answer={shownEnglish} />
+              <RecallHelp key={`${item.id}-translate-${step}`} answer={shownEnglish} />
             )}
             <AnimatePresence>
               {enChecked && (
@@ -4795,7 +4797,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             />
             {!(gapChecked && gapResult.ok) && (
               <RecallHelp
-                key={`${item.id}-gap`}
+                key={`${item.id}-gap-${step}`}
                 answer={gap.words.join(" ")}
                 hint={buildRecallHint(gap.words.join(" "))}
               />
@@ -4948,7 +4950,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             </motion.div>
             <div className="fs-order-feedback">
               {!orderChecked && (
-                <RecallHelp key={`${item.id}-order`} answer={item.de} />
+                <RecallHelp key={`${item.id}-order-${step}`} answer={item.de} />
               )}
 
               {orderChecked && (
@@ -5077,7 +5079,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 </motion.div>
                 <CharBar onInsert={c => insertAt(memDeRef.current, c, setMemDeInput)} />
                 {!(memDeChecked && memDeResult.ok) && (
-                  <RecallHelp key={`${item.id}-memory-de`} answer={item.de} />
+                  <RecallHelp key={`${item.id}-memory-de-${step}`} answer={item.de} />
                 )}
               </div>
               {/* French recall input */}
@@ -5101,7 +5103,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 />
                 <FrenchCharBar onInsert={c => insertAt(memFrRef.current, c, setMemFrInput)} />
                 {!(memFrChecked && memFrResult.ok) && (
-                  <RecallHelp key={`${item.id}-memory-fr`} answer={item.fr ?? ""} />
+                  <RecallHelp key={`${item.id}-memory-fr-${step}`} answer={item.fr ?? ""} />
                 )}
               </div>
             </div>
