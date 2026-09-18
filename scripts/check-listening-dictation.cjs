@@ -123,8 +123,10 @@ const componentSource = read("src/GuidedSession.tsx").replace(/\r\n?/gu, "\n");
 const tempFile = path.join(root, "src", "__listening-dictation-check.tsx");
 
 function renderStage(mode) {
+  // Whatever the opening phase is worked out from — and it has grown a case
+  // for a phrase coming back mid-sitting — this pins the stage under test.
   let source = componentSource.replace(
-    'const [phase, setPhase] = useState<Phase>(\n    item?.mastery === "strong" ? MASTERED_PHASES[0] : "Read"\n  );',
+    /const \[phase, setPhase\] = useState<Phase>\([\s\S]*?\n\s*\);/u,
     'const [phase, setPhase] = useState<Phase>("ListenPick");'
   );
   if (source === componentSource) throw new Error("the opening-phase state line moved");

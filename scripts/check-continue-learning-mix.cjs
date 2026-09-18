@@ -485,7 +485,17 @@ check(
 check(
   "the completion screen stays at the end of it",
   /const endsOnComplete = steps\[steps\.length - 1\]\?\.type === "complete";/.test(labSource)
-    && /\[\.\.\.body, \.\.\.again, steps\[steps\.length - 1\]\]/.test(labSource)
+    && /endsOnComplete \? \[\.\.\.woven, steps\[steps\.length - 1\]\] : woven/.test(labSource)
+);
+// Woven in, not stacked on the end. A phrase comes back two phrases after it
+// was taught, so the wait is the same for the first phrase of the sitting as
+// for the last, and it lands while the phrase is still nearly there.
+check(
+  "the returns are spread through the sitting rather than piled at the end",
+  /const GAP = 2;/.test(labSource)
+    && /waiting\.push\(\{ due: met \+ GAP, step: secondShowingOf\(step\) \}\);/.test(labSource)
+    && /while \(waiting\.length > 0 && waiting\[0\]\.due <= met\) woven\.push\(waiting\.shift\(\)!\.step\);/.test(labSource)
+    && /for \(const pending of waiting\) woven\.push\(pending\.step\);/.test(labSource)
 );
 // The second showing is PRACTICE. Marking it as a review would climb the
 // ladder twice for one sitting and push the real review out a day — the
@@ -495,9 +505,9 @@ check(
   /reinforcement: true,\s*\n\s*secondShowing: true,/.test(labSource)
 );
 check(
-  "...and is routed to the closed-book check rather than taught again",
-  /item: \{ \.\.\.step\.item, mastery: "strong" \}/.test(labSource),
-  "the second showing repeats the whole teaching route instead of testing recall"
+  "...and is routed to its own short return rather than taught again",
+  /item: \{ \.\.\.step\.item, mastery: "strong", secondShowing: true \}/.test(labSource),
+  "the second showing repeats the whole teaching route instead of coming back for a check"
 );
 
 check(

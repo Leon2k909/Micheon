@@ -72,6 +72,7 @@ import {
   buildSentencePhaseRoute,
   MASTERED_SENTENCE_PHASES as MASTERED_PHASES,
   replacementSentencePhaseWhenMuted,
+  SECOND_SHOWING_PHASES,
   SENTENCE_PHASES,
   sentenceStageHeading,
   sentenceStageLabel,
@@ -1863,6 +1864,8 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // typingFailed, so its spelling is checked again rather than waved through
   // the one-test route as if nothing had happened.
   const [typingFailed, setTypingFailed] = useState(() => Boolean(item?.typingFailed));
+  // A phrase taught a couple of cards ago, back for its quick tap-through.
+  const isSecondShowing = Boolean(item?.secondShowing);
   const masteredRoute = item?.mastery === "strong" && !recallFailed;
   const [audioMuted, setAudioMuted] = useState(
     () => getTtsAudioVolume(guidedTargetLanguageTag()) <= 0
@@ -1882,7 +1885,9 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     return () => window.removeEventListener(AUDIO_SETTINGS_EVENT, syncAudioState);
   }, []);
   const [phase, setPhase] = useState<Phase>(
-    item?.mastery === "strong" ? MASTERED_PHASES[0] : "Read"
+    item?.secondShowing
+      ? SECOND_SHOWING_PHASES[0]
+      : item?.mastery === "strong" ? MASTERED_PHASES[0] : "Read"
   );
   const currentPhaseRef = useRef<Phase>(phase);
   useEffect(() => { currentPhaseRef.current = phase; }, [phase]);
@@ -1920,6 +1925,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     chained: Boolean(item?.chainedFromLesson),
     typingFailed,
     custom: customRoute,
+    secondShowing: isSecondShowing,
   });
   // True while the app voice is actually speaking — drives the waveform accent.
   const [ttsOn, setTtsOn] = useState(false);
@@ -2335,6 +2341,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       word: isWordItem,
       orderable: isOrderable,
       custom: customRoute,
+      secondShowing: isSecondShowing,
       });
     if (!replacement || replacement === phase) return;
     currentPhaseRef.current = replacement;
@@ -2785,7 +2792,10 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const retry = () => { setInput(""); setChecked(false); };
 
   // After the English translation: go to the French phase if active, else finish.
-  const finishOrFrench = () => { if (hasFr) setPhase("French"); else onNext(); };
+  // A quick return is tap-only to the end — the French phase is typed, and a
+  // phrase coming back for the second time in ten minutes is not where that
+  // belongs.
+  const finishOrFrench = () => { if (hasFr && !isSecondShowing) setPhase("French"); else onNext(); };
 
   const noteRecallStruggle = () => {
     // Failing a closed-book check on the short route means the run of correct

@@ -164,6 +164,26 @@ export const CHAINED_SENTENCE_PHASES: readonly SentencePhase[] = [
   "RecallBoth",
 ];
 
+/**
+ * A phrase coming back a second time inside the sitting that taught it.
+ *
+ * Nothing here is typed. The point of the return is that it happens often and
+ * early enough to interrupt forgetting, which only works if it is cheap: a
+ * phrase met two cards ago, tapped through in seconds, three angles on it and
+ * out. Asking for it to be written closed-book instead made the return the
+ * most expensive card in the sitting, so it could only ever be afforded once,
+ * at the very end, where it was a test of the last few minutes rather than a
+ * second meeting.
+ *
+ * Pick the meaning, hear which word is missing, put the words in order: the
+ * three stages that ask the learner to choose rather than produce.
+ */
+export const SECOND_SHOWING_PHASES: readonly SentencePhase[] = [
+  "MeaningSelect",
+  "MissingWord",
+  "Order",
+];
+
 /** These stages cannot be completed fairly without hearing the target audio. */
 export const AUDIO_REQUIRED_SENTENCE_PHASES: readonly SentencePhase[] = [
   "ListenPick",
@@ -204,6 +224,12 @@ interface SentencePhaseRouteOptions {
    * to everything else.
    */
   custom?: readonly SentencePhase[];
+  /**
+   * True for the quick return of a phrase taught a couple of cards ago. It
+   * outranks every other route, including a hand-set one: this is not the
+   * phrase being taught, it is the phrase being come back to.
+   */
+  secondShowing?: boolean;
 }
 
 /**
@@ -226,17 +252,20 @@ export function buildSentencePhaseRoute({
   chained = false,
   typingFailed = false,
   custom,
+  secondShowing = false,
 }: SentencePhaseRouteOptions): SentencePhase[] {
   // A word never takes the chained or bilingual routes, so for a word only
   // being known keeps the hand-set route away.
-  const customApplies = !mastered && (word || (!chained && !bilingual));
+  const customApplies = !mastered && !secondShowing && (word || (!chained && !bilingual));
   // A sentence-only stage chosen in settings is skipped for a single word,
   // which has no gap to fill and nothing to reorder.
   const customRoute = customApplies && custom?.length
     ? custom.filter((phase) => !word || WORD_CAPABLE_PHASE_SET.has(phase))
     : [];
   const useCustom = customRoute.length > 0;
-  const route: readonly SentencePhase[] = useCustom
+  const route: readonly SentencePhase[] = secondShowing
+    ? SECOND_SHOWING_PHASES.filter((phase) => !word || WORD_CAPABLE_PHASE_SET.has(phase))
+    : useCustom
     ? customRoute
     : word
       ? (mastered ? MASTERED_WORD_PHASES : typingFailed ? WORD_PHASES : LEAN_WORD_PHASES)
@@ -267,6 +296,11 @@ export function buildSentencePhaseRoute({
    * the two audio stages and moves nothing else.
    */
   const standIn = (phase: SentencePhase): SentencePhase[] => {
+    // The return is tap-only by design, so with the sound off its listening
+    // stage is dropped rather than swapped for the written one. The stand-ins
+    // exist so muting never removes the one test a new phrase gets; the return
+    // is not that test, and it still leads with picking the meaning.
+    if (secondShowing) return [];
     if (phase === "ListenPick") return word ? ["Type", "Translate", "RecallBoth"] : ["Type"];
     if (phase === "MissingWord") return word ? [] : ["Gap"];
     return [];

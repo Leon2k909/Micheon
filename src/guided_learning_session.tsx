@@ -1581,13 +1581,19 @@ export default function GuidedLearningSession() {
   }, [apiParts, guidedRequest, showPlacementTest]);
 
   /**
-   * The same sitting, twice over.
+   * The same sitting, twice over, woven rather than stacked.
    *
-   * Each phrase is taught once and then comes back later in the same session
-   * for the closed-book check — type it, both ways, with nothing on screen.
-   * The whole rest of the sitting sits between the two showings, which is
-   * what makes the second one worth anything: recalling something you met
-   * five phrases ago is remembering, recalling it immediately is reading.
+   * Each phrase is taught once and comes back two phrases later for a quick
+   * tap-through: teach one, teach another, then the first returns, and so on
+   * down the sitting. That spacing is the whole value of the second showing —
+   * recalling something you met two phrases ago is remembering, recalling it
+   * immediately is reading — and coming back sooner, more than once a sitting
+   * would ever allow, is what makes it stick.
+   *
+   * The returns were a block at the end before. Every phrase still came back,
+   * but the first waited the entire sitting and the last waited seconds, and
+   * a run of closed-book typing tests arrived all at once at the point the
+   * learner is most ready to stop.
    *
    * The second showing is PRACTICE, not a review. It is marked as
    * reinforcement, so it does not climb the ladder and does not move the due
@@ -1595,9 +1601,10 @@ export default function GuidedLearningSession() {
    * always would have. Nothing about the schedule changes; a sitting simply
    * asks twice before it lets go.
    *
-   * mastery is set to strong on the copy because that is what picks the
-   * closed-book route, and it is a routing hint here rather than a claim
-   * about the tracker — the same way the lesson builder already marks a
+   * The copy is stamped secondShowing, which picks the tap-only return route,
+   * and keeps mastery strong so everything downstream that reads a repeat off
+   * the copy still sees what it always saw. Both are routing hints rather than
+   * claims about the tracker — the same way the lesson builder already marks a
    * swapped-in replacement as new.
    *
    * The completion screen stays last, and anything that is not a sentence —
@@ -1637,19 +1644,43 @@ export default function GuidedLearningSession() {
     const steps: any[] = withSpellingMemory(dealt);
     const endsOnComplete = steps[steps.length - 1]?.type === "complete";
     const body = endsOnComplete ? steps.slice(0, -1) : steps;
-    const again = body
-      .filter((step) => step?.type === "sentence" && step.item?.id)
-      .map((step) => ({
-        ...step,
-        reinforcement: true,
-        secondShowing: true,
-        reviewReason: "second-showing",
-        item: { ...step.item, mastery: "strong" },
-      }));
-    if (again.length === 0) return steps;
-    return endsOnComplete
-      ? [...body, ...again, steps[steps.length - 1]]
-      : [...body, ...again];
+    const secondShowingOf = (step: any) => ({
+      ...step,
+      reinforcement: true,
+      secondShowing: true,
+      reviewReason: "second-showing",
+      item: { ...step.item, mastery: "strong", secondShowing: true },
+    });
+
+    /**
+     * How many further phrases are met before the first one comes back.
+     *
+     * The returns used to be a block at the end, which meant the gap between
+     * meeting a phrase and being asked for it was the whole rest of the
+     * sitting for the first one and almost nothing for the last. Two is the
+     * gap that makes the return a recall — long enough that the phrase has
+     * left the screen and two others have been on it, short enough to land
+     * before it is gone.
+     */
+    const GAP = 2;
+    const isPhrase = (step: any) => step?.type === "sentence" && step.item?.id;
+    if (!body.some(isPhrase)) return steps;
+
+    const woven: any[] = [];
+    const waiting: { due: number; step: any }[] = [];
+    let met = 0;
+    for (const step of body) {
+      woven.push(step);
+      if (!isPhrase(step)) continue;
+      met += 1;
+      waiting.push({ due: met + GAP, step: secondShowingOf(step) });
+      while (waiting.length > 0 && waiting[0].due <= met) woven.push(waiting.shift()!.step);
+    }
+    // The last phrases taught have nobody after them to wait for, so their
+    // returns close the sitting.
+    for (const pending of waiting) woven.push(pending.step);
+
+    return endsOnComplete ? [...woven, steps[steps.length - 1]] : woven;
   };
 
   const logActivity = (stepsForCount: any[], completed = false) => {
