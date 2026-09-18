@@ -1,0 +1,6 @@
+# Micheon is a desktop app; this file exists for the builds that are served
+# over the web, where anything under /api is a private endpoint rather than a
+# page worth indexing.
+User-agent: *
+Allow: /
+Disallow: /api/
