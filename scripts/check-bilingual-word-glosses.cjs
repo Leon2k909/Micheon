@@ -280,6 +280,28 @@ check(
   bookishLeads.length === 0,
   bookishLeads.slice(0, 12).join(" | ")
 );
+// Words with an innocent sense and a slur or crude one. On a card the lead
+// stands alone in large type, and alone it is read the crude way: a flood
+// barrier shown as a bare "dyke" reads as the slur, a garden bird as a bare
+// "tit" reads as the body part. The innocent word is still right and still
+// worth teaching — behind a plain lead ("flood bank, dyke"), or with its
+// sense in brackets ("tit (the bird)"). Deliberate swearing is not in this
+// list; those cards teach the crude sense on purpose.
+const LOADED_HOMONYMS = [
+  "dyke", "dike", "tit", "tits", "cock", "pussy", "ass", "bitch", "faggot", "fag",
+  "queer", "gay", "spunk", "knob", "prick", "shag",
+];
+const LOADED_LEAD = new RegExp(`^(?:a\\s+|an\\s+|the\\s+)?(?:${LOADED_HOMONYMS.join("|")})$`, "i");
+const loadedLeads = [];
+for (const word of words) {
+  const first = String(word.en ?? "").split(/\s+\/\s+|[,;]|\s+or\s+/i)[0].trim();
+  if (LOADED_LEAD.test(first)) loadedLeads.push(`${word.de} => ${word.en}`);
+}
+check(
+  "no card leads with a bare word most readers would take as a slur",
+  loadedLeads.length === 0,
+  loadedLeads.slice(0, 12).join(" | ")
+);
 if (failures) {
   console.error(`\n${failures} bilingual word-gloss regression${failures === 1 ? "" : "s"}`);
   process.exit(1);

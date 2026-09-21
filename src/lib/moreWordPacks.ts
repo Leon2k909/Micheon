@@ -385,7 +385,7 @@ export const moreWordPartBlueprints: Record<string, Blueprint> = {
     noun("der", "Stausee", "reservoir"),
     noun("die", "Talsperre", "dam across a valley"),
     noun("die", "Böschung", "embankment"),
-    noun("der", "Damm", "dyke"),
+    noun("der", "Damm", "flood bank, dyke"),
     noun("die", "Furt", "ford"),
     noun("der", "Steg", "footbridge"),
     noun("der", "Anleger", "landing stage"),
