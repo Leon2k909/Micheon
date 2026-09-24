@@ -167,7 +167,7 @@ const FLOORS = {
   // Greek covers the catalogue entry for entry, written in one piece rather
   // than block by block, so it is floored close to what it reached from its
   // first day, for the reason Italian and Portuguese are.
-  el: 0,
+  el: 24650,
 };
 
 // The percentage is still reported, because it is the honest measure of how

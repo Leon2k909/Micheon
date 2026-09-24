@@ -150,7 +150,7 @@ const BANDS = [
 // on its own is intact.
 // Greek arrived whole, so it takes the same number as the five that finished
 // before it rather than a starting floor of its own.
-const TRANSLATED_QUEUE_FLOORS = { fr: 24330, pl: 24330, es: 24330, it: 24330, pt: 24330, ru: 24090, el: 0 };
+const TRANSLATED_QUEUE_FLOORS = { fr: 24330, pl: 24330, es: 24330, it: 24330, pt: 24330, ru: 24090, el: 24330 };
 
 /**
  * How much of the word tracker the French course is allowed to be missing.
