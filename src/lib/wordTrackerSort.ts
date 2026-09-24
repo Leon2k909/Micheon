@@ -33,7 +33,7 @@ export const WORD_TRACKER_SORTS: ReadonlyArray<{ key: WordTrackerSort; label: st
 ];
 
 type RecordForWord = (word: WordItem) => GradeRecord | undefined;
-type AlphabetLanguage = "de" | "en" | "fr" | "pl" | "es" | "it" | "pt" | "ru";
+type AlphabetLanguage = "de" | "en" | "fr" | "pl" | "es" | "it" | "pt" | "ru" | "el";
 
 const COLLATOR: Record<AlphabetLanguage, Intl.Collator> = {
   de: new Intl.Collator("de", { numeric: true, sensitivity: "base" }),
@@ -51,6 +51,9 @@ const COLLATOR: Record<AlphabetLanguage, Intl.Collator> = {
   // Latin one the other six share. A tracker sorted with the German collator
   // would file every Russian word under one heading.
   ru: new Intl.Collator("ru", { numeric: true, sensitivity: "base" }),
+  // Greek likewise: α β γ … ω, with the accented vowels filed under their
+  // plain letter, so ά sits under Α where a learner looks for it.
+  el: new Intl.Collator("el", { numeric: true, sensitivity: "base" }),
 };
 
 const parsedTime = (value: string | undefined) => {

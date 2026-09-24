@@ -342,6 +342,14 @@ const RUSSIAN_PET_TIPS = [
   "Russian tip: ё is always the stressed vowel, which is why print often leaves it as a plain е once you know the word.",
 ];
 
+const GREEK_PET_TIPS = [
+  "Greek tip: every word of two or more syllables carries one accent mark, and it shows where the stress falls — καλημέρα, ευχαριστώ.",
+  "Greek tip: a question ends in ; — “Τι κάνεις;” is how are you.",
+  "Greek tip: σ becomes ς at the end of a word — ο φίλος, but οι φίλοι.",
+  "Greek tip: the ending already says who — “πάω” is I go, so “εγώ πάω” puts the stress on the I.",
+  "Greek tip: names take the article too — ο Γιάννης, η Μαρία.",
+];
+
 /** The tips for whichever language is being learned. */
 const LANGUAGE_TIPS: Record<CourseLanguage, string[]> = {
   de: GERMAN_PET_TIPS,
@@ -352,6 +360,7 @@ const LANGUAGE_TIPS: Record<CourseLanguage, string[]> = {
   it: ITALIAN_PET_TIPS,
   ru: RUSSIAN_PET_TIPS,
   pt: PORTUGUESE_PET_TIPS,
+  el: GREEK_PET_TIPS,
 };
 
 type PetBounds = {

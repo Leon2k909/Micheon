@@ -42,7 +42,7 @@
  */
 
 /** A language we hold translations for. Add the code when you add the table. */
-export type TranslationLanguage = "fr" | "pl" | "es" | "it" | "pt" | "ru";
+export type TranslationLanguage = "fr" | "pl" | "es" | "it" | "pt" | "ru" | "el";
 
 /** German text → that language's translation. */
 export type TranslationTable = Record<string, string>;
@@ -67,6 +67,7 @@ const BUNDLED: Record<TranslationLanguage, () => Promise<TranslationTable>> = {
   it: () => import("@/lib/italianTranslations").then((m) => m.ITALIAN_BY_GERMAN),
   pt: () => import("@/lib/portugueseTranslations").then((m) => m.PORTUGUESE_BY_GERMAN),
   ru: () => import("@/lib/russianTranslations").then((m) => m.RUSSIAN_BY_GERMAN),
+  el: () => import("@/lib/greekTranslations").then((m) => m.GREEK_BY_GERMAN),
 };
 
 /**
@@ -89,6 +90,7 @@ const LOADERS: Record<TranslationLanguage, () => Promise<TranslationTable>> = {
   it: () => fromPackOrBundle("it"),
   pt: () => fromPackOrBundle("pt"),
   ru: () => fromPackOrBundle("ru"),
+  el: () => fromPackOrBundle("el"),
 };
 
 async function fromPackOrBundle(language: TranslationLanguage): Promise<TranslationTable> {
@@ -141,6 +143,7 @@ export const TRANSLATION_LANGUAGE_NAMES: Record<TranslationLanguage, string> = {
   it: "Italian",
   pt: "Portuguese",
   ru: "Russian",
+  el: "Greek",
 };
 
 /** Tables that have arrived. Empty until a course asks for one. */

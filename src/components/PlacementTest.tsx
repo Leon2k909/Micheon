@@ -14,6 +14,7 @@ import { matchPolishPhrase } from "@/lib/polishTextMatch";
 import { matchSpanishPhrase } from "@/lib/spanishTextMatch";
 import { matchItalianPhrase } from "@/lib/italianTextMatch";
 import { matchPortuguesePhrase } from "@/lib/portugueseTextMatch";
+import { matchGreekPhrase } from "@/lib/greekTextMatch";
 import { ui, uiFmt } from "@/lib/i18n";
 
 // One word per language per row, so the same ten questions work whichever
@@ -21,16 +22,17 @@ import { ui, uiFmt } from "@/lib/i18n";
 // article, because that is how the course teaches a noun; Polish has no
 // article to carry, so it is the bare dictionary form.
 const QUESTIONS = [
-  { part: "part1", de: "Haus", en: "House", fr: "la maison", pl: "dom", pt: "a casa", level: "A1" },
-  { part: "part2", de: "Bahnhof", en: "Station", fr: "la gare", pl: "dworzec", pt: "a estação", level: "A1" },
-  { part: "part3", de: "Arbeit", en: "Work", fr: "le travail", pl: "praca", pt: "o trabalho", level: "A1-A2" },
-  { part: "part4", de: "Wochenende", en: "Weekend", fr: "le week-end", pl: "weekend", pt: "o fim de semana", level: "A2" },
-  { part: "part6", de: "Straße", en: "Street", fr: "la rue", pl: "ulica", pt: "a rua", level: "A1-A2" },
-  { part: "part7", de: "Familie", en: "Family", fr: "la famille", pl: "rodzina", pt: "a família", level: "A1-A2" },
-  { part: "part9", de: "Küche", en: "Kitchen", fr: "la cuisine", pl: "kuchnia", pt: "a cozinha", level: "A2" },
-  { part: "part10", de: "Plan", en: "Plan", fr: "le plan", pl: "plan", pt: "o plano", level: "A2-B1" },
-  { part: "part11", de: "interessant", en: "Interesting", fr: "intéressant", pl: "ciekawy", pt: "interessante", level: "B1" },
-  { part: "part12", de: "vergessen", en: "to forget", fr: "oublier", pl: "zapominać", pt: "esquecer", level: "B1" },
+  { part: "part1", de: "Haus", en: "House", fr: "la maison", pl: "dom", pt: "a casa", el: "το σπίτι", level: "A1" },
+  { part: "part2", de: "Bahnhof", en: "Station", fr: "la gare", pl: "dworzec", pt: "a estação", el: "ο σταθμός", level: "A1" },
+  { part: "part3", de: "Arbeit", en: "Work", fr: "le travail", pl: "praca", pt: "o trabalho", el: "η δουλειά", level: "A1-A2" },
+  { part: "part4", de: "Wochenende", en: "Weekend", fr: "le week-end", pl: "weekend", pt: "o fim de semana", el: "το Σαββατοκύριακο", level: "A2" },
+  { part: "part6", de: "Straße", en: "Street", fr: "la rue", pl: "ulica", pt: "a rua", el: "ο δρόμος", level: "A1-A2" },
+  { part: "part7", de: "Familie", en: "Family", fr: "la famille", pl: "rodzina", pt: "a família", el: "η οικογένεια", level: "A1-A2" },
+  { part: "part9", de: "Küche", en: "Kitchen", fr: "la cuisine", pl: "kuchnia", pt: "a cozinha", el: "η κουζίνα", level: "A2" },
+  { part: "part10", de: "Plan", en: "Plan", fr: "le plan", pl: "plan", pt: "o plano", el: "το σχέδιο", level: "A2-B1" },
+  { part: "part11", de: "interessant", en: "Interesting", fr: "intéressant", pl: "ciekawy", pt: "interessante", el: "ενδιαφέρων", level: "B1" },
+  // Both dictionary forms are in daily use, so both are accepted.
+  { part: "part12", de: "vergessen", en: "to forget", fr: "oublier", pl: "zapominać", pt: "esquecer", el: "ξεχνάω / ξεχνώ", level: "B1" },
 ];
 
 export function PlacementTest({ onComplete }: { onComplete: (partKey: string) => void }) {
@@ -48,11 +50,12 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
   const learnEs = sides.target.code === "es";
   const learnIt = sides.target.code === "it";
   const learnPt = sides.target.code === "pt";
+  const learnEl = sides.target.code === "el";
   const reverse = learningEnglish();
-  const prompt = learnFr || learnPl || learnPt
+  const prompt = learnFr || learnPl || learnPt || learnEl
     ? meaningTextFor(current.de, current.en, sides.meaning.code)
     : reverse ? current.de : current.en;
-  const target = learnFr ? current.fr : learnPl ? current.pl : learnPt ? current.pt : reverse ? current.en : current.de;
+  const target = learnFr ? current.fr : learnPl ? current.pl : learnPt ? current.pt : learnEl ? current.el : reverse ? current.en : current.de;
   // A missing accent is a spelling slip in French, and a missing ą or ł is one
   // in Polish — see frenchTextMatch.ts and polishTextMatch.ts. normalize()
   // would mark "la gare" typed as "gare" wrong too, which is why both
@@ -67,6 +70,8 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
       ? matchItalianPhrase(typed, target).ok
       : learnPt
       ? matchPortuguesePhrase(typed, target).ok
+      : learnEl
+      ? matchGreekPhrase(typed, target).ok
       : normalize(typed) === normalize(target);
 
   const recordAnswer = (isCorrect: boolean) => {

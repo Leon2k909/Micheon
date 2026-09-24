@@ -28,12 +28,15 @@ import {
  * use, and adding a language means a line here beside the one in
  * translations.ts.
  */
-const COURSE_BY_PACK: Record<string, string> = { fr: "french", pl: "polish", es: "spanish", pt: "portuguese" };
+const COURSE_BY_PACK: Record<string, string> = { fr: "french", pl: "polish", es: "spanish", pt: "portuguese", el: "greek" };
 
 const COURSE_SEARCH_ALIASES: Record<string, string> = {
   german: "de deutsch germany deutschland alemann allemand",
   spanish: "es espanol español spain spanisch espagnol",
   portuguese: "pt portugues português portugal portugiesisch portugais",
+  // Greek left the planned list when it became a course, and its search words
+  // came with it — in both alphabets, because the box folds accents, not scripts.
+  greek: "el ellinika ελληνικά greece hellenic griechisch griechenland grec grecque greco griego grego grecki греческий",
   french: "fr francais français france franzosisch französisch",
   csharp: "c# c sharp dotnet .net programming coding sandbox sbox s&box",
   // Searching a variant by name still reaches it, even though the two share

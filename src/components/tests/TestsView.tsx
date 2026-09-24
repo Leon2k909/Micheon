@@ -40,6 +40,8 @@ import { matchSpanishMeaning } from "@/lib/spanishTextMatch";
 import { matchItalianMeaning } from "@/lib/italianTextMatch";
 import { portugueseFor, portugueseMeaningLanguage } from "@/lib/portugueseCourse";
 import { matchPortugueseMeaning } from "@/lib/portugueseTextMatch";
+import { greekFor, greekMeaningLanguage } from "@/lib/greekCourse";
+import { matchGreekMeaning } from "@/lib/greekTextMatch";
 import { PlacementLadder } from "@/components/tests/PlacementLadder";
 import { matchEnglishPhrase, matchParagraphAnswer } from "@/lib/germanTextMatch";
 import { ui, uiFmt, uiNumber } from "@/lib/i18n";
@@ -952,11 +954,13 @@ function buildTestBank(apiParts: Record<string, Part>, profile: UserProfile): Te
   const spanishCourse = courseSides().target.code === "es";
   const italianCourse = courseSides().target.code === "it";
   const portugueseCourse = courseSides().target.code === "pt";
+  const greekCourse = courseSides().target.code === "el";
   const meaningIsGerman = (frenchCourse && frenchMeaningLanguage() === "de")
     || (polishCourse && polishMeaningLanguage() === "de")
     || (spanishCourse && spanishMeaningLanguage() === "de")
     || (italianCourse && italianMeaningLanguage() === "de")
-    || (portugueseCourse && portugueseMeaningLanguage() === "de");
+    || (portugueseCourse && portugueseMeaningLanguage() === "de")
+    || (greekCourse && greekMeaningLanguage() === "de");
   const grades = loadGradeStore(profile);
   const catalog = buildCatalog(apiParts);
   const seen = new Set<string>();
@@ -1062,6 +1066,11 @@ function buildTestBank(apiParts: Record<string, Part>, profile: UserProfile): Te
     if (!portuguese) return [];
     return [{ ...item, de: portuguese, en: meaningIsGerman ? item.de : item.en }];
   });
+  if (greekCourse) return bank.flatMap((item) => {
+    const greek = greekFor(item.de);
+    if (!greek) return [];
+    return [{ ...item, de: greek, en: meaningIsGerman ? item.de : item.en }];
+  });
 
   for (const paragraph of PARAGRAPH_TEST_ITEMS) {
     const status = statusForId(grades, paragraph.id);
@@ -1128,6 +1137,8 @@ function matchTestAnswer(input: string, target: string, language: AnswerLanguage
         ? matchItalianMeaning(input, alternative)
         : answerLanguage === "pt"
         ? matchPortugueseMeaning(input, alternative)
+        : answerLanguage === "el"
+        ? matchGreekMeaning(input, alternative)
         : answerLanguage === "de"
         ? matchLearningModeGermanAnswer(input, { de: alternative, long: item.long })
         : matchEnglishPhrase(input, alternative)

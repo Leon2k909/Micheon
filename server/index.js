@@ -51,6 +51,8 @@ const VOICE_BY_LANG = {
   "ru-RU": "ru-RU-SvetlanaNeural",
   pt: "pt-PT-RaquelNeural",
   ru: "ru-RU-SvetlanaNeural",
+  "el-GR": "el-GR-AthinaNeural",
+  el: "el-GR-AthinaNeural",
   "en-US": "en-US-AvaNeural",
   "en-GB": "en-GB-SoniaNeural",
   "en-AU": "en-AU-NatashaNeural",
@@ -122,6 +124,10 @@ const VOICE_CHOICES = {
   "ru-RU": [
     { id: "ru-RU-SvetlanaNeural", label: "Svetlana", note: "Russian — female" },
     { id: "ru-RU-DmitryNeural", label: "Dmitry", note: "Russian — male" },
+  ],
+  "el-GR": [
+    { id: "el-GR-AthinaNeural", label: "Athina", note: "Greek — female" },
+    { id: "el-GR-NestorasNeural", label: "Nestoras", note: "Greek — male" },
   ],
 };
 

@@ -498,6 +498,52 @@ const IT: PlacementQuestion[] = [
   q("it-c1-8", "C1", "Which is correct?", "\u00c8 stato lui a ___ l\u2019idea.", ["propose", "proporre", "proponga", "proponeva"], 1, "After a, the verb stays in the infinitive."),
 ];
 
+// ── Learning Greek ──────────────────────────────────────────────────────────
+// Written in Greek throughout, because this is where a learner finds out
+// whether they can read it at all. The answer sits in every slot in turn:
+// the ladder shuffles which questions it asks, never the options inside one.
+const EL: PlacementQuestion[] = [
+  // A1
+  q("el-a1-1", "A1", "Which is correct?", "Εγώ ___ ο Νίκος.", ["είμαι", "είσαι", "είναι", "είμαστε"], 0, "είμαι is the form that goes with εγώ — and a name takes its article: ο Νίκος."),
+  q("el-a1-2", "A1", "What does this mean?", "Καλημέρα", ["Good evening", "Good night", "Good morning", "Goodbye"], 2, "Καλημέρα is good morning; καλησπέρα is good evening."),
+  q("el-a1-3", "A1", "Which is correct?", "Εγώ ___ στην Αθήνα.", ["μένεις", "μένω", "μένει", "μένουμε"], 1, "The first person singular ends in -ω: μένω."),
+  q("el-a1-4", "A1", "What does this mean?", "το σπίτι", ["the street", "the city", "the station", "the house"], 3, "το σπίτι is a house or home."),
+  q("el-a1-5", "A1", "Which is correct?", "___ γάτα είναι μαύρη.", ["Ο", "Η", "Το", "Οι"], 1, "γάτα is feminine, so its article is η."),
+  q("el-a1-6", "A1", "What does this mean?", "ευχαριστώ", ["please", "thank you", "sorry", "hello"], 1, "ευχαριστώ is thank you; παρακαλώ is please."),
+  q("el-a1-7", "A1", "What is the number?", "δεκαπέντε", ["12", "50", "15", "5"], 2, "δέκα is ten and πέντε is five."),
+  q("el-a1-8", "A1", "Which is correct?", "Εμείς ___ ελληνικά.", ["μιλάμε", "μιλάω", "μιλάς", "μιλάνε"], 0, "εμείς takes the -με ending: μιλάμε."),
+  // A2
+  q("el-a2-1", "A2", "Which is correct?", "Χθες ___ στο σινεμά.", ["πάω", "πήγα", "θα πάω", "πηγαίνω"], 1, "χθες needs the past tense: πήγα."),
+  q("el-a2-2", "A2", "What does this mean?", "Πόσο κάνει;", ["Where is it?", "What time is it?", "How much is it?", "How is it?"], 2, "Πόσο κάνει; asks the price."),
+  q("el-a2-3", "A2", "Which is correct?", "Μου ___ ο καφές.", ["αρέσει", "αρέσω", "αρέσεις", "αρέσουν"], 0, "αρέσω works the other way round: the coffee pleases me, so the verb agrees with ο καφές."),
+  q("el-a2-4", "A2", "What does this mean?", "Πρέπει να φύγω.", ["I want to leave", "I can leave", "I have to leave", "I left"], 2, "πρέπει να is obligation."),
+  q("el-a2-5", "A2", "Which is correct?", "Αύριο ___ στη θάλασσα.", ["πήγαμε", "πηγαίναμε", "έχουμε πάει", "θα πάμε"], 3, "αύριο needs the future: θα πάμε."),
+  q("el-a2-6", "A2", "What does this mean?", "Δεν πειράζει.", ["It doesn't matter", "It is forbidden", "Don't touch it", "It is broken"], 0, "Δεν πειράζει reassures: never mind."),
+  q("el-a2-7", "A2", "Which is correct?", "Δεν έχω ___ χρόνο.", ["πολλή", "πολλά", "πολλοί", "πολύ"], 3, "ο χρόνος is masculine, and its accusative takes πολύ."),
+  q("el-a2-8", "A2", "What does this mean?", "Τι ώρα είναι;", ["What day is it?", "What time is it?", "How old are you?", "Where are you?"], 1, "ώρα is the hour — the time of day."),
+  // B1
+  q("el-b1-1", "B1", "Which is correct?", "Αν είχα χρόνο, ___ μαζί σου.", ["θα έρθω", "ήρθα", "θα ερχόμουν", "έρχομαι"], 2, "An unreal condition pairs αν with the past and θα with the past continuous."),
+  q("el-b1-2", "B1", "What does this mean?", "Μου είναι αδιάφορο.", ["It interests me", "I don't care", "It is difficult for me", "I'm tired of it"], 1, "αδιάφορο is indifferent: it makes no difference to me."),
+  q("el-b1-3", "B1", "Which is correct?", "Το βιβλίο ___ διαβάζω είναι πολύ ωραίο.", ["ποιος", "πού", "πως", "που"], 3, "που without an accent joins a relative clause; πού with one asks where."),
+  q("el-b1-4", "B1", "What does this mean?", "Έχασε την ψυχραιμία του.", ["He lost his wallet", "He lost his temper", "He caught a cold", "He lost his way"], 1, "ψυχραιμία is composure, so losing it is losing one's temper."),
+  q("el-b1-5", "B1", "Which is correct?", "Όταν ήμουν παιδί, ___ κάθε καλοκαίρι στο χωριό.", ["πηγαίναμε", "πήγα", "θα πάμε", "πάμε"], 0, "A habit in the past takes the past continuous: πηγαίναμε."),
+  q("el-b1-6", "B1", "What does this mean?", "Κάνω τα στραβά μάτια.", ["I have bad eyesight", "I make a mistake", "I turn a blind eye", "I get angry"], 2, "Literally making crooked eyes: pretending not to see."),
+  // B2
+  q("el-b2-1", "B2", "Which is correct?", "Παρά ___ βροχή, βγήκαμε βόλτα.", ["στη", "με τη", "για τη", "τη"], 3, "παρά meaning despite is followed straight by the accusative: παρά τη βροχή."),
+  q("el-b2-2", "B2", "What does this mean?", "Δεν μου πάει αυτό το καπέλο.", ["I can't afford this hat", "This hat doesn't suit me", "I don't like hats", "I lost this hat"], 1, "πάει here means suits, not goes."),
+  q("el-b2-3", "B2", "Which is correct?", "Μακάρι ___ καλό καιρό αύριο.", ["έκανε", "κάνει", "να κάνει", "κάνοντας"], 2, "μακάρι makes a wish and takes να with the subjunctive."),
+  q("el-b2-4", "B2", "What does this mean?", "Τα έκανε θάλασσα.", ["He went to the sea", "He cried a lot", "He swam well", "He made a mess of it"], 3, "Turning something into sea is making a complete mess of it."),
+  q("el-b2-5", "B2", "Which is correct?", "Είναι ο άνθρωπος ___ σου μίλησα.", ["για τον οποίο", "τον οποίο", "ο οποίος", "του οποίου"], 0, "μιλάω για κάποιον — the preposition travels with the relative: για τον οποίο."),
+  q("el-b2-6", "B2", "What does this mean?", "Κόντεψα να χάσω το τρένο.", ["I missed the train", "I nearly missed the train", "I ran for the train", "I waited for the train"], 1, "κόντεψα να is how Greek says nearly."),
+  // C1
+  q("el-c1-1", "C1", "What does this mean?", "Κάνει την πάπια.", ["He swims badly", "He walks strangely", "He pretends not to know", "He eats a lot"], 2, "Playing the duck is pretending not to hear or know."),
+  q("el-c1-2", "C1", "Which is correct?", "Αν το ήξερα, δεν ___ έρθει.", ["θα έχω", "θα είχα", "είχα", "έχω"], 1, "A counterfactual past takes θα είχα: δεν θα είχα έρθει."),
+  q("el-c1-3", "C1", "What does this mean?", "Τον έπιασαν στα πράσα.", ["They found him in the garden", "They sent him shopping", "They fired him", "They caught him red-handed"], 3, "Caught among the leeks: caught in the act."),
+  q("el-c1-4", "C1", "Which is correct?", "___ τις δυσκολίες, το έργο ολοκληρώθηκε εγκαίρως.", ["Αν και", "Ενώ", "Παρά", "Παρ' όλο"], 2, "Only παρά takes a noun directly; αν και and ενώ need a clause, and παρ' όλο needs που."),
+  q("el-c1-5", "C1", "What does this mean?", "Έχει λεφτά με ουρά.", ["He is very rich", "He has no money", "He owes money", "He spends a lot"], 0, "Money with a tail: more than anybody could count."),
+  q("el-c1-6", "C1", "What does this mean?", "Το έχουμε στο τσεπάκι μας.", ["We lost it", "It is in the bag", "We owe it", "We hid it"], 1, "In our little pocket: as good as won."),
+];
+
 export function placementQuestions(direction: PlacementDirection): PlacementQuestion[] {
   if (direction === "learn-en") return EN;
   if (direction === "learn-fr") return FR;
@@ -506,6 +552,7 @@ export function placementQuestions(direction: PlacementDirection): PlacementQues
   if (direction === "learn-it") return IT;
   if (direction === "learn-pt") return PT;
   if (direction === "learn-ru") return RU;
+  if (direction === "learn-el") return EL;
   return DE;
 }
 

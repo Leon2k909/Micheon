@@ -66,6 +66,7 @@ const result = esbuild.buildSync({
       'export { SPANISH_BY_GERMAN } from "./src/lib/spanishTranslations.ts";',
       'export { PORTUGUESE_BY_GERMAN } from "./src/lib/portugueseTranslations.ts";',
       'export { RUSSIAN_BY_GERMAN } from "./src/lib/russianTranslations.ts";',
+      'export { GREEK_BY_GERMAN } from "./src/lib/greekTranslations.ts";',
       'export { primeTranslations } from "./src/lib/translations.ts";',
     ].join("\n"),
     resolveDir: root,
@@ -131,6 +132,7 @@ M.primeTranslations("pl", M.POLISH_BY_GERMAN);
 M.primeTranslations("es", M.SPANISH_BY_GERMAN);
 M.primeTranslations("pt", M.PORTUGUESE_BY_GERMAN);
 M.primeTranslations("ru", M.RUSSIAN_BY_GERMAN);
+M.primeTranslations("el", M.GREEK_BY_GERMAN);
 
 // Asked for rather than assembled: lesson state is stored per learning
 // direction now, so the address is "session-completed@learn-de:default" and
@@ -1064,7 +1066,7 @@ const rungById = (direction) => new Map(
 );
 setInterfaceLanguage("en");
 const germanLadder = rungById("learn-de");
-const otherCourses = ["learn-en", "learn-fr", "learn-pl", "learn-es", "learn-pt", "learn-ru"];
+const otherCourses = ["learn-en", "learn-fr", "learn-pl", "learn-es", "learn-pt", "learn-ru", "learn-el"];
 const ladderFaults = [];
 let comparedCourses = 0;
 for (const direction of otherCourses) {

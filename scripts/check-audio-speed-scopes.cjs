@@ -90,6 +90,9 @@ assert.equal(audio.getTtsSpeechRate("it-IT"), 0.75, "Italian is a channel of its
 assert.equal(audio.getMasterTtsSpeechRate(), null, "Portuguese still at its old speed keeps this Mixed");
 audio.setTtsLanguageSpeechRate("portuguese", 0.75);
 assert.equal(audio.getTtsSpeechRate("pt-PT"), 0.75, "Portuguese is a channel of its own, not the fallback");
+assert.equal(audio.getMasterTtsSpeechRate(), null, "Greek still at its old speed keeps this Mixed");
+audio.setTtsLanguageSpeechRate("greek", 0.75);
+assert.equal(audio.getTtsSpeechRate("el-GR"), 0.75, "Greek is a channel of its own, not the fallback");
 assert.equal(audio.getMasterTtsSpeechRate(), 0.75, "matching channels should restore one Master value");
 audio.setTtsLanguageSpeechRate("german", 99);
 assert.equal(audio.getTtsSpeechRate("de-DE"), 2, "language speed should respect the server ceiling");
@@ -98,6 +101,7 @@ assert.equal(audio.audioLanguageFromTag("en-GB"), "english");
 assert.equal(audio.audioLanguageFromTag("de-DE"), "german");
 assert.equal(audio.audioLanguageFromTag("it-IT"), "italian");
 assert.equal(audio.audioLanguageFromTag("pt-PT"), "portuguese");
+assert.equal(audio.audioLanguageFromTag("el-GR"), "greek");
 
 const read = (rel) => fs.readFileSync(path.join(root, rel), "utf8");
 const control = read("src/components/SpeechSpeedControl.tsx");
@@ -107,7 +111,7 @@ const profile = read("src/Gamification.tsx");
 const guided = read("src/GuidedSession.tsx");
 const voice = read("src/lib/voice.ts");
 
-for (const scope of ["master", "english", "german", "french", "polish", "spanish", "italian", "portuguese"]) {
+for (const scope of ["master", "english", "german", "french", "polish", "spanish", "italian", "portuguese", "greek"]) {
   assert(control.includes(`value: "${scope}"`), `missing ${scope} speed scope`);
 }
 assert(mute.includes("<SpeechSpeedControl"), "global audio mixer lacks scoped speed");

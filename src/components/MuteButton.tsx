@@ -218,6 +218,7 @@ export function MuteButton({
   const italianMuted = isTtsLanguageMuted("italian");
   const portugueseMuted = isTtsLanguageMuted("portuguese");
   const russianMuted = isTtsLanguageMuted("russian");
+  const greekMuted = isTtsLanguageMuted("greek");
   /**
    * Only the voices that can actually be heard.
    *
@@ -376,6 +377,18 @@ export function MuteButton({
           testId="portuguese"
           unmuteLabel={ui("Unmute Portuguese voice")}
           value={settings.portugueseVolume}
+        />
+      )}
+      {inPlay.includes("greek") && (
+        <VolumeRow
+          label={ui("Greek voice")}
+          muteLabel={ui("Mute Greek voice")}
+          muted={greekMuted}
+          onChange={(value) => setLanguageVolume("greek", value)}
+          onToggleMuted={() => toggleTtsLanguageMuted("greek")}
+          testId="greek"
+          unmuteLabel={ui("Unmute Greek voice")}
+          value={settings.greekVolume}
         />
       )}
       <div className="audio-mixer-divider" />

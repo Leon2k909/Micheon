@@ -5,6 +5,7 @@ import { swapStepForFrench } from "@/lib/frenchCourse";
 import { swapStepForPolish } from "@/lib/polishCourse";
 import { swapStepForPortuguese } from "@/lib/portugueseCourse";
 import { swapStepForRussian } from "@/lib/russianCourse";
+import { swapStepForGreek } from "@/lib/greekCourse";
 import { swapStepForSpanish } from "@/lib/spanishCourse";
 import { swapStepForItalian } from "@/lib/italianCourse";
 
@@ -84,6 +85,9 @@ export function stepsForLearningDirection(
     }
     if (direction === "learn-ru") {
       return steps.map((step) => swapStepForRussian(step)).filter((step) => step !== null);
+    }
+    if (direction === "learn-el") {
+      return steps.map((step) => swapStepForGreek(step)).filter((step) => step !== null);
     }
     return steps;
   })();

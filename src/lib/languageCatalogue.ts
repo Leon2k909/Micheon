@@ -32,7 +32,6 @@ export const PLANNED_LANGUAGES: LanguageEntry[] = [
   { id: "hungarian", name: "Hungarian", icon: "🇭🇺", search: "hu magyar hungary" },
   { id: "romanian", name: "Romanian", icon: "🇷🇴", search: "ro romana română romania moldovan" },
   { id: "bulgarian", name: "Bulgarian", icon: "🇧🇬", search: "bg balgarski български bulgaria" },
-  { id: "greek", name: "Greek", icon: "🇬🇷", search: "el ellinika ελληνικά greece hellenic" },
   { id: "turkish", name: "Turkish", icon: "🇹🇷", search: "tr turkce türkçe turkey turkiye" },
   { id: "swedish", name: "Swedish", icon: "🇸🇪", search: "sv svenska sweden" },
   { id: "norwegian", name: "Norwegian", icon: "🇳🇴", search: "no norsk norway bokmal nynorsk" },

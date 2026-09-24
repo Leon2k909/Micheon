@@ -5,7 +5,14 @@ const SEARCHABLE_KEYS = [
   "partKey",
   "lookup",
   "use",
+  // The table-backed courses hand their row text in under the language code,
+  // so the words on screen are the words search finds.
   "fr",
+  "pl",
+  "es",
+  "it",
+  "pt",
+  "el",
   "short",
   "when",
   "say",
@@ -36,6 +43,8 @@ export function normalizeCatalogSearchText(value: unknown): string {
     .toLocaleLowerCase("de-DE")
     .replace(APOSTROPHES, "")
     .replace(/ß/g, "ss")
+    // Final sigma is spelling, not a different letter: σ finds ς.
+    .replace(/ς/g, "σ")
     .normalize("NFKD")
     .replace(/\p{M}/gu, "")
     .replace(/[^\p{L}\p{N}]+/gu, " ")

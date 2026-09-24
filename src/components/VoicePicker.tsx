@@ -27,6 +27,7 @@ const SAMPLES: Record<string, string> = {
   es: "¡Hola! ¿Empezamos?",
   pt: "Olá! Vamos começar?",
   ru: "Здравствуйте! Начнём?",
+  el: "Γεια σας! Ξεκινάμε;",
 };
 
 const LANGUAGE_LABELS: Record<string, string> = {
@@ -37,6 +38,7 @@ const LANGUAGE_LABELS: Record<string, string> = {
   es: "Spanish voice",
   pt: "Portuguese voice",
   ru: "Russian voice",
+  el: "Greek voice",
 };
 
 export function VoicePicker() {
@@ -59,6 +61,7 @@ export function VoicePicker() {
       es: voiceForLang("es-ES"),
       pt: voiceForLang("pt-PT"),
       ru: voiceForLang("ru-RU"),
+      el: voiceForLang("el-GR"),
     });
   }, [catalog]);
 
@@ -80,6 +83,7 @@ export function VoicePicker() {
       { lang: "es", voices: choices["es-ES"] ?? [], fallback: catalog.defaults?.["es-ES"] },
       { lang: "pt", voices: choices["pt-PT"] ?? [], fallback: catalog.defaults?.["pt-PT"] },
       { lang: "ru", voices: choices["ru-RU"] ?? [], fallback: catalog.defaults?.["ru-RU"] },
+      { lang: "el", voices: choices["el-GR"] ?? [], fallback: catalog.defaults?.["el-GR"] },
     ].filter((group) => group.voices.length > 0);
   }, [british, catalog]);
 
@@ -93,6 +97,7 @@ export function VoicePicker() {
       : lang === "es" ? "es-ES"
       : lang === "pt" ? "pt-PT"
       : lang === "ru" ? "ru-RU"
+      : lang === "el" ? "el-GR"
       : "fr-FR";
     tts(SAMPLES[lang] ?? SAMPLES.en, 0.95, tag).finally(() => setPlaying(""));
   };

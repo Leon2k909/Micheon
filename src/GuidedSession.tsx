@@ -59,6 +59,7 @@ import { matchSpanishMeaning, matchSpanishSentence, SPANISH_SPECIAL_CHARACTERS }
 import { matchItalianMeaning, matchItalianSentence, ITALIAN_SPECIAL_CHARACTERS } from "@/lib/italianTextMatch";
 import { matchPortugueseMeaning, matchPortugueseSentence, PORTUGUESE_SPECIAL_CHARACTERS } from "@/lib/portugueseTextMatch";
 import { matchRussianSentence } from "@/lib/russianTextMatch";
+import { GREEK_SPECIAL_CHARACTERS, matchGreekMeaning, matchGreekSentence } from "@/lib/greekTextMatch";
 import { INTERFACE_LANGUAGE_CHANGE_EVENT } from "@/lib/interfaceLanguage";
 import { formatRussianText, getRussianScript, resolveRussianScript, russianScriptLabel, russianScriptShows, russianSecondLine, RUSSIAN_SCRIPT_EVENT, RUSSIAN_SPECIAL_CHARACTERS, setRussianScript } from "@/lib/russianScript";
 
@@ -431,7 +432,7 @@ function CharBar({ onInsert }: { onInsert: (c: string) => void }) {
  */
 // Written out per language rather than composed, so the German reads as
 // German ("Deutsche Wörter zum Anordnen") rather than as a slot filled in.
-const WORDS_TO_ARRANGE_LABEL: Record<"de" | "en" | "fr" | "pl" | "es" | "it" | "pt" | "ru", string> = {
+const WORDS_TO_ARRANGE_LABEL: Record<"de" | "en" | "fr" | "pl" | "es" | "it" | "pt" | "ru" | "el", string> = {
   de: "German words to arrange",
   en: "English words to arrange",
   fr: "French words to arrange",
@@ -440,20 +441,22 @@ const WORDS_TO_ARRANGE_LABEL: Record<"de" | "en" | "fr" | "pl" | "es" | "it" | "
   it: "Italian words to arrange",
   pt: "Portuguese words to arrange",
   ru: "Russian words to arrange",
+  el: "Greek words to arrange",
 };
 
-function AccentKeys({ language, onInsert }: { language: "de" | "en" | "fr" | "pl" | "es" | "it" | "pt" | "ru"; onInsert: (c: string) => void }) {
+function AccentKeys({ language, onInsert }: { language: "de" | "en" | "fr" | "pl" | "es" | "it" | "pt" | "ru" | "el"; onInsert: (c: string) => void }) {
   if (language === "fr") return <FrenchCharBar onInsert={onInsert} />;
   if (language === "pl") return <PolishCharBar onInsert={onInsert} />;
   if (language === "es") return <SpanishCharBar onInsert={onInsert} />;
   if (language === "it") return <ItalianCharBar onInsert={onInsert} />;
   if (language === "pt") return <PortugueseCharBar onInsert={onInsert} />;
   if (language === "ru") return <RussianCharBar onInsert={onInsert} />;
+  if (language === "el") return <GreekCharBar onInsert={onInsert} />;
   if (language === "de") return <CharBar onInsert={onInsert} />;
   return null;
 }
 
-function AccentRow({ language, onInsert }: { language: "de" | "en" | "fr" | "pl" | "es" | "it" | "pt" | "ru"; onInsert: (c: string) => void }) {
+function AccentRow({ language, onInsert }: { language: "de" | "en" | "fr" | "pl" | "es" | "it" | "pt" | "ru" | "el"; onInsert: (c: string) => void }) {
   const russianScript = resolveRussianScript(useRussianScript());
   if (language === "en") return null;
   // The Cyrillic row is not a helper beside the keyboard, it IS the keyboard,
@@ -577,6 +580,30 @@ function ItalianCharBar({ onInsert }: { onInsert: (c: string) => void }) {
   return (
     <div className="flex flex-wrap justify-center gap-2">
       {ITALIAN_SPECIAL_CHARACTERS.map(c => (
+        <motion.button key={c} type="button" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+          title={c}
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-base font-semibold text-zinc-900 hover:border-zinc-300 hover:bg-zinc-50"
+          onMouseDown={e => { e.preventDefault(); onInsert(c); }}>
+          {c}
+        </motion.button>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * The Greek row.
+ *
+ * Like the Russian one it is the keyboard rather than a helper beside it: no
+ * Greek letter is on a German, French or English layout. It is shown whatever
+ * the learner types with, because Greek has no second alphabet to switch to —
+ * a word typed in Latin letters is accepted as a slip by greekTextMatch.ts, and
+ * this row is how the Greek spelling gets typed at all.
+ */
+function GreekCharBar({ onInsert }: { onInsert: (c: string) => void }) {
+  return (
+    <div className="flex flex-wrap justify-center gap-2">
+      {GREEK_SPECIAL_CHARACTERS.map(c => (
         <motion.button key={c} type="button" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
           title={c}
           className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-base font-semibold text-zinc-900 hover:border-zinc-300 hover:bg-zinc-50"
@@ -1311,6 +1338,7 @@ function matchMeaningInLanguage(input: string, target: string, language: CourseL
   if (language === "it") return matchItalianMeaning(input, target);
   if (language === "pt") return matchPortugueseMeaning(input, target);
   if (language === "ru") return matchRussianSentence(input, target);
+  if (language === "el") return matchGreekMeaning(input, target);
   if (language === "de") return matchGermanMeaning(input, target);
   return matchEnglishMeaning(input, target);
 }
@@ -2054,14 +2082,15 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   const learnIt = direction === "learn-it";
   const learnPt = direction === "learn-pt";
   const learnRu = direction === "learn-ru";
+  const learnEl = direction === "learn-el";
   // Only the German course teaches German. The umlaut bar, the German matcher
   // and the German synonym groups all hang off this, and every one of them is
   // wrong beside a French sentence — which is why it is asked as its own
   // question rather than as !learnEn.
   const targetIsGermanCourse = direction === "learn-de";
-  const targetLanguage: "de" | "en" | "fr" | "pl" | "es" | "it" | "pt" | "ru" =
+  const targetLanguage: "de" | "en" | "fr" | "pl" | "es" | "it" | "pt" | "ru" | "el" =
     learnFr ? "fr" : learnPl ? "pl" : learnEs ? "es" : learnIt ? "it" : learnPt ? "pt"
-      : learnRu ? "ru" : learnEn ? "en" : "de";
+      : learnRu ? "ru" : learnEl ? "el" : learnEn ? "en" : "de";
   // Which language the meaning column is written in.
   //
   // The app language, wherever a table can fill it — a Polish reader was
@@ -2103,6 +2132,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     : learnIt ? "Italian"
     : learnPt ? "Portuguese"
     : learnRu ? "Russian"
+    : learnEl ? "Greek"
     : learnEn ? "English"
     : "German";
   const meaningLabel = LANGUAGE_LABEL[meaningLanguage];
@@ -2139,6 +2169,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     : learnIt ? matchItalianSentence
     : learnPt ? matchPortugueseSentence
     : learnRu ? matchRussianSentence
+    : learnEl ? matchGreekSentence
     : learnEn ? matchEnglish : matchGermanSentence;
   // Where the spoken short form is what we teach, the fuller written form the
   // learner will have met in a book stays correct too. Taking the better of the
@@ -5187,6 +5218,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
   const learnIt = sides.target.code === "it";
   const learnPt = sides.target.code === "pt";
   const learnRu = sides.target.code === "ru";
+  const learnEl = sides.target.code === "el";
   const result = useMemo(
     () => learnFr
       ? matchFrenchSentence(input, line?.de ?? "")
@@ -5200,10 +5232,12 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
             ? matchPortugueseSentence(input, line?.de ?? "")
           : learnRu
             ? matchRussianSentence(input, line?.de ?? "")
+          : learnEl
+            ? matchGreekSentence(input, line?.de ?? "")
           : learnEn
             ? matchEnglish(input, line?.de ?? "")
             : matchLearningModeGermanAnswer(input, { de: line?.de ?? "", long: line?.long }),
-    [input, learnEn, learnFr, learnPl, learnEs, learnIt, learnPt, learnRu, line]
+    [input, learnEn, learnFr, learnPl, learnEs, learnIt, learnPt, learnRu, learnEl, line]
   );
   // A German speaker learning English hears this on every stage, so it has to
   // honour their British/American choice — it was pinned to American, which

@@ -125,6 +125,21 @@ export const COURSES: Course[] = [
     available: true,
     builtIn: true,
   },
+  // Greek is the eighth, and the second in an alphabet of its own. Unlike
+  // Russian it has no Latin setting: the cards are Greek, and a learner who
+  // types in Latin letters is met by the grader instead — see greekTextMatch.ts.
+  // greekTranslations.ts covers the catalogue, so the course is the German one
+  // entry for entry, with Greek people and places wherever a card is not
+  // about life in Germany.
+  {
+    id: "greek",
+    kind: "language",
+    name: "Greek",
+    tagline: "Read, listen, type and translate real Greek.",
+    icon: "🇬🇷",
+    available: true,
+    builtIn: true,
+  },
   // Everything else people might come looking for. Listed, searchable and
   // honest about not being ready — a picker with three rows makes someone
   // wonder whether their language was considered and rejected.

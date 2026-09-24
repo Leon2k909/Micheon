@@ -329,6 +329,7 @@ const YOUR_TURN_LABEL: Record<CourseLanguage, string> = {
   it: "Your turn — say it in Italian",
   pt: "Your turn — say it in Portuguese",
   ru: "Your turn — say it in Russian",
+  el: "Your turn — say it in Greek",
 };
 
 const REPEATS_LABEL: Record<CourseLanguage, string> = {
@@ -340,6 +341,7 @@ const REPEATS_LABEL: Record<CourseLanguage, string> = {
   it: "Italian repeats",
   pt: "Portuguese repeats",
   ru: "Russian repeats",
+  el: "Greek repeats",
 };
 
 const MUTED_VOICE_LABEL: Record<CourseLanguage, string> = {
@@ -351,6 +353,7 @@ const MUTED_VOICE_LABEL: Record<CourseLanguage, string> = {
   it: "Italian voice is muted and will be skipped.",
   pt: "Portuguese voice is muted and will be skipped.",
   ru: "Russian voice is muted and will be skipped.",
+  el: "Greek voice is muted and will be skipped.",
 };
 
 const SAY_IT_FIRST_LABEL: Record<CourseLanguage, string> = {
@@ -362,6 +365,7 @@ const SAY_IT_FIRST_LABEL: Record<CourseLanguage, string> = {
   it: "Your turn to say the Italian before it is spoken",
   pt: "Your turn to say the Portuguese before it is spoken",
   ru: "Your turn to say the Russian before it is spoken",
+  el: "Your turn to say the Greek before it is spoken",
 };
 
 const FIRST_LABEL: Record<CourseLanguage, string> = {
@@ -373,6 +377,7 @@ const FIRST_LABEL: Record<CourseLanguage, string> = {
   it: "Italian first",
   pt: "Portuguese first",
   ru: "Russian first",
+  el: "Greek first",
 };
 
 // Written out rather than composed from a "{language} voice" pattern, because
@@ -386,6 +391,7 @@ const VOICE_LABEL: Record<CourseLanguage, string> = {
   it: "Italian voice",
   pt: "Portuguese voice",
   ru: "Russian voice",
+  el: "Greek voice",
 };
 
 const MUTE_VOICE_LABEL: Record<CourseLanguage, string> = {
@@ -397,6 +403,7 @@ const MUTE_VOICE_LABEL: Record<CourseLanguage, string> = {
   it: "Mute Italian voice",
   pt: "Mute Portuguese voice",
   ru: "Mute Russian voice",
+  el: "Mute Greek voice",
 };
 
 const UNMUTE_VOICE_LABEL: Record<CourseLanguage, string> = {
@@ -408,6 +415,7 @@ const UNMUTE_VOICE_LABEL: Record<CourseLanguage, string> = {
   it: "Unmute Italian voice",
   pt: "Unmute Portuguese voice",
   ru: "Unmute Russian voice",
+  el: "Unmute Greek voice",
 };
 
 /**
@@ -488,6 +496,7 @@ const VOLUME_SETTING = {
   it: "italianVolume",
   pt: "portugueseVolume",
   ru: "russianVolume",
+  el: "greekVolume",
 } as const;
 
 
