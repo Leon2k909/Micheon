@@ -291,6 +291,9 @@ const FINGERPRINTS = [
   // rather than fixed one. A learner sentence about studying German for
   // twenty minutes a day cannot appear anywhere but the language course.
   ["Polish content", "Uczę się niemieckiego dwadzieścia minut dziennie."],
+  // The same learner sentence in Greek, for the same reason: twenty minutes of
+  // German a day is something only the course says.
+  ["Greek content", "Κάθε μέρα κάνω είκοσι λεπτά γερμανικά."],
   // The INTERFACE tables are the same fault a layer up: English is the source
   // key and needs no table at all, yet an English app was downloading every
   // other language's chrome — 235 KB of German and 227 KB of French, on every

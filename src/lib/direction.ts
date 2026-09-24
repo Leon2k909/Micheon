@@ -93,10 +93,6 @@ export function learningPortuguese(): boolean {
   return getLearningDirection() === "learn-pt";
 }
 
-export function learningGreek(): boolean {
-  return getLearningDirection() === "learn-el";
-}
-
 /**
  * Is the text being learned German?
  *

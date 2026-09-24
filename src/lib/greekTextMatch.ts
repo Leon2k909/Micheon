@@ -23,7 +23,7 @@
  * lower case, but a name in the middle written small is a capitalisation
  * error, because in Greek as in German that is a real rule.
  */
-export type GreekMatch = {
+type GreekMatch = {
   ok: boolean;
   spellingNote: boolean;
   capitalizationError?: boolean;
