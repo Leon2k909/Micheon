@@ -76,11 +76,15 @@ const UNMARKED_WORD = new RegExp(`(?<![\\p{L}])(${UNMARKED.join("|")})(?![\\p{L}
 // half (dita-urë, the bridge day), or on a borrowed word after its hyphen
 // (WiFi-ja).
 const DEFINITE = /(?:[aiu]|t|të)$/iu;
-const LEADING_PARTICLE = /^(?:i|e|të|së)\s+/iu;
+// The small article of a day or an adjective-noun (e hëna), and the Shën of a
+// saint's day (Shën Nikolla), come before the word that carries the ending.
+const LEADING_PARTICLE = /^(?:i|e|të|së|shën)\s+/iu;
 const isDefinite = (head) => DEFINITE.test(head) || DEFINITE.test(head.split("-")[0]);
-// Measures Albanian names by what they weigh rather than with a noun of their
-// own: das Pfund is gjysmë kile, half a kilo, as the Portuguese is o meio quilo.
-const MEASURED = new Set(["das Pfund"]);
+// Two nouns Albanian says as a phrase rather than a noun of its own: a measure
+// named by what it weighs (das Pfund is gjysmë kile, half a kilo, as the
+// Portuguese is o meio quilo), and an image told in steps (der Katzensprung is
+// dy hapa rrugë).
+const PHRASED = new Set(["das Pfund", "der Katzensprung"]);
 
 const problems = [];
 const fail = (german, value, why) => problems.push(`${why} — ${german} → ${value}`);
@@ -103,7 +107,7 @@ for (const [german, raw] of entries) {
   if (/\?["“”»«„]?$/.test(german.trim()) && !/\?["“”»«„)]*\s*(?:\p{Extended_Pictographic}\s*)*$/u.test(value)) {
     fail(german, value, "the German asks, the Albanian does not");
   }
-  if (/^(der|die|das) [\p{Lu}][\p{L}-]*$/u.test(german) && !MEASURED.has(german)) {
+  if (/^(der|die|das) [\p{Lu}][\p{L}-]*$/u.test(german) && !PHRASED.has(german)) {
     const head = value.replace(LEADING_PARTICLE, "").split(/\s+/)[0].replace(/[.!,]+$/, "");
     if (!isDefinite(head) && !inGerman(head, german)) fail(german, value, "a noun card not in its definite form");
   }
