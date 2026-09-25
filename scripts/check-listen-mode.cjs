@@ -442,6 +442,84 @@ check("the sentence and word sources leave the paragraphs out",
     plan.filter((clip) => clip.side === "meaning").every((clip) => !clip.voice)
   );
 
+  // ── the answer stays beside the question ──────────────────────────────
+  // What shipped was every German line, and then the whole translation read
+  // out end to end. On a card of eight lines that had stopped answering
+  // anything by the time it arrived: lining its fourth line up with the
+  // fourth line of the German was left to the learner, from memory, while
+  // the next line was already playing.
+  //
+  // Compared as GROUPS of neighbouring clips rather than as clips, because a
+  // German word quoted inside an English line is split off into its own clip
+  // for the German voice. That is a different rule and it still holds here;
+  // what this one is about is the order the two languages come in.
+  const groupsOf = (clips) => clips.reduce((groups, clip) => {
+    const last = groups[groups.length - 1];
+    if (last && last.side === clip.side) last.clips.push(clip);
+    else groups.push({ side: clip.side, clips: [clip] });
+    return groups;
+  }, []);
+  const saidBy = (group) => group.clips.map((clip) => clip.text).join("").replace(/\s+/gu, " ").trim();
+  const same = (text) => String(text).replace(/\s+/gu, " ").trim();
+  const planFor = (options) => buildListenSpeechPlan({
+    de: sample.de, en: sample.en, targetRepeats: 1, meaningRepeats: 1,
+    languageOrder: "target-first", meaningLang: "en-GB", targetLang: "de-DE",
+    languageGapMs: 3000, turns: sample.turns, ...options,
+  });
+
+  const runs = groupsOf(planFor({}));
+  check(
+    "each line of a conversation is followed by its own translation",
+    runs.length === sample.turns.length * 2
+    && sample.turns.every((turn, index) =>
+      runs[index * 2].side === "target" && saidBy(runs[index * 2]) === same(turn.de)
+      && runs[index * 2 + 1].side === "meaning" && saidBy(runs[index * 2 + 1]) === same(turn.en)),
+    "all of one language and then all of the other makes the translation a second conversation"
+  );
+  check(
+    "the pause is held at every handover from a line to its meaning",
+    planFor({}).filter((clip) => clip.pauseBeforeMs === 3000).length === sample.turns.length
+  );
+  // Which of the two comes first is still the learner's setting. It now
+  // decides the order inside a turn instead of the order of the card.
+  const flipped = groupsOf(planFor({ languageOrder: "meaning-first" }));
+  check(
+    "meaning-first turns each line round, and leaves the exchange in order",
+    flipped.length === sample.turns.length * 2
+    && sample.turns.every((turn, index) =>
+      flipped[index * 2].side === "meaning" && saidBy(flipped[index * 2]) === same(turn.en)
+      && flipped[index * 2 + 1].side === "target" && saidBy(flipped[index * 2 + 1]) === same(turn.de))
+  );
+  // Repeats are still repeats: they run together, and the silence between
+  // them would not be the learner's turn to answer.
+  const repeated = planFor({ targetRepeats: 2, meaningRepeats: 3 });
+  check(
+    "repeats of one language stay together inside the turn they belong to",
+    repeated.filter((clip) => clip.pauseBeforeMs).length === sample.turns.length
+    && groupsOf(repeated).length === sample.turns.length * 2
+    && groupsOf(repeated)[0].clips.length === 2
+    && groupsOf(repeated)[1].clips.length === 3
+  );
+  // A card that IS one line is unchanged: hear it, reach for it, and the
+  // other language answers. That is what whole-language-first was right for.
+  check(
+    "an ordinary card still plays all of one language and then the other",
+    JSON.stringify(buildListenSpeechPlan({
+      de: "das Haus", en: "the house", targetRepeats: 2, meaningRepeats: 2,
+      languageOrder: "target-first", meaningLang: "en-GB", targetLang: "de-DE",
+      languageGapMs: 0,
+    }).map((clip) => clip.side))
+      === JSON.stringify(["target", "target", "meaning", "meaning"])
+  );
+  // In every course. Which two languages they are has nothing to do with the
+  // order they are played in - only the named voices are German-only.
+  const french = planFor({ targetLang: "fr-FR" });
+  check(
+    "a conversation in another course is played line by line too",
+    french.length === sample.turns.length * 2
+    && french.every((clip, index) => clip.side === (index % 2 ? "meaning" : "target"))
+  );
+
   // A passage is one person writing to you, and reads straight through.
   const passage = passages[0];
   check(

@@ -763,7 +763,9 @@ type ListenSpeechClip = {
   side: "target" | "meaning";
   /** A named voice for this clip, when the card has more than one speaker. */
   voice?: string;
-  /** Silence held before this clip. Set on exactly one clip per card. */
+  /** Silence held before this clip. Set once per line, at the point the
+   *  line hands over to its translation - which is once on an ordinary card
+   *  and once per turn on a conversation. */
   pauseBeforeMs?: number;
 };
 
@@ -788,9 +790,9 @@ export const LISTEN_MEANING_RATE = 0.95;
  * Everything a card says, in order, gap included.
  *
  * Lives here rather than inside the player so the rule that matters can be
- * tested rather than described: the pause belongs at the ONE point where the
- * card changes language. Built inline, the only thing a check could do was
- * match the source text of the component and hope it meant what it looked
+ * tested rather than described: the pause belongs where the card hands a
+ * line over to its translation. Built inline, the only thing a check could do
+ * was match the source text of the component and hope it meant what it looked
  * like.
  */
 export function buildListenSpeechPlan({
@@ -820,12 +822,11 @@ export function buildListenSpeechPlan({
   /**
    * The card's turns, when it is a conversation.
    *
-   * Given, the target side is spoken turn by turn in alternating voices
-   * instead of as one block. The meaning side is left whole: it is there so
-   * you know what was said, and hearing the translation change voice as well
-   * makes two conversations out of one.
+   * Given, the card is played line by line - each line followed by its own
+   * translation - rather than as one block of each language. Both texts are
+   * needed for that, so a turn carries the translation as well.
    */
-  turns?: ReadonlyArray<{ side: "a" | "b"; de: string }>;
+  turns?: ReadonlyArray<{ side: "a" | "b"; de: string; en?: string }>;
 }): ListenSpeechClip[] {
   /**
    * A German word quoted in the other line is read in German — whichever line
@@ -861,45 +862,86 @@ export function buildListenSpeechPlan({
       : [{ text, rate, lang: ownLang, side }]
   );
 
+  const repeat = (clips: ListenSpeechClip[], times: number): ListenSpeechClip[] =>
+    Array.from({ length: Math.max(0, times) }, () => clips).flat();
+
   /**
-   * One clip per turn when the card is a conversation, and each side keeps
-   * its own voice across the whole card.
+   * One line and its translation, in the order the learner asked for, with
+   * the pause at the point between them.
    *
-   * Only where the target is German: the voices named are German ones, and
-   * reading a French line in a German voice to mark a change of speaker would
-   * trade one confusion for a worse one.
+   * Repeats of one language are meant to run together — the pause is the
+   * learner's turn to answer, and the handover from a line to its meaning is
+   * the one place where that is what the silence means.
+   */
+  const pair = (
+    targetClips: ListenSpeechClip[],
+    meaningClips: ListenSpeechClip[]
+  ): ListenSpeechClip[] => {
+    const [first, second] = languageOrder === "meaning-first"
+      ? [meaningClips, targetClips]
+      : [targetClips, meaningClips];
+    if (languageGapMs > 0 && first.length > 0 && second.length > 0) {
+      second[0] = { ...second[0], pauseBeforeMs: languageGapMs };
+    }
+    return [...first, ...second];
+  };
+
+  /**
+   * A conversation plays a line at a time, each with its own translation,
+   * rather than the whole of one language and then the whole of the other.
+   *
+   * All of one language first is right for a card that IS one line: you hear
+   * it, you reach for it, the other language answers you. Six lines is past
+   * what anyone holds, so by the time the translation came round it had
+   * stopped answering anything — it was a second conversation read out end to
+   * end, and lining its fourth line up with the fourth line of the first was
+   * left to the learner. A line, then what it means, then the next line: the
+   * answer stays beside the question, and the exchange still runs in order.
+   *
+   * In every course. Which two languages they are has nothing to do with the
+   * order they are played in.
    */
   const spokenTurns = (turns ?? []).filter((turn) => turn.de.trim());
-  const targetOnce = spokenTurns.length > 1 && targetLang.startsWith("de")
-    ? spokenTurns.map((turn) => ({
-      text: turn.de,
-      rate: LISTEN_TARGET_RATE,
-      lang: targetLang,
-      side: "target" as const,
-      voice: LISTEN_DIALOGUE_VOICES[turn.side],
-    }))
-    : speak(de, targetLang, en, meaningLang, "target", LISTEN_TARGET_RATE);
-  const target: ListenSpeechClip[] = Array.from(
-    { length: Math.max(0, targetRepeats) },
-    () => targetOnce
-  ).flat();
+  const perTurn = spokenTurns.length > 1
+    && spokenTurns.every((turn) => (turn.en ?? "").trim());
+  if (perTurn) {
+    /**
+     * Two voices, one per side, the same one throughout — and only where the
+     * target is German: the voices named are German ones, and reading a
+     * French line in a German voice to mark a change of speaker would trade
+     * one confusion for a worse one.
+     *
+     * The translation keeps the plain voice whichever side it answers for.
+     * Hearing it change speaker as well makes two conversations out of one,
+     * and the steady voice is what marks a line as the translation rather
+     * than as the next thing said.
+     */
+    return spokenTurns.flatMap((turn) => pair(
+      repeat(
+        targetLang.startsWith("de")
+          ? [{
+            text: turn.de,
+            rate: LISTEN_TARGET_RATE,
+            lang: targetLang,
+            side: "target" as const,
+            voice: LISTEN_DIALOGUE_VOICES[turn.side],
+          }]
+          : speak(turn.de, targetLang, turn.en ?? "", meaningLang, "target", LISTEN_TARGET_RATE),
+        targetRepeats
+      ),
+      repeat(
+        speak(turn.en ?? "", meaningLang, turn.de, targetLang, "meaning", LISTEN_MEANING_RATE),
+        meaningRepeats
+      )
+    ));
+  }
+
   // The side stays what it was — it is still that half of the card, and the
   // caption, the gap and the repeat count all belong to the line as a whole.
-  const meaningOnce: ListenSpeechClip[] = speak(en, meaningLang, de, targetLang, "meaning", LISTEN_MEANING_RATE);
-  const meaning: ListenSpeechClip[] = Array.from(
-    { length: Math.max(0, meaningRepeats) },
-    () => meaningOnce
-  ).flat();
-  const [first, second] = languageOrder === "meaning-first"
-    ? [meaning, target]
-    : [target, meaning];
-  // Repeats of one language are meant to run together — the pause is the
-  // learner's turn to answer, and there is only one place on a card where
-  // that is what the silence means.
-  if (languageGapMs > 0 && first.length > 0 && second.length > 0) {
-    second[0] = { ...second[0], pauseBeforeMs: languageGapMs };
-  }
-  return [...first, ...second];
+  return pair(
+    repeat(speak(de, targetLang, en, meaningLang, "target", LISTEN_TARGET_RATE), targetRepeats),
+    repeat(speak(en, meaningLang, de, targetLang, "meaning", LISTEN_MEANING_RATE), meaningRepeats)
+  );
 }
 
 /**
