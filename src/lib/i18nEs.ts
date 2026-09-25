@@ -4565,6 +4565,6 @@ export const ES: Record<string, string> = {
   "Albanian tip: the article is an ending — shtëpi is a house, shtëpia is the house.": "Consejo de albanés: el artículo es una terminación — shtëpi es una casa, shtëpia es la casa.",
   "Albanian tip: ë is the most common letter in Albanian, and at the end of a word it is barely heard — but always written.": "Consejo de albanés: la ë es la letra más frecuente del albanés, y al final de la palabra apenas se oye — pero siempre se escribe.",
   "Albanian tip: adjectives come after the noun and most bring a small article of their own — një djalë i mirë, një vajzë e mirë.": "Consejo de albanés: el adjetivo va detrás del sustantivo y casi todos llevan su propio artículo pequeño — një djalë i mirë, një vajzë e mirë.",
-  "Albanian tip: “Ç'kemi?” is the everyday hello-how-are-you, and “Mirë, po ti?” the answer.": "Consejo de albanés: “Ç'kemi?” es el hola-qué-tal de cada día, y “Mirë, po ti?” la respuesta.",
+  "Albanian tip: “Ç'kemi?” is the everyday hello-how-are-you, and “Mirë, po ti?” the answer.": "Consejo de albanés: «Ç'kemi?» es el hola-qué-tal de cada día, y «Mirë, po ti?» la respuesta.",
   "Albanian tip: there is no infinitive — I want to go is “dua të shkoj”, literally I want that I go.": "Consejo de albanés: no hay infinitivo — quiero ir se dice “dua të shkoj”, literalmente quiero que yo vaya.",
 };
