@@ -294,6 +294,8 @@ const FINGERPRINTS = [
   // The same learner sentence in Greek, for the same reason: twenty minutes of
   // German a day is something only the course says.
   ["Greek content", "Κάθε μέρα κάνω είκοσι λεπτά γερμανικά."],
+  // And in Albanian, where only the Albanian course carries it.
+  ["Albanian content", "Mësoj gjermanisht njëzet minuta çdo ditë."],
   // The INTERFACE tables are the same fault a layer up: English is the source
   // key and needs no table at all, yet an English app was downloading every
   // other language's chrome — 235 KB of German and 227 KB of French, on every

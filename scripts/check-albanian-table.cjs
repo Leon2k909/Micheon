@@ -66,15 +66,21 @@ const inGerman = (token, german) =>
 const UNMARKED = [
   "eshte", "jane", "shume", "cfare", "pershendetje", "mire", "ketu", "kete", "keto", "une", "ate",
   "kerkoj", "degjoj", "mbremje", "mengjes", "shtepi", "shtepia", "ceshtje", "cdo", "ckemi", "nje", "per",
-  "dite", "nate", "pune", "gjithcka", "dicka", "asgje", "gje", "tjeter", "keshtu", "gjate", "kater", "pese",
+  "gjithcka", "dicka", "asgje", "gje", "tjeter", "keshtu", "gjate", "kater", "pese",
   "gjashte", "shtate", "tete", "nente", "dhjete", "vjec", "cmim", "cmimi", "mirembrema", "miremengjes",
   "miredita", "gezuar", "mesoj", "shqiperi", "shqiperia", "femije", "femijet",
 ];
 const UNMARKED_WORD = new RegExp(`(?<![\\p{L}])(${UNMARKED.join("|")})(?![\\p{L}])`, "iu");
 // A definite nominative ends in a, i, u, t or të; so does a word the German
-// carries over as it is.
+// carries over as it is. In a hyphened compound the article sits on the first
+// half (dita-urë, the bridge day), or on a borrowed word after its hyphen
+// (WiFi-ja).
 const DEFINITE = /(?:[aiu]|t|të)$/iu;
 const LEADING_PARTICLE = /^(?:i|e|të|së)\s+/iu;
+const isDefinite = (head) => DEFINITE.test(head) || DEFINITE.test(head.split("-")[0]);
+// Measures Albanian names by what they weigh rather than with a noun of their
+// own: das Pfund is gjysmë kile, half a kilo, as the Portuguese is o meio quilo.
+const MEASURED = new Set(["das Pfund"]);
 
 const problems = [];
 const fail = (german, value, why) => problems.push(`${why} — ${german} → ${value}`);
@@ -97,9 +103,9 @@ for (const [german, raw] of entries) {
   if (/\?["“”»«„]?$/.test(german.trim()) && !/\?["“”»«„)]*\s*(?:\p{Extended_Pictographic}\s*)*$/u.test(value)) {
     fail(german, value, "the German asks, the Albanian does not");
   }
-  if (/^(der|die|das) [\p{Lu}][\p{L}-]*$/u.test(german)) {
+  if (/^(der|die|das) [\p{Lu}][\p{L}-]*$/u.test(german) && !MEASURED.has(german)) {
     const head = value.replace(LEADING_PARTICLE, "").split(/\s+/)[0].replace(/[.!,]+$/, "");
-    if (!DEFINITE.test(head) && !inGerman(head, german)) fail(german, value, "a noun card not in its definite form");
+    if (!isDefinite(head) && !inGerman(head, german)) fail(german, value, "a noun card not in its definite form");
   }
 
   for (const variant of new Set([toSpokenGerman(german), toTextedGerman(german), toTextedGerman(toSpokenGerman(german))])) {
