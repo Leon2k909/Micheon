@@ -544,6 +544,52 @@ const EL: PlacementQuestion[] = [
   q("el-c1-6", "C1", "What does this mean?", "Το έχουμε στο τσεπάκι μας.", ["We lost it", "It is in the bag", "We owe it", "We hid it"], 1, "In our little pocket: as good as won."),
 ];
 
+// ── Learning Albanian ───────────────────────────────────────────────────────
+// Written in Albanian throughout, with ë and ç where they belong. The answer
+// sits in every slot in turn: the ladder shuffles which questions it asks,
+// never the options inside one.
+const SQ: PlacementQuestion[] = [
+  // A1
+  q("sq-a1-1", "A1", "Which is correct?", "Unë ___ Arbeni.", ["jam", "je", "është", "jemi"], 0, "jam is the form that goes with unë."),
+  q("sq-a1-2", "A1", "What does this mean?", "Mirëmëngjes!", ["Good evening!", "Good night!", "Good morning!", "Goodbye!"], 2, "Mirëmëngjes is good morning; mirëmbrëma is good evening."),
+  q("sq-a1-3", "A1", "Which is correct?", "Unë ___ në Tiranë.", ["jeton", "jetoj", "jetojnë", "jetojmë"], 1, "The first person singular ends in -j: unë jetoj."),
+  q("sq-a1-4", "A1", "What does this mean?", "shtëpia", ["the street", "the city", "the station", "the house"], 3, "shtëpi is a house, and the ending -a makes it the house."),
+  q("sq-a1-5", "A1", "Which is correct?", "Kjo është një ___ e bukur.", ["qytet", "djalë", "libër", "vajzë"], 3, "e bukur is the feminine form, and vajzë is the only feminine noun here."),
+  q("sq-a1-6", "A1", "What does this mean?", "faleminderit", ["please", "thank you", "sorry", "hello"], 1, "faleminderit is thank you; ju lutem is please."),
+  q("sq-a1-7", "A1", "What is the number?", "pesëmbëdhjetë", ["12", "50", "15", "5"], 2, "pesë is five, and mbëdhjetë means on top of ten."),
+  q("sq-a1-8", "A1", "Which is correct?", "Ne ___ shqip.", ["flasim", "flas", "flet", "flisni"], 0, "ne takes the -im ending: flasim."),
+  // A2
+  q("sq-a2-1", "A2", "Which is correct?", "Dje ___ në kinema.", ["shkoj", "shkova", "do të shkoj", "po shkoj"], 1, "dje is yesterday, so it needs the past tense: shkova."),
+  q("sq-a2-2", "A2", "What does this mean?", "Sa kushton?", ["Where is it?", "What time is it?", "How much is it?", "How is it?"], 2, "Sa kushton? asks the price."),
+  q("sq-a2-3", "A2", "Which is correct?", "Më ___ kafeja.", ["pëlqen", "pëlqej", "pëlqejnë", "pëlqejmë"], 0, "pëlqej works the other way round: the coffee pleases me, so the verb agrees with kafeja."),
+  q("sq-a2-4", "A2", "What does this mean?", "Duhet të iki.", ["I want to leave", "I can leave", "I have to leave", "I left"], 2, "duhet të is obligation."),
+  q("sq-a2-5", "A2", "Which is correct?", "Nesër ___ në det.", ["shkuam", "shkonim", "kemi shkuar", "do të shkojmë"], 3, "nesër is tomorrow, so it needs the future: do të shkojmë."),
+  q("sq-a2-6", "A2", "What does this mean?", "S'ka problem.", ["No problem.", "It is forbidden.", "Don't touch it.", "It is broken."], 0, "S'ka problem reassures: never mind, it is fine."),
+  q("sq-a2-7", "A2", "Which is correct?", "Motra ___ është mjeke.", ["im", "imi", "time", "ime"], 3, "motra is feminine, so my is ime; vëllai would take im."),
+  q("sq-a2-8", "A2", "What does this mean?", "Sa është ora?", ["What day is it?", "What time is it?", "How old are you?", "Where are you?"], 1, "ora is the hour, so this asks the time."),
+  // B1
+  q("sq-b1-1", "B1", "Which is correct?", "Po të kisha kohë, ___ me ty.", ["do të vij", "erdha", "do të vija", "vij"], 2, "An unreal condition pairs po të kisha with do të and the imperfect: do të vija."),
+  q("sq-b1-2", "B1", "What does this mean?", "Nuk më intereson.", ["It interests me.", "I don't care.", "It is difficult for me.", "I'm tired of it."], 1, "It does not interest me: I don't care."),
+  q("sq-b1-3", "B1", "Which is correct?", "Libri ___ po lexoj është shumë i mirë.", ["cili", "ku", "si", "që"], 3, "që joins a relative clause, like that or which."),
+  q("sq-b1-4", "B1", "What does this mean?", "Humbi durimin.", ["He lost his wallet.", "He caught a cold.", "He lost his way.", "He lost his patience."], 3, "durimi is patience."),
+  q("sq-b1-5", "B1", "Which is correct?", "Kur isha fëmijë, ___ çdo verë në fshat.", ["shkonim", "shkuam", "do të shkojmë", "shkojmë"], 0, "A habit in the past takes the imperfect: shkonim."),
+  q("sq-b1-6", "B1", "What does this mean?", "Hap sytë katër!", ["Open the window!", "Close your eyes!", "Keep your eyes peeled!", "Count to four!"], 2, "Open your eyes fourfold: watch very carefully."),
+  // B2
+  q("sq-b2-1", "B2", "Which is correct?", "___ shiun, dolëm për shëtitje.", ["Për", "Nga", "Pa", "Me gjithë"], 3, "me gjithë with the accusative means despite: me gjithë shiun."),
+  q("sq-b2-2", "B2", "What does this mean?", "Kjo kapelë nuk më shkon.", ["I can't afford this hat.", "This hat doesn't suit me.", "I don't like hats.", "I lost this hat."], 1, "shkon here means suits, not goes."),
+  q("sq-b2-3", "B2", "Which is correct?", "Shpresoj ___ mot i mirë nesër.", ["bëri", "bën", "të bëjë", "duke bërë"], 2, "shpresoj is followed by të and the subjunctive: të bëjë."),
+  q("sq-b2-4", "B2", "What does this mean?", "E bëri lëmsh.", ["He went to the sea.", "He cried a lot.", "He knitted a scarf.", "He made a mess of it."], 3, "A lëmsh is a tangled ball of yarn: he tangled it all up."),
+  q("sq-b2-5", "B2", "Which is correct?", "Ky është njeriu ___ të fola.", ["për të cilin", "të cilin", "i cili", "të cilit"], 0, "flas për dikë — the preposition travels with the relative: për të cilin."),
+  q("sq-b2-6", "B2", "What does this mean?", "Për pak humba trenin.", ["I missed the train.", "I nearly missed the train.", "I ran for the train.", "I waited for the train."], 1, "për pak, by a little, is how Albanian says nearly."),
+  // C1
+  q("sq-c1-1", "C1", "What does this mean?", "Fut hundët kudo.", ["He meddles in everything.", "He sniffs at everything.", "He has a cold.", "He gets lost everywhere."], 0, "Putting your nose everywhere is poking it into other people's business."),
+  q("sq-c1-2", "C1", "Which is correct?", "Po ta kisha ditur, nuk ___ ardhur.", ["do të kem", "do të kisha", "kisha", "kam"], 1, "A counterfactual past takes do të kisha with the participle: nuk do të kisha ardhur."),
+  q("sq-c1-3", "C1", "What does this mean?", "E kapën me presh në dorë.", ["They found him in the garden.", "They sent him shopping.", "They fired him.", "They caught him red-handed."], 3, "Caught with a leek in his hand: caught in the act."),
+  q("sq-c1-4", "C1", "Which is correct?", "___ vështirësive, projekti përfundoi në kohë.", ["Ndonëse", "Ndërsa", "Pavarësisht", "Edhe pse"], 2, "Only pavarësisht takes a noun directly; ndonëse, ndërsa and edhe pse need a clause."),
+  q("sq-c1-5", "C1", "What does this mean?", "Ka para me thes.", ["He has no money.", "He owes money.", "He is very rich.", "He spends a lot."], 2, "Money by the sack: more than anybody could count."),
+  q("sq-c1-6", "C1", "What does this mean?", "U bë tym.", ["He got angry.", "He vanished.", "He started smoking.", "He fell ill."], 1, "He turned into smoke: he disappeared without a trace."),
+];
+
 export function placementQuestions(direction: PlacementDirection): PlacementQuestion[] {
   if (direction === "learn-en") return EN;
   if (direction === "learn-fr") return FR;
@@ -553,6 +599,7 @@ export function placementQuestions(direction: PlacementDirection): PlacementQues
   if (direction === "learn-pt") return PT;
   if (direction === "learn-ru") return RU;
   if (direction === "learn-el") return EL;
+  if (direction === "learn-sq") return SQ;
   return DE;
 }
 

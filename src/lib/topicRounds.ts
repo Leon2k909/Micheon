@@ -9,6 +9,7 @@ import { portugueseFor } from "@/lib/portugueseCourse";
 import { loadScopedJson, saveScopedJson, type UserProfile } from "@/lib/profileStorage";
 import { russianFor } from "@/lib/russianCourse";
 import { greekFor } from "@/lib/greekCourse";
+import { albanianFor } from "@/lib/albanianCourse";
 import { spanishFor } from "@/lib/spanishCourse";
 import { buildWordCatalog } from "@/lib/wordSession";
 import { buildCatalog } from "@/session";
@@ -138,6 +139,7 @@ const translatorFor = (code: string): ((german: string) => string | null) | null
   if (code === "pt") return (german) => portugueseFor(german);
   if (code === "ru") return (german) => russianFor(german);
   if (code === "el") return (german) => greekFor(german);
+  if (code === "sq") return (german) => albanianFor(german);
   return null;
 };
 

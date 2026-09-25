@@ -29,7 +29,7 @@ const dist = path.join(root, "dist", "assets");
 // i18nFr is the interface chrome rather than course content, and it is here
 // for the same reason: an English app has no use for it and was downloading
 // it anyway.
-const TABLES = ["frenchTranslations", "polishTranslations", "greekTranslations", "i18nDe", "i18nFr"];
+const TABLES = ["frenchTranslations", "polishTranslations", "greekTranslations", "albanianTranslations", "i18nDe", "i18nFr"];
 const walk = (dir, out = []) => {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);

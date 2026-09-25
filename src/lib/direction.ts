@@ -16,8 +16,9 @@ export const DIRECTION_CHANGE_EVENT = "gl-direction-change";
 // is the German one entry for entry. See spanishCourse.ts. "learn-it" is
 // the second of those: same shape, same coverage, its own table. "learn-el"
 // is Greek, the second course in an alphabet of its own after Russian — see
-// greekCourse.ts.
-export type LearningDirection = "learn-de" | "learn-en" | "learn-fr" | "learn-pl" | "learn-es" | "learn-it" | "learn-pt" | "learn-ru" | "learn-el";
+// greekCourse.ts. "learn-sq" is Albanian, back in the Latin alphabet with
+// two letters of its own, ë and ç — see albanianCourse.ts.
+export type LearningDirection = "learn-de" | "learn-en" | "learn-fr" | "learn-pl" | "learn-es" | "learn-it" | "learn-pt" | "learn-ru" | "learn-el" | "learn-sq";
 
 /**
  * Which translation table a direction cannot be built without.
@@ -30,7 +31,7 @@ export type LearningDirection = "learn-de" | "learn-en" | "learn-fr" | "learn-pl
  */
 export function translationLanguageFor(
   direction: LearningDirection
-): "fr" | "pl" | "es" | "it" | "pt" | "ru" | "el" | null {
+): "fr" | "pl" | "es" | "it" | "pt" | "ru" | "el" | "sq" | null {
   if (direction === "learn-fr") return "fr";
   if (direction === "learn-pl") return "pl";
   if (direction === "learn-es") return "es";
@@ -38,10 +39,11 @@ export function translationLanguageFor(
   if (direction === "learn-pt") return "pt";
   if (direction === "learn-ru") return "ru";
   if (direction === "learn-el") return "el";
+  if (direction === "learn-sq") return "sq";
   return null;
 }
 
-const DIRECTIONS: LearningDirection[] = ["learn-de", "learn-en", "learn-fr", "learn-pl", "learn-es", "learn-it", "learn-pt", "learn-ru", "learn-el"];
+const DIRECTIONS: LearningDirection[] = ["learn-de", "learn-en", "learn-fr", "learn-pl", "learn-es", "learn-it", "learn-pt", "learn-ru", "learn-el", "learn-sq"];
 
 /** Read a stored value as a direction, defaulting to the original mode. */
 function asLearningDirection(value: unknown): LearningDirection {
@@ -117,6 +119,7 @@ export function targetLangTag(): string {
     case "learn-pt": return "pt-PT";
     case "learn-ru": return "ru-RU";
     case "learn-el": return "el-GR";
+    case "learn-sq": return "sq-AL";
     default: return "de-DE";
   }
 }

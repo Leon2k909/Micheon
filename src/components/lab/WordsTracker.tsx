@@ -43,6 +43,7 @@ import { frenchFor } from "@/lib/frenchCourse";
 import { polishFor } from "@/lib/polishCourse";
 import { portugueseFor } from "@/lib/portugueseCourse";
 import { greekFor } from "@/lib/greekCourse";
+import { albanianFor } from "@/lib/albanianCourse";
 import { spanishFor } from "@/lib/spanishCourse";
 import { italianFor } from "@/lib/italianCourse";
 import {
@@ -625,7 +626,8 @@ export function WordsTracker({ apiParts, user }: {
             const italian = sides.target.code === "it" ? italianFor(word.de) : null;
             const portuguese = sides.target.code === "pt" ? portugueseFor(word.de) : null;
             const greek = sides.target.code === "el" ? greekFor(word.de) : null;
-            const primaryText = french ?? polish ?? spanish ?? italian ?? portuguese ?? greek ?? (learnsEnglish ? word.en : word.de);
+            const albanian = sides.target.code === "sq" ? albanianFor(word.de) : null;
+            const primaryText = french ?? polish ?? spanish ?? italian ?? portuguese ?? greek ?? albanian ?? (learnsEnglish ? word.en : word.de);
             const meaningText = meaningTextFor(word.de, word.en, sides.meaning.code);
             const example = exampleIndex.exampleFor(word);
             return (

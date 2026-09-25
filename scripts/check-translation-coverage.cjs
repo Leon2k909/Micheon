@@ -40,6 +40,7 @@ const built = esbuild.buildSync({
       'export { PORTUGUESE_BY_GERMAN } from "./src/lib/portugueseTranslations.ts";',
       'export { RUSSIAN_BY_GERMAN } from "./src/lib/russianTranslations.ts";',
       'export { GREEK_BY_GERMAN } from "./src/lib/greekTranslations.ts";',
+      'export { ALBANIAN_BY_GERMAN } from "./src/lib/albanianTranslations.ts";',
     ].join("\n"),
     resolveDir: root,
     sourcefile: "translations-entry.ts",
@@ -69,6 +70,7 @@ M.primeTranslations("it", M.ITALIAN_BY_GERMAN);
 M.primeTranslations("pt", M.PORTUGUESE_BY_GERMAN);
 M.primeTranslations("ru", M.RUSSIAN_BY_GERMAN);
 M.primeTranslations("el", M.GREEK_BY_GERMAN);
+M.primeTranslations("sq", M.ALBANIAN_BY_GERMAN);
 
 // ── read every taught entry out of the packs ────────────────────────────────
 const FIELD = (name) => new RegExp("\\b" + name + ':\\s*"((?:[^"\\\\]|\\\\.)*)"');
@@ -168,6 +170,9 @@ const FLOORS = {
   // than block by block, so it is floored close to what it reached from its
   // first day, for the reason Italian and Portuguese are.
   el: 24650,
+  // Albanian was written the way Greek was, in one piece, and is floored the
+  // same way.
+  sq: 24650,
 };
 
 // The percentage is still reported, because it is the honest measure of how

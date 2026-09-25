@@ -140,6 +140,20 @@ export const COURSES: Course[] = [
     available: true,
     builtIn: true,
   },
+  // Albanian is the ninth: the Latin alphabet with ë and ç, and every noun
+  // card in the form with its article ending, as the German card has its
+  // der/die/das. albanianTranslations.ts covers the catalogue, so the course
+  // is the German one entry for entry, with Albanian people and places
+  // wherever a card is not about life in Germany.
+  {
+    id: "albanian",
+    kind: "language",
+    name: "Albanian",
+    tagline: "Read, listen, type and translate real Albanian.",
+    icon: "🇦🇱",
+    available: true,
+    builtIn: true,
+  },
   // Everything else people might come looking for. Listed, searchable and
   // honest about not being ready — a picker with three rows makes someone
   // wonder whether their language was considered and rejected.

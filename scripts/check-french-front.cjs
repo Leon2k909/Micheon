@@ -42,6 +42,7 @@ const built = esbuild.buildSync({
       'export { PORTUGUESE_BY_GERMAN } from "./src/lib/portugueseTranslations.ts";',
       'export { RUSSIAN_BY_GERMAN } from "./src/lib/russianTranslations.ts";',
       'export { GREEK_BY_GERMAN } from "./src/lib/greekTranslations.ts";',
+      'export { ALBANIAN_BY_GERMAN } from "./src/lib/albanianTranslations.ts";',
       'export { primeTranslations } from "./src/lib/translations.ts";',
       'export { buildCatalog } from "./src/session.ts";',
       'export { buildWordCatalog } from "./src/lib/wordSession.ts";',
@@ -85,6 +86,7 @@ M.primeTranslations("it", M.ITALIAN_BY_GERMAN);
 M.primeTranslations("pt", M.PORTUGUESE_BY_GERMAN);
 M.primeTranslations("ru", M.RUSSIAN_BY_GERMAN);
 M.primeTranslations("el", M.GREEK_BY_GERMAN);
+M.primeTranslations("sq", M.ALBANIAN_BY_GERMAN);
 
 /**
  * The bands REPORT how deep each language reaches; the floor that fails the
@@ -149,8 +151,9 @@ const BANDS = [
 // translations are all still there, and the rule that its number never falls
 // on its own is intact.
 // Greek arrived whole, so it takes the same number as the five that finished
-// before it rather than a starting floor of its own.
-const TRANSLATED_QUEUE_FLOORS = { fr: 24330, pl: 24330, es: 24330, it: 24330, pt: 24330, ru: 24090, el: 24330 };
+// before it rather than a starting floor of its own. Albanian arrived whole
+// too, and takes it for the same reason.
+const TRANSLATED_QUEUE_FLOORS = { fr: 24330, pl: 24330, es: 24330, it: 24330, pt: 24330, ru: 24090, el: 24330, sq: 24330 };
 
 /**
  * How much of the word tracker the French course is allowed to be missing.

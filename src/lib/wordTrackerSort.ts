@@ -33,7 +33,7 @@ export const WORD_TRACKER_SORTS: ReadonlyArray<{ key: WordTrackerSort; label: st
 ];
 
 type RecordForWord = (word: WordItem) => GradeRecord | undefined;
-type AlphabetLanguage = "de" | "en" | "fr" | "pl" | "es" | "it" | "pt" | "ru" | "el";
+type AlphabetLanguage = "de" | "en" | "fr" | "pl" | "es" | "it" | "pt" | "ru" | "el" | "sq";
 
 const COLLATOR: Record<AlphabetLanguage, Intl.Collator> = {
   de: new Intl.Collator("de", { numeric: true, sensitivity: "base" }),
@@ -54,6 +54,9 @@ const COLLATOR: Record<AlphabetLanguage, Intl.Collator> = {
   // Greek likewise: α β γ … ω, with the accented vowels filed under their
   // plain letter, so ά sits under Α where a learner looks for it.
   el: new Intl.Collator("el", { numeric: true, sensitivity: "base" }),
+  // Albanian files ç after c and ë after e as letters of their own (and dh,
+  // gj, sh … after their first letter), which "base" sensitivity keeps.
+  sq: new Intl.Collator("sq", { numeric: true, sensitivity: "base" }),
 };
 
 const parsedTime = (value: string | undefined) => {

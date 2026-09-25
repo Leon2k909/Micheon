@@ -13,6 +13,7 @@ const SEARCHABLE_KEYS = [
   "it",
   "pt",
   "el",
+  "sq",
   "short",
   "when",
   "say",

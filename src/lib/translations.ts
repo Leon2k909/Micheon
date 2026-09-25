@@ -42,7 +42,7 @@
  */
 
 /** A language we hold translations for. Add the code when you add the table. */
-export type TranslationLanguage = "fr" | "pl" | "es" | "it" | "pt" | "ru" | "el";
+export type TranslationLanguage = "fr" | "pl" | "es" | "it" | "pt" | "ru" | "el" | "sq";
 
 /** German text → that language's translation. */
 export type TranslationTable = Record<string, string>;
@@ -68,6 +68,7 @@ const BUNDLED: Record<TranslationLanguage, () => Promise<TranslationTable>> = {
   pt: () => import("@/lib/portugueseTranslations").then((m) => m.PORTUGUESE_BY_GERMAN),
   ru: () => import("@/lib/russianTranslations").then((m) => m.RUSSIAN_BY_GERMAN),
   el: () => import("@/lib/greekTranslations").then((m) => m.GREEK_BY_GERMAN),
+  sq: () => import("@/lib/albanianTranslations").then((m) => m.ALBANIAN_BY_GERMAN),
 };
 
 /**
@@ -91,6 +92,7 @@ const LOADERS: Record<TranslationLanguage, () => Promise<TranslationTable>> = {
   pt: () => fromPackOrBundle("pt"),
   ru: () => fromPackOrBundle("ru"),
   el: () => fromPackOrBundle("el"),
+  sq: () => fromPackOrBundle("sq"),
 };
 
 async function fromPackOrBundle(language: TranslationLanguage): Promise<TranslationTable> {
@@ -144,6 +146,7 @@ export const TRANSLATION_LANGUAGE_NAMES: Record<TranslationLanguage, string> = {
   pt: "Portuguese",
   ru: "Russian",
   el: "Greek",
+  sq: "Albanian",
 };
 
 /** Tables that have arrived. Empty until a course asks for one. */

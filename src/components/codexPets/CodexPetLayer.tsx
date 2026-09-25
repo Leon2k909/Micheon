@@ -350,6 +350,14 @@ const GREEK_PET_TIPS = [
   "Greek tip: names take the article too — ο Γιάννης, η Μαρία.",
 ];
 
+const ALBANIAN_PET_TIPS = [
+  "Albanian tip: the article is an ending — shtëpi is a house, shtëpia is the house.",
+  "Albanian tip: ë is the most common letter in Albanian, and at the end of a word it is barely heard — but always written.",
+  "Albanian tip: adjectives come after the noun and most bring a small article of their own — një djalë i mirë, një vajzë e mirë.",
+  "Albanian tip: “Ç'kemi?” is the everyday hello-how-are-you, and “Mirë, po ti?” the answer.",
+  "Albanian tip: there is no infinitive — I want to go is “dua të shkoj”, literally I want that I go.",
+];
+
 /** The tips for whichever language is being learned. */
 const LANGUAGE_TIPS: Record<CourseLanguage, string[]> = {
   de: GERMAN_PET_TIPS,
@@ -361,6 +369,7 @@ const LANGUAGE_TIPS: Record<CourseLanguage, string[]> = {
   ru: RUSSIAN_PET_TIPS,
   pt: PORTUGUESE_PET_TIPS,
   el: GREEK_PET_TIPS,
+  sq: ALBANIAN_PET_TIPS,
 };
 
 type PetBounds = {

@@ -15,24 +15,26 @@ import { matchSpanishPhrase } from "@/lib/spanishTextMatch";
 import { matchItalianPhrase } from "@/lib/italianTextMatch";
 import { matchPortuguesePhrase } from "@/lib/portugueseTextMatch";
 import { matchGreekPhrase } from "@/lib/greekTextMatch";
+import { matchAlbanianPhrase } from "@/lib/albanianTextMatch";
 import { ui, uiFmt } from "@/lib/i18n";
 
 // One word per language per row, so the same ten questions work whichever
 // course is being learned. The French is the ordinary dictionary form with its
 // article, because that is how the course teaches a noun; Polish has no
-// article to carry, so it is the bare dictionary form.
+// article to carry, so it is the bare dictionary form. Albanian carries it as
+// an ending, so its noun is the form with the article on: shtëpia.
 const QUESTIONS = [
-  { part: "part1", de: "Haus", en: "House", fr: "la maison", pl: "dom", pt: "a casa", el: "το σπίτι", level: "A1" },
-  { part: "part2", de: "Bahnhof", en: "Station", fr: "la gare", pl: "dworzec", pt: "a estação", el: "ο σταθμός", level: "A1" },
-  { part: "part3", de: "Arbeit", en: "Work", fr: "le travail", pl: "praca", pt: "o trabalho", el: "η δουλειά", level: "A1-A2" },
-  { part: "part4", de: "Wochenende", en: "Weekend", fr: "le week-end", pl: "weekend", pt: "o fim de semana", el: "το Σαββατοκύριακο", level: "A2" },
-  { part: "part6", de: "Straße", en: "Street", fr: "la rue", pl: "ulica", pt: "a rua", el: "ο δρόμος", level: "A1-A2" },
-  { part: "part7", de: "Familie", en: "Family", fr: "la famille", pl: "rodzina", pt: "a família", el: "η οικογένεια", level: "A1-A2" },
-  { part: "part9", de: "Küche", en: "Kitchen", fr: "la cuisine", pl: "kuchnia", pt: "a cozinha", el: "η κουζίνα", level: "A2" },
-  { part: "part10", de: "Plan", en: "Plan", fr: "le plan", pl: "plan", pt: "o plano", el: "το σχέδιο", level: "A2-B1" },
-  { part: "part11", de: "interessant", en: "Interesting", fr: "intéressant", pl: "ciekawy", pt: "interessante", el: "ενδιαφέρων", level: "B1" },
+  { part: "part1", de: "Haus", en: "House", fr: "la maison", pl: "dom", pt: "a casa", el: "το σπίτι", sq: "shtëpia", level: "A1" },
+  { part: "part2", de: "Bahnhof", en: "Station", fr: "la gare", pl: "dworzec", pt: "a estação", el: "ο σταθμός", sq: "stacioni", level: "A1" },
+  { part: "part3", de: "Arbeit", en: "Work", fr: "le travail", pl: "praca", pt: "o trabalho", el: "η δουλειά", sq: "puna", level: "A1-A2" },
+  { part: "part4", de: "Wochenende", en: "Weekend", fr: "le week-end", pl: "weekend", pt: "o fim de semana", el: "το Σαββατοκύριακο", sq: "fundjava", level: "A2" },
+  { part: "part6", de: "Straße", en: "Street", fr: "la rue", pl: "ulica", pt: "a rua", el: "ο δρόμος", sq: "rruga", level: "A1-A2" },
+  { part: "part7", de: "Familie", en: "Family", fr: "la famille", pl: "rodzina", pt: "a família", el: "η οικογένεια", sq: "familja", level: "A1-A2" },
+  { part: "part9", de: "Küche", en: "Kitchen", fr: "la cuisine", pl: "kuchnia", pt: "a cozinha", el: "η κουζίνα", sq: "kuzhina", level: "A2" },
+  { part: "part10", de: "Plan", en: "Plan", fr: "le plan", pl: "plan", pt: "o plano", el: "το σχέδιο", sq: "plani", level: "A2-B1" },
+  { part: "part11", de: "interessant", en: "Interesting", fr: "intéressant", pl: "ciekawy", pt: "interessante", el: "ενδιαφέρων", sq: "interesant", level: "B1" },
   // Both dictionary forms are in daily use, so both are accepted.
-  { part: "part12", de: "vergessen", en: "to forget", fr: "oublier", pl: "zapominać", pt: "esquecer", el: "ξεχνάω / ξεχνώ", level: "B1" },
+  { part: "part12", de: "vergessen", en: "to forget", fr: "oublier", pl: "zapominać", pt: "esquecer", el: "ξεχνάω / ξεχνώ", sq: "harroj", level: "B1" },
 ];
 
 export function PlacementTest({ onComplete }: { onComplete: (partKey: string) => void }) {
@@ -51,11 +53,12 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
   const learnIt = sides.target.code === "it";
   const learnPt = sides.target.code === "pt";
   const learnEl = sides.target.code === "el";
+  const learnSq = sides.target.code === "sq";
   const reverse = learningEnglish();
-  const prompt = learnFr || learnPl || learnPt || learnEl
+  const prompt = learnFr || learnPl || learnPt || learnEl || learnSq
     ? meaningTextFor(current.de, current.en, sides.meaning.code)
     : reverse ? current.de : current.en;
-  const target = learnFr ? current.fr : learnPl ? current.pl : learnPt ? current.pt : learnEl ? current.el : reverse ? current.en : current.de;
+  const target = learnFr ? current.fr : learnPl ? current.pl : learnPt ? current.pt : learnEl ? current.el : learnSq ? current.sq : reverse ? current.en : current.de;
   // A missing accent is a spelling slip in French, and a missing ą or ł is one
   // in Polish — see frenchTextMatch.ts and polishTextMatch.ts. normalize()
   // would mark "la gare" typed as "gare" wrong too, which is why both
@@ -72,6 +75,8 @@ export function PlacementTest({ onComplete }: { onComplete: (partKey: string) =>
       ? matchPortuguesePhrase(typed, target).ok
       : learnEl
       ? matchGreekPhrase(typed, target).ok
+      : learnSq
+      ? matchAlbanianPhrase(typed, target).ok
       : normalize(typed) === normalize(target);
 
   const recordAnswer = (isCorrect: boolean) => {

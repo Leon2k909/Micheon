@@ -634,8 +634,8 @@ check(
     // and dropped into both sentences rather than spelled out inside each. Matched
     // on the languages rather than on one line of source, so adding a seventh is a
     // failure here and not a silent "Englisch" for a course that is not English.
-    && /const askedLanguageDe = learnsFrench \? "Französisch"[\s\S]{0,120}?learnsPolish \? "Polnisch"[\s\S]{0,120}?learnsSpanish \? "Spanisch"[\s\S]{0,60}?learnsItalian \? "Italienisch"[\s\S]{0,60}?learnsPortuguese \? "Portugiesisch"[\s\S]{0,60}?learnsGreek \? "Griechisch"[\s\S]{0,60}?: "Englisch";/.test(labSource)
-    && /const askedLanguageEn = learnsFrench \? "French"[\s\S]{0,120}?learnsPolish \? "Polish"[\s\S]{0,120}?learnsSpanish \? "Spanish"[\s\S]{0,60}?learnsItalian \? "Italian"[\s\S]{0,60}?learnsPortuguese \? "Portuguese"[\s\S]{0,60}?learnsGreek \? "Greek"[\s\S]{0,60}?: "German";/.test(labSource)
+    && /const askedLanguageDe = learnsFrench \? "Französisch"[\s\S]{0,120}?learnsPolish \? "Polnisch"[\s\S]{0,120}?learnsSpanish \? "Spanisch"[\s\S]{0,60}?learnsItalian \? "Italienisch"[\s\S]{0,60}?learnsPortuguese \? "Portugiesisch"[\s\S]{0,60}?learnsGreek \? "Griechisch"[\s\S]{0,60}?learnsAlbanian \? "Albanisch"[\s\S]{0,60}?: "Englisch";/.test(labSource)
+    && /const askedLanguageEn = learnsFrench \? "French"[\s\S]{0,120}?learnsPolish \? "Polish"[\s\S]{0,120}?learnsSpanish \? "Spanish"[\s\S]{0,60}?learnsItalian \? "Italian"[\s\S]{0,60}?learnsPortuguese \? "Portuguese"[\s\S]{0,60}?learnsGreek \? "Greek"[\s\S]{0,60}?learnsAlbanian \? "Albanian"[\s\S]{0,60}?: "German";/.test(labSource)
     && labSource.includes('Do you remember how to say “${meaning}” in ${askedLanguageEn}?')
     && labSource.includes('Erinnerst du dich, wie man „${meaning}“ auf ${askedLanguageDe} sagt?')
     && petProviderSource.includes("setItemStatus(")

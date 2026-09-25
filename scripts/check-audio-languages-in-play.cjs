@@ -109,6 +109,13 @@ check("a Greek course lists Greek", () => {
     "a German course still offers a Greek control");
 });
 
+check("an Albanian course lists Albanian", () => {
+  assert.ok(audioLanguagesInPlay("learn-sq").includes("albanian"),
+    "the language being taught has no volume control");
+  assert.ok(!audioLanguagesInPlay("learn-de").includes("albanian"),
+    "a German course still offers an Albanian control");
+});
+
 check("a course never lists a voice it cannot speak", () => {
   assert.ok(!audioLanguagesInPlay("learn-de").includes("polish"),
     "a German course still offers a Polish control");

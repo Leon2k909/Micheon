@@ -18,10 +18,10 @@ import { translate, type TranslationLanguage } from "@/lib/translations";
  * So the question is asked in one place. A fourth course is one more case
  * here rather than a hunt through six screens.
  */
-export type CourseLanguage = "de" | "en" | "fr" | "pl" | "es" | "it" | "pt" | "ru" | "el";
+export type CourseLanguage = "de" | "en" | "fr" | "pl" | "es" | "it" | "pt" | "ru" | "el" | "sq";
 
 /** Every BCP-47 tag the app asks a voice for. */
-export type VoiceTag = "de-DE" | "en-GB" | "en-US" | "fr-FR" | "pl-PL" | "es-ES" | "it-IT" | "pt-PT" | "ru-RU" | "el-GR";
+export type VoiceTag = "de-DE" | "en-GB" | "en-US" | "fr-FR" | "pl-PL" | "es-ES" | "it-IT" | "pt-PT" | "ru-RU" | "el-GR" | "sq-AL";
 
 type CourseSide = {
   code: CourseLanguage;
@@ -45,6 +45,7 @@ export const LANGUAGE_LABEL: Record<CourseLanguage, string> = {
   pt: "Portuguese",
   ru: "Russian",
   el: "Greek",
+  sq: "Albanian",
 };
 
 /** The name the audio mixer knows each language by. */
@@ -58,6 +59,7 @@ export const AUDIO_LANGUAGE: Record<CourseLanguage, TtsAudioLanguage> = {
   pt: "portuguese",
   ru: "russian",
   el: "greek",
+  sq: "albanian",
 };
 
 export function courseSide(code: CourseLanguage): CourseSide {
@@ -73,6 +75,7 @@ export function courseSide(code: CourseLanguage): CourseSide {
       : code === "pt" ? "pt-PT"
       : code === "ru" ? "ru-RU"
       : code === "el" ? "el-GR"
+      : code === "sq" ? "sq-AL"
       : englishVoice,
     htmlLang: code,
   };
@@ -88,6 +91,7 @@ export function targetLanguage(direction: LearningDirection = getLearningDirecti
   if (direction === "learn-pt") return "pt";
   if (direction === "learn-ru") return "ru";
   if (direction === "learn-el") return "el";
+  if (direction === "learn-sq") return "sq";
   return "de";
 }
 
@@ -133,11 +137,11 @@ export function meaningLanguageFor(
  */
 export function translationLanguagesNeeded(
   direction: LearningDirection = getLearningDirection()
-): Array<"fr" | "pl" | "es" | "it" | "pt" | "ru" | "el"> {
+): Array<"fr" | "pl" | "es" | "it" | "pt" | "ru" | "el" | "sq"> {
   const target = targetLanguage(direction);
-  const wanted = new Set<"fr" | "pl" | "es" | "it" | "pt" | "ru" | "el">();
+  const wanted = new Set<"fr" | "pl" | "es" | "it" | "pt" | "ru" | "el" | "sq">();
   for (const code of [target, meaningLanguageFor(target)]) {
-    if (code === "fr" || code === "pl" || code === "es" || code === "it" || code === "pt" || code === "ru" || code === "el") wanted.add(code);
+    if (code === "fr" || code === "pl" || code === "es" || code === "it" || code === "pt" || code === "ru" || code === "el" || code === "sq") wanted.add(code);
   }
   return [...wanted];
 }

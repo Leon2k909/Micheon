@@ -45,7 +45,6 @@ export const PLANNED_LANGUAGES: LanguageEntry[] = [
   { id: "serbian", name: "Serbian", icon: "🇷🇸", search: "sr srpski српски serbia" },
   { id: "bosnian", name: "Bosnian", icon: "🇧🇦", search: "bs bosanski bosnia" },
   { id: "slovenian", name: "Slovenian", icon: "🇸🇮", search: "sl slovenscina slovenščina slovenia" },
-  { id: "albanian", name: "Albanian", icon: "🇦🇱", search: "sq shqip albania kosovo" },
   { id: "macedonian", name: "Macedonian", icon: "🇲🇰", search: "mk makedonski македонски macedonia" },
   { id: "lithuanian", name: "Lithuanian", icon: "🇱🇹", search: "lt lietuviu lietuvių lithuania" },
   { id: "latvian", name: "Latvian", icon: "🇱🇻", search: "lv latviesu latviešu latvia" },

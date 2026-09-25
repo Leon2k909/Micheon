@@ -19,6 +19,7 @@ import { frenchFor } from "@/lib/frenchCourse";
 import { polishFor } from "@/lib/polishCourse";
 import { portugueseFor } from "@/lib/portugueseCourse";
 import { greekFor } from "@/lib/greekCourse";
+import { albanianFor } from "@/lib/albanianCourse";
 import { spanishFor } from "@/lib/spanishCourse";
 import { italianFor } from "@/lib/italianCourse";
 import { tts } from "@/lib/voice";
@@ -129,6 +130,7 @@ function buildGameEntries(
   const learnsItalian = sides.target.code === "it";
   const learnsPortuguese = sides.target.code === "pt";
   const learnsGreek = sides.target.code === "el";
+  const learnsAlbanian = sides.target.code === "sq";
   const entries: GameContentEntry[] = [];
 
   for (const item of source) {
@@ -155,8 +157,10 @@ function buildGameEntries(
     if (learnsPortuguese && !portuguese) continue;
     const greek = learnsGreek ? greekFor(de) : null;
     if (learnsGreek && !greek) continue;
+    const albanian = learnsAlbanian ? albanianFor(de) : null;
+    if (learnsAlbanian && !albanian) continue;
 
-    const target = french ?? polish ?? spanish ?? italian ?? portuguese ?? greek ?? (sides.target.code === "en" ? en : de);
+    const target = french ?? polish ?? spanish ?? italian ?? portuguese ?? greek ?? albanian ?? (sides.target.code === "en" ? en : de);
     const letters = gameLetters(target);
     if (letters.length === 0) continue;
 
@@ -207,6 +211,7 @@ export function buildGameWords(
   const learnsItalian = sides.target.code === "it";
   const learnsPortuguese = sides.target.code === "pt";
   const learnsGreek = sides.target.code === "el";
+  const learnsAlbanian = sides.target.code === "sq";
   const seen = new Set<string>();
   const words: GameWordEntry[] = [];
 
@@ -234,6 +239,8 @@ export function buildGameWords(
     if (learnsPortuguese && !portuguese) continue;
     const greek = learnsGreek ? greekFor(de) : null;
     if (learnsGreek && !greek) continue;
+    const albanian = learnsAlbanian ? albanianFor(de) : null;
+    if (learnsAlbanian && !albanian) continue;
 
     const article = LEADING_ARTICLE.exec(de);
     const bareDe = article ? de.slice(article[0].length).trim() : de;
@@ -246,7 +253,7 @@ export function buildGameWords(
     const greekArticle = greek ? LEADING_GREEK_ARTICLE.exec(greek) : null;
     const bareEl = greek && greekArticle ? greek.slice(greekArticle[0].length).trim() : greek;
 
-    const target = learnsFrench ? (bareFr ?? "") : learnsPolish ? (polish ?? "") : learnsGreek ? (bareEl ?? "") : learnsEnglish ? bareEn : bareDe;
+    const target = learnsFrench ? (bareFr ?? "") : learnsPolish ? (polish ?? "") : learnsGreek ? (bareEl ?? "") : learnsAlbanian ? (albanian ?? "") : learnsEnglish ? bareEn : bareDe;
     const clue = meaningTextFor(de, en, sides.meaning.code);
 
     // One token only. "sich freuen" spelled SICHFREUEN reads as a typo rather
@@ -266,6 +273,10 @@ export function buildGameWords(
         ? frenchArticle?.[1].toLowerCase()
         : learnsGreek
         ? greekArticle?.[1].toLowerCase()
+        // An Albanian noun wears its article as an ending — shtëpia is the
+        // house — so it is spelled on the board, never shown beside it.
+        : learnsAlbanian
+        ? undefined
         : !learnsEnglish && article ? article[1].toLowerCase() : undefined,
       clue,
       clueLanguage: sides.meaning.code,

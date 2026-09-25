@@ -22,6 +22,7 @@ import { frenchFor } from "@/lib/frenchCourse";
 import { polishFor } from "@/lib/polishCourse";
 import { portugueseFor } from "@/lib/portugueseCourse";
 import { greekFor } from "@/lib/greekCourse";
+import { albanianFor } from "@/lib/albanianCourse";
 import { spanishFor } from "@/lib/spanishCourse";
 import { italianFor } from "@/lib/italianCourse";
 import { buildCatalogSearchText, catalogItemMatchesQuery, normalizeCatalogSearchText } from "@/lib/catalogSearch";
@@ -222,7 +223,8 @@ const TrackerRow = React.memo(
     const italian = sides.target.code === "it" ? italianFor(item.de) : null;
     const portuguese = sides.target.code === "pt" ? portugueseFor(item.de) : null;
     const greek = sides.target.code === "el" ? greekFor(item.de) : null;
-    const primaryText = french ?? polish ?? spanish ?? italian ?? portuguese ?? greek ?? (sides.target.code === "en" ? item.en : item.de);
+    const albanian = sides.target.code === "sq" ? albanianFor(item.de) : null;
+    const primaryText = french ?? polish ?? spanish ?? italian ?? portuguese ?? greek ?? albanian ?? (sides.target.code === "en" ? item.en : item.de);
     const meaningText = meaningTextFor(item.de, item.en, sides.meaning.code);
     const listens = Number(record?.listens) || 0;
     return (
@@ -661,6 +663,7 @@ export function VocabTracker({
           : sides.target.code === "it" ? { ...item, it: italianFor(item.de) ?? undefined }
           : sides.target.code === "pt" ? { ...item, pt: portugueseFor(item.de) ?? undefined }
           : sides.target.code === "el" ? { ...item, el: greekFor(item.de) ?? undefined }
+          : sides.target.code === "sq" ? { ...item, sq: albanianFor(item.de) ?? undefined }
           : item
       );
       searchIndex.set(item, text);

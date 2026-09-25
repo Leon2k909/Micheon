@@ -9,7 +9,7 @@ export const AUDIO_SETTINGS_EVENT = AUDIO_MUTE_EVENT;
 // Every language the app can speak has its own mute, volume and speed. French
 // arrived with the French course and Polish with the Polish one; a voice with
 // no controls of its own would have been the one voice you could not turn down.
-export type TtsAudioLanguage = "english" | "german" | "french" | "polish" | "spanish" | "italian" | "portuguese" | "russian" | "greek";
+export type TtsAudioLanguage = "english" | "german" | "french" | "polish" | "spanish" | "italian" | "portuguese" | "russian" | "greek" | "albanian";
 
 export interface AudioSettings {
   muted: boolean;
@@ -24,6 +24,7 @@ export interface AudioSettings {
   portugueseVolume: number;
   russianVolume: number;
   greekVolume: number;
+  albanianVolume: number;
   sfxMuted: boolean;
   englishMuted: boolean;
   germanMuted: boolean;
@@ -34,6 +35,7 @@ export interface AudioSettings {
   portugueseMuted: boolean;
   russianMuted: boolean;
   greekMuted: boolean;
+  albanianMuted: boolean;
   /** Legacy shared value retained so older profiles migrate without a reset. */
   speechRate: number;
   englishSpeechRate: number;
@@ -45,6 +47,7 @@ export interface AudioSettings {
   portugueseSpeechRate: number;
   russianSpeechRate: number;
   greekSpeechRate: number;
+  albanianSpeechRate: number;
 }
 
 type StoredAudioSettings = Omit<AudioSettings, "muted">;
@@ -61,6 +64,7 @@ const DEFAULT_SETTINGS: StoredAudioSettings = {
   portugueseVolume: 1,
   russianVolume: 1,
   greekVolume: 1,
+  albanianVolume: 1,
   sfxMuted: false,
   englishMuted: false,
   germanMuted: false,
@@ -71,6 +75,7 @@ const DEFAULT_SETTINGS: StoredAudioSettings = {
   portugueseMuted: false,
   russianMuted: false,
   greekMuted: false,
+  albanianMuted: false,
   speechRate: 1,
   englishSpeechRate: 1,
   germanSpeechRate: 1,
@@ -81,6 +86,7 @@ const DEFAULT_SETTINGS: StoredAudioSettings = {
   portugueseSpeechRate: 1,
   russianSpeechRate: 1,
   greekSpeechRate: 1,
+  albanianSpeechRate: 1,
 };
 
 /** Selectable speech-speed multipliers, applied on top of each clip's own pace. */
@@ -123,6 +129,7 @@ function readStoredSettings(): StoredAudioSettings {
       portugueseVolume: clampVolume(parsed.portugueseVolume, DEFAULT_SETTINGS.portugueseVolume),
       russianVolume: clampVolume(parsed.russianVolume, DEFAULT_SETTINGS.russianVolume),
       greekVolume: clampVolume(parsed.greekVolume, DEFAULT_SETTINGS.greekVolume),
+      albanianVolume: clampVolume(parsed.albanianVolume, DEFAULT_SETTINGS.albanianVolume),
       sfxMuted: parsed.sfxMuted === true,
       englishMuted: parsed.englishMuted === true,
       germanMuted: parsed.germanMuted === true,
@@ -133,6 +140,7 @@ function readStoredSettings(): StoredAudioSettings {
       portugueseMuted: parsed.portugueseMuted === true,
       russianMuted: parsed.russianMuted === true,
       greekMuted: parsed.greekMuted === true,
+      albanianMuted: parsed.albanianMuted === true,
       speechRate: legacySpeechRate,
       englishSpeechRate: clampSpeechRate(parsed.englishSpeechRate, legacySpeechRate),
       germanSpeechRate: clampSpeechRate(parsed.germanSpeechRate, legacySpeechRate),
@@ -143,6 +151,7 @@ function readStoredSettings(): StoredAudioSettings {
       portugueseSpeechRate: clampSpeechRate(parsed.portugueseSpeechRate, legacySpeechRate),
       russianSpeechRate: clampSpeechRate(parsed.russianSpeechRate, legacySpeechRate),
       greekSpeechRate: clampSpeechRate(parsed.greekSpeechRate, legacySpeechRate),
+      albanianSpeechRate: clampSpeechRate(parsed.albanianSpeechRate, legacySpeechRate),
     };
   } catch {
     return { ...DEFAULT_SETTINGS };
@@ -263,6 +272,7 @@ export function getMasterTtsSpeechRate(settings: AudioSettings = getAudioSetting
     settings.italianSpeechRate,
     settings.portugueseSpeechRate,
     settings.greekSpeechRate,
+    settings.albanianSpeechRate,
   ];
   return rates.every((rate) => Math.abs(rate - rates[0]) < 0.01) ? rates[0] : null;
 }
@@ -271,7 +281,7 @@ export function getMasterTtsSpeechRate(settings: AudioSettings = getAudioSetting
  * rate when there is one and the legacy master value while the voices differ. */
 export function getTtsSpeechRate(lang?: string | TtsAudioLanguage): number {
   const settings = getAudioSettings();
-  const language = lang === "english" || lang === "german" || lang === "french" || lang === "polish" || lang === "spanish" || lang === "italian" || lang === "portuguese" || lang === "greek"
+  const language = lang === "english" || lang === "german" || lang === "french" || lang === "polish" || lang === "spanish" || lang === "italian" || lang === "portuguese" || lang === "greek" || lang === "albanian"
     ? lang
     : audioLanguageFromTag(lang ?? "");
   if (language === "english") return settings.englishSpeechRate;
@@ -282,6 +292,7 @@ export function getTtsSpeechRate(lang?: string | TtsAudioLanguage): number {
   if (language === "italian") return settings.italianSpeechRate;
   if (language === "portuguese") return settings.portugueseSpeechRate;
   if (language === "greek") return settings.greekSpeechRate;
+  if (language === "albanian") return settings.albanianSpeechRate;
   return getMasterTtsSpeechRate(settings) ?? settings.speechRate;
 }
 
@@ -301,6 +312,7 @@ export function setTtsSpeechRate(rate: number) {
     italianSpeechRate: nextRate,
     portugueseSpeechRate: nextRate,
     greekSpeechRate: nextRate,
+    albanianSpeechRate: nextRate,
   });
   emitAudioSettingsChanged();
 }
@@ -316,6 +328,7 @@ const VOLUME_FIELD = {
   portuguese: "portugueseVolume",
   russian: "russianVolume",
   greek: "greekVolume",
+  albanian: "albanianVolume",
 } as const;
 const MUTED_FIELD = {
   english: "englishMuted",
@@ -327,6 +340,7 @@ const MUTED_FIELD = {
   portuguese: "portugueseMuted",
   russian: "russianMuted",
   greek: "greekMuted",
+  albanian: "albanianMuted",
 } as const;
 const RATE_FIELD = {
   english: "englishSpeechRate",
@@ -338,6 +352,7 @@ const RATE_FIELD = {
   portuguese: "portugueseSpeechRate",
   russian: "russianSpeechRate",
   greek: "greekSpeechRate",
+  albanian: "albanianSpeechRate",
 } as const;
 
 export function setTtsLanguageSpeechRate(language: TtsAudioLanguage, rate: number) {
@@ -354,6 +369,7 @@ export function setTtsLanguageSpeechRate(language: TtsAudioLanguage, rate: numbe
     && Math.abs(next.englishSpeechRate - next.italianSpeechRate) < 0.01
     && Math.abs(next.englishSpeechRate - next.portugueseSpeechRate) < 0.01
     && Math.abs(next.englishSpeechRate - next.greekSpeechRate) < 0.01
+    && Math.abs(next.englishSpeechRate - next.albanianSpeechRate) < 0.01
   ) {
     next.speechRate = nextRate;
   }
@@ -372,6 +388,7 @@ export function audioLanguageFromTag(lang: string): TtsAudioLanguage | null {
   if (base === "pt") return "portuguese";
   if (base === "ru") return "russian";
   if (base === "el") return "greek";
+  if (base === "sq") return "albanian";
   return null;
 }
 

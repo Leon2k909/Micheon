@@ -8,6 +8,7 @@ import { polishParts } from "./polishCourse";
 import { portugueseParts } from "./portugueseCourse";
 import { russianParts } from "./russianCourse";
 import { greekParts } from "./greekCourse";
+import { albanianParts } from "./albanianCourse";
 import { spanishParts } from "./spanishCourse";
 import { italianParts } from "./italianCourse";
 /**
@@ -690,6 +691,7 @@ export function filterPartsForLearningDirection<T extends Part>(
   if (direction === "learn-pt") return portugueseParts(forDirection);
   if (direction === "learn-ru") return russianParts(forDirection);
   if (direction === "learn-el") return greekParts(forDirection);
+  if (direction === "learn-sq") return albanianParts(forDirection);
   return forDirection;
 }
 

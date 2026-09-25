@@ -42,6 +42,8 @@ import { portugueseFor, portugueseMeaningLanguage } from "@/lib/portugueseCourse
 import { matchPortugueseMeaning } from "@/lib/portugueseTextMatch";
 import { greekFor, greekMeaningLanguage } from "@/lib/greekCourse";
 import { matchGreekMeaning } from "@/lib/greekTextMatch";
+import { albanianFor, albanianMeaningLanguage } from "@/lib/albanianCourse";
+import { matchAlbanianMeaning } from "@/lib/albanianTextMatch";
 import { PlacementLadder } from "@/components/tests/PlacementLadder";
 import { matchEnglishPhrase, matchParagraphAnswer } from "@/lib/germanTextMatch";
 import { ui, uiFmt, uiNumber } from "@/lib/i18n";
@@ -955,12 +957,14 @@ function buildTestBank(apiParts: Record<string, Part>, profile: UserProfile): Te
   const italianCourse = courseSides().target.code === "it";
   const portugueseCourse = courseSides().target.code === "pt";
   const greekCourse = courseSides().target.code === "el";
+  const albanianCourse = courseSides().target.code === "sq";
   const meaningIsGerman = (frenchCourse && frenchMeaningLanguage() === "de")
     || (polishCourse && polishMeaningLanguage() === "de")
     || (spanishCourse && spanishMeaningLanguage() === "de")
     || (italianCourse && italianMeaningLanguage() === "de")
     || (portugueseCourse && portugueseMeaningLanguage() === "de")
-    || (greekCourse && greekMeaningLanguage() === "de");
+    || (greekCourse && greekMeaningLanguage() === "de")
+    || (albanianCourse && albanianMeaningLanguage() === "de");
   const grades = loadGradeStore(profile);
   const catalog = buildCatalog(apiParts);
   const seen = new Set<string>();
@@ -1071,6 +1075,11 @@ function buildTestBank(apiParts: Record<string, Part>, profile: UserProfile): Te
     if (!greek) return [];
     return [{ ...item, de: greek, en: meaningIsGerman ? item.de : item.en }];
   });
+  if (albanianCourse) return bank.flatMap((item) => {
+    const albanian = albanianFor(item.de);
+    if (!albanian) return [];
+    return [{ ...item, de: albanian, en: meaningIsGerman ? item.de : item.en }];
+  });
 
   for (const paragraph of PARAGRAPH_TEST_ITEMS) {
     const status = statusForId(grades, paragraph.id);
@@ -1139,6 +1148,8 @@ function matchTestAnswer(input: string, target: string, language: AnswerLanguage
         ? matchPortugueseMeaning(input, alternative)
         : answerLanguage === "el"
         ? matchGreekMeaning(input, alternative)
+        : answerLanguage === "sq"
+        ? matchAlbanianMeaning(input, alternative)
         : answerLanguage === "de"
         ? matchLearningModeGermanAnswer(input, { de: alternative, long: item.long })
         : matchEnglishPhrase(input, alternative)

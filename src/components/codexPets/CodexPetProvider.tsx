@@ -54,12 +54,12 @@ const MAX_PET_HISTORY = 200;
 const PET_DUPLICATE_WINDOW_MS = 30 * 60 * 1000;
 
 type CodexPetSpeechMood = "greeting" | "success" | "encourage" | "celebrate";
-export type CodexPetVoiceLanguage = "de-DE" | "en-GB" | "en-US" | "fr-FR" | "pl-PL" | "es-ES" | "it-IT" | "pt-PT" | "ru-RU" | "el-GR";
+export type CodexPetVoiceLanguage = "de-DE" | "en-GB" | "en-US" | "fr-FR" | "pl-PL" | "es-ES" | "it-IT" | "pt-PT" | "ru-RU" | "el-GR" | "sq-AL";
 
 type CodexPetQuestion = {
   aliases?: string[];
   /** Which of the fields below the learner is being asked to produce. */
-  answerLanguage: "de" | "en" | "fr" | "pl" | "es" | "pt" | "el";
+  answerLanguage: "de" | "en" | "fr" | "pl" | "es" | "pt" | "el" | "sq";
   de: string;
   en: string;
   /** Set by the French course, where the answer is neither of the other two. */
@@ -72,6 +72,8 @@ type CodexPetQuestion = {
   pt?: string;
   /** Set by the Greek course, for the same reason. */
   el?: string;
+  /** Set by the Albanian course, for the same reason. */
+  sq?: string;
   itemId: string;
   /** Sequence of the scheduled memory question, persisted across app restarts. */
   recallSequence?: number;
@@ -313,7 +315,7 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
           // reads off the opposite side. French is never the question's own
           // language, so it falls to whichever the app is written in.
           ? question.answerLanguage === "en" ? "de-DE"
-            : question.answerLanguage === "fr" || question.answerLanguage === "pl" || question.answerLanguage === "es" || question.answerLanguage === "pt" || question.answerLanguage === "el" ? uiSpeechLang()
+            : question.answerLanguage === "fr" || question.answerLanguage === "pl" || question.answerLanguage === "es" || question.answerLanguage === "pt" || question.answerLanguage === "el" || question.answerLanguage === "sq" ? uiSpeechLang()
               : "en-US"
           : uiSpeechLang()),
     };
@@ -348,6 +350,8 @@ export function CodexPetProvider({ children }: { children: ReactNode }) {
               ? (question.pt ?? question.de)
             : question.answerLanguage === "el"
               ? (question.el ?? question.de)
+            : question.answerLanguage === "sq"
+              ? (question.sq ?? question.de)
             : question.en;
 
     const nextEntry: CodexPetSpeech = {

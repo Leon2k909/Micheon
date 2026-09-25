@@ -23,6 +23,7 @@ import { frenchFor, frenchMeaningLanguage } from "@/lib/frenchCourse";
 import { polishFor, polishMeaningLanguage } from "@/lib/polishCourse";
 import { portugueseFor, portugueseMeaningLanguage } from "@/lib/portugueseCourse";
 import { greekFor, greekMeaningLanguage } from "@/lib/greekCourse";
+import { albanianFor, albanianMeaningLanguage } from "@/lib/albanianCourse";
 import { spanishFor, spanishMeaningLanguage } from "@/lib/spanishCourse";
 import { italianFor, italianMeaningLanguage } from "@/lib/italianCourse";
 import {
@@ -326,6 +327,7 @@ export default function GuidedLearningSession() {
     const learnsItalian = direction === "learn-it";
     const learnsPortuguese = direction === "learn-pt";
     const learnsGreek = direction === "learn-el";
+    const learnsAlbanian = direction === "learn-sq";
     // The catalogue is German either way round, so a table-backed course has to
     // ask for its own text rather than for whichever column happens to be there.
     const meaningIsGerman = learnsEnglish
@@ -334,7 +336,8 @@ export default function GuidedLearningSession() {
       || (learnsSpanish && spanishMeaningLanguage() === "de")
       || (learnsItalian && italianMeaningLanguage() === "de")
       || (learnsPortuguese && portugueseMeaningLanguage() === "de")
-      || (learnsGreek && greekMeaningLanguage() === "de");
+      || (learnsGreek && greekMeaningLanguage() === "de")
+      || (learnsAlbanian && albanianMeaningLanguage() === "de");
 
     const scheduleQuestion = (delayMs: number) => {
       if (!active) return;
@@ -394,8 +397,9 @@ export default function GuidedLearningSession() {
       const italian = learnsItalian ? italianFor(item.de) : null;
       const portuguese = learnsPortuguese ? portugueseFor(item.de) : null;
       const greek = learnsGreek ? greekFor(item.de) : null;
+      const albanian = learnsAlbanian ? albanianFor(item.de) : null;
       // A word the tables do not reach cannot be asked about in this course.
-      if ((learnsFrench && !french) || (learnsPolish && !polish) || (learnsSpanish && !spanish) || (learnsItalian && !italian) || (learnsPortuguese && !portuguese) || (learnsGreek && !greek)) {
+      if ((learnsFrench && !french) || (learnsPolish && !polish) || (learnsSpanish && !spanish) || (learnsItalian && !italian) || (learnsPortuguese && !portuguese) || (learnsGreek && !greek) || (learnsAlbanian && !albanian)) {
         scheduleQuestion(cadence.intervalMs);
         return;
       }
@@ -406,6 +410,7 @@ export default function GuidedLearningSession() {
         : learnsItalian ? italian!
         : learnsPortuguese ? portuguese!
         : learnsGreek ? greek!
+        : learnsAlbanian ? albanian!
         : learnsEnglish ? item.en
         : item.de;
       const askedLanguageDe = learnsFrench ? "Französisch"
@@ -414,6 +419,7 @@ export default function GuidedLearningSession() {
         : learnsItalian ? "Italienisch"
         : learnsPortuguese ? "Portugiesisch"
         : learnsGreek ? "Griechisch"
+        : learnsAlbanian ? "Albanisch"
         : "Englisch";
       const askedLanguageEn = learnsFrench ? "French"
         : learnsPolish ? "Polish"
@@ -421,6 +427,7 @@ export default function GuidedLearningSession() {
         : learnsItalian ? "Italian"
         : learnsPortuguese ? "Portuguese"
         : learnsGreek ? "Greek"
+        : learnsAlbanian ? "Albanian"
         : "German";
       const question = meaningIsGerman
         ? (reverse
@@ -436,6 +443,7 @@ export default function GuidedLearningSession() {
           : learnsSpanish ? "es"
           : learnsPortuguese ? "pt"
           : learnsGreek ? "el"
+          : learnsAlbanian ? "sq"
           : learnsEnglish ? "en"
           : "de");
       petSpeak(question, {
@@ -452,6 +460,7 @@ export default function GuidedLearningSession() {
           es: spanish ?? undefined,
           pt: portuguese ?? undefined,
           el: greek ?? undefined,
+          sq: albanian ?? undefined,
           itemId: item.id,
         },
       });
@@ -661,7 +670,7 @@ export default function GuidedLearningSession() {
           if (swapDirection === "learn-en") {
             return { de: String(step.item?.en ?? ""), en: String(step.item?.de ?? "") };
           }
-          if (swapDirection === "learn-fr" || swapDirection === "learn-pl" || swapDirection === "learn-es" || swapDirection === "learn-it" || swapDirection === "learn-pt" || swapDirection === "learn-ru" || swapDirection === "learn-el") {
+          if (swapDirection === "learn-fr" || swapDirection === "learn-pl" || swapDirection === "learn-es" || swapDirection === "learn-it" || swapDirection === "learn-pt" || swapDirection === "learn-ru" || swapDirection === "learn-el" || swapDirection === "learn-sq") {
             return { de: String(step.item?.originalDe ?? ""), en: String(step.item?.en ?? "") };
           }
           return { de: String(step.item?.de ?? ""), en: String(step.item?.en ?? "") };
