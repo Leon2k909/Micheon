@@ -57,7 +57,7 @@ const { ALBANIAN_BY_GERMAN, toSpokenGerman, toTextedGerman, matchAlbanianSentenc
 const entries = Object.entries(ALBANIAN_BY_GERMAN);
 assert.ok(entries.length > 20000, `only ${entries.length} Albanian entries — the table did not load, or it lost most of itself`);
 
-const OTHER_SCRIPT = /[Ͱ-Ͽἀ-῿Ѐ-ӿ]/;
+const OTHER_SCRIPT = /[\u0370-\u03FF\u1F00-\u1FFF\u0400-\u04FF]/;
 const ALBANIAN_WORD = /^[A-Za-zËëÇç]+$/;
 const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const inGerman = (token, german) =>
@@ -80,11 +80,12 @@ const DEFINITE = /(?:[aiu]|t|të)$/iu;
 // saint's day (Shën Nikolla), come before the word that carries the ending.
 const LEADING_PARTICLE = /^(?:i|e|të|së|shën)\s+/iu;
 const isDefinite = (head) => DEFINITE.test(head) || DEFINITE.test(head.split("-")[0]);
-// Two nouns Albanian says as a phrase rather than a noun of its own: a measure
+// Nouns Albanian says as a phrase rather than a noun of its own: a measure
 // named by what it weighs (das Pfund is gjysmë kile, half a kilo, as the
-// Portuguese is o meio quilo), and an image told in steps (der Katzensprung is
-// dy hapa rrugë).
-const PHRASED = new Set(["das Pfund", "der Katzensprung"]);
+// Portuguese is o meio quilo), an image told in steps (der Katzensprung is
+// dy hapa rrugë), and a fraction, which keeps its numerator because the bare
+// e treta is the third one (das Drittel is një e treta).
+const PHRASED = new Set(["das Pfund", "der Katzensprung", "das Drittel"]);
 
 const problems = [];
 const fail = (german, value, why) => problems.push(`${why} — ${german} → ${value}`);

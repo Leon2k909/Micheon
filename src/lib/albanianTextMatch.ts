@@ -25,7 +25,7 @@ type AlbanianMatch = {
 
 const APOSTROPHES = /[’ʼ'`´‘]/g;
 const PUNCTUATION = /[.!?,;:"()\[\]{}“”„«»…]/g;
-const THIN_SPACES = /[    ]/g;
+const THIN_SPACES = /[\u2009\u202F\u00A0\u2007]/g;
 
 function normalizeAlbanianInput(text: string): string {
   return String(text ?? "")
@@ -46,7 +46,7 @@ function lowerAlbanian(text: string): string {
 function lenientAlbanian(text: string): string {
   return lowerAlbanian(text)
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "");
+    .replace(/[\u0300-\u036F]/g, "");
 }
 
 function compare(input: string, target: string): AlbanianMatch | null {
