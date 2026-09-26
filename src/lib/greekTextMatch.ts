@@ -1,11 +1,19 @@
+import { resolveInterfaceLanguage, type ResolvedInterfaceLanguage } from "@/lib/interfaceLanguage";
+import { getGreekScript, matchGreekTranscription, resolveGreekScript } from "@/lib/greekScript";
+
 /**
  * Grading a typed GREEK answer.
  *
  * Greek is the second course in an alphabet of its own, and it inherits the
  * question Russian had to answer first: what does a learner type WITH? Every
  * other course asks for a handful of letters a foreign keyboard cannot reach.
- * Greek asks for all of them. So three things count as a slip rather than a
- * mistake, each passing with a spelling note instead of a red answer:
+ * Greek asks for all of them.
+ *
+ * On the Latin setting the answer is the transcription on screen, and typing
+ * it is a right answer with nothing to say about it — greekScript.ts owns
+ * that comparison, as russianScript.ts owns Russian's. Everywhere else three
+ * things count as a slip rather than a mistake, each passing with a spelling
+ * note instead of a red answer:
  *
  *   - A MISSING ACCENT. Monotonic Greek writes one tonos per word, and a
  *     learner who types καλημερα has the word; the note shows καλημέρα. The
@@ -161,7 +169,14 @@ function matchesGreeklish(input: string, target: string): boolean {
   return walk(0, 0);
 }
 
-function compare(input: string, target: string): GreekMatch | null {
+type GreekScriptSetting = Parameters<typeof matchGreekTranscription>[2];
+
+function compare(
+  input: string,
+  target: string,
+  script: GreekScriptSetting,
+  language: ResolvedInterfaceLanguage
+): GreekMatch | null {
   const strictInput = normalizeGreekInput(input);
   const strictTarget = normalizeGreekInput(target);
   if (!strictInput) return null;
@@ -176,21 +191,40 @@ function compare(input: string, target: string): GreekMatch | null {
     return { ok: true, spellingNote: true };
   }
 
-  if (HAS_LATIN.test(strictInput) && !HAS_GREEK.test(strictInput) && matchesGreeklish(input, target)) {
-    return { ok: true, spellingNote: true };
+  if (HAS_LATIN.test(strictInput) && !HAS_GREEK.test(strictInput)) {
+    // The transcription first: it is what the Latin setting puts on screen,
+    // so it is the one Latin spelling that can pass without a note.
+    const transcribed = matchGreekTranscription(input, target, script, language);
+    if (transcribed) return transcribed;
+    if (matchesGreeklish(input, target)) return { ok: true, spellingNote: true };
   }
   return null;
 }
 
-export function matchGreekPhrase(input: string, target: string): GreekMatch {
+/**
+ * Grade against an explicit script and interface language — the pure form,
+ * for the build gates, which must not depend on what a machine's own settings
+ * happen to be.
+ */
+export function matchGreekAnswer(
+  input: string,
+  target: string,
+  script: GreekScriptSetting,
+  language: ResolvedInterfaceLanguage
+): GreekMatch {
   const raw = String(target ?? "");
   if (raw.includes(" / ")) {
     for (const segment of raw.split(" / ").map((part) => part.trim()).filter(Boolean)) {
-      const result = matchGreekPhrase(input, segment);
+      const result = matchGreekAnswer(input, segment, script, language);
       if (result.ok) return result;
     }
   }
-  return compare(input, target) ?? { ok: false, spellingNote: false };
+  return compare(input, target, script, language) ?? { ok: false, spellingNote: false };
+}
+
+/** The lesson's entry: the script on screen and the language the app is read in. */
+export function matchGreekPhrase(input: string, target: string): GreekMatch {
+  return matchGreekAnswer(input, target, resolveGreekScript(getGreekScript()), resolveInterfaceLanguage());
 }
 
 /** Sentences and phrases go through the same comparison — one entry, two names. */

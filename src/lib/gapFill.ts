@@ -100,3 +100,26 @@ export function gapEntryIsComplete(entries: string[], index: number, words: stri
   if (!remaining.includes(typed)) return false;
   return !remaining.some((word) => word !== typed && word.startsWith(typed));
 }
+
+/**
+ * The same two questions for blanks read in LATIN LETTERS — a Russian or
+ * Greek card on the Latin setting, where the missing words are the
+ * transcriptions on screen.
+ *
+ * A hyphen or apostrophe inside a transcription is a reading aid rather than
+ * the break between two words: German writes the Greek σχ as s-ch, so that
+ * it is not read as the one sound sch. The rules above take a hyphen for a
+ * space, which would ask for two words where the learner sees one, so these
+ * marks are taken out of both sides first. Accents need nothing: the
+ * comparison above already ignores them.
+ */
+const READING_AIDS = /[-‐‑'’ʼ]/g;
+const withoutReadingAids = (text: string) => String(text ?? "").replace(READING_AIDS, "");
+
+export function matchesGapTranscription(input: string, words: string[]): boolean {
+  return matchesGapInput(withoutReadingAids(input), words.map(withoutReadingAids));
+}
+
+export function gapTranscriptionIsComplete(entries: string[], index: number, words: string[]): boolean {
+  return gapEntryIsComplete(entries.map(withoutReadingAids), index, words.map(withoutReadingAids));
+}

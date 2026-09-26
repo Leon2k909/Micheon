@@ -8,12 +8,13 @@ import type { Dialogue, Part, Phrase, VocabItem } from "@/lib/types";
  * the same shape as the Portuguese and Italian courses, over greekTranslations.ts.
  *
  * WHAT IS DIFFERENT ABOUT THIS ONE. Like Russian, it is written in another
- * alphabet, and unlike Russian it has no second way of drawing it: the card is
- * Greek and is shown in Greek, because that is what a learner of Greek has to
- * read on every sign in Athens. Typing is the part the alphabet makes hard, and
- * that is answered where answers are graded — greekTextMatch.ts accepts the
- * word typed in Latin letters as a slip, and the lesson offers the whole Greek
- * row as a keyboard.
+ * alphabet, and like Russian it can be drawn two ways: the card is stored in
+ * Greek, and shown in Greek, in Latin letters or in both, as the learner
+ * chooses — greekScript.ts computes the Latin, so nothing here changes. On the
+ * Greek setting typing is the part the alphabet makes hard, and that is
+ * answered where answers are graded — greekTextMatch.ts accepts the word typed
+ * in Latin letters as a slip, and the lesson offers the whole Greek row as a
+ * keyboard.
  *
  * A card the table cannot answer is left out rather than shown in German, so
  * the course is exactly as long as the table is complete.

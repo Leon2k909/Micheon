@@ -40,7 +40,7 @@ const built = esbuild.buildSync({
     contents: [
       'export { GREEK_BY_GERMAN } from "./src/lib/greekTranslations.ts";',
       'export { toSpokenGerman, toTextedGerman } from "./src/lib/spokenGerman.ts";',
-      'export { matchGreekSentence } from "./src/lib/greekTextMatch.ts";',
+      'export { matchGreekAnswer } from "./src/lib/greekTextMatch.ts";',
     ].join("\n"),
     resolveDir: root,
     sourcefile: "greek-table-entry.ts",
@@ -53,7 +53,7 @@ const compiled = new Module("greek-table", module);
 compiled.filename = path.join(root, ".greek-table.cjs");
 compiled.paths = Module._nodeModulePaths(root);
 compiled._compile(built.outputFiles[0].text, compiled.filename);
-const { GREEK_BY_GERMAN, toSpokenGerman, toTextedGerman, matchGreekSentence } = compiled.exports;
+const { GREEK_BY_GERMAN, toSpokenGerman, toTextedGerman, matchGreekAnswer } = compiled.exports;
 
 const entries = Object.entries(GREEK_BY_GERMAN);
 assert.ok(entries.length > 20000, `only ${entries.length} Greek entries — the table did not load, or it lost most of itself`);
@@ -106,6 +106,12 @@ for (const [german, raw] of entries) {
  * rather than mistakes — a missing accent, a word-final σ, and the word in
  * Latin letters — and must still refuse a different word. Each of these was
  * run against the matcher before it was trusted.
+ *
+ * Graded on the GREEK setting, by name. That is the setting these slips are
+ * about: on the Latin one the transcription on screen is a clean answer with
+ * no note, and check-greek-script.cjs holds that side. Named rather than read
+ * from the machine, because "auto" resolves from the system language, and a
+ * gate that passes or fails by where it runs is not a gate.
  */
 const typed = [
   ["Καλημέρα", "Καλημέρα!", true, false],
@@ -120,7 +126,7 @@ const typed = [
   ["Μένω στην αθήνα.", "Μένω στην Αθήνα.", false, false],
 ];
 for (const [input, target, ok, note] of typed) {
-  const result = matchGreekSentence(input, target);
+  const result = matchGreekAnswer(input, target, "greek", "en");
   if (result.ok !== ok || (ok && Boolean(result.spellingNote) !== note)) {
     problems.push(`typing ${input} against ${target} graded ok=${result.ok} note=${result.spellingNote}, expected ok=${ok} note=${note}`);
   }

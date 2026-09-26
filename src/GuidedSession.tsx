@@ -23,7 +23,7 @@ import {
 } from "@/lib/germanTextMatch";
 import { getMeaningPlacement } from "@/lib/meaningPlacement";
 import { getMeaningLenience } from "@/lib/meaningLenience";
-import { computeGap, gapEntryIsComplete, matchesGapInput, spokenWord } from "@/lib/gapFill";
+import { computeGap, gapEntryIsComplete, gapTranscriptionIsComplete, matchesGapInput, matchesGapTranscription, spokenWord } from "@/lib/gapFill";
 import type { AnswerPerformance } from "@/lib/adaptivePractice";
 import {
   ENGLISH_VARIANT_EVENT,
@@ -61,8 +61,9 @@ import { matchPortugueseMeaning, matchPortugueseSentence, PORTUGUESE_SPECIAL_CHA
 import { matchRussianSentence } from "@/lib/russianTextMatch";
 import { GREEK_SPECIAL_CHARACTERS, matchGreekMeaning, matchGreekSentence } from "@/lib/greekTextMatch";
 import { ALBANIAN_SPECIAL_CHARACTERS, matchAlbanianMeaning, matchAlbanianSentence } from "@/lib/albanianTextMatch";
-import { INTERFACE_LANGUAGE_CHANGE_EVENT } from "@/lib/interfaceLanguage";
-import { formatRussianText, getRussianScript, resolveRussianScript, russianScriptLabel, russianScriptShows, russianSecondLine, RUSSIAN_SCRIPT_EVENT, RUSSIAN_SPECIAL_CHARACTERS, setRussianScript } from "@/lib/russianScript";
+import { getRussianScript, resolveRussianScript, russianScriptLabel, RUSSIAN_SPECIAL_CHARACTERS, setRussianScript } from "@/lib/russianScript";
+import { getGreekScript, greekScriptLabel, resolveGreekScript, setGreekScript } from "@/lib/greekScript";
+import { courseLatinOf, courseShowsLatin, courseShowsNative, courseTextSecondLine, showCourseText, useCourseScript, withCourseLatin } from "@/lib/courseScript";
 
 import {
   AUDIO_SETTINGS_EVENT,
@@ -460,13 +461,13 @@ function AccentKeys({ language, onInsert }: { language: "de" | "en" | "fr" | "pl
 }
 
 function AccentRow({ language, onInsert }: { language: "de" | "en" | "fr" | "pl" | "es" | "it" | "pt" | "ru" | "el" | "sq"; onInsert: (c: string) => void }) {
-  const russianScript = resolveRussianScript(useRussianScript());
+  useCourseScript();
   if (language === "en") return null;
-  // The Cyrillic row is not a helper beside the keyboard, it IS the keyboard,
-  // so it belongs on screen only while Cyrillic is what the learner reads. On
-  // the Latin setting the transcription is written in letters the keyboard
-  // already has, which is the point of it — see RussianCharBar.
-  if (language === "ru" && !russianScriptShows(russianScript, "cyrillic")) return null;
+  // The Cyrillic and Greek rows are not helpers beside the keyboard, they ARE
+  // the keyboard, so each belongs on screen only while its alphabet is what
+  // the learner reads. On the Latin setting the transcription is written in
+  // letters the keyboard already has, which is the point of it.
+  if (!courseShowsNative(language)) return null;
   return <div className="fs-charsrow"><AccentKeys language={language} onInsert={onInsert} /></div>;
 }
 
@@ -598,10 +599,10 @@ function ItalianCharBar({ onInsert }: { onInsert: (c: string) => void }) {
  * The Greek row.
  *
  * Like the Russian one it is the keyboard rather than a helper beside it: no
- * Greek letter is on a German, French or English layout. It is shown whatever
- * the learner types with, because Greek has no second alphabet to switch to —
- * a word typed in Latin letters is accepted as a slip by greekTextMatch.ts, and
- * this row is how the Greek spelling gets typed at all.
+ * Greek letter is on a German, French or English layout. So it follows the
+ * alphabet switch the same way — on screen while Greek is, gone on the Latin
+ * setting, where the answer is the transcription and the learner's own
+ * keyboard already has every letter of it. See AccentRow.
  */
 function GreekCharBar({ onInsert }: { onInsert: (c: string) => void }) {
   return (
@@ -1392,52 +1393,25 @@ function useEnglishVariant() {
 }
 
 /**
- * The Russian script, watched the same way and for the same reason.
- *
- * A separate hook rather than a second use of the one above: the two settings
- * are stored apart, announced on different events and mean different things,
- * and the English switch has worked for months. It listens to the interface
- * language too, because that is what chooses the transcription — switching
- * the app to German must move the card from Khorosho to Choroscho without a
- * reload.
- */
-function useRussianScript() {
-  const [script, setScript] = useState(() => getRussianScript());
-  const [, setLanguageChanges] = useState(0);
-  useEffect(() => {
-    const sync = () => setScript(getRussianScript());
-    const relabel = () => setLanguageChanges((count) => count + 1);
-    window.addEventListener(RUSSIAN_SCRIPT_EVENT, sync);
-    window.addEventListener(INTERFACE_LANGUAGE_CHANGE_EVENT, relabel);
-    return () => {
-      window.removeEventListener(RUSSIAN_SCRIPT_EVENT, sync);
-      window.removeEventListener(INTERFACE_LANGUAGE_CHANGE_EVENT, relabel);
-    };
-  }, []);
-  return script;
-}
-
-/**
  * A whole line of course text, drawn in the alphabet the learner chose.
  *
  * TappableSentence does this for the lesson stages, word by word, so that a
- * word can be tapped and heard. The preview flashcard and the matching board
- * show a line nobody taps, so they need the same transformation without the
- * splitting — and without it they were the two screens the Russian script
- * setting never reached: Cyrillic whatever was chosen, and no transcription
- * under it on the both setting.
+ * word can be tapped and heard. Everywhere else a line of the course is
+ * shown and not tapped — the preview flashcard, the matching board, an
+ * answer in the feedback, a tile to put in order, the blanked sentence — and
+ * each needs the same transformation without the splitting. Without it they
+ * were the screens the Russian script setting never reached: Cyrillic
+ * whatever was chosen, and no transcription under it on the both setting.
  *
- * Only what the eye reads changes. The text handed to the voice stays
- * Cyrillic, because that is what a Russian voice can pronounce.
+ * Only what the eye reads changes. The text handed to the voice stays in the
+ * course's own alphabet, because that is what its voice can pronounce.
  */
 function CourseText({ code, text }: { code: string; text: string }) {
-  const stored = useRussianScript();
-  if (!String(code ?? "").toLowerCase().startsWith("ru")) return <>{text}</>;
-  const script = resolveRussianScript(stored);
-  const second = russianSecondLine(text, script);
+  useCourseScript();
+  const second = courseTextSecondLine(code, text);
   return (
     <>
-      {formatRussianText(text, script)}
+      {showCourseText(code, text)}
       {second && <span className="fs-translit-inline">{second}</span>}
     </>
   );
@@ -1447,7 +1421,9 @@ function PromptLanguageBadge({ label }: { label: string }) {
   const isGerman = label === "German";
   const isEnglish = label === "English";
   const isRussian = label === "Russian";
-  const storedScript = useRussianScript();
+  const isGreek = label === "Greek";
+  // Either alphabet switch, and the interface language that names it.
+  useCourseScript();
   // The English side mirrors the German flag treatment, but honours the
   // profile's English-variant setting so British learners see their own flag.
   const stored = useEnglishVariant();
@@ -1493,7 +1469,7 @@ function PromptLanguageBadge({ label }: { label: string }) {
    * no translation to read.
    */
   if (isRussian) {
-    const script = resolveRussianScript(storedScript);
+    const script = resolveRussianScript(getRussianScript());
     const scriptTitle = `${ui(russianScriptLabel(script))} — ${ui("tap to switch")}`;
     return (
       <button
@@ -1509,6 +1485,31 @@ function PromptLanguageBadge({ label }: { label: string }) {
         )}
       >
         {script === "cyrillic" ? "Аа" : script === "latin" ? "Aa" : "Аа/Aa"}
+      </button>
+    );
+  }
+
+  /**
+   * The Greek badge, the same switch for the same reason. It draws αβ against
+   * ab rather than the Russian pair's capital and small letter, because a
+   * Greek capital alpha is the Latin A — Αα and Aa would be the same picture
+   * on both sides of the choice.
+   */
+  if (isGreek) {
+    const script = resolveGreekScript(getGreekScript());
+    const scriptTitle = `${ui(greekScriptLabel(script))} — ${ui("tap to switch")}`;
+    return (
+      <button
+        type="button"
+        data-testid="greek-script-switch"
+        className={cn("fs-prompt-language", "is-switchable")}
+        aria-label={scriptTitle}
+        title={scriptTitle}
+        onClick={() => setGreekScript(
+          script === "greek" ? "latin" : script === "latin" ? "both" : "greek"
+        )}
+      >
+        {script === "greek" ? "αβ" : script === "latin" ? "ab" : "αβ/ab"}
       </button>
     );
   }
@@ -2094,6 +2095,11 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   useStickyFocus(sayRef, phase === "WriteFromMemory");
   useStickyFocus(frInputRef, phase === "French");
   const englishVariant = useEnglishVariant();
+  // Which alphabet a Russian or Greek card is read in. The badge on the
+  // typing prompt switches it mid-answer, and the grading below depends on
+  // it — a transcription is a clean answer only while it is on screen — so
+  // the answer already typed is graded again the moment it changes.
+  const courseScriptKey = useCourseScript();
   // Learning direction: by default German is the target (item.de) and English the
   // meaning (item.en). When learning English, the session builder has already
   // swapped the fields, so item.de IS the English target — we just need the right
@@ -2212,10 +2218,12 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
    * themselves and not a measurement of them.
    */
   const acceptedAnswers = useMemo(
-    () => [item.de, item.long, ...(item.synonyms ?? []).map((entry: { de?: string }) => entry.de)]
+    () => withCourseLatin(targetLang, [item.de, item.long, ...(item.synonyms ?? []).map((entry: { de?: string }) => entry.de)]
       .map((form) => String(form ?? "").trim())
-      .filter(Boolean),
-    [item.de, item.long, item.synonyms]
+      .filter(Boolean)),
+    // courseScriptKey: the Latin forms come and go with the alphabet switch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [item.de, item.long, item.synonyms, targetLang, courseScriptKey]
   );
 
   const matchEither = React.useCallback(
@@ -2238,7 +2246,10 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
       }
       return primary;
     },
-    [item.de, item.long, item.kind, item.synonyms, targetIsGermanCourse, matchTarget]
+    // courseScriptKey: the Greek and Russian matchers read the alphabet
+    // switch, so an answer typed before a switch is graded again after it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [item.de, item.long, item.kind, item.synonyms, targetIsGermanCourse, matchTarget, courseScriptKey]
   );
   const result   = useMemo(() => matchEither(input), [input, matchEither]);
   const sayResult = useMemo(() => matchEither(sayInput), [sayInput, matchEither]);
@@ -2372,9 +2383,24 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // Gap stage: the typed answer just needs to contain each missing word
   // (order-free, ß/case tolerant), so a single blank accepts the one word and
   // two blanks accept both in either order.
+  // On the Latin setting of a Russian or Greek card the blanks are read in
+  // Latin letters, and the key row that types the other alphabet is gone —
+  // so they are filled in Latin letters too. Null wherever there is no
+  // transcription on screen.
+  const gapLatinWords = useMemo(
+    () => (courseShowsLatin(targetLang)
+      ? gap.words.map((word) => courseLatinOf(targetLang, word) ?? word)
+      : null),
+    // courseScriptKey: the alphabet switch decides whether there are any.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [gap.words, targetLang, courseScriptKey]
+  );
   const gapResult = useMemo(() => {
-    return { ok: matchesGapInput(gapInput, gap.words) };
-  }, [gapInput, gap.words]);
+    return {
+      ok: matchesGapInput(gapInput, gap.words)
+        || (gapLatinWords !== null && matchesGapTranscription(gapInput, gapLatinWords)),
+    };
+  }, [gapInput, gap.words, gapLatinWords]);
   const orderIsCorrect = useMemo(
     () => wordOrderTokensMatchSentence(orderTokens, item.de),
     [orderTokens, item.de]
@@ -3610,7 +3636,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
         {item.long && phase === "Read" && (
           <div className="fs-say">
             <span className="fs-when-label">{ui("Written in full")}</span>
-            <p>{item.long}</p>
+            <p><CourseText code={targetLang} text={item.long} /></p>
           </div>
         )}
 
@@ -3648,7 +3674,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
               <div className="fs-line">
                 {missingWordChecked && missingWordCorrect
                   ? <TappableSentence text={item.de} lang={targetLang} meaningText={item.en} onWordAudio={restartReadingCountdown} />
-                  : missingWord.display}
+                  : <CourseText code={targetLang} text={missingWord.display} />}
               </div>
               {meaningOnCard && secondLanguage(meaningChip, shownEnglish)}
             </div>
@@ -3773,7 +3799,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 phase === "WriteFromMemory" && sayChecked && !sayResult.ok ? "is-bad" : ""
               )}>
                 {/* Retrieval stages hide the answer, then reveal it after a correct response. */}
-                {phase === "Gap" && !(gapChecked && gapResult.ok) ? gap.display
+                {phase === "Gap" && !(gapChecked && gapResult.ok) ? <CourseText code={targetLang} text={gap.display} />
                   : phase === "WriteFromMemory" && !sayChecked ? "• • •"
                   : <TappableSentence text={item.de} lang={targetLang} meaningText={item.en} onWordAudio={restartReadingCountdown} />}
               </div>
@@ -4119,7 +4145,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                     )}
                   >
                     <span>{choiceIndex + 1}</span>
-                    <strong>{choice}</strong>
+                    <strong><CourseText code={targetLang} text={choice} /></strong>
                     {listeningChecked && isAnswer && <CheckCircle2 className="h-5 w-5" />}
                     {listeningChecked && isSelected && !isAnswer && <X className="h-5 w-5" />}
                   </button>
@@ -4139,7 +4165,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   <span>
                     {listeningCorrect
                       ? ui("You matched the spoken phrase.")
-                      : <>{ui("Answer:")} <strong>{item.de}</strong></>}
+                      : <>{ui("Answer:")} <strong><CourseText code={targetLang} text={item.de} /></strong></>}
                   </span>
                                   <ManualReviewNote grade={grade} notice={manualReviewNotice} onUndo={() => { onUndoManualReview?.(); setGrade(null); }} onDismiss={() => onDismissManualReview?.()} onHold={onHoldManualReview} onRelease={onReleaseManualReview} />
                 </motion.div>
@@ -4266,7 +4292,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   <span>
                     {missingWordCorrect
                       ? ui("You found the missing word.")
-                      : <>{ui("The missing word is")} <strong>{missingWord.answer}</strong>.</>}
+                      : <>{ui("The missing word is")} <strong><CourseText code={targetLang} text={missingWord.answer} /></strong>.</>}
                   </span>
                 </motion.div>
               )}
@@ -4326,7 +4352,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             </motion.div>
             <AccentRow language={targetLanguage} onInsert={(c) => insertAt(sayRef.current, c, setSayInput)} />
             {!(sayChecked && sayResult.ok) && (
-              <RecallHelp key={`${item.id}-write-${step}`} answer={item.de} />
+              <RecallHelp key={`${item.id}-write-${step}`} answer={showCourseText(targetLang, item.de)} />
             )}
 
             <AnimatePresence>
@@ -4340,9 +4366,9 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                     : sayResult.phrasingNote
                     ? <span className="space-y-1 block">
                         <span className="block">{ui("People would understand you — but that's the literal translation.")}</span>
-                        <span className="block text-xs text-zinc-500">{ui("The natural way is:")} <span className="text-zinc-950">{item.de}</span></span>
+                        <span className="block text-xs text-zinc-500">{ui("The natural way is:")} <span className="text-zinc-950"><CourseText code={targetLang} text={item.de} /></span></span>
                       </span>
-                    : <>{ui("Not quite — the answer is")} <span className="text-zinc-950">{item.de}</span></>}
+                    : <>{ui("Not quite — the answer is")} <span className="text-zinc-950"><CourseText code={targetLang} text={item.de} /></span></>}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -4408,7 +4434,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                 {!recallBothTargetReady && (
                   <RecallHelp
                     key={`${item.id}-recall-both-target-${step}`}
-                    answer={item.de}
+                    answer={showCourseText(targetLang, item.de)}
                     label={targetLabel}
                     onHelp={noteRecallStruggle}
                   />
@@ -4563,7 +4589,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                         {ui("People would understand you — but that's the literal translation.")}
                       </div>
                       <div className="text-xs text-zinc-500">
-                        {ui("The natural way is:")} <span className="text-zinc-950 font-semibold">{item.de}</span>
+                        {ui("The natural way is:")} <span className="text-zinc-950 font-semibold"><CourseText code={targetLang} text={item.de} /></span>
                       </div>
                     </div>
                   ) : (
@@ -4573,7 +4599,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                           ? "Capitalization error! In German, nouns and formal 'Sie/Ihnen/Ihr' must be capitalized."
                           : "Not quite - try again"}
                       </div>
-                      <div className="text-xs text-zinc-500">{ui("Target:")} <span className="text-zinc-950 font-semibold">{item.de}</span></div>
+                      <div className="text-xs text-zinc-500">{ui("Target:")} <span className="text-zinc-950 font-semibold"><CourseText code={targetLang} text={item.de} /></span></div>
                     </div>
                   )}
                 </motion.div>
@@ -4829,7 +4855,8 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                           next[index] = value;
                           const nextIsEmpty = !(next[index + 1] ?? "").trim();
                           if (index < gap.words.length - 1 && nextIsEmpty
-                            && gapEntryIsComplete(next, index, gap.words)) {
+                            && (gapEntryIsComplete(next, index, gap.words)
+                              || (gapLatinWords !== null && gapTranscriptionIsComplete(next, index, gapLatinWords)))) {
                             gapInputRefs.current[index + 1]?.focus();
                           }
                         }}
@@ -4866,8 +4893,8 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             {!(gapChecked && gapResult.ok) && (
               <RecallHelp
                 key={`${item.id}-gap-${step}`}
-                answer={gap.words.join(" ")}
-                hint={buildRecallHint(gap.words.join(" "))}
+                answer={showCourseText(targetLang, gap.words.join(" "))}
+                hint={buildRecallHint(showCourseText(targetLang, gap.words.join(" ")))}
               />
             )}
 
@@ -4878,7 +4905,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                     gapResult.ok ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700" : "border-rose-500/20 bg-rose-500/10 text-rose-700")}>
                   {gapResult.ok
                     ? <span className="inline-flex items-center gap-2"><CheckCircle2 className="h-5 w-5" /> That's it!</span>
-                    : <>Not quite — the missing {gap.words.length > 1 ? "words are" : "word is"} <span className="text-zinc-950">{gap.words.join(" ")}</span></>}
+                    : <>Not quite — the missing {gap.words.length > 1 ? "words are" : "word is"} <span className="text-zinc-950"><CourseText code={targetLang} text={gap.words.join(" ")} /></span></>}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -4934,7 +4961,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                       draggable={!orderLocked}
                       aria-disabled={orderLocked}
                       aria-pressed={orderSelected === tokenIndex}
-                      aria-label={`${token.text}${hoverGloss ? `: ${hoverGloss}` : ""}, ${ui("position")} ${tokenIndex + 1}`}
+                      aria-label={`${showCourseText(targetLang, token.text)}${hoverGloss ? `: ${hoverGloss}` : ""}, ${ui("position")} ${tokenIndex + 1}`}
                       data-gloss={hoverGloss ?? undefined}
                       className={cn(
                         "fs-order-token",
@@ -5009,7 +5036,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                       }}
                     >
                       <GripVertical aria-hidden="true" className="h-4 w-4" />
-                      <span>{token.text}</span>
+                      <span><CourseText code={targetLang} text={token.text} /></span>
                     </button>
                   );
                 })}
@@ -5018,7 +5045,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
             </motion.div>
             <div className="fs-order-feedback">
               {!orderChecked && (
-                <RecallHelp key={`${item.id}-order-${step}`} answer={item.de} />
+                <RecallHelp key={`${item.id}-order-${step}`} answer={showCourseText(targetLang, item.de)} />
               )}
 
               {orderChecked && (
@@ -5247,6 +5274,9 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
   const learnRu = sides.target.code === "ru";
   const learnEl = sides.target.code === "el";
   const learnSq = sides.target.code === "sq";
+  // The alphabet a Russian or Greek line is read in, which the Greek and
+  // Russian matchers read too — see the same hook in the lesson.
+  const courseScriptKey = useCourseScript();
   const result = useMemo(
     () => learnFr
       ? matchFrenchSentence(input, line?.de ?? "")
@@ -5267,7 +5297,8 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
           : learnEn
             ? matchEnglish(input, line?.de ?? "")
             : matchLearningModeGermanAnswer(input, { de: line?.de ?? "", long: line?.long }),
-    [input, learnEn, learnFr, learnPl, learnEs, learnIt, learnPt, learnRu, learnEl, learnSq, line]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [input, learnEn, learnFr, learnPl, learnEs, learnIt, learnPt, learnRu, learnEl, learnSq, line, courseScriptKey]
   );
   // A German speaker learning English hears this on every stage, so it has to
   // honour their British/American choice — it was pinned to American, which
@@ -5410,7 +5441,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
             <div className="h-7 w-7 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center text-[10px] font-black text-zinc-500 shrink-0">{l.speaker}</div>
             <div className={cn("max-w-[70%] rounded-2xl px-4 py-2.5 space-y-0.5",
               l.speaker === "A" ? "bg-white border border-zinc-200" : "bg-zinc-50 border border-zinc-200")}>
-              <div className="text-sm font-black tracking-tight text-zinc-950">{l.de}</div>
+              <div className="text-sm font-black tracking-tight text-zinc-950"><CourseText code={targetLang} text={l.de} /></div>
               {companionFr && l.fr && <div className="text-sm font-black tracking-tight text-[var(--accent)]">{l.fr}</div>}
               <div className="text-xs font-semibold text-zinc-500">{l.en}</div>
             </div>
@@ -5454,9 +5485,12 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
           onKeyDown={e => e.key === "Enter" && (checked && result.ok ? nextLine() : checkLine())}
           disabled={checked && result.ok}
         />
-        <AccentKeys language={sides.target.code} onInsert={c => insertAt(inputRef.current, c, setInput)} />
+        {/* The Cyrillic and Greek rows go with their alphabet, as in AccentRow. */}
+        {courseShowsNative(sides.target.code) && (
+          <AccentKeys language={sides.target.code} onInsert={c => insertAt(inputRef.current, c, setInput)} />
+        )}
         {!(checked && result.ok) && (
-          <RecallHelp key={`${lineGradeId}-dialogue`} answer={line.de} />
+          <RecallHelp key={`${lineGradeId}-dialogue`} answer={showCourseText(targetLang, line.de)} />
         )}
       </div>
 
@@ -5472,7 +5506,7 @@ function DialogueExercise({ dialogue, onNext, onGradeItem, onReviewLevel, onSnoo
                       ? "Capitalization error! In German, nouns and formal 'Sie/Ihnen/Ihr' must be capitalized."
                       : "Not quite"}
                   </div>
-                  <div className="text-xs font-bold text-zinc-500">{line.de}</div>
+                  <div className="text-xs font-bold text-zinc-500"><CourseText code={targetLang} text={line.de} /></div>
                 </div>}
           </motion.div>
         )}

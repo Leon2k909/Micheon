@@ -4487,7 +4487,8 @@ export const PT: Record<string, string> = {
   // Greek, the eighth course: its name, its voice, the lesson's prompts and
   // the companion's tips.
   "Greek": "Grego",
-  "Read, listen, type and translate real Greek.": "Lê, ouve, escreve e traduz grego a sério.",
+  "Greek and Latin": "Grego e latino",
+  "Learn Greek in the Greek alphabet, or in letters you already read.": "Aprende grego no alfabeto grego ou com letras que já lês.",
   "Greek words to arrange": "Palavras gregas para ordenar",
   "Greek voice": "Voz grega",
   "Mute Greek voice": "Silenciar a voz grega",

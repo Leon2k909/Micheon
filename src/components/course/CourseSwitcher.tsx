@@ -11,7 +11,6 @@ import { FlagRoundel, hasFlagArt } from "@/components/course/FlagRoundel";
 import { ui, uiFmt, uiLocale } from "@/lib/i18n";
 import { resolveInterfaceLanguage } from "@/lib/interfaceLanguage";
 import {
-  RUSSIAN_SCRIPT_EVENT,
   getRussianScript,
   latiniseRussian,
   resolveRussianScript,
@@ -19,6 +18,52 @@ import {
   russianScriptShows,
   setRussianScript,
 } from "@/lib/russianScript";
+import {
+  getGreekScript,
+  greekScriptAfterToggle,
+  greekScriptShows,
+  latiniseGreek,
+  resolveGreekScript,
+  setGreekScript,
+} from "@/lib/greekScript";
+import { useCourseScript } from "@/lib/courseScript";
+
+/**
+ * The two latches under a course written in an alphabet of its own: which
+ * alphabets it is drawn in, and what pressing each one stores.
+ *
+ * Each sample is transcribed, not written down: a German reader is promised
+ * Priwet and a French one Priviet, and hard-coding either would show one of
+ * them a spelling they will never see again.
+ */
+type AlphabetLatch = { key: string; label: string; sample: string; on: boolean; press: () => void };
+
+function alphabetLatches(alphabet: "ru" | "el"): AlphabetLatch[] {
+  const language = resolveInterfaceLanguage();
+  if (alphabet === "ru") {
+    const script = resolveRussianScript(getRussianScript());
+    const sample = "Привет";
+    return (["cyrillic", "latin"] as const).map((key) => ({
+      key,
+      label: key === "cyrillic" ? "Cyrillic" : "Latin",
+      sample: key === "cyrillic" ? sample : latiniseRussian(sample, language),
+      on: russianScriptShows(script, key),
+      press: () => setRussianScript(russianScriptAfterToggle(script, key)),
+    }));
+  }
+  const script = resolveGreekScript(getGreekScript());
+  const sample = "Γεια σου";
+  return (["greek", "latin"] as const).map((key) => ({
+    key,
+    label: key === "greek" ? "Greek" : "Latin",
+    sample: key === "greek" ? sample : latiniseGreek(sample, language),
+    on: greekScriptShows(script, key),
+    press: () => setGreekScript(greekScriptAfterToggle(script, key)),
+  }));
+}
+
+/** The courses the picker draws with alphabet latches, by id. */
+const ALPHABET_COURSES: Record<string, "ru" | "el"> = { russian: "ru", greek: "el" };
 
 /**
  * Which course a language pack belongs to.
@@ -526,36 +571,25 @@ export function CourseSwitcher({
   };
 
   /**
-   * Russian, with its two alphabets offered as two latches.
+   * Russian and Greek, each with its two alphabets offered as two latches.
    *
    * Written beside EnglishCard rather than folded together with it, although
    * the two look alike from here. English picks ONE of two spellings — the
-   * buttons are a choice and turning one on turns the other off. Russian picks
-   * ANY of two alphabets, including both at once, because the Cyrillic is the
-   * lesson and the Latin is the crutch and a learner mid-way wants them
-   * together. One shared component would have to carry that difference as a
-   * flag, and the flag would be read wrong on the day somebody edits it.
+   * buttons are a choice and turning one on turns the other off. These pick
+   * ANY of two alphabets, including both at once, because the course's own
+   * alphabet is the lesson and the Latin is the crutch and a learner mid-way
+   * wants them together. One shared component would have to carry that
+   * difference as a flag, and the flag would be read wrong on the day
+   * somebody edits it. Russian and Greek, on the other hand, are the same
+   * question, so they share this card and differ only in alphabetLatches.
    *
    * The card itself still selects the course, as every other row does; the
-   * latches sit under it and only change how Russian is drawn.
+   * latches sit under it and only change how the course is drawn.
    */
-  const RussianCard = ({ course }: { course: (typeof COURSES)[number] }) => {
+  const AlphabetCard = ({ course, alphabet }: { course: (typeof COURSES)[number]; alphabet: "ru" | "el" }) => {
     const active = course.id === activeCourseId;
-    const [stored, setStored] = useState(() => getRussianScript());
-    useEffect(() => {
-      const sync = () => setStored(getRussianScript());
-      window.addEventListener(RUSSIAN_SCRIPT_EVENT, sync);
-      return () => window.removeEventListener(RUSSIAN_SCRIPT_EVENT, sync);
-    }, []);
-    const script = resolveRussianScript(stored);
-    // The sample is transcribed, not written down: a German reader is promised
-    // Priwet and a French one Priviet, and hard-coding either would show one
-    // of them a spelling they will never see again.
-    const sample = "Привет";
-    const scripts = [
-      { key: "cyrillic" as const, label: "Cyrillic", sample },
-      { key: "latin" as const, label: "Latin", sample: latiniseRussian(sample, resolveInterfaceLanguage()) },
-    ];
+    useCourseScript();
+    const scripts = alphabetLatches(alphabet);
     return (
       <div
         className={cn(
@@ -594,13 +628,13 @@ export function CourseSwitcher({
 
         <div className="mt-3 grid grid-cols-2 gap-2">
           {scripts.map((entry) => {
-            const on = russianScriptShows(script, entry.key);
+            const on = entry.on;
             return (
               <button
                 key={entry.key}
                 type="button"
                 aria-pressed={on}
-                onClick={() => setRussianScript(russianScriptAfterToggle(script, entry.key))}
+                onClick={entry.press}
                 className={cn(
                   "flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-all",
                   on
@@ -709,8 +743,8 @@ export function CourseSwitcher({
                     <div className="mt-2 grid gap-2">
                       {englishStarred && mergedEnglish && <EnglishCard uk={mergedEnglish.uk} us={mergedEnglish.us} />}
                       {favouriteCourses.map((c) => (
-                        c.id === "russian"
-                          ? <RussianCard key={c.id} course={c} />
+                        ALPHABET_COURSES[c.id]
+                          ? <AlphabetCard key={c.id} course={c} alphabet={ALPHABET_COURSES[c.id]} />
                           : <Card key={c.id} {...c} />
                       ))}
                     </div>
@@ -734,8 +768,8 @@ export function CourseSwitcher({
                     {shownLanguages.map((c) => (
                       mergedEnglish && c.id === "english-uk"
                         ? <EnglishCard key={c.id} uk={mergedEnglish.uk} us={mergedEnglish.us} />
-                        : c.id === "russian"
-                          ? <RussianCard key={c.id} course={c} />
+                        : ALPHABET_COURSES[c.id]
+                          ? <AlphabetCard key={c.id} course={c} alphabet={ALPHABET_COURSES[c.id]} />
                           : <Card key={c.id} {...c} />
                     ))}
                   </div>

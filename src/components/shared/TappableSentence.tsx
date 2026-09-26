@@ -8,7 +8,7 @@ import { germanWordGloss } from "@/lib/germanWordGloss";
 import { englishWordGloss } from "@/lib/englishWordGloss";
 import { addCustomEntries, getCustomPacks } from "@/lib/customContent";
 import { pronounNote } from "@/lib/pronounNotes";
-import { formatRussianText, getRussianScript, russianSecondLine } from "@/lib/russianScript";
+import { courseTextSecondLine, showCourseText, useCourseScript } from "@/lib/courseScript";
 
 /**
  * A sentence you can take apart a word at a time.
@@ -43,22 +43,22 @@ export function TappableSentence({ text, lang, meaningText, glosses, onWordAudio
    */
   onWordAudio?: () => void;
 }) {
+  // Redrawn when the alphabet is switched: the badge on the typing prompt
+  // does that mid-lesson, and this sentence sits right above it.
+  useCourseScript();
   const words = String(text ?? "").trim().split(/\s+/).filter(Boolean);
   /**
    * How a word is WRITTEN here, which is not always how it is stored.
    *
-   * Russian cards are held in Cyrillic and may be shown in one of five Latin
-   * transcriptions — see russianScript.ts. The transformation belongs on the
-   * way to the screen and nowhere else: `words` stays Cyrillic, so tapping a
-   * word still speaks Russian, the saved-word lookup still finds the card it
-   * was saved from, and the popover still asks the word bank about a word it
-   * has heard of. Only what the eye reads changes.
+   * Russian cards are held in Cyrillic and Greek cards in Greek, and either
+   * may be shown in Latin letters — see courseScript.ts. The transformation
+   * belongs on the way to the screen and nowhere else: `words` stays in the
+   * course's own alphabet, so tapping a word still speaks the language, the
+   * saved-word lookup still finds the card it was saved from, and the popover
+   * still asks the word bank about a word it has heard of. Only what the eye
+   * reads changes.
    */
-  const shown = (word: string) => (
-    lang.toLowerCase().startsWith("ru")
-      ? formatRussianText(word, getRussianScript())
-      : word
-  );
+  const shown = (word: string) => showCourseText(lang, word);
   // Hover glosses translate toward the learner's helper language: German
   // text shows English meanings, and English text (learn-English mode) shows
   // German ones — the popover must not be a German-course-only feature.
@@ -208,13 +208,11 @@ export function TappableSentence({ text, lang, meaningText, glosses, onWordAudio
    *
    * Taken from the whole sentence rather than from `words`, because the row
    * above is split so a single word can be tapped and heard: a Latin form
-   * threaded between the Cyrillic ones would double the line rather than
-   * caption it. Null in every other mode and for every other language, so
-   * nothing but Russian-in-both-scripts renders a second row.
+   * threaded between the Cyrillic or Greek ones would double the line rather
+   * than caption it. Null in every other mode and for every other language,
+   * so only a course shown in both alphabets renders a second row.
    */
-  const secondLine = lang.toLowerCase().startsWith("ru")
-    ? russianSecondLine(String(text ?? ""), getRussianScript())
-    : null;
+  const secondLine = courseTextSecondLine(lang, String(text ?? ""));
 
   return (
     <span className="fs-tappable-sentence" onCopy={copySelectionWithSpaces}>

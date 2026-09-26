@@ -3107,7 +3107,7 @@ a { color: inherit; text-decoration: none; }
   contain-intrinsic-size: auto 76px;
 }
 .fs-tappable-sentence { display: contents; }
-/* The transcription under a Russian line, when both scripts are switched on.
+/* The transcription under a Russian or Greek line, when both scripts are on.
    The sentence itself is display:contents, so its words are laid out by the
    board above; this claims a whole row of that flex line and drops onto its
    own line underneath, the way a pronunciation hint sits under a phrase. It

@@ -3,12 +3,13 @@ import type { TranslationTable } from "@/lib/translations";
 /**
  * Modern Greek translations keyed by the German catalogue text.
  *
- * Greek is the second course written in an alphabet of its own, after Russian,
- * and the first with nothing to switch it to: the cards are Greek and are shown
- * in Greek, because that is what a learner has to read on every sign in
- * Athens. What the alphabet makes hard is TYPING, and that is answered where
- * answers are graded — see greekTextMatch.ts, which takes a word typed in
- * Latin letters as a slip, and the lesson's Greek row, which is a keyboard.
+ * Greek is the second course written in an alphabet of its own, after Russian.
+ * This table holds the Greek and nothing else: the Latin letters a learner may
+ * choose to read instead are computed from it by greekScript.ts, never written
+ * down beside it, so a value here must never carry a transcription. What the
+ * alphabet makes hard on the Greek setting is TYPING, and that is answered
+ * where answers are graded — see greekTextMatch.ts, which takes a word typed
+ * in Latin letters as a slip, and the lesson's Greek row, which is a keyboard.
  *
  * THE VARIETY is Standard Modern Greek as it is spoken in Greece today, in the
  * monotonic spelling: one tonos on every word of two or more syllables, the
