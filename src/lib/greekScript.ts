@@ -451,6 +451,11 @@ const PL: Spelling = {
  * English one — a stopgap, as in russianScript.ts, and not a claim about
  * Portuguese practice. Russian reads it too: a Russian reader who wants the
  * Latin letters is best served by the most widely printed ones.
+ *
+ * Greek reads it as well, and for the plainest reason of all: somebody with
+ * the app in Greek is not reaching for Latin letters to read Greek with. The
+ * setting still exists for them, so the row has to answer something, and the
+ * most widely printed spelling is the answer that claims least.
  */
 const SPELLINGS: Record<ResolvedInterfaceLanguage, Spelling> = {
   de: DE,
@@ -461,6 +466,7 @@ const SPELLINGS: Record<ResolvedInterfaceLanguage, Spelling> = {
   it: IT,
   pt: EN,
   ru: EN,
+  el: EN,
 };
 
 /** The six transcriptions, named — for the grader and the build gate. */

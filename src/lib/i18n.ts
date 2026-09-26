@@ -33,6 +33,7 @@ const UI_LOADERS: Record<string, () => Promise<Record<string, string>>> = {
   it: () => import("@/lib/i18nIt").then((m) => m.IT),
   pt: () => import("@/lib/i18nPt").then((m) => m.PT),
   ru: () => import("@/lib/i18nRu").then((m) => m.RU),
+  el: () => import("@/lib/i18nEl").then((m) => m.EL),
 };
 
 const UI_TABLES: Record<string, Record<string, string>> = {};
@@ -198,7 +199,7 @@ export function uiIsEnglish(): boolean {
 
 /** The voices the app can be read aloud in, one per language it speaks. */
 type UiSpeechLanguage =
-  | "de-DE" | "en-US" | "es-ES" | "fr-FR" | "it-IT" | "pl-PL" | "pt-PT" | "ru-RU";
+  | "de-DE" | "el-GR" | "en-US" | "es-ES" | "fr-FR" | "it-IT" | "pl-PL" | "pt-PT" | "ru-RU";
 
 /**
  * How each language the app can be set to writes its numbers and dates, and
@@ -218,6 +219,7 @@ type UiSpeechLanguage =
  */
 const UI_LOCALES: Record<ResolvedInterfaceLanguage, { format: string; speech: UiSpeechLanguage }> = {
   de: { format: "de-DE", speech: "de-DE" },
+  el: { format: "el-GR", speech: "el-GR" },
   en: { format: "en-GB", speech: "en-US" },
   es: { format: "es-ES", speech: "es-ES" },
   fr: { format: "fr-FR", speech: "fr-FR" },

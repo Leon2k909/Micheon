@@ -57,6 +57,7 @@ type MotivationQuote = {
   it?: string;
   pt?: string;
   ru?: string;
+  el?: string;
 };
 
 const MOTIVATION_QUOTES: MotivationQuote[] = [

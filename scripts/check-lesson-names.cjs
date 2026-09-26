@@ -75,6 +75,7 @@ const TABLES = {
   Italian: readTable("src/lib/i18nIt.ts", "export const IT"),
   Portuguese: readTable("src/lib/i18nPt.ts", "export const PT"),
   Russian: readTable("src/lib/i18nRu.ts", "export const RU"),
+  Greek: readTable("src/lib/i18nEl.ts", "export const EL"),
 };
 
 /**
@@ -135,5 +136,5 @@ if (failed) {
 
 console.log(
   `check-lesson-names: all ${themes.size} lesson names and all ${descriptions.size} descriptions have `
-  + "German, French, Polish, Spanish, Italian, Portuguese, Russian"
+  + "German, French, Polish, Spanish, Italian, Portuguese, Russian, Greek"
 );
