@@ -2636,6 +2636,7 @@ export const IT: Record<string, string> = {
   "Popular pack": "Pacchetto popolare",
   "Power pack": "Pacchetto potenziato",
   "Progress and achievements": "Progressi e obiettivi",
+  "Hi, {name}!": "Ciao, {name}!",
   "Ready to learn today?": "Pronto a imparare oggi?",
   "What would you like to change?": "Che cosa ti piacerebbe cambiare?",
   "How far have you come?": "Quanta strada hai fatto?",

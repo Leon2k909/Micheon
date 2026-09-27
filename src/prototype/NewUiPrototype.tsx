@@ -1,4 +1,4 @@
-import { ui, uiFmt, uiLocale, uiNumber } from "@/lib/i18n";
+import { ui, uiDate, uiFmt, uiNumber } from "@/lib/i18n";
 import type { CountryId, CountryPack } from "@/lib/countryStudies";
 import { COUNTRY_PACKS, countryPack } from "@/lib/countryPacks";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
@@ -1584,7 +1584,7 @@ function Header({
   return (
     <header className="np-header">
       <div className="np-greeting">
-        <p>Hi, {firstName}!</p>
+        <p>{uiFmt("Hi, {name}!", { name: firstName })}</p>
         <span>{ui(HEADER_SUBTITLES[view] ?? "Ready to learn today?")}</span>
       </div>
       {/* The cell stays whether or not it has figures in it: it is the middle
@@ -2904,7 +2904,7 @@ function describeSessionDay(ts: number): string {
   const diff = startOfToday.getTime() - ts;
   if (diff < 0) return ui("Today");
   if (diff < day) return ui("Yesterday");
-  return new Date(ts).toLocaleDateString(uiLocale(), { day: "numeric", month: "short" });
+  return uiDate(ts, { day: "numeric", month: "short" });
 }
 
 /**

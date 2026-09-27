@@ -2514,6 +2514,7 @@ export const PL: Record<string, string> = {
   "Prototype navigation": "Nawigacja",
   "Quick links": "Szybkie odnośniki",
   "Reach 500 XP together": "Osiągnijcie razem 500 XP",
+  "Hi, {name}!": "Cześć, {name}!",
   "Ready to learn today?": "Zaczynamy dzisiejszą naukę?",
   "What would you like to change?": "Co chcesz zmienić?",
   "How far have you come?": "Jak daleko już zaszło?",

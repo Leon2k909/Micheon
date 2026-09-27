@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, CheckCircle2, Check, Circle, Minus, Search, Star, Volume2, X as XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usageNote, useUsageNotes } from "@/lib/usageNotes";
-import { ui, uiFmt, uiIsEnglish, uiLocale, uiNumber } from "@/lib/i18n";
+import { ui, uiDate, uiFmt, uiIsEnglish, uiNumber } from "@/lib/i18n";
 import { buildWordCatalog, rankWordCatalog, type WordItem } from "@/lib/wordSession";
 import { useLearningMode } from "@/lib/learningMode";
 import { buildWordExampleIndex } from "@/lib/wordExamples";
@@ -680,7 +680,7 @@ export function WordsTracker({ apiParts, user }: {
                       <span
                         className="font-black text-violet-500"
                         title={ui("Put off — it returns to lessons, Listen and reviews on this date.")}
-                      > · {ui("put off until")} {new Date(record.snoozedUntil).toLocaleDateString(uiLocale(), { day: "numeric", month: "short" })}</span>
+                      > · {ui("put off until")} {uiDate(record.snoozedUntil, { day: "numeric", month: "short" })}</span>
                     )}
                   </p>
                   {(word.synonyms?.length ?? 0) > 0 && (

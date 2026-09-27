@@ -1780,6 +1780,7 @@ export const RU: Record<string, string> = {
   "Preserving for winter": "Заготовки на зиму",
   "Psychology & emotions": "Психология и эмоции",
   "Put off until {when}.": "Отложено до {when}.",
+  "Hi, {name}!": "Привет, {name}!",
   "Ready to learn today?": "Готов учиться сегодня?",
   "Recall both sentences": "Вспомни оба предложения",
   "Reference — type this": "Образец — впечатай это",

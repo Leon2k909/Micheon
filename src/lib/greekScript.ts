@@ -456,6 +456,11 @@ const PL: Spelling = {
  * the app in Greek is not reaching for Latin letters to read Greek with. The
  * setting still exists for them, so the row has to answer something, and the
  * most widely printed spelling is the answer that claims least.
+ *
+ * Albanian reads it for now, and is the likeliest to get a row of its own:
+ * its alphabet already has th and dh for θ and δ, c for τσ and x for τζ, so
+ * an sq spelling would be closer to the Greek than any row here. Until
+ * somebody writes it, the English one is the stopgap, as for Portuguese.
  */
 const SPELLINGS: Record<ResolvedInterfaceLanguage, Spelling> = {
   de: DE,
@@ -467,6 +472,7 @@ const SPELLINGS: Record<ResolvedInterfaceLanguage, Spelling> = {
   pt: EN,
   ru: EN,
   el: EN,
+  sq: EN,
 };
 
 /** The six transcriptions, named — for the grader and the build gate. */

@@ -13,7 +13,7 @@ import type {
   CodexPetSpeech,
 } from "@/components/codexPets/CodexPetProvider";
 import { cn } from "@/lib/utils";
-import { ui, uiLocale } from "@/lib/i18n";
+import { ui, uiDate } from "@/lib/i18n";
 
 const HISTORY_POSITION_KEY = "gl-codex-pet-history-position-v1";
 const PANEL_MARGIN = 8;
@@ -559,7 +559,7 @@ export function CodexPetHistoryPanel({
                       dateTime={new Date(message.createdAt).toISOString()}
                     >
                       <Clock3 className="h-2.5 w-2.5" />
-                      {new Date(message.createdAt).toLocaleTimeString(uiLocale(), {
+                      {uiDate(message.createdAt, {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}

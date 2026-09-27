@@ -464,6 +464,7 @@ export const ES: Record<string, string> = {
   // keys are screen names, so no field-name rule finds it — the other three
   // languages carry these because somebody noticed on screen, which is not a
   // way of finding things. check-spanish-interface reads that map by name.
+  "Hi, {name}!": "¡Hola, {name}!",
   "Ready to learn today?": "¿Listo para aprender hoy?",
   "What would you like to change?": "¿Qué te gustaría cambiar?",
   "How far have you come?": "¿Hasta dónde has llegado?",

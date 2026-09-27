@@ -34,6 +34,7 @@ const UI_LOADERS: Record<string, () => Promise<Record<string, string>>> = {
   pt: () => import("@/lib/i18nPt").then((m) => m.PT),
   ru: () => import("@/lib/i18nRu").then((m) => m.RU),
   el: () => import("@/lib/i18nEl").then((m) => m.EL),
+  sq: () => import("@/lib/i18nSq").then((m) => m.SQ),
 };
 
 const UI_TABLES: Record<string, Record<string, string>> = {};
@@ -199,7 +200,7 @@ export function uiIsEnglish(): boolean {
 
 /** The voices the app can be read aloud in, one per language it speaks. */
 type UiSpeechLanguage =
-  | "de-DE" | "el-GR" | "en-US" | "es-ES" | "fr-FR" | "it-IT" | "pl-PL" | "pt-PT" | "ru-RU";
+  | "de-DE" | "el-GR" | "en-US" | "es-ES" | "fr-FR" | "it-IT" | "pl-PL" | "pt-PT" | "ru-RU" | "sq-AL";
 
 /**
  * How each language the app can be set to writes its numbers and dates, and
@@ -228,6 +229,7 @@ const UI_LOCALES: Record<ResolvedInterfaceLanguage, { format: string; speech: Ui
   // Portugal rather than Brazil, the same way the Portuguese course chooses.
   pt: { format: "pt-PT", speech: "pt-PT" },
   ru: { format: "ru-RU", speech: "ru-RU" },
+  sq: { format: "sq-AL", speech: "sq-AL" },
 };
 
 /** Locale used for UI-only dates and number formatting. */
@@ -262,9 +264,107 @@ export function uiSpeechLang(): UiSpeechLanguage {
 export function uiNumber(value: number, options?: Intl.NumberFormatOptions): string {
   if (!Number.isFinite(value)) return "0";
   try {
+    const standIn = NUMBERS_WRITTEN_LIKE[resolveInterfaceLanguage()];
+    if (standIn && !runtimeWrites(uiLocale())) return value.toLocaleString(standIn, options);
     return value.toLocaleString(uiLocale(), options);
   } catch {
     // A runtime without full ICU data still has to show the number.
     return String(value);
   }
+}
+
+/**
+ * A date or a time, written the way the INTERFACE language writes them.
+ *
+ * The same rule as uiNumber, for the same reason: a date formatted without the
+ * app's locale comes out in the machine's language. Takes the options
+ * Intl.DateTimeFormat takes. The Albanian written by hand below understands
+ * weekday, day, month, year, hour, minute and second, which is everything the
+ * app asks for; check-number-formatting holds it to CLDR's spelling.
+ */
+export function uiDate(when: Date | number | string, options: Intl.DateTimeFormatOptions): string {
+  const date = new Date(when);
+  if (Number.isNaN(date.getTime())) return "";
+  const byHand = DATES_WRITTEN_BY_HAND[resolveInterfaceLanguage()];
+  if (byHand && !runtimeWrites(uiLocale())) return byHand(date, options);
+  return new Intl.DateTimeFormat(uiLocale(), options).format(date);
+}
+
+/**
+ * Albanian is the one interface language the runtime cannot write.
+ *
+ * Electron's ICU carries data only for the languages Chrome itself is
+ * translated into, and Albanian is not among them: supportedLocalesOf("sq-AL")
+ * comes back empty there, and a formatter handed sq-AL writes for the machine
+ * instead, without an error. On a German Windows that is German month names;
+ * on an English one it is 18,935, which an Albanian reader, whose decimal
+ * point is a comma, reads as eighteen point nine three five.
+ *
+ * Numbers borrow Polish, which writes them exactly as Albanian does: a no-break
+ * space between thousands from five digits up (1234, 12 345), a decimal comma,
+ * 42%. Dates have nobody to borrow from, so they are written from CLDR's
+ * Albanian patterns (CLDR 48). Both detours are taken only while the runtime
+ * lacks the data, so an Electron that gains it is used as it is.
+ */
+const NUMBERS_WRITTEN_LIKE: Partial<Record<ResolvedInterfaceLanguage, string>> = { sq: "pl-PL" };
+const DATES_WRITTEN_BY_HAND: Partial<Record<ResolvedInterfaceLanguage, (date: Date, options: Intl.DateTimeFormatOptions) => string>> = {
+  sq: albanianDate,
+};
+
+const runtimeLocales = new Map<string, boolean>();
+
+/** Whether this runtime has the data to write `locale` itself. */
+function runtimeWrites(locale: string): boolean {
+  let known = runtimeLocales.get(locale);
+  if (known === undefined) {
+    try {
+      known = Intl.NumberFormat.supportedLocalesOf([locale]).length > 0;
+    } catch {
+      known = false;
+    }
+    runtimeLocales.set(locale, known);
+  }
+  return known;
+}
+
+const SQ_MONTHS = ["janar", "shkurt", "mars", "prill", "maj", "qershor", "korrik", "gusht", "shtator", "tetor", "nëntor", "dhjetor"];
+const SQ_MONTHS_SHORT = ["jan", "shk", "mar", "pri", "maj", "qer", "korr", "gush", "sht", "tet", "nën", "dhj"];
+const SQ_WEEKDAYS = ["e diel", "e hënë", "e martë", "e mërkurë", "e enjte", "e premte", "e shtunë"];
+const SQ_WEEKDAYS_SHORT = ["die", "hën", "mar", "mër", "enj", "pre", "sht"];
+
+/**
+ * CLDR's Albanian patterns: 7 sht, 7.9.2026, e hënë, 7 shtator 2026, 02:05 m.d.
+ * A month in letters is set off by spaces and a month in figures by full
+ * stops, the weekday leads with a comma, and the clock is twelve-hour with p.d.
+ * and m.d. (paradite, mbasdite) unless a 24-hour cycle is asked for.
+ */
+function albanianDate(date: Date, options: Intl.DateTimeFormatOptions): string {
+  const two = (n: number) => String(n).padStart(2, "0");
+  const { weekday, day, month, year, hour, minute, second } = options;
+  const parts: string[] = [];
+  if (weekday) parts.push((weekday === "long" ? SQ_WEEKDAYS : SQ_WEEKDAYS_SHORT)[date.getDay()]);
+  if (day || month || year) {
+    const inFigures = month === "numeric" || month === "2-digit";
+    const pieces = [
+      !day ? "" : day === "2-digit" ? two(date.getDate()) : String(date.getDate()),
+      !month ? ""
+        : month === "2-digit" ? two(date.getMonth() + 1)
+          : month === "numeric" ? String(date.getMonth() + 1)
+            : (month === "long" ? SQ_MONTHS : SQ_MONTHS_SHORT)[date.getMonth()],
+      !year ? "" : year === "2-digit" ? two(date.getFullYear() % 100) : String(date.getFullYear()),
+    ];
+    parts.push(pieces.filter(Boolean).join(inFigures ? "." : " "));
+  }
+  if (hour || minute || second) {
+    const allDay = options.hour12 === false || options.hourCycle === "h23" || options.hourCycle === "h24";
+    const hours = date.getHours();
+    const twelve = hours % 12 || 12;
+    const clock: string[] = [];
+    if (hour) clock.push(allDay ? two(hours) : hour === "2-digit" ? two(twelve) : String(twelve));
+    if (minute) clock.push(two(date.getMinutes()));
+    if (second) clock.push(two(date.getSeconds()));
+    parts.push(clock.join(":") + (hour && !allDay ? (hours < 12 ? " p.d." : " m.d.") : ""));
+  }
+  // No fields asked for is Intl's default: the date in figures.
+  return parts.length ? parts.join(", ") : albanianDate(date, { day: "numeric", month: "numeric", year: "numeric" });
 }

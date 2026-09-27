@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { BookOpen, CalendarDays, CheckCircle2, ChevronDown, Headphones, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { loadActivitySessions, loadGradeStore, summarizeActivity } from "@/lib/activity";
-import { ui, uiFmt, uiLocale } from "@/lib/i18n";
+import { ui, uiDate, uiFmt } from "@/lib/i18n";
 
 type ProgressStats = {
   totalXp: number;
@@ -110,8 +110,7 @@ export function ActivityCard({ progressStats, className }: { progressStats: Prog
               {chartBuckets.map((bucket, index) => {
                 const heightPct = bucket.minutes > 0 ? Math.max(8, (bucket.minutes / maxMinutes) * 100) : 4;
                 const isToday = index === chartBuckets.length - 1;
-                const weekday = new Intl.DateTimeFormat(uiLocale(), { weekday: "short" })
-                  .format(new Date(bucket.dayStart));
+                const weekday = uiDate(bucket.dayStart, { weekday: "short" });
                 return (
                   <div className="flex h-full flex-1 flex-col items-center justify-end gap-2" key={bucket.dayStart}>
                     <div

@@ -434,6 +434,12 @@ const IT_TABLE: ScriptTable = {
  * variant of these at all. Until somebody writes it, el reads the English one
  * — which at least says nothing false about Greek practice.
  *
+ * Albanian is the Portuguese stopgap again, though a nearer one to close.
+ * Albanian spells Russian names by sound in its own letters — Zhukov,
+ * Çajkovski, Shostakoviç — so an sq table is a short piece of work rather
+ * than a question nobody has asked. Until it is written, sq reads the English
+ * one.
+ *
  * Russian reads it too, for a different reason: a reader of Russian has no
  * convention for transcribing their own alphabet, because they never need
  * one. The setting still exists for them, so the row has to answer
@@ -449,6 +455,7 @@ const TABLES: Record<ResolvedInterfaceLanguage, ScriptTable> = {
   pt: EN_TABLE,
   ru: EN_TABLE,
   el: EN_TABLE,
+  sq: EN_TABLE,
 };
 
 /** The five tables, named — for the sample sheet and the build gate. */
@@ -621,6 +628,7 @@ const AMBIGUOUS: Record<ResolvedInterfaceLanguage, Set<string>> = {
   pt: ambiguousLetters(EN_TABLE),
   ru: ambiguousLetters(EN_TABLE),
   el: ambiguousLetters(EN_TABLE),
+  sq: ambiguousLetters(EN_TABLE),
 };
 
 /** Whether a Cyrillic answer has a Latin form that reads back more than one way. */

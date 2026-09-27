@@ -2637,6 +2637,7 @@ export const PT: Record<string, string> = {
   "Popular pack": "Pacote popular",
   "Power pack": "Pacote grande",
   "Progress and achievements": "Progresso e conquistas",
+  "Hi, {name}!": "Olá, {name}!",
   "Ready to learn today?": "Pronto para aprender hoje?",
   "What would you like to change?": "O que gostavas de mudar?",
   "How far have you come?": "Até onde já chegaste?",

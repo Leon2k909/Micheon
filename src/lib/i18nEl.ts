@@ -2524,6 +2524,7 @@ export const EL: Record<string, string> = {
   "Popular pack": "Δημοφιλές πακέτο",
   "Power pack": "Πακέτο ισχύος",
   "Progress and achievements": "Πρόοδος και επιτεύγματα",
+  "Hi, {name}!": "Γεια σου, {name}!",
   "Ready to learn today?": "Ξεκινάμε τη σημερινή ενότητα;",
   "What would you like to change?": "Τι θα ήθελες να αλλάξεις;",
   "How far have you come?": "Πόσο έχεις προχωρήσει;",

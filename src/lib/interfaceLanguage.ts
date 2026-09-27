@@ -32,10 +32,10 @@ export const INTERFACE_STRINGS_READY_EVENT = "gl-interface-strings-ready";
  * app French on its own, because the people learning French from here are
  * reading German or English while they do it. It is chosen, or it is not.
  */
-export type InterfaceLanguage = "auto" | "en" | "de" | "fr" | "pl" | "es" | "it" | "pt" | "ru" | "el";
+export type InterfaceLanguage = "auto" | "en" | "de" | "fr" | "pl" | "es" | "it" | "pt" | "ru" | "el" | "sq";
 
 /** The languages the app itself can be written in, without "auto". */
-export type ResolvedInterfaceLanguage = "en" | "de" | "fr" | "pl" | "es" | "it" | "pt" | "ru" | "el";
+export type ResolvedInterfaceLanguage = "en" | "de" | "fr" | "pl" | "es" | "it" | "pt" | "ru" | "el" | "sq";
 
 /**
  * The app languages, as a list rather than as options typed out twice.
@@ -69,6 +69,7 @@ export const INTERFACE_LANGUAGES: ReadonlyArray<{
   { value: "it", label: "Italiano", search: ["italian", "italienisch", "italien", "włoski", "wloski", "italiano"] },
   { value: "pl", label: "Polski", search: ["polish", "polnisch", "polonais", "polski", "polaco"] },
   { value: "pt", label: "Português", search: ["portuguese", "portugiesisch", "portugais", "portugalski", "portugues", "português", "brasileiro", "brazilian"] },
+  { value: "sq", label: "Shqip", search: ["albanian", "albanisch", "albanais", "albański", "albanski", "albanés", "albanes", "albanese", "albanês", "албанский", "αλβανικά", "shqip", "shqipe", "shqipja", "albania", "shqipëri", "shqiperi"] },
   { value: "el", label: "Ελληνικά", search: ["greek", "griechisch", "grec", "grecki", "griego", "greco", "grego", "греческий", "ελληνικά", "ellinika", "hellenic", "ελλάδα"] },
   { value: "ru", label: "Русский", search: ["russian", "russisch", "russe", "rosyjski", "ruso", "russo", "russkiy", "русский", "россия"] },
 ];

@@ -1,5 +1,5 @@
 /**
- * One motivation line for every day of the year, in all six app languages.
+ * One motivation line for every day of the year, in the app's languages.
  *
  * NOT interface text, and deliberately not routed through ui(). Everything
  * ui() is handed must exist in every interface table or check-german-interface
@@ -17,7 +17,7 @@
  * adjective would have to agree.
  *
  * Portuguese is EUROPEAN and uses tu, matching i18nPt and the course; Spanish
- * uses tú.
+ * uses tú, and Albanian ti.
  *
  * The day decides the line: day 1 takes the first entry, day 2 the second. No
  * randomness and nothing stored, so everyone on the same date reads the same
@@ -37,11 +37,10 @@ import type { ResolvedInterfaceLanguage } from "@/lib/interfaceLanguage";
 /**
  * One line, in every language the app can be read in.
  *
- * Every entry but `en` is optional because the lookup falls back to English,
- * and `it` is optional for that reason and no better one: Italian became an
- * app language before these were translated, so an Italian reader gets the
- * English line. That is a real gap, not a design — the other five are at
- * 365 of 365.
+ * Every entry but `en` is optional because the lookup falls back to English.
+ * Greek is the one language without its lines so far, so a Greek reader gets
+ * the English one. That is a real gap, not a design — every other language
+ * is at 365 of 365, and check-albanian-interface keeps Albanian there.
  *
  * The type has to name every ResolvedInterfaceLanguage whether or not the
  * strings exist, because the lookup indexes this by that type. Leaving `it`
@@ -58,739 +57,740 @@ type MotivationQuote = {
   pt?: string;
   ru?: string;
   el?: string;
+  sq?: string;
 };
 
 const MOTIVATION_QUOTES: MotivationQuote[] = [
   // 1
-  { de: "Du schaffst das.", en: "You've got this.", fr: "Tu vas y arriver.", pl: "Dasz radę.", es: "Tú puedes.", it: "Ce la fai.", pt: "Tu consegues.", ru: "Ты справишься." },
+  { de: "Du schaffst das.", en: "You've got this.", fr: "Tu vas y arriver.", pl: "Dasz radę.", es: "Tú puedes.", it: "Ce la fai.", pt: "Tu consegues.", ru: "Ты справишься.", sq: "Ti ia del." },
   // 2
-  { de: "Glaub an dich.", en: "Believe in yourself.", fr: "Crois en toi.", pl: "Uwierz w siebie.", es: "Cree en ti.", it: "Credi in te.", pt: "Acredita em ti.", ru: "Верь в себя." },
+  { de: "Glaub an dich.", en: "Believe in yourself.", fr: "Crois en toi.", pl: "Uwierz w siebie.", es: "Cree en ti.", it: "Credi in te.", pt: "Acredita em ti.", ru: "Верь в себя.", sq: "Beso në vetvete." },
   // 3
-  { de: "Heute zählt.", en: "Today counts.", fr: "Aujourd'hui compte.", pl: "Dziś się liczy.", es: "Hoy cuenta.", it: "Oggi conta.", pt: "Hoje conta.", ru: "Сегодняшний день важен." },
+  { de: "Heute zählt.", en: "Today counts.", fr: "Aujourd'hui compte.", pl: "Dziś się liczy.", es: "Hoy cuenta.", it: "Oggi conta.", pt: "Hoje conta.", ru: "Сегодняшний день важен.", sq: "Dita e sotme ka rëndësi." },
   // 4
-  { de: "Heute darfst du strahlen.", en: "Today is yours to shine.", fr: "Aujourd'hui, c'est à toi de briller.", pl: "Dziś możesz zabłysnąć.", es: "Hoy te toca brillar.", it: "Oggi tocca a te brillare.", pt: "Hoje é a tua vez de brilhar.", ru: "Сегодня твой черёд сиять." },
+  { de: "Heute darfst du strahlen.", en: "Today is yours to shine.", fr: "Aujourd'hui, c'est à toi de briller.", pl: "Dziś możesz zabłysnąć.", es: "Hoy te toca brillar.", it: "Oggi tocca a te brillare.", pt: "Hoje é a tua vez de brilhar.", ru: "Сегодня твой черёд сиять.", sq: "Sot është dita jote për të shkëlqyer." },
   // 5
-  { de: "Dein Weg zählt.", en: "Your path matters.", fr: "Ton chemin compte.", pl: "Twoja droga ma znaczenie.", es: "Tu camino importa.", it: "La tua strada conta.", pt: "O teu caminho importa.", ru: "Твой путь важен." },
+  { de: "Dein Weg zählt.", en: "Your path matters.", fr: "Ton chemin compte.", pl: "Twoja droga ma znaczenie.", es: "Tu camino importa.", it: "La tua strada conta.", pt: "O teu caminho importa.", ru: "Твой путь важен.", sq: "Rruga jote ka rëndësi." },
   // 6
-  { de: "Dein Moment ist jetzt.", en: "Your moment is now.", fr: "Ton moment, c'est maintenant.", pl: "To jest twój moment.", es: "Tu momento es ahora.", it: "Il tuo momento è adesso.", pt: "O teu momento é agora.", ru: "Твоё время — сейчас." },
+  { de: "Dein Moment ist jetzt.", en: "Your moment is now.", fr: "Ton moment, c'est maintenant.", pl: "To jest twój moment.", es: "Tu momento es ahora.", it: "Il tuo momento è adesso.", pt: "O teu momento é agora.", ru: "Твоё время — сейчас.", sq: "Tani është çasti yt." },
   // 7
-  { de: "Du kannst mehr.", en: "You're capable of more.", fr: "Tu es capable de plus.", pl: "Stać cię na więcej.", es: "Tú puedes más.", it: "Puoi di più.", pt: "Tu podes mais.", ru: "Ты способен на большее." },
+  { de: "Du kannst mehr.", en: "You're capable of more.", fr: "Tu es capable de plus.", pl: "Stać cię na więcej.", es: "Tú puedes más.", it: "Puoi di più.", pt: "Tu podes mais.", ru: "Ты способен на большее.", sq: "Ti mund të bësh më shumë." },
   // 8
-  { de: "Schritt für Schritt.", en: "Step by step.", fr: "Pas à pas.", pl: "Krok po kroku.", es: "Paso a paso.", it: "Passo dopo passo.", pt: "Passo a passo.", ru: "Шаг за шагом." },
+  { de: "Schritt für Schritt.", en: "Step by step.", fr: "Pas à pas.", pl: "Krok po kroku.", es: "Paso a paso.", it: "Passo dopo passo.", pt: "Passo a passo.", ru: "Шаг за шагом.", sq: "Hap pas hapi." },
   // 9
-  { de: "Bleib neugierig.", en: "Stay curious.", fr: "Garde ta curiosité.", pl: "Zachowaj ciekawość.", es: "Mantén la curiosidad.", it: "Mantieni la curiosità.", pt: "Mantém a curiosidade.", ru: "Не теряй любопытства." },
+  { de: "Bleib neugierig.", en: "Stay curious.", fr: "Garde ta curiosité.", pl: "Zachowaj ciekawość.", es: "Mantén la curiosidad.", it: "Mantieni la curiosità.", pt: "Mantém a curiosidade.", ru: "Не теряй любопытства.", sq: "Ruaje kureshtjen." },
   // 10
-  { de: "Mach weiter.", en: "Keep going.", fr: "Continue.", pl: "Idź dalej.", es: "Sigue adelante.", it: "Vai avanti.", pt: "Continua.", ru: "Продолжай." },
+  { de: "Mach weiter.", en: "Keep going.", fr: "Continue.", pl: "Idź dalej.", es: "Sigue adelante.", it: "Vai avanti.", pt: "Continua.", ru: "Продолжай.", sq: "Vazhdo përpara." },
   // 11
-  { de: "Sei stolz auf dich.", en: "Be proud of yourself.", fr: "Regarde ce que tu as accompli.", pl: "Masz powód do dumy.", es: "Siente orgullo de ti.", it: "Prova orgoglio per te.", pt: "Tem orgulho em ti.", ru: "Гордись собой." },
+  { de: "Sei stolz auf dich.", en: "Be proud of yourself.", fr: "Regarde ce que tu as accompli.", pl: "Masz powód do dumy.", es: "Siente orgullo de ti.", it: "Prova orgoglio per te.", pt: "Tem orgulho em ti.", ru: "Гордись собой.", sq: "Krenohu me veten." },
   // 12
-  { de: "Heute ist deine Chance.", en: "Today is your chance.", fr: "Aujourd'hui est ta chance.", pl: "Dziś jest twoja szansa.", es: "Hoy es tu oportunidad.", it: "Oggi è la tua occasione.", pt: "Hoje é a tua oportunidade.", ru: "Сегодня твой случай." },
+  { de: "Heute ist deine Chance.", en: "Today is your chance.", fr: "Aujourd'hui est ta chance.", pl: "Dziś jest twoja szansa.", es: "Hoy es tu oportunidad.", it: "Oggi è la tua occasione.", pt: "Hoje é a tua oportunidade.", ru: "Сегодня твой случай.", sq: "Sot është rasti yt." },
   // 13
-  { de: "Vertrau deinem Weg.", en: "Trust your path.", fr: "Fais confiance à ton chemin.", pl: "Zaufaj swojej drodze.", es: "Confía en tu camino.", it: "Fidati della tua strada.", pt: "Confia no teu caminho.", ru: "Доверься своему пути." },
+  { de: "Vertrau deinem Weg.", en: "Trust your path.", fr: "Fais confiance à ton chemin.", pl: "Zaufaj swojej drodze.", es: "Confía en tu camino.", it: "Fidati della tua strada.", pt: "Confia no teu caminho.", ru: "Доверься своему пути.", sq: "Beso në rrugën tënde." },
   // 14
-  { de: "Kleine Schritte zählen.", en: "Small steps count.", fr: "Les petits pas comptent.", pl: "Małe kroki się liczą.", es: "Los pasos pequeños cuentan.", it: "I passi piccoli contano.", pt: "Os passos pequenos contam.", ru: "Маленькие шаги важны." },
+  { de: "Kleine Schritte zählen.", en: "Small steps count.", fr: "Les petits pas comptent.", pl: "Małe kroki się liczą.", es: "Los pasos pequeños cuentan.", it: "I passi piccoli contano.", pt: "Os passos pequenos contam.", ru: "Маленькие шаги важны.", sq: "Edhe hapat e vegjël kanë rëndësi." },
   // 15
-  { de: "Du bist bereit.", en: "You're ready.", fr: "Tu as tout ce qu'il faut.", pl: "Możesz zaczynać.", es: "Tienes todo lo que hace falta.", it: "Hai tutto quello che serve.", pt: "Tens tudo o que é preciso.", ru: "Ты готов." },
+  { de: "Du bist bereit.", en: "You're ready.", fr: "Tu as tout ce qu'il faut.", pl: "Możesz zaczynać.", es: "Tienes todo lo que hace falta.", it: "Hai tutto quello che serve.", pt: "Tens tudo o que é preciso.", ru: "Ты готов.", sq: "Je gati." },
   // 16
-  { de: "Bleib mutig.", en: "Stay brave.", fr: "Garde ton courage.", pl: "Nie trać odwagi.", es: "Mantén el valor.", it: "Mantieni il coraggio.", pt: "Mantém a coragem.", ru: "Оставайся смелым." },
+  { de: "Bleib mutig.", en: "Stay brave.", fr: "Garde ton courage.", pl: "Nie trać odwagi.", es: "Mantén el valor.", it: "Mantieni il coraggio.", pt: "Mantém a coragem.", ru: "Оставайся смелым.", sq: "Mos e humb guximin." },
   // 17
-  { de: "Gib dir Zeit.", en: "Give yourself time.", fr: "Donne-toi du temps.", pl: "Daj sobie czas.", es: "Date tiempo.", it: "Datti tempo.", pt: "Dá-te tempo.", ru: "Дай себе время." },
+  { de: "Gib dir Zeit.", en: "Give yourself time.", fr: "Donne-toi du temps.", pl: "Daj sobie czas.", es: "Date tiempo.", it: "Datti tempo.", pt: "Dá-te tempo.", ru: "Дай себе время.", sq: "Jepi vetes kohë." },
   // 18
-  { de: "Dein Einsatz zählt.", en: "Your effort counts.", fr: "Tes efforts comptent.", pl: "Twój wysiłek się liczy.", es: "Tu esfuerzo cuenta.", it: "Il tuo impegno conta.", pt: "O teu esforço conta.", ru: "Твои усилия важны." },
+  { de: "Dein Einsatz zählt.", en: "Your effort counts.", fr: "Tes efforts comptent.", pl: "Twój wysiłek się liczy.", es: "Tu esfuerzo cuenta.", it: "Il tuo impegno conta.", pt: "O teu esforço conta.", ru: "Твои усилия важны.", sq: "Përpjekja jote ka vlerë." },
   // 19
-  { de: "Wachstum braucht Zeit.", en: "Growth takes time.", fr: "Grandir prend du temps.", pl: "Rozwój wymaga czasu.", es: "Crecer lleva tiempo.", it: "Crescere vuole tempo.", pt: "Crescer leva tempo.", ru: "Рост требует времени." },
+  { de: "Wachstum braucht Zeit.", en: "Growth takes time.", fr: "Grandir prend du temps.", pl: "Rozwój wymaga czasu.", es: "Crecer lleva tiempo.", it: "Crescere vuole tempo.", pt: "Crescer leva tempo.", ru: "Рост требует времени.", sq: "Rritja kërkon kohë." },
   // 20
-  { de: "Du kommst voran.", en: "You're getting somewhere.", fr: "Tu avances.", pl: "Idziesz do przodu.", es: "Vas avanzando.", it: "Stai arrivando da qualche parte.", pt: "Estás a avançar.", ru: "Ты уже к чему-то пришёл." },
+  { de: "Du kommst voran.", en: "You're getting somewhere.", fr: "Tu avances.", pl: "Idziesz do przodu.", es: "Vas avanzando.", it: "Stai arrivando da qualche parte.", pt: "Estás a avançar.", ru: "Ты уже к чему-то пришёл.", sq: "Po ecën përpara." },
   // 21
-  { de: "Bleib dran.", en: "Stick with it.", fr: "Tiens bon.", pl: "Nie odpuszczaj.", es: "No lo dejes.", it: "Non mollare.", pt: "Não desistas.", ru: "Держись начатого." },
+  { de: "Bleib dran.", en: "Stick with it.", fr: "Tiens bon.", pl: "Nie odpuszczaj.", es: "No lo dejes.", it: "Non mollare.", pt: "Não desistas.", ru: "Держись начатого.", sq: "Mos e lër përgjysmë." },
   // 22
-  { de: "Alles beginnt mit Mut.", en: "It all starts with courage.", fr: "Tout commence par le courage.", pl: "Wszystko zaczyna się od odwagi.", es: "Todo empieza con valor.", it: "Tutto comincia dal coraggio.", pt: "Tudo começa com coragem.", ru: "Всё начинается со смелости." },
+  { de: "Alles beginnt mit Mut.", en: "It all starts with courage.", fr: "Tout commence par le courage.", pl: "Wszystko zaczyna się od odwagi.", es: "Todo empieza con valor.", it: "Tutto comincia dal coraggio.", pt: "Tudo começa com coragem.", ru: "Всё начинается со смелости.", sq: "Gjithçka fillon me guxim." },
   // 23
-  { de: "Heute wird gut.", en: "Today will be a good one.", fr: "Aujourd'hui sera une bonne journée.", pl: "Dziś będzie dobry dzień.", es: "Hoy va a ser un buen día.", it: "Oggi sarà una buona giornata.", pt: "Hoje vai ser um bom dia.", ru: "Сегодня будет хороший день." },
+  { de: "Heute wird gut.", en: "Today will be a good one.", fr: "Aujourd'hui sera une bonne journée.", pl: "Dziś będzie dobry dzień.", es: "Hoy va a ser un buen día.", it: "Oggi sarà una buona giornata.", pt: "Hoje vai ser um bom dia.", ru: "Сегодня будет хороший день.", sq: "Sot do të jetë një ditë e mbarë." },
   // 24
-  { de: "Trau dich.", en: "Go for it.", fr: "Ose.", pl: "Odważ się.", es: "Atrévete.", it: "Buttati.", pt: "Atreve-te.", ru: "Действуй." },
+  { de: "Trau dich.", en: "Go for it.", fr: "Ose.", pl: "Odważ się.", es: "Atrévete.", it: "Buttati.", pt: "Atreve-te.", ru: "Действуй.", sq: "Guxo." },
   // 25
-  { de: "Du bist stärker als gestern.", en: "You're stronger than yesterday.", fr: "Tu as plus de force qu'hier.", pl: "Masz w sobie więcej siły niż wczoraj.", es: "Eres más fuerte que ayer.", it: "Sei più forte di ieri.", pt: "És mais forte do que ontem.", ru: "Ты сильнее, чем вчера." },
+  { de: "Du bist stärker als gestern.", en: "You're stronger than yesterday.", fr: "Tu as plus de force qu'hier.", pl: "Masz w sobie więcej siły niż wczoraj.", es: "Eres más fuerte que ayer.", it: "Sei più forte di ieri.", pt: "És mais forte do que ontem.", ru: "Ты сильнее, чем вчера.", sq: "Sot ke më shumë forcë se dje." },
   // 26
-  { de: "Jeder Anfang zählt.", en: "Every beginning counts.", fr: "Chaque début compte.", pl: "Każdy początek się liczy.", es: "Cada comienzo cuenta.", it: "Ogni inizio conta.", pt: "Cada começo conta.", ru: "Всякое начало важно." },
+  { de: "Jeder Anfang zählt.", en: "Every beginning counts.", fr: "Chaque début compte.", pl: "Każdy początek się liczy.", es: "Cada comienzo cuenta.", it: "Ogni inizio conta.", pt: "Cada começo conta.", ru: "Всякое начало важно.", sq: "Çdo fillim ka vlerë." },
   // 27
-  { de: "Dein Tempo ist richtig.", en: "Your pace is the right one.", fr: "Ton rythme est le bon.", pl: "Twoje tempo jest właściwe.", es: "Tu ritmo es el correcto.", it: "Il tuo ritmo è quello giusto.", pt: "O teu ritmo é o certo.", ru: "Твой темп — верный." },
+  { de: "Dein Tempo ist richtig.", en: "Your pace is the right one.", fr: "Ton rythme est le bon.", pl: "Twoje tempo jest właściwe.", es: "Tu ritmo es el correcto.", it: "Il tuo ritmo è quello giusto.", pt: "O teu ritmo é o certo.", ru: "Твой темп — верный.", sq: "Ritmi yt është i duhuri." },
   // 28
-  { de: "Lass dich nicht aufhalten.", en: "Don't let anything stop you.", fr: "Ne laisse rien t'arrêter.", pl: "Nie daj się zatrzymać.", es: "Que nada te detenga.", it: "Non lasciarti fermare da niente.", pt: "Não deixes que nada te pare.", ru: "Пусть ничто тебя не остановит." },
+  { de: "Lass dich nicht aufhalten.", en: "Don't let anything stop you.", fr: "Ne laisse rien t'arrêter.", pl: "Nie daj się zatrzymać.", es: "Que nada te detenga.", it: "Non lasciarti fermare da niente.", pt: "Não deixes que nada te pare.", ru: "Пусть ничто тебя не остановит.", sq: "Mos lejo asgjë të të ndalë." },
   // 29
-  { de: "Du wächst daran.", en: "This is how you grow.", fr: "C'est ainsi que tu grandis.", pl: "To cię rozwija.", es: "Con esto creces.", it: "È così che si cresce.", pt: "É assim que cresces.", ru: "Именно так и растут." },
+  { de: "Du wächst daran.", en: "This is how you grow.", fr: "C'est ainsi que tu grandis.", pl: "To cię rozwija.", es: "Con esto creces.", it: "È così che si cresce.", pt: "É assim que cresces.", ru: "Именно так и растут.", sq: "Kështu rritesh." },
   // 30
-  { de: "Mach es für dich.", en: "Do it for yourself.", fr: "Fais-le pour toi.", pl: "Zrób to dla siebie.", es: "Hazlo por ti.", it: "Fallo per te.", pt: "Fá-lo por ti.", ru: "Сделай это для себя." },
+  { de: "Mach es für dich.", en: "Do it for yourself.", fr: "Fais-le pour toi.", pl: "Zrób to dla siebie.", es: "Hazlo por ti.", it: "Fallo per te.", pt: "Fá-lo por ti.", ru: "Сделай это для себя.", sq: "Bëje për veten tënde." },
   // 31
-  { de: "Sei dein eigener Antrieb.", en: "Be your own engine.", fr: "Sois ton propre moteur.", pl: "Bądź własnym napędem.", es: "Sé tu propio motor.", it: "Sii il tuo motore.", pt: "Sê o teu próprio motor.", ru: "Будь себе двигателем." },
+  { de: "Sei dein eigener Antrieb.", en: "Be your own engine.", fr: "Sois ton propre moteur.", pl: "Bądź własnym napędem.", es: "Sé tu propio motor.", it: "Sii il tuo motore.", pt: "Sê o teu próprio motor.", ru: "Будь себе двигателем.", sq: "Bëhu vetë shtysa jote." },
   // 32
-  { de: "Heute beginnt etwas Neues.", en: "Something new begins today.", fr: "Quelque chose de nouveau commence aujourd'hui.", pl: "Dziś zaczyna się coś nowego.", es: "Hoy empieza algo nuevo.", it: "Oggi comincia qualcosa di nuovo.", pt: "Hoje começa algo novo.", ru: "Сегодня начинается что-то новое." },
+  { de: "Heute beginnt etwas Neues.", en: "Something new begins today.", fr: "Quelque chose de nouveau commence aujourd'hui.", pl: "Dziś zaczyna się coś nowego.", es: "Hoy empieza algo nuevo.", it: "Oggi comincia qualcosa di nuovo.", pt: "Hoje começa algo novo.", ru: "Сегодня начинается что-то новое.", sq: "Sot fillon diçka e re." },
   // 33
-  { de: "Vertrau dir.", en: "Trust yourself.", fr: "Fais-toi confiance.", pl: "Zaufaj sobie.", es: "Confía en ti.", it: "Fidati di te.", pt: "Confia em ti.", ru: "Доверяй себе." },
+  { de: "Vertrau dir.", en: "Trust yourself.", fr: "Fais-toi confiance.", pl: "Zaufaj sobie.", es: "Confía en ti.", it: "Fidati di te.", pt: "Confia em ti.", ru: "Доверяй себе.", sq: "Besoji vetes." },
   // 34
-  { de: "Dein Mut lohnt sich.", en: "Your courage pays off.", fr: "Ton courage en vaut la peine.", pl: "Twoja odwaga się opłaca.", es: "Tu valentía vale la pena.", it: "Il tuo coraggio ripaga.", pt: "A tua coragem vale a pena.", ru: "Твоя смелость окупается." },
+  { de: "Dein Mut lohnt sich.", en: "Your courage pays off.", fr: "Ton courage en vaut la peine.", pl: "Twoja odwaga się opłaca.", es: "Tu valentía vale la pena.", it: "Il tuo coraggio ripaga.", pt: "A tua coragem vale a pena.", ru: "Твоя смелость окупается.", sq: "Guximi yt shpërblehet." },
   // 35
-  { de: "Jeder Fortschritt zählt.", en: "Every bit of progress counts.", fr: "Chaque progrès compte.", pl: "Każdy postęp się liczy.", es: "Cada avance cuenta.", it: "Ogni passo avanti conta.", pt: "Cada progresso conta.", ru: "Всякое продвижение важно." },
+  { de: "Jeder Fortschritt zählt.", en: "Every bit of progress counts.", fr: "Chaque progrès compte.", pl: "Każdy postęp się liczy.", es: "Cada avance cuenta.", it: "Ogni passo avanti conta.", pt: "Cada progresso conta.", ru: "Всякое продвижение важно.", sq: "Çdo përparim, sado i vogël, vlen." },
   // 36
-  { de: "Du bist auf dem Weg.", en: "You're on your way.", fr: "Tu es en chemin.", pl: "Jesteś w drodze.", es: "Vas por buen camino.", it: "Sei sulla buona strada.", pt: "Estás a caminho.", ru: "Ты в пути." },
+  { de: "Du bist auf dem Weg.", en: "You're on your way.", fr: "Tu es en chemin.", pl: "Jesteś w drodze.", es: "Vas por buen camino.", it: "Sei sulla buona strada.", pt: "Estás a caminho.", ru: "Ты в пути.", sq: "Je në rrugë të mbarë." },
   // 37
-  { de: "Bleib fokussiert.", en: "Stay focused.", fr: "Ne te disperse pas.", pl: "Nie trać skupienia.", es: "Mantén la concentración.", it: "Mantieni la concentrazione.", pt: "Mantém o foco.", ru: "Не теряй сосредоточенности." },
+  { de: "Bleib fokussiert.", en: "Stay focused.", fr: "Ne te disperse pas.", pl: "Nie trać skupienia.", es: "Mantén la concentración.", it: "Mantieni la concentrazione.", pt: "Mantém o foco.", ru: "Не теряй сосредоточенности.", sq: "Përqendrohu te qëllimi." },
   // 38
-  { de: "Es lohnt sich.", en: "It's worth it.", fr: "Ça en vaut la peine.", pl: "Warto.", es: "Merece la pena.", it: "Ne vale la pena.", pt: "Vale a pena.", ru: "Это того стоит." },
+  { de: "Es lohnt sich.", en: "It's worth it.", fr: "Ça en vaut la peine.", pl: "Warto.", es: "Merece la pena.", it: "Ne vale la pena.", pt: "Vale a pena.", ru: "Это того стоит.", sq: "Ia vlen." },
   // 39
-  { de: "Deine Zeit kommt.", en: "Your time will come.", fr: "Ton heure viendra.", pl: "Twój czas nadejdzie.", es: "Tu momento llegará.", it: "Il tuo momento arriverà.", pt: "O teu tempo há de chegar.", ru: "Твоё время придёт." },
+  { de: "Deine Zeit kommt.", en: "Your time will come.", fr: "Ton heure viendra.", pl: "Twój czas nadejdzie.", es: "Tu momento llegará.", it: "Il tuo momento arriverà.", pt: "O teu tempo há de chegar.", ru: "Твоё время придёт.", sq: "Koha jote do të vijë." },
   // 40
-  { de: "Wähle deinen Weg.", en: "Choose your path.", fr: "Choisis ton chemin.", pl: "Wybierz swoją drogę.", es: "Elige tu camino.", it: "Scegli la tua strada.", pt: "Escolhe o teu caminho.", ru: "Выбирай свой путь." },
+  { de: "Wähle deinen Weg.", en: "Choose your path.", fr: "Choisis ton chemin.", pl: "Wybierz swoją drogę.", es: "Elige tu camino.", it: "Scegli la tua strada.", pt: "Escolhe o teu caminho.", ru: "Выбирай свой путь.", sq: "Zgjidh rrugën tënde." },
   // 41
-  { de: "Sei offen für Neues.", en: "Stay open to something new.", fr: "Ouvre-toi à la nouveauté.", pl: "Otwórz się na nowe.", es: "Ábrete a lo nuevo.", it: "Fai spazio al nuovo.", pt: "Abre-te ao que é novo.", ru: "Оставайся открытым новому." },
+  { de: "Sei offen für Neues.", en: "Stay open to something new.", fr: "Ouvre-toi à la nouveauté.", pl: "Otwórz się na nowe.", es: "Ábrete a lo nuevo.", it: "Fai spazio al nuovo.", pt: "Abre-te ao que é novo.", ru: "Оставайся открытым новому.", sq: "Hapu ndaj gjërave të reja." },
   // 42
-  { de: "Du machst Fortschritte.", en: "You're making progress.", fr: "Tu progresses.", pl: "Robisz postępy.", es: "Estás avanzando.", it: "Stai facendo progressi.", pt: "Estás a progredir.", ru: "Ты продвигаешься." },
+  { de: "Du machst Fortschritte.", en: "You're making progress.", fr: "Tu progresses.", pl: "Robisz postępy.", es: "Estás avanzando.", it: "Stai facendo progressi.", pt: "Estás a progredir.", ru: "Ты продвигаешься.", sq: "Po përparon." },
   // 43
-  { de: "Alles darf wachsen.", en: "Everything is allowed to grow.", fr: "Tout a le droit de grandir.", pl: "Wszystko ma prawo rosnąć.", es: "Todo tiene derecho a crecer.", it: "Tutto ha diritto di crescere.", pt: "Tudo tem direito a crescer.", ru: "Всему позволено расти." },
+  { de: "Alles darf wachsen.", en: "Everything is allowed to grow.", fr: "Tout a le droit de grandir.", pl: "Wszystko ma prawo rosnąć.", es: "Todo tiene derecho a crecer.", it: "Tutto ha diritto di crescere.", pt: "Tudo tem direito a crescer.", ru: "Всему позволено расти.", sq: "Lëre gjithçka të rritet." },
   // 44
-  { de: "Bleib hoffnungsvoll.", en: "Keep your hope.", fr: "Garde espoir.", pl: "Nie trać nadziei.", es: "No pierdas la esperanza.", it: "Non perdere la speranza.", pt: "Não percas a esperança.", ru: "Сохраняй надежду." },
+  { de: "Bleib hoffnungsvoll.", en: "Keep your hope.", fr: "Garde espoir.", pl: "Nie trać nadziei.", es: "No pierdas la esperanza.", it: "Non perdere la speranza.", pt: "Não percas a esperança.", ru: "Сохраняй надежду.", sq: "Mbaje shpresën gjallë." },
   // 45
-  { de: "Sei stolz auf heute.", en: "Be proud of today.", fr: "Aujourd'hui mérite ta fierté.", pl: "Dziś masz powód do dumy.", es: "Hoy merece tu orgullo.", it: "Oggi merita il tuo orgoglio.", pt: "Hoje merece o teu orgulho.", ru: "Гордись сегодняшним днём." },
+  { de: "Sei stolz auf heute.", en: "Be proud of today.", fr: "Aujourd'hui mérite ta fierté.", pl: "Dziś masz powód do dumy.", es: "Hoy merece tu orgullo.", it: "Oggi merita il tuo orgoglio.", pt: "Hoje merece o teu orgulho.", ru: "Гордись сегодняшним днём.", sq: "Krenohu me ditën e sotme." },
   // 46
-  { de: "Mach dich stolz.", en: "Make yourself proud.", fr: "Fais-toi honneur.", pl: "Daj sobie powód do dumy.", es: "Date un motivo de orgullo.", it: "Datti un motivo di orgoglio.", pt: "Dá a ti um motivo de orgulho.", ru: "Порадуй самого себя." },
+  { de: "Mach dich stolz.", en: "Make yourself proud.", fr: "Fais-toi honneur.", pl: "Daj sobie powód do dumy.", es: "Date un motivo de orgullo.", it: "Datti un motivo di orgoglio.", pt: "Dá a ti um motivo de orgulho.", ru: "Порадуй самого себя.", sq: "Bëj diçka për t'u krenuar." },
   // 47
-  { de: "Heute kannst du wachsen.", en: "Today you can grow.", fr: "Aujourd'hui, tu peux grandir.", pl: "Dziś możesz się rozwinąć.", es: "Hoy puedes crecer.", it: "Oggi puoi crescere.", pt: "Hoje podes crescer.", ru: "Сегодня ты можешь вырасти." },
+  { de: "Heute kannst du wachsen.", en: "Today you can grow.", fr: "Aujourd'hui, tu peux grandir.", pl: "Dziś możesz się rozwinąć.", es: "Hoy puedes crecer.", it: "Oggi puoi crescere.", pt: "Hoje podes crescer.", ru: "Сегодня ты можешь вырасти.", sq: "Sot mund të rritesh." },
   // 48
-  { de: "Denk groß.", en: "Think big.", fr: "Vois grand.", pl: "Myśl z rozmachem.", es: "Piensa en grande.", it: "Pensa in grande.", pt: "Pensa em grande.", ru: "Мысли широко." },
+  { de: "Denk groß.", en: "Think big.", fr: "Vois grand.", pl: "Myśl z rozmachem.", es: "Piensa en grande.", it: "Pensa in grande.", pt: "Pensa em grande.", ru: "Мысли широко.", sq: "Mendo në të madhe." },
   // 49
-  { de: "Beginne klein.", en: "Start small.", fr: "Commence petit.", pl: "Zacznij od małego.", es: "Empieza por lo pequeño.", it: "Comincia dal piccolo.", pt: "Começa pelo pequeno.", ru: "Начни с малого." },
+  { de: "Beginne klein.", en: "Start small.", fr: "Commence petit.", pl: "Zacznij od małego.", es: "Empieza por lo pequeño.", it: "Comincia dal piccolo.", pt: "Começa pelo pequeno.", ru: "Начни с малого.", sq: "Fillo me pak." },
   // 50
-  { de: "Bleib dir treu.", en: "Stay true to yourself.", fr: "Reste fidèle à toi-même.", pl: "Pozostań sobą.", es: "Sé fiel a ti.", it: "Sii fedele a te.", pt: "Sê fiel a ti.", ru: "Оставайся собой." },
+  { de: "Bleib dir treu.", en: "Stay true to yourself.", fr: "Reste fidèle à toi-même.", pl: "Pozostań sobą.", es: "Sé fiel a ti.", it: "Sii fedele a te.", pt: "Sê fiel a ti.", ru: "Оставайся собой.", sq: "Mbetu vetvetja." },
   // 51
-  { de: "Du hast Potenzial.", en: "You have potential.", fr: "Tu as du potentiel.", pl: "Masz potencjał.", es: "Tienes potencial.", it: "Hai potenziale.", pt: "Tens potencial.", ru: "В тебе есть задатки." },
+  { de: "Du hast Potenzial.", en: "You have potential.", fr: "Tu as du potentiel.", pl: "Masz potencjał.", es: "Tienes potencial.", it: "Hai potenziale.", pt: "Tens potencial.", ru: "В тебе есть задатки.", sq: "Ke shumë potencial." },
   // 52
-  { de: "Jeder Schritt verändert etwas.", en: "Every step changes something.", fr: "Chaque pas change quelque chose.", pl: "Każdy krok coś zmienia.", es: "Cada paso cambia algo.", it: "Ogni passo cambia qualcosa.", pt: "Cada passo muda alguma coisa.", ru: "Каждый шаг что-то меняет." },
+  { de: "Jeder Schritt verändert etwas.", en: "Every step changes something.", fr: "Chaque pas change quelque chose.", pl: "Każdy krok coś zmienia.", es: "Cada paso cambia algo.", it: "Ogni passo cambia qualcosa.", pt: "Cada passo muda alguma coisa.", ru: "Каждый шаг что-то меняет.", sq: "Çdo hap ndryshon diçka." },
   // 53
-  { de: "Dein Morgen beginnt heute.", en: "Your tomorrow starts today.", fr: "Ton demain commence aujourd'hui.", pl: "Twoje jutro zaczyna się dziś.", es: "Tu mañana empieza hoy.", it: "Il tuo domani comincia oggi.", pt: "O teu amanhã começa hoje.", ru: "Твоё завтра начинается сегодня." },
+  { de: "Dein Morgen beginnt heute.", en: "Your tomorrow starts today.", fr: "Ton demain commence aujourd'hui.", pl: "Twoje jutro zaczyna się dziś.", es: "Tu mañana empieza hoy.", it: "Il tuo domani comincia oggi.", pt: "O teu amanhã começa hoje.", ru: "Твоё завтра начинается сегодня.", sq: "E nesërmja jote fillon sot." },
   // 54
-  { de: "Sei geduldig mit dir.", en: "Be patient with yourself.", fr: "Va doucement avec toi-même.", pl: "Miej do siebie cierpliwość.", es: "Ten paciencia contigo.", it: "Abbi pazienza con te.", pt: "Tem paciência contigo.", ru: "Будь терпелив к себе." },
+  { de: "Sei geduldig mit dir.", en: "Be patient with yourself.", fr: "Va doucement avec toi-même.", pl: "Miej do siebie cierpliwość.", es: "Ten paciencia contigo.", it: "Abbi pazienza con te.", pt: "Tem paciência contigo.", ru: "Будь терпелив к себе.", sq: "Ki durim me veten." },
   // 55
-  { de: "Du darfst neu anfangen.", en: "You're allowed to start over.", fr: "Tu as le droit de recommencer.", pl: "Masz prawo zacząć od nowa.", es: "Tienes derecho a empezar de nuevo.", it: "Hai il diritto di ricominciare.", pt: "Tens o direito de recomeçar.", ru: "Тебе можно начать заново." },
+  { de: "Du darfst neu anfangen.", en: "You're allowed to start over.", fr: "Tu as le droit de recommencer.", pl: "Masz prawo zacząć od nowa.", es: "Tienes derecho a empezar de nuevo.", it: "Hai il diritto di ricominciare.", pt: "Tens o direito de recomeçar.", ru: "Тебе можно начать заново.", sq: "Mund të fillosh nga e para." },
   // 56
-  { de: "Mut verändert alles.", en: "Courage changes everything.", fr: "Le courage change tout.", pl: "Odwaga zmienia wszystko.", es: "El valor lo cambia todo.", it: "Il coraggio cambia tutto.", pt: "A coragem muda tudo.", ru: "Смелость меняет всё." },
+  { de: "Mut verändert alles.", en: "Courage changes everything.", fr: "Le courage change tout.", pl: "Odwaga zmienia wszystko.", es: "El valor lo cambia todo.", it: "Il coraggio cambia tutto.", pt: "A coragem muda tudo.", ru: "Смелость меняет всё.", sq: "Guximi ndryshon gjithçka." },
   // 57
-  { de: "Bleib auf Kurs.", en: "Hold your course.", fr: "Garde le cap.", pl: "Trzymaj kurs.", es: "Mantén el rumbo.", it: "Tieni la rotta.", pt: "Mantém o rumo.", ru: "Держи курс." },
+  { de: "Bleib auf Kurs.", en: "Hold your course.", fr: "Garde le cap.", pl: "Trzymaj kurs.", es: "Mantén el rumbo.", it: "Tieni la rotta.", pt: "Mantém o rumo.", ru: "Держи курс.", sq: "Mbaje drejtimin." },
   // 58
-  { de: "Deine Träume zählen.", en: "Your dreams matter.", fr: "Tes rêves comptent.", pl: "Twoje marzenia się liczą.", es: "Tus sueños importan.", it: "I tuoi sogni contano.", pt: "Os teus sonhos importam.", ru: "Твои мечты важны." },
+  { de: "Deine Träume zählen.", en: "Your dreams matter.", fr: "Tes rêves comptent.", pl: "Twoje marzenia się liczą.", es: "Tus sueños importan.", it: "I tuoi sogni contano.", pt: "Os teus sonhos importam.", ru: "Твои мечты важны.", sq: "Ëndrrat e tua kanë rëndësi." },
   // 59
-  { de: "Heute ist ein guter Anfang.", en: "Today is a good place to start.", fr: "Aujourd'hui est un bon début.", pl: "Dziś to dobry początek.", es: "Hoy es un buen comienzo.", it: "Oggi è un buon punto di partenza.", pt: "Hoje é um bom começo.", ru: "Сегодня — хорошее место для начала." },
+  { de: "Heute ist ein guter Anfang.", en: "Today is a good place to start.", fr: "Aujourd'hui est un bon début.", pl: "Dziś to dobry początek.", es: "Hoy es un buen comienzo.", it: "Oggi è un buon punto di partenza.", pt: "Hoje é um bom começo.", ru: "Сегодня — хорошее место для начала.", sq: "Sot është një ditë e mirë për të nisur." },
   // 60
-  { de: "Du kannst stolz sein.", en: "You have every reason to be proud.", fr: "Tu peux en tirer de la fierté.", pl: "Możesz czuć dumę.", es: "Puedes sentir orgullo.", it: "Hai tutte le ragioni per l'orgoglio.", pt: "Podes sentir orgulho.", ru: "У тебя есть все причины гордиться." },
+  { de: "Du kannst stolz sein.", en: "You have every reason to be proud.", fr: "Tu peux en tirer de la fierté.", pl: "Możesz czuć dumę.", es: "Puedes sentir orgullo.", it: "Hai tutte le ragioni per l'orgoglio.", pt: "Podes sentir orgulho.", ru: "У тебя есть все причины гордиться.", sq: "Ke çdo arsye të krenohesh." },
   // 61
-  { de: "Folge deinem Herzen.", en: "Follow your heart.", fr: "Suis ton cœur.", pl: "Idź za głosem serca.", es: "Sigue a tu corazón.", it: "Segui il cuore.", pt: "Segue o teu coração.", ru: "Следуй за сердцем." },
+  { de: "Folge deinem Herzen.", en: "Follow your heart.", fr: "Suis ton cœur.", pl: "Idź za głosem serca.", es: "Sigue a tu corazón.", it: "Segui il cuore.", pt: "Segue o teu coração.", ru: "Следуй за сердцем.", sq: "Ndiq zemrën tënde." },
   // 62
-  { de: "Gib dein Bestes.", en: "Give it your best.", fr: "Donne le meilleur de toi.", pl: "Daj z siebie wszystko.", es: "Da lo mejor de ti.", it: "Dacci il meglio.", pt: "Dá o teu melhor.", ru: "Сделай всё, что можешь." },
+  { de: "Gib dein Bestes.", en: "Give it your best.", fr: "Donne le meilleur de toi.", pl: "Daj z siebie wszystko.", es: "Da lo mejor de ti.", it: "Dacci il meglio.", pt: "Dá o teu melhor.", ru: "Сделай всё, что можешь.", sq: "Jep më të mirën nga vetja." },
   // 63
-  { de: "Dein Weg ist einzigartig.", en: "Your path is yours alone.", fr: "Ton chemin n'appartient qu'à toi.", pl: "Twoja droga jest jedyna w swoim rodzaju.", es: "Tu camino es único.", it: "La tua strada è solo tua.", pt: "O teu caminho é único.", ru: "Твой путь принадлежит только тебе." },
+  { de: "Dein Weg ist einzigartig.", en: "Your path is yours alone.", fr: "Ton chemin n'appartient qu'à toi.", pl: "Twoja droga jest jedyna w swoim rodzaju.", es: "Tu camino es único.", it: "La tua strada è solo tua.", pt: "O teu caminho é único.", ru: "Твой путь принадлежит только тебе.", sq: "Rruga jote është vetëm e jotja." },
   // 64
-  { de: "Bleib positiv.", en: "Keep your head up.", fr: "Garde le sourire.", pl: "Zachowaj pogodę ducha.", es: "No pierdas el ánimo.", it: "Tieni su il morale.", pt: "Mantém o ânimo.", ru: "Не вешай нос." },
+  { de: "Bleib positiv.", en: "Keep your head up.", fr: "Garde le sourire.", pl: "Zachowaj pogodę ducha.", es: "No pierdas el ánimo.", it: "Tieni su il morale.", pt: "Mantém o ânimo.", ru: "Не вешай нос.", sq: "Mbaje kokën lart." },
   // 65
-  { de: "Du wirst besser.", en: "You're getting better.", fr: "Tu t'améliores.", pl: "Jest coraz lepiej.", es: "Cada vez lo haces mejor.", it: "Stai migliorando.", pt: "Estás cada vez melhor.", ru: "У тебя получается всё лучше." },
+  { de: "Du wirst besser.", en: "You're getting better.", fr: "Tu t'améliores.", pl: "Jest coraz lepiej.", es: "Cada vez lo haces mejor.", it: "Stai migliorando.", pt: "Estás cada vez melhor.", ru: "У тебя получается всё лучше.", sq: "Po përmirësohesh." },
   // 66
-  { de: "Wachstum beginnt im Kleinen.", en: "Growth starts small.", fr: "Grandir commence par un détail.", pl: "Rozwój zaczyna się od drobiazgów.", es: "Crecer empieza por lo pequeño.", it: "Crescere comincia in piccolo.", pt: "Crescer começa pelo pequeno.", ru: "Рост начинается с малого." },
+  { de: "Wachstum beginnt im Kleinen.", en: "Growth starts small.", fr: "Grandir commence par un détail.", pl: "Rozwój zaczyna się od drobiazgów.", es: "Crecer empieza por lo pequeño.", it: "Crescere comincia in piccolo.", pt: "Crescer começa pelo pequeno.", ru: "Рост начинается с малого.", sq: "Rritja nis nga gjërat e vogla." },
   // 67
-  { de: "Heute gehört dir.", en: "Today belongs to you.", fr: "Aujourd'hui t'appartient.", pl: "Dziś należy do ciebie.", es: "Hoy es tuyo.", it: "Oggi è tuo.", pt: "Hoje é teu.", ru: "Сегодняшний день твой." },
+  { de: "Heute gehört dir.", en: "Today belongs to you.", fr: "Aujourd'hui t'appartient.", pl: "Dziś należy do ciebie.", es: "Hoy es tuyo.", it: "Oggi è tuo.", pt: "Hoje é teu.", ru: "Сегодняшний день твой.", sq: "Dita e sotme të përket ty." },
   // 68
-  { de: "Lass deine Zweifel los.", en: "Let your doubts go.", fr: "Laisse tomber tes doutes.", pl: "Odpuść wątpliwości.", es: "Suelta tus dudas.", it: "Lascia andare i dubbi.", pt: "Larga as tuas dúvidas.", ru: "Отпусти сомнения." },
+  { de: "Lass deine Zweifel los.", en: "Let your doubts go.", fr: "Laisse tomber tes doutes.", pl: "Odpuść wątpliwości.", es: "Suelta tus dudas.", it: "Lascia andare i dubbi.", pt: "Larga as tuas dúvidas.", ru: "Отпусти сомнения.", sq: "Lëri pas dyshimet." },
   // 69
-  { de: "Du bist näher als gestern.", en: "You're closer than you were yesterday.", fr: "Tu es plus près qu'hier.", pl: "Jesteś bliżej niż wczoraj.", es: "Estás más cerca que ayer.", it: "Sei più avanti di ieri.", pt: "Estás mais perto do que ontem.", ru: "Ты ближе, чем был вчера." },
+  { de: "Du bist näher als gestern.", en: "You're closer than you were yesterday.", fr: "Tu es plus près qu'hier.", pl: "Jesteś bliżej niż wczoraj.", es: "Estás más cerca que ayer.", it: "Sei più avanti di ieri.", pt: "Estás mais perto do que ontem.", ru: "Ты ближе, чем был вчера.", sq: "Sot je më afër se dje." },
   // 70
-  { de: "Es beginnt mit dir.", en: "It starts with you.", fr: "Tout commence par toi.", pl: "Wszystko zaczyna się od ciebie.", es: "Empieza por ti.", it: "Comincia da te.", pt: "Começa por ti.", ru: "Всё начинается с тебя." },
+  { de: "Es beginnt mit dir.", en: "It starts with you.", fr: "Tout commence par toi.", pl: "Wszystko zaczyna się od ciebie.", es: "Empieza por ti.", it: "Comincia da te.", pt: "Começa por ti.", ru: "Всё начинается с тебя.", sq: "Çdo gjë nis nga ti." },
   // 71
-  { de: "Hab Vertrauen.", en: "Have faith.", fr: "Aie confiance.", pl: "Miej zaufanie.", es: "Ten confianza.", it: "Abbi fiducia.", pt: "Tem confiança.", ru: "Не теряй веры." },
+  { de: "Hab Vertrauen.", en: "Have faith.", fr: "Aie confiance.", pl: "Miej zaufanie.", es: "Ten confianza.", it: "Abbi fiducia.", pt: "Tem confiança.", ru: "Не теряй веры.", sq: "Ki besim." },
   // 72
-  { de: "Bleib in Bewegung.", en: "Keep moving.", fr: "Reste en mouvement.", pl: "Bądź w ruchu.", es: "No te pares.", it: "Non fermarti.", pt: "Não pares.", ru: "Не останавливайся." },
+  { de: "Bleib in Bewegung.", en: "Keep moving.", fr: "Reste en mouvement.", pl: "Bądź w ruchu.", es: "No te pares.", it: "Non fermarti.", pt: "Não pares.", ru: "Не останавливайся.", sq: "Mos u ndal." },
   // 73
-  { de: "Dein Ziel wartet.", en: "Your goal is waiting.", fr: "Ton objectif t'attend.", pl: "Twój cel czeka.", es: "Tu meta te espera.", it: "Il tuo traguardo aspetta.", pt: "O teu objetivo espera por ti.", ru: "Твоя цель ждёт." },
+  { de: "Dein Ziel wartet.", en: "Your goal is waiting.", fr: "Ton objectif t'attend.", pl: "Twój cel czeka.", es: "Tu meta te espera.", it: "Il tuo traguardo aspetta.", pt: "O teu objetivo espera por ti.", ru: "Твоя цель ждёт.", sq: "Qëllimi yt të pret." },
   // 74
-  { de: "Sei mutiger als deine Zweifel.", en: "Be braver than your doubts.", fr: "Que ton courage passe avant tes doutes.", pl: "Niech odwaga będzie silniejsza od wątpliwości.", es: "Que tu valor pese más que tus dudas.", it: "Che il coraggio pesi più dei dubbi.", pt: "Que a tua coragem seja maior do que as dúvidas.", ru: "Будь смелее своих сомнений." },
+  { de: "Sei mutiger als deine Zweifel.", en: "Be braver than your doubts.", fr: "Que ton courage passe avant tes doutes.", pl: "Niech odwaga będzie silniejsza od wątpliwości.", es: "Que tu valor pese más que tus dudas.", it: "Che il coraggio pesi più dei dubbi.", pt: "Que a tua coragem seja maior do que as dúvidas.", ru: "Будь смелее своих сомнений.", sq: "Ki më shumë guxim se dyshime." },
   // 75
-  { de: "Du kannst neu beginnen.", en: "You can begin again.", fr: "Tu peux repartir de zéro.", pl: "Możesz zacząć od nowa.", es: "Puedes volver a empezar.", it: "Puoi ricominciare.", pt: "Podes voltar a começar.", ru: "Ты можешь начать снова." },
+  { de: "Du kannst neu beginnen.", en: "You can begin again.", fr: "Tu peux repartir de zéro.", pl: "Możesz zacząć od nowa.", es: "Puedes volver a empezar.", it: "Puoi ricominciare.", pt: "Podes voltar a começar.", ru: "Ты можешь начать снова.", sq: "Gjithmonë mund të nisësh sërish." },
   // 76
-  { de: "Gutes braucht manchmal Zeit.", en: "Good things sometimes take time.", fr: "Ce qui est bon prend parfois du temps.", pl: "Dobre rzeczy czasem potrzebują czasu.", es: "Lo bueno a veces tarda.", it: "Le cose belle a volte vogliono tempo.", pt: "O que é bom às vezes demora.", ru: "Хорошее иногда требует времени." },
+  { de: "Gutes braucht manchmal Zeit.", en: "Good things sometimes take time.", fr: "Ce qui est bon prend parfois du temps.", pl: "Dobre rzeczy czasem potrzebują czasu.", es: "Lo bueno a veces tarda.", it: "Le cose belle a volte vogliono tempo.", pt: "O que é bom às vezes demora.", ru: "Хорошее иногда требует времени.", sq: "Gjërat e mira ndonjëherë kërkojnë kohë." },
   // 77
-  { de: "Deine Stärke wächst.", en: "Your strength is growing.", fr: "Ta force grandit.", pl: "Twoja siła rośnie.", es: "Tu fuerza crece.", it: "La tua forza cresce.", pt: "A tua força cresce.", ru: "Твоя сила растёт." },
+  { de: "Deine Stärke wächst.", en: "Your strength is growing.", fr: "Ta force grandit.", pl: "Twoja siła rośnie.", es: "Tu fuerza crece.", it: "La tua forza cresce.", pt: "A tua força cresce.", ru: "Твоя сила растёт.", sq: "Forca jote po rritet." },
   // 78
-  { de: "Geh deinen Weg.", en: "Walk your own way.", fr: "Suis ton chemin.", pl: "Idź swoją drogą.", es: "Sigue tu camino.", it: "Fai la tua strada.", pt: "Segue o teu caminho.", ru: "Иди своей дорогой." },
+  { de: "Geh deinen Weg.", en: "Walk your own way.", fr: "Suis ton chemin.", pl: "Idź swoją drogą.", es: "Sigue tu camino.", it: "Fai la tua strada.", pt: "Segue o teu caminho.", ru: "Иди своей дорогой.", sq: "Ec në rrugën tënde." },
   // 79
-  { de: "Bleib zuversichtlich.", en: "Keep your confidence.", fr: "Garde confiance.", pl: "Nie trać wiary.", es: "No pierdas la confianza.", it: "Non perdere la fiducia.", pt: "Não percas a confiança.", ru: "Не теряй уверенности." },
+  { de: "Bleib zuversichtlich.", en: "Keep your confidence.", fr: "Garde confiance.", pl: "Nie trać wiary.", es: "No pierdas la confianza.", it: "Non perdere la fiducia.", pt: "Não percas a confiança.", ru: "Не теряй уверенности.", sq: "Ruaje besimin te vetja." },
   // 80
-  { de: "Vor dir liegt noch viel.", en: "There's a lot ahead of you.", fr: "Il te reste beaucoup à découvrir.", pl: "Wiele jeszcze przed tobą.", es: "Te queda mucho por delante.", it: "Hai molto davanti.", pt: "Tens muito pela frente.", ru: "Впереди у тебя многое." },
+  { de: "Vor dir liegt noch viel.", en: "There's a lot ahead of you.", fr: "Il te reste beaucoup à découvrir.", pl: "Wiele jeszcze przed tobą.", es: "Te queda mucho por delante.", it: "Hai molto davanti.", pt: "Tens muito pela frente.", ru: "Впереди у тебя многое.", sq: "Shumë gjëra të presin përpara." },
   // 81
-  { de: "Nutze diesen Augenblick.", en: "Make use of this moment.", fr: "Profite de cet instant.", pl: "Wykorzystaj tę chwilę.", es: "Aprovecha este momento.", it: "Sfrutta questo momento.", pt: "Aproveita este momento.", ru: "Воспользуйся этой минутой." },
+  { de: "Nutze diesen Augenblick.", en: "Make use of this moment.", fr: "Profite de cet instant.", pl: "Wykorzystaj tę chwilę.", es: "Aprovecha este momento.", it: "Sfrutta questo momento.", pt: "Aproveita este momento.", ru: "Воспользуйся этой минутой.", sq: "Shfrytëzoje këtë çast." },
   // 82
-  { de: "Deine Mühe zahlt sich aus.", en: "Your effort will pay off.", fr: "Tes efforts porteront leurs fruits.", pl: "Twój trud się opłaci.", es: "Tu esfuerzo dará fruto.", it: "Il tuo impegno darà frutti.", pt: "O teu esforço vai dar frutos.", ru: "Твои усилия окупятся." },
+  { de: "Deine Mühe zahlt sich aus.", en: "Your effort will pay off.", fr: "Tes efforts porteront leurs fruits.", pl: "Twój trud się opłaci.", es: "Tu esfuerzo dará fruto.", it: "Il tuo impegno darà frutti.", pt: "O teu esforço vai dar frutos.", ru: "Твои усилия окупятся.", sq: "Mundi yt do të shpërblehet." },
   // 83
-  { de: "Du darfst langsam wachsen.", en: "You're allowed to grow slowly.", fr: "Tu as le droit de grandir lentement.", pl: "Masz prawo rosnąć powoli.", es: "Tienes derecho a crecer despacio.", it: "Hai il diritto di crescere piano.", pt: "Tens o direito de crescer devagar.", ru: "Тебе можно расти медленно." },
+  { de: "Du darfst langsam wachsen.", en: "You're allowed to grow slowly.", fr: "Tu as le droit de grandir lentement.", pl: "Masz prawo rosnąć powoli.", es: "Tienes derecho a crecer despacio.", it: "Hai il diritto di crescere piano.", pt: "Tens o direito de crescer devagar.", ru: "Тебе можно расти медленно.", sq: "S'ka gjë nëse rritesh ngadalë." },
   // 84
-  { de: "Sei stolz auf jeden Schritt.", en: "Be proud of every step.", fr: "Chaque pas mérite ta fierté.", pl: "Każdy krok to powód do dumy.", es: "Cada paso merece tu orgullo.", it: "Ogni passo merita orgoglio.", pt: "Cada passo merece o teu orgulho.", ru: "Гордись каждым шагом." },
+  { de: "Sei stolz auf jeden Schritt.", en: "Be proud of every step.", fr: "Chaque pas mérite ta fierté.", pl: "Każdy krok to powód do dumy.", es: "Cada paso merece tu orgullo.", it: "Ogni passo merita orgoglio.", pt: "Cada passo merece o teu orgulho.", ru: "Гордись каждым шагом.", sq: "Krenohu me çdo hap." },
   // 85
-  { de: "Neues darf entstehen.", en: "Let something new take shape.", fr: "Laisse le neuf prendre forme.", pl: "Niech powstanie coś nowego.", es: "Deja que nazca algo nuevo.", it: "Lascia nascere qualcosa di nuovo.", pt: "Deixa nascer algo novo.", ru: "Дай новому сложиться." },
+  { de: "Neues darf entstehen.", en: "Let something new take shape.", fr: "Laisse le neuf prendre forme.", pl: "Niech powstanie coś nowego.", es: "Deja que nazca algo nuevo.", it: "Lascia nascere qualcosa di nuovo.", pt: "Deixa nascer algo novo.", ru: "Дай новому сложиться.", sq: "Lëre diçka të re të marrë formë." },
   // 86
-  { de: "Dein Mut bringt dich weiter.", en: "Your courage carries you forward.", fr: "Ton courage te porte plus loin.", pl: "Odwaga poprowadzi cię dalej.", es: "Tu valor te lleva más lejos.", it: "Il tuo coraggio ti porta avanti.", pt: "A tua coragem leva-te mais longe.", ru: "Смелость несёт тебя вперёд." },
+  { de: "Dein Mut bringt dich weiter.", en: "Your courage carries you forward.", fr: "Ton courage te porte plus loin.", pl: "Odwaga poprowadzi cię dalej.", es: "Tu valor te lleva más lejos.", it: "Il tuo coraggio ti porta avanti.", pt: "A tua coragem leva-te mais longe.", ru: "Смелость несёт тебя вперёд.", sq: "Guximi yt të çon përpara." },
   // 87
-  { de: "Du bestimmst die Richtung.", en: "You set the direction.", fr: "C'est toi qui décides de la direction.", pl: "To ty wyznaczasz kierunek.", es: "La dirección la eliges tú.", it: "La direzione la scegli tu.", pt: "A direção é tua.", ru: "Направление задаёшь ты." },
+  { de: "Du bestimmst die Richtung.", en: "You set the direction.", fr: "C'est toi qui décides de la direction.", pl: "To ty wyznaczasz kierunek.", es: "La dirección la eliges tú.", it: "La direzione la scegli tu.", pt: "A direção é tua.", ru: "Направление задаёшь ты.", sq: "Drejtimin e përcakton ti." },
   // 88
-  { de: "Mach den nächsten Schritt.", en: "Take the next step.", fr: "Fais le pas suivant.", pl: "Zrób następny krok.", es: "Da el siguiente paso.", it: "Fai il passo successivo.", pt: "Dá o próximo passo.", ru: "Сделай следующий шаг." },
+  { de: "Mach den nächsten Schritt.", en: "Take the next step.", fr: "Fais le pas suivant.", pl: "Zrób następny krok.", es: "Da el siguiente paso.", it: "Fai il passo successivo.", pt: "Dá o próximo passo.", ru: "Сделай следующий шаг.", sq: "Hidh hapin e radhës." },
   // 89
-  { de: "Jeder Tag ist eine Chance.", en: "Every day is a chance.", fr: "Chaque jour est une chance.", pl: "Każdy dzień to szansa.", es: "Cada día es una oportunidad.", it: "Ogni giorno è un'occasione.", pt: "Cada dia é uma oportunidade.", ru: "Всякий день — это случай." },
+  { de: "Jeder Tag ist eine Chance.", en: "Every day is a chance.", fr: "Chaque jour est une chance.", pl: "Każdy dzień to szansa.", es: "Cada día es una oportunidad.", it: "Ogni giorno è un'occasione.", pt: "Cada dia é uma oportunidade.", ru: "Всякий день — это случай.", sq: "Çdo ditë është një mundësi." },
   // 90
-  { de: "Du hast es in dir.", en: "It's already in you.", fr: "Tu l'as en toi.", pl: "Masz to w sobie.", es: "Lo llevas dentro.", it: "Ce l'hai già dentro.", pt: "Tens isso dentro de ti.", ru: "Это уже есть в тебе." },
+  { de: "Du hast es in dir.", en: "It's already in you.", fr: "Tu l'as en toi.", pl: "Masz to w sobie.", es: "Lo llevas dentro.", it: "Ce l'hai già dentro.", pt: "Tens isso dentro de ti.", ru: "Это уже есть в тебе.", sq: "E ke tashmë brenda vetes." },
   // 91
-  { de: "Deine Zukunft beginnt jetzt.", en: "Your future starts now.", fr: "Ton avenir commence maintenant.", pl: "Twoja przyszłość zaczyna się teraz.", es: "Tu futuro empieza ahora.", it: "Il tuo futuro comincia adesso.", pt: "O teu futuro começa agora.", ru: "Твоё будущее начинается сейчас." },
+  { de: "Deine Zukunft beginnt jetzt.", en: "Your future starts now.", fr: "Ton avenir commence maintenant.", pl: "Twoja przyszłość zaczyna się teraz.", es: "Tu futuro empieza ahora.", it: "Il tuo futuro comincia adesso.", pt: "O teu futuro começa agora.", ru: "Твоё будущее начинается сейчас.", sq: "E ardhmja jote fillon tani." },
   // 92
-  { de: "Hoffnung trägt dich weiter.", en: "Hope carries you on.", fr: "L'espoir te porte.", pl: "Nadzieja niesie cię dalej.", es: "La esperanza te lleva más lejos.", it: "La speranza ti porta avanti.", pt: "A esperança leva-te mais longe.", ru: "Надежда несёт тебя дальше." },
+  { de: "Hoffnung trägt dich weiter.", en: "Hope carries you on.", fr: "L'espoir te porte.", pl: "Nadzieja niesie cię dalej.", es: "La esperanza te lleva más lejos.", it: "La speranza ti porta avanti.", pt: "A esperança leva-te mais longe.", ru: "Надежда несёт тебя дальше.", sq: "Shpresa të mban në këmbë." },
   // 93
-  { de: "Du darfst groß träumen.", en: "You're allowed to dream big.", fr: "Tu as le droit de rêver grand.", pl: "Masz prawo do wielkich marzeń.", es: "Tienes derecho a soñar en grande.", it: "Hai il diritto di sognare in grande.", pt: "Tens o direito de sonhar alto.", ru: "Тебе можно мечтать широко." },
+  { de: "Du darfst groß träumen.", en: "You're allowed to dream big.", fr: "Tu as le droit de rêver grand.", pl: "Masz prawo do wielkich marzeń.", es: "Tienes derecho a soñar en grande.", it: "Hai il diritto di sognare in grande.", pt: "Tens o direito de sonhar alto.", ru: "Тебе можно мечтать широко.", sq: "Lejoji vetes të ëndërrosh në të madhe." },
   // 94
-  { de: "Heute lohnt sich dein Einsatz.", en: "Today your effort is worth it.", fr: "Aujourd'hui, tes efforts en valent la peine.", pl: "Dziś twój wysiłek się opłaca.", es: "Hoy tu esfuerzo merece la pena.", it: "Oggi il tuo impegno vale.", pt: "Hoje o teu esforço vale a pena.", ru: "Сегодня твои усилия того стоят." },
+  { de: "Heute lohnt sich dein Einsatz.", en: "Today your effort is worth it.", fr: "Aujourd'hui, tes efforts en valent la peine.", pl: "Dziś twój wysiłek się opłaca.", es: "Hoy tu esfuerzo merece la pena.", it: "Oggi il tuo impegno vale.", pt: "Hoje o teu esforço vale a pena.", ru: "Сегодня твои усилия того стоят.", sq: "Sot përpjekja jote ia vlen." },
   // 95
-  { de: "Lass dich überraschen.", en: "Let yourself be surprised.", fr: "Laisse-toi surprendre.", pl: "Daj się zaskoczyć.", es: "Déjate sorprender.", it: "Lasciati sorprendere.", pt: "Deixa-te surpreender.", ru: "Позволь себе удивиться." },
+  { de: "Lass dich überraschen.", en: "Let yourself be surprised.", fr: "Laisse-toi surprendre.", pl: "Daj się zaskoczyć.", es: "Déjate sorprender.", it: "Lasciati sorprendere.", pt: "Deixa-te surpreender.", ru: "Позволь себе удивиться.", sq: "Lëre veten të befasohet." },
   // 96
-  { de: "Vertraue deiner Richtung.", en: "Trust the direction you've chosen.", fr: "Fais confiance à ta direction.", pl: "Zaufaj swojemu kierunkowi.", es: "Confía en tu rumbo.", it: "Fidati della rotta che hai scelto.", pt: "Confia no teu rumo.", ru: "Доверься выбранному направлению." },
+  { de: "Vertraue deiner Richtung.", en: "Trust the direction you've chosen.", fr: "Fais confiance à ta direction.", pl: "Zaufaj swojemu kierunkowi.", es: "Confía en tu rumbo.", it: "Fidati della rotta che hai scelto.", pt: "Confia no teu rumo.", ru: "Доверься выбранному направлению.", sq: "Ki besim te drejtimi që ke zgjedhur." },
   // 97
-  { de: "Dein Wille zählt.", en: "Your will counts.", fr: "Ta volonté compte.", pl: "Twoja wola się liczy.", es: "Tu voluntad cuenta.", it: "La tua volontà conta.", pt: "A tua vontade conta.", ru: "Твоя воля важна." },
+  { de: "Dein Wille zählt.", en: "Your will counts.", fr: "Ta volonté compte.", pl: "Twoja wola się liczy.", es: "Tu voluntad cuenta.", it: "La tua volontà conta.", pt: "A tua vontade conta.", ru: "Твоя воля важна.", sq: "Vullneti yt ka peshë." },
   // 98
-  { de: "Veränderung beginnt klein.", en: "Change starts small.", fr: "Le changement commence petit.", pl: "Zmiana zaczyna się od drobiazgu.", es: "El cambio empieza por lo pequeño.", it: "Il cambiamento comincia in piccolo.", pt: "A mudança começa pelo pequeno.", ru: "Перемены начинаются с малого." },
+  { de: "Veränderung beginnt klein.", en: "Change starts small.", fr: "Le changement commence petit.", pl: "Zmiana zaczyna się od drobiazgu.", es: "El cambio empieza por lo pequeño.", it: "Il cambiamento comincia in piccolo.", pt: "A mudança começa pelo pequeno.", ru: "Перемены начинаются с малого.", sq: "Ndryshimi fillon me hapa të vegjël." },
   // 99
-  { de: "Begrüße das Neue.", en: "Welcome what's new.", fr: "Accueille la nouveauté.", pl: "Przywitaj to, co nowe.", es: "Da la bienvenida a lo nuevo.", it: "Accogli il nuovo.", pt: "Dá as boas-vindas ao que é novo.", ru: "Встречай новое приветливо." },
+  { de: "Begrüße das Neue.", en: "Welcome what's new.", fr: "Accueille la nouveauté.", pl: "Przywitaj to, co nowe.", es: "Da la bienvenida a lo nuevo.", it: "Accogli il nuovo.", pt: "Dá as boas-vindas ao que é novo.", ru: "Встречай новое приветливо.", sq: "Prite të renë me krahë hapur." },
   // 100
-  { de: "Lernen bringt dich weiter.", en: "Learning takes you further.", fr: "Apprendre te mène plus loin.", pl: "Nauka prowadzi cię dalej.", es: "Aprender te lleva más lejos.", it: "Imparare ti porta più lontano.", pt: "Aprender leva-te mais longe.", ru: "Учение ведёт тебя дальше." },
+  { de: "Lernen bringt dich weiter.", en: "Learning takes you further.", fr: "Apprendre te mène plus loin.", pl: "Nauka prowadzi cię dalej.", es: "Aprender te lleva más lejos.", it: "Imparare ti porta più lontano.", pt: "Aprender leva-te mais longe.", ru: "Учение ведёт тебя дальше.", sq: "Të mësuarit të çon më tej." },
   // 101
-  { de: "Mach heute den Unterschied.", en: "Make today the difference.", fr: "Fais la différence aujourd'hui.", pl: "Dziś zrób różnicę.", es: "Marca la diferencia hoy.", it: "Oggi fai la differenza.", pt: "Faz a diferença hoje.", ru: "Пусть сегодняшний день всё изменит." },
+  { de: "Mach heute den Unterschied.", en: "Make today the difference.", fr: "Fais la différence aujourd'hui.", pl: "Dziś zrób różnicę.", es: "Marca la diferencia hoy.", it: "Oggi fai la differenza.", pt: "Faz a diferença hoje.", ru: "Пусть сегодняшний день всё изменит.", sq: "Sot bëje ti ndryshimin." },
   // 102
-  { de: "Halte dein Ziel im Blick.", en: "Keep your goal in sight.", fr: "Garde ton objectif en vue.", pl: "Miej cel przed oczami.", es: "No pierdas de vista tu meta.", it: "Non perdere di vista il traguardo.", pt: "Não percas o teu objetivo de vista.", ru: "Не теряй цель из виду." },
+  { de: "Halte dein Ziel im Blick.", en: "Keep your goal in sight.", fr: "Garde ton objectif en vue.", pl: "Miej cel przed oczami.", es: "No pierdas de vista tu meta.", it: "Non perdere di vista il traguardo.", pt: "Não percas o teu objetivo de vista.", ru: "Не теряй цель из виду.", sq: "Mbaje qëllimin para syve." },
   // 103
-  { de: "Jeden Tag ein Stück weiter.", en: "A little further every day.", fr: "Un peu plus loin chaque jour.", pl: "Każdego dnia kawałek dalej.", es: "Un poco más lejos cada día.", it: "Un po' più lontano ogni giorno.", pt: "Um pouco mais longe a cada dia.", ru: "Каждый день немного дальше." },
+  { de: "Jeden Tag ein Stück weiter.", en: "A little further every day.", fr: "Un peu plus loin chaque jour.", pl: "Każdego dnia kawałek dalej.", es: "Un poco más lejos cada día.", it: "Un po' più lontano ogni giorno.", pt: "Um pouco mais longe a cada dia.", ru: "Каждый день немного дальше.", sq: "Çdo ditë pak më tej." },
   // 104
-  { de: "Großes wächst aus Kleinem.", en: "Big things grow from small ones.", fr: "Les grandes choses naissent des petites.", pl: "Wielkie rzeczy rosną z małych.", es: "Lo grande nace de lo pequeño.", it: "Le cose grandi nascono da quelle piccole.", pt: "O grande nasce do pequeno.", ru: "Большое вырастает из малого." },
+  { de: "Großes wächst aus Kleinem.", en: "Big things grow from small ones.", fr: "Les grandes choses naissent des petites.", pl: "Wielkie rzeczy rosną z małych.", es: "Lo grande nace de lo pequeño.", it: "Le cose grandi nascono da quelle piccole.", pt: "O grande nasce do pequeno.", ru: "Большое вырастает из малого.", sq: "Gjërat e mëdha rriten nga të voglat." },
   // 105
-  { de: "Deine Chance ist jetzt.", en: "Your chance is now.", fr: "Ta chance, c'est maintenant.", pl: "Twoja szansa jest teraz.", es: "Tu oportunidad es ahora.", it: "La tua occasione è adesso.", pt: "A tua oportunidade é agora.", ru: "Твой случай — сейчас." },
+  { de: "Deine Chance ist jetzt.", en: "Your chance is now.", fr: "Ta chance, c'est maintenant.", pl: "Twoja szansa jest teraz.", es: "Tu oportunidad es ahora.", it: "La tua occasione è adesso.", pt: "A tua oportunidade é agora.", ru: "Твой случай — сейчас.", sq: "Tani e ke rastin." },
   // 106
-  { de: "Sei stärker als deine Ausreden.", en: "Be stronger than your excuses.", fr: "Ne te laisse pas convaincre par tes excuses.", pl: "Nie daj się wymówkom.", es: "Que tus excusas no te ganen.", it: "Sii più forte delle tue scuse.", pt: "Não deixes que as desculpas ganhem.", ru: "Будь сильнее своих отговорок." },
+  { de: "Sei stärker als deine Ausreden.", en: "Be stronger than your excuses.", fr: "Ne te laisse pas convaincre par tes excuses.", pl: "Nie daj się wymówkom.", es: "Que tus excusas no te ganen.", it: "Sii più forte delle tue scuse.", pt: "Não deixes que as desculpas ganhem.", ru: "Будь сильнее своих отговорок.", sq: "Mposhti justifikimet e tua." },
   // 107
-  { de: "Neue Wege warten auf dich.", en: "New paths are waiting for you.", fr: "De nouveaux chemins t'attendent.", pl: "Czekają na ciebie nowe drogi.", es: "Te esperan caminos nuevos.", it: "Ti aspettano strade nuove.", pt: "Há caminhos novos à tua espera.", ru: "Новые пути ждут тебя." },
+  { de: "Neue Wege warten auf dich.", en: "New paths are waiting for you.", fr: "De nouveaux chemins t'attendent.", pl: "Czekają na ciebie nowe drogi.", es: "Te esperan caminos nuevos.", it: "Ti aspettano strade nuove.", pt: "Há caminhos novos à tua espera.", ru: "Новые пути ждут тебя.", sq: "Të presin rrugë të reja." },
   // 108
-  { de: "Du kannst den Anfang machen.", en: "You can make the start.", fr: "C'est toi qui peux commencer.", pl: "To ty możesz zacząć.", es: "Puedes dar tú el primer paso.", it: "Il primo passo puoi farlo tu.", pt: "Podes ser tu a começar.", ru: "Ты можешь положить начало." },
+  { de: "Du kannst den Anfang machen.", en: "You can make the start.", fr: "C'est toi qui peux commencer.", pl: "To ty możesz zacząć.", es: "Puedes dar tú el primer paso.", it: "Il primo passo puoi farlo tu.", pt: "Podes ser tu a começar.", ru: "Ты можешь положить начало.", sq: "Fillimin mund ta bësh ti." },
   // 109
-  { de: "Lass deinen Mut sprechen.", en: "Let your courage speak.", fr: "Laisse parler ton courage.", pl: "Niech przemówi twoja odwaga.", es: "Deja hablar a tu valor.", it: "Lascia parlare il tuo coraggio.", pt: "Deixa falar a tua coragem.", ru: "Дай своей смелости слово." },
+  { de: "Lass deinen Mut sprechen.", en: "Let your courage speak.", fr: "Laisse parler ton courage.", pl: "Niech przemówi twoja odwaga.", es: "Deja hablar a tu valor.", it: "Lascia parlare il tuo coraggio.", pt: "Deixa falar a tua coragem.", ru: "Дай своей смелости слово.", sq: "Lëre guximin të flasë." },
   // 110
-  { de: "Deine Schritte hinterlassen Spuren.", en: "Your steps leave a trace.", fr: "Tes pas laissent une trace.", pl: "Twoje kroki zostawiają ślad.", es: "Tus pasos dejan huella.", it: "I tuoi passi lasciano il segno.", pt: "Os teus passos deixam marca.", ru: "Твои шаги оставляют след." },
+  { de: "Deine Schritte hinterlassen Spuren.", en: "Your steps leave a trace.", fr: "Tes pas laissent une trace.", pl: "Twoje kroki zostawiają ślad.", es: "Tus pasos dejan huella.", it: "I tuoi passi lasciano il segno.", pt: "Os teus passos deixam marca.", ru: "Твои шаги оставляют след.", sq: "Hapat e tu lënë gjurmë." },
   // 111
-  { de: "Starte mit neuer Energie.", en: "Start with fresh energy.", fr: "Repars avec de l'énergie neuve.", pl: "Zacznij z nową energią.", es: "Empieza con energía nueva.", it: "Comincia con energia nuova.", pt: "Começa com energia nova.", ru: "Начни со свежими силами." },
+  { de: "Starte mit neuer Energie.", en: "Start with fresh energy.", fr: "Repars avec de l'énergie neuve.", pl: "Zacznij z nową energią.", es: "Empieza con energía nueva.", it: "Comincia con energia nuova.", pt: "Começa com energia nova.", ru: "Начни со свежими силами.", sq: "Nis me energji të re." },
   // 112
-  { de: "Weitergehen lohnt sich.", en: "Going on is worth it.", fr: "Continuer en vaut la peine.", pl: "Warto iść dalej.", es: "Seguir merece la pena.", it: "Continuare vale la pena.", pt: "Vale a pena continuar.", ru: "Продолжать стоит." },
+  { de: "Weitergehen lohnt sich.", en: "Going on is worth it.", fr: "Continuer en vaut la peine.", pl: "Warto iść dalej.", es: "Seguir merece la pena.", it: "Continuare vale la pena.", pt: "Vale a pena continuar.", ru: "Продолжать стоит.", sq: "Ia vlen të vazhdosh." },
   // 113
-  { de: "Dein Traum verdient Mut.", en: "Your dream deserves courage.", fr: "Ton rêve mérite du courage.", pl: "Twoje marzenie zasługuje na odwagę.", es: "Tu sueño merece valor.", it: "Il tuo sogno merita coraggio.", pt: "O teu sonho merece coragem.", ru: "Твоя мечта заслуживает смелости." },
+  { de: "Dein Traum verdient Mut.", en: "Your dream deserves courage.", fr: "Ton rêve mérite du courage.", pl: "Twoje marzenie zasługuje na odwagę.", es: "Tu sueño merece valor.", it: "Il tuo sogno merita coraggio.", pt: "O teu sonho merece coragem.", ru: "Твоя мечта заслуживает смелости.", sq: "Ëndrra jote meriton guxim." },
   // 114
-  { de: "Dieser Tag gehört dir.", en: "This day is yours.", fr: "Cette journée est à toi.", pl: "Ten dzień należy do ciebie.", es: "Este día es tuyo.", it: "Questa giornata è tua.", pt: "Este dia é teu.", ru: "Этот день твой." },
+  { de: "Dieser Tag gehört dir.", en: "This day is yours.", fr: "Cette journée est à toi.", pl: "Ten dzień należy do ciebie.", es: "Este día es tuyo.", it: "Questa giornata è tua.", pt: "Este dia é teu.", ru: "Этот день твой.", sq: "Kjo ditë është e jotja." },
   // 115
-  { de: "Gib nicht zu früh auf.", en: "Don't give up too soon.", fr: "N'abandonne pas trop tôt.", pl: "Nie poddawaj się za wcześnie.", es: "No te rindas demasiado pronto.", it: "Non arrenderti troppo presto.", pt: "Não desistas cedo demais.", ru: "Не сдавайся слишком рано." },
+  { de: "Gib nicht zu früh auf.", en: "Don't give up too soon.", fr: "N'abandonne pas trop tôt.", pl: "Nie poddawaj się za wcześnie.", es: "No te rindas demasiado pronto.", it: "Non arrenderti troppo presto.", pt: "Não desistas cedo demais.", ru: "Не сдавайся слишком рано.", sq: "Mos hiq dorë para kohe." },
   // 116
-  { de: "Überrasche dich selbst.", en: "Surprise yourself.", fr: "Surprends-toi.", pl: "Zaskocz siebie.", es: "Sorpréndete.", it: "Sorprenditi.", pt: "Surpreende-te.", ru: "Удиви самого себя." },
+  { de: "Überrasche dich selbst.", en: "Surprise yourself.", fr: "Surprends-toi.", pl: "Zaskocz siebie.", es: "Sorpréndete.", it: "Sorprenditi.", pt: "Surpreende-te.", ru: "Удиви самого себя.", sq: "Befaso veten." },
   // 117
-  { de: "Dein Mut macht dich stolz.", en: "Your courage is something to be proud of.", fr: "Ton courage est une raison de fierté.", pl: "Twoja odwaga to powód do dumy.", es: "Tu valor es motivo de orgullo.", it: "Il tuo coraggio è motivo d'orgoglio.", pt: "A tua coragem é motivo de orgulho.", ru: "Твоей смелостью можно гордиться." },
+  { de: "Dein Mut macht dich stolz.", en: "Your courage is something to be proud of.", fr: "Ton courage est une raison de fierté.", pl: "Twoja odwaga to powód do dumy.", es: "Tu valor es motivo de orgullo.", it: "Il tuo coraggio è motivo d'orgoglio.", pt: "A tua coragem é motivo de orgulho.", ru: "Твоей смелостью можно гордиться.", sq: "Guximi yt është arsye krenarie." },
   // 118
-  { de: "Erkenne deinen Fortschritt.", en: "Notice how far you've come.", fr: "Vois le chemin parcouru.", pl: "Zauważ swój postęp.", es: "Reconoce tu avance.", it: "Renditi conto di quanta strada hai fatto.", pt: "Repara no teu progresso.", ru: "Заметь, как далеко ты зашёл." },
+  { de: "Erkenne deinen Fortschritt.", en: "Notice how far you've come.", fr: "Vois le chemin parcouru.", pl: "Zauważ swój postęp.", es: "Reconoce tu avance.", it: "Renditi conto di quanta strada hai fatto.", pt: "Repara no teu progresso.", ru: "Заметь, как далеко ты зашёл.", sq: "Vër re sa larg ke arritur." },
   // 119
-  { de: "Behalte dein Ziel im Herzen.", en: "Keep your goal close to your heart.", fr: "Garde ton objectif au cœur.", pl: "Zachowaj swój cel w sercu.", es: "Guarda tu meta en el corazón.", it: "Tieni il traguardo vicino al cuore.", pt: "Guarda o teu objetivo no coração.", ru: "Держи цель близко к сердцу." },
+  { de: "Behalte dein Ziel im Herzen.", en: "Keep your goal close to your heart.", fr: "Garde ton objectif au cœur.", pl: "Zachowaj swój cel w sercu.", es: "Guarda tu meta en el corazón.", it: "Tieni il traguardo vicino al cuore.", pt: "Guarda o teu objetivo no coração.", ru: "Держи цель близко к сердцу.", sq: "Mbaje qëllimin pranë zemrës." },
   // 120
-  { de: "Der Weg liegt vor dir.", en: "The road is ahead of you.", fr: "Le chemin est devant toi.", pl: "Droga jest przed tobą.", es: "El camino está por delante.", it: "La strada ce l'hai davanti.", pt: "O caminho está à tua frente.", ru: "Дорога перед тобой." },
+  { de: "Der Weg liegt vor dir.", en: "The road is ahead of you.", fr: "Le chemin est devant toi.", pl: "Droga jest przed tobą.", es: "El camino está por delante.", it: "La strada ce l'hai davanti.", pt: "O caminho está à tua frente.", ru: "Дорога перед тобой.", sq: "Rruga shtrihet para teje." },
   // 121
-  { de: "Jeder Versuch zählt.", en: "Every attempt counts.", fr: "Chaque tentative compte.", pl: "Każda próba się liczy.", es: "Cada intento cuenta.", it: "Ogni tentativo conta.", pt: "Cada tentativa conta.", ru: "Всякая попытка важна." },
+  { de: "Jeder Versuch zählt.", en: "Every attempt counts.", fr: "Chaque tentative compte.", pl: "Każda próba się liczy.", es: "Cada intento cuenta.", it: "Ogni tentativo conta.", pt: "Cada tentativa conta.", ru: "Всякая попытка важна.", sq: "Çdo përpjekje ka rëndësi." },
   // 122
-  { de: "Wachstum darf Freude machen.", en: "Growing can be a joy.", fr: "Grandir peut être un plaisir.", pl: "Rozwój może sprawiać radość.", es: "Crecer puede dar alegría.", it: "Crescere può dare gioia.", pt: "Crescer pode dar alegria.", ru: "Расти бывает в радость." },
+  { de: "Wachstum darf Freude machen.", en: "Growing can be a joy.", fr: "Grandir peut être un plaisir.", pl: "Rozwój może sprawiać radość.", es: "Crecer puede dar alegría.", it: "Crescere può dare gioia.", pt: "Crescer pode dar alegria.", ru: "Расти бывает в радость.", sq: "Rritja mund të jetë një gëzim." },
   // 123
-  { de: "Dein Weg darf anders sein.", en: "Your path is allowed to look different.", fr: "Ton chemin a le droit d'être différent.", pl: "Twoja droga może być inna.", es: "Tu camino puede ser distinto.", it: "La tua strada può essere diversa.", pt: "O teu caminho pode ser diferente.", ru: "Твоему пути позволено выглядеть иначе." },
+  { de: "Dein Weg darf anders sein.", en: "Your path is allowed to look different.", fr: "Ton chemin a le droit d'être différent.", pl: "Twoja droga może być inna.", es: "Tu camino puede ser distinto.", it: "La tua strada può essere diversa.", pt: "O teu caminho pode ser diferente.", ru: "Твоему пути позволено выглядеть иначе.", sq: "Rruga jote mund të jetë ndryshe." },
   // 124
-  { de: "Schenk dir selbst Vertrauen.", en: "Give yourself some trust.", fr: "Accorde-toi ta confiance.", pl: "Obdarz siebie zaufaniem.", es: "Regálate confianza.", it: "Regalati un po' di fiducia.", pt: "Dá-te confiança.", ru: "Дай себе немного доверия." },
+  { de: "Schenk dir selbst Vertrauen.", en: "Give yourself some trust.", fr: "Accorde-toi ta confiance.", pl: "Obdarz siebie zaufaniem.", es: "Regálate confianza.", it: "Regalati un po' di fiducia.", pt: "Dá-te confiança.", ru: "Дай себе немного доверия.", sq: "Jepi vetes pak besim." },
   // 125
-  { de: "Du wirst deinen Weg finden.", en: "You'll find your way.", fr: "Tu trouveras ton chemin.", pl: "Znajdziesz swoją drogę.", es: "Encontrarás tu camino.", it: "La tua strada la troverai.", pt: "Vais encontrar o teu caminho.", ru: "Ты найдёшь свою дорогу." },
+  { de: "Du wirst deinen Weg finden.", en: "You'll find your way.", fr: "Tu trouveras ton chemin.", pl: "Znajdziesz swoją drogę.", es: "Encontrarás tu camino.", it: "La tua strada la troverai.", pt: "Vais encontrar o teu caminho.", ru: "Ты найдёшь свою дорогу.", sq: "Do ta gjesh rrugën tënde." },
   // 126
-  { de: "Vieles kann sich verändern.", en: "A lot can change.", fr: "Beaucoup de choses peuvent changer.", pl: "Wiele może się zmienić.", es: "Muchas cosas pueden cambiar.", it: "Molto può cambiare.", pt: "Muita coisa pode mudar.", ru: "Многое может измениться." },
+  { de: "Vieles kann sich verändern.", en: "A lot can change.", fr: "Beaucoup de choses peuvent changer.", pl: "Wiele może się zmienić.", es: "Muchas cosas pueden cambiar.", it: "Molto può cambiare.", pt: "Muita coisa pode mudar.", ru: "Многое может измениться.", sq: "Shumë gjëra mund të ndryshojnë." },
   // 127
-  { de: "Deine Entscheidung zählt.", en: "Your decision counts.", fr: "Ta décision compte.", pl: "Twoja decyzja się liczy.", es: "Tu decisión cuenta.", it: "La tua decisione conta.", pt: "A tua decisão conta.", ru: "Твоё решение важно." },
+  { de: "Deine Entscheidung zählt.", en: "Your decision counts.", fr: "Ta décision compte.", pl: "Twoja decyzja się liczy.", es: "Tu decisión cuenta.", it: "La tua decisione conta.", pt: "A tua decisão conta.", ru: "Твоё решение важно.", sq: "Vendimi yt ka peshë." },
   // 128
-  { de: "Bleib entschlossen.", en: "Stay determined.", fr: "Garde ta détermination.", pl: "Nie trać determinacji.", es: "Mantén la determinación.", it: "Mantieni la determinazione.", pt: "Mantém a determinação.", ru: "Оставайся решительным." },
+  { de: "Bleib entschlossen.", en: "Stay determined.", fr: "Garde ta détermination.", pl: "Nie trać determinacji.", es: "Mantén la determinación.", it: "Mantieni la determinazione.", pt: "Mantém a determinação.", ru: "Оставайся решительным.", sq: "Mos u lëkund." },
   // 129
-  { de: "Der erste Schritt wartet.", en: "The first step is waiting.", fr: "Le premier pas t'attend.", pl: "Pierwszy krok czeka.", es: "El primer paso te espera.", it: "Il primo passo aspetta.", pt: "O primeiro passo espera por ti.", ru: "Первый шаг ждёт." },
+  { de: "Der erste Schritt wartet.", en: "The first step is waiting.", fr: "Le premier pas t'attend.", pl: "Pierwszy krok czeka.", es: "El primer paso te espera.", it: "Il primo passo aspetta.", pt: "O primeiro passo espera por ti.", ru: "Первый шаг ждёт.", sq: "Hapi i parë të pret." },
   // 130
-  { de: "Dein Ziel ist erreichbar.", en: "Your goal is within reach.", fr: "Ton objectif est à ta portée.", pl: "Twój cel jest w zasięgu.", es: "Tu meta está a tu alcance.", it: "Il traguardo è a portata.", pt: "O teu objetivo está ao teu alcance.", ru: "Твоя цель уже близко." },
+  { de: "Dein Ziel ist erreichbar.", en: "Your goal is within reach.", fr: "Ton objectif est à ta portée.", pl: "Twój cel jest w zasięgu.", es: "Tu meta está a tu alcance.", it: "Il traguardo è a portata.", pt: "O teu objetivo está ao teu alcance.", ru: "Твоя цель уже близко.", sq: "Qëllimi yt është i arritshëm." },
   // 131
-  { de: "Mut beginnt mit einem Schritt.", en: "Courage starts with one step.", fr: "Le courage commence par un pas.", pl: "Odwaga zaczyna się od jednego kroku.", es: "El valor empieza con un paso.", it: "Il coraggio comincia con un passo.", pt: "A coragem começa com um passo.", ru: "Смелость начинается с одного шага." },
+  { de: "Mut beginnt mit einem Schritt.", en: "Courage starts with one step.", fr: "Le courage commence par un pas.", pl: "Odwaga zaczyna się od jednego kroku.", es: "El valor empieza con un paso.", it: "Il coraggio comincia con un passo.", pt: "A coragem começa com um passo.", ru: "Смелость начинается с одного шага.", sq: "Guximi fillon me një hap." },
   // 132
-  { de: "Schau, wie weit du bist.", en: "Look how far you've come.", fr: "Regarde le chemin déjà fait.", pl: "Zobacz, jak daleko już jesteś.", es: "Mira lo lejos que has llegado.", it: "Guarda quanta strada hai fatto.", pt: "Olha até onde já chegaste.", ru: "Посмотри, как далеко ты зашёл." },
+  { de: "Schau, wie weit du bist.", en: "Look how far you've come.", fr: "Regarde le chemin déjà fait.", pl: "Zobacz, jak daleko już jesteś.", es: "Mira lo lejos que has llegado.", it: "Guarda quanta strada hai fatto.", pt: "Olha até onde já chegaste.", ru: "Посмотри, как далеко ты зашёл.", sq: "Shiko sa larg ke arritur." },
   // 133
-  { de: "Vertraue dem Prozess.", en: "Trust the process.", fr: "Fais confiance au processus.", pl: "Zaufaj procesowi.", es: "Confía en el proceso.", it: "Fidati del percorso.", pt: "Confia no processo.", ru: "Доверься самому ходу дела." },
+  { de: "Vertraue dem Prozess.", en: "Trust the process.", fr: "Fais confiance au processus.", pl: "Zaufaj procesowi.", es: "Confía en el proceso.", it: "Fidati del percorso.", pt: "Confia no processo.", ru: "Доверься самому ходу дела.", sq: "Ki besim te procesi." },
   // 134
-  { de: "Der Tag hält Chancen bereit.", en: "The day has chances in store.", fr: "La journée réserve des occasions.", pl: "Ten dzień niesie szanse.", es: "El día trae oportunidades.", it: "La giornata ha occasioni in serbo.", pt: "O dia guarda oportunidades.", ru: "У этого дня припасены возможности." },
+  { de: "Der Tag hält Chancen bereit.", en: "The day has chances in store.", fr: "La journée réserve des occasions.", pl: "Ten dzień niesie szanse.", es: "El día trae oportunidades.", it: "La giornata ha occasioni in serbo.", pt: "O dia guarda oportunidades.", ru: "У этого дня припасены возможности.", sq: "Kjo ditë të rezervon mundësi." },
   // 135
-  { de: "Du kannst etwas bewegen.", en: "You can move something.", fr: "Tu peux faire bouger les choses.", pl: "Możesz coś poruszyć.", es: "Puedes cambiar las cosas.", it: "Puoi smuovere qualcosa.", pt: "Podes mudar as coisas.", ru: "Ты можешь сдвинуть дело с места." },
+  { de: "Du kannst etwas bewegen.", en: "You can move something.", fr: "Tu peux faire bouger les choses.", pl: "Możesz coś poruszyć.", es: "Puedes cambiar las cosas.", it: "Puoi smuovere qualcosa.", pt: "Podes mudar as coisas.", ru: "Ты можешь сдвинуть дело с места.", sq: "Ti mund të ndryshosh diçka." },
   // 136
-  { de: "Bleib deiner Vision treu.", en: "Stay true to your vision.", fr: "Reste fidèle à ta vision.", pl: "Nie porzucaj swojej wizji.", es: "Sé fiel a tu visión.", it: "Sii fedele alla tua visione.", pt: "Sê fiel à tua visão.", ru: "Оставайся верен своему замыслу." },
+  { de: "Bleib deiner Vision treu.", en: "Stay true to your vision.", fr: "Reste fidèle à ta vision.", pl: "Nie porzucaj swojej wizji.", es: "Sé fiel a tu visión.", it: "Sii fedele alla tua visione.", pt: "Sê fiel à tua visão.", ru: "Оставайся верен своему замыслу.", sq: "Mbahu pas vizionit tënd." },
   // 137
-  { de: "Jeder Tag bringt Neues.", en: "Every day brings something new.", fr: "Chaque jour apporte du nouveau.", pl: "Każdy dzień przynosi coś nowego.", es: "Cada día trae algo nuevo.", it: "Ogni giorno porta qualcosa di nuovo.", pt: "Cada dia traz algo novo.", ru: "Всякий день приносит что-то новое." },
+  { de: "Jeder Tag bringt Neues.", en: "Every day brings something new.", fr: "Chaque jour apporte du nouveau.", pl: "Każdy dzień przynosi coś nowego.", es: "Cada día trae algo nuevo.", it: "Ogni giorno porta qualcosa di nuovo.", pt: "Cada dia traz algo novo.", ru: "Всякий день приносит что-то новое.", sq: "Çdo ditë sjell diçka të re." },
   // 138
-  { de: "Dein Einsatz macht den Unterschied.", en: "Your effort makes the difference.", fr: "Tes efforts font la différence.", pl: "Twój wysiłek robi różnicę.", es: "Tu esfuerzo marca la diferencia.", it: "Il tuo impegno fa la differenza.", pt: "O teu esforço faz a diferença.", ru: "Твои усилия решают дело." },
+  { de: "Dein Einsatz macht den Unterschied.", en: "Your effort makes the difference.", fr: "Tes efforts font la différence.", pl: "Twój wysiłek robi różnicę.", es: "Tu esfuerzo marca la diferencia.", it: "Il tuo impegno fa la differenza.", pt: "O teu esforço faz a diferença.", ru: "Твои усилия решают дело.", sq: "Përpjekja jote e bën ndryshimin." },
   // 139
-  { de: "Du darfst Fehler machen.", en: "You're allowed to make mistakes.", fr: "Tu as le droit de te tromper.", pl: "Masz prawo popełniać błędy.", es: "Tienes derecho a equivocarte.", it: "Hai il diritto di sbagliare.", pt: "Tens o direito de errar.", ru: "Тебе можно ошибаться." },
+  { de: "Du darfst Fehler machen.", en: "You're allowed to make mistakes.", fr: "Tu as le droit de te tromper.", pl: "Masz prawo popełniać błędy.", es: "Tienes derecho a equivocarte.", it: "Hai il diritto di sbagliare.", pt: "Tens o direito de errar.", ru: "Тебе можно ошибаться.", sq: "Është në rregull të gabosh." },
   // 140
-  { de: "Fehler lassen dich wachsen.", en: "Mistakes are how you grow.", fr: "Les erreurs te font grandir.", pl: "Błędy cię rozwijają.", es: "Los errores te hacen crecer.", it: "Sbagliando si cresce.", pt: "Os erros fazem-te crescer.", ru: "Ошибки — это и есть рост." },
+  { de: "Fehler lassen dich wachsen.", en: "Mistakes are how you grow.", fr: "Les erreurs te font grandir.", pl: "Błędy cię rozwijają.", es: "Los errores te hacen crecer.", it: "Sbagliando si cresce.", pt: "Os erros fazem-te crescer.", ru: "Ошибки — это и есть рост.", sq: "Nga gabimet rritesh." },
   // 141
-  { de: "Wachse über gestern hinaus.", en: "Grow past yesterday.", fr: "Va plus loin qu'hier.", pl: "Wyrośnij ponad wczoraj.", es: "Ve más allá de ayer.", it: "Vai oltre l'ieri.", pt: "Vai além do que foste ontem.", ru: "Перерасти вчерашнего себя." },
+  { de: "Wachse über gestern hinaus.", en: "Grow past yesterday.", fr: "Va plus loin qu'hier.", pl: "Wyrośnij ponad wczoraj.", es: "Ve más allá de ayer.", it: "Vai oltre l'ieri.", pt: "Vai além do que foste ontem.", ru: "Перерасти вчерашнего себя.", sq: "Rritu përtej së djeshmes." },
   // 142
-  { de: "Dein Weg entsteht beim Gehen.", en: "The path appears as you walk it.", fr: "Le chemin se fait en marchant.", pl: "Droga powstaje, gdy idziesz.", es: "El camino se hace al andar.", it: "La strada si fa camminando.", pt: "O caminho faz-se caminhando.", ru: "Дорога появляется под ногами идущего." },
+  { de: "Dein Weg entsteht beim Gehen.", en: "The path appears as you walk it.", fr: "Le chemin se fait en marchant.", pl: "Droga powstaje, gdy idziesz.", es: "El camino se hace al andar.", it: "La strada si fa camminando.", pt: "O caminho faz-se caminhando.", ru: "Дорога появляется под ногами идущего.", sq: "Rruga bëhet duke ecur." },
   // 143
-  { de: "Blick stolz zurück.", en: "Look back with pride.", fr: "Regarde en arrière avec fierté.", pl: "Spójrz wstecz z dumą.", es: "Mira atrás con orgullo.", it: "Guarda indietro con orgoglio.", pt: "Olha para trás com orgulho.", ru: "Оглянись назад с гордостью." },
+  { de: "Blick stolz zurück.", en: "Look back with pride.", fr: "Regarde en arrière avec fierté.", pl: "Spójrz wstecz z dumą.", es: "Mira atrás con orgullo.", it: "Guarda indietro con orgoglio.", pt: "Olha para trás com orgulho.", ru: "Оглянись назад с гордостью.", sq: "Shiko pas me krenari." },
   // 144
-  { de: "Folge deiner eigenen Richtung.", en: "Follow your own direction.", fr: "Suis ta propre direction.", pl: "Idź własnym kierunkiem.", es: "Sigue tu propia dirección.", it: "Segui la tua direzione.", pt: "Segue a tua própria direção.", ru: "Иди в своём направлении." },
+  { de: "Folge deiner eigenen Richtung.", en: "Follow your own direction.", fr: "Suis ta propre direction.", pl: "Idź własnym kierunkiem.", es: "Sigue tu propia dirección.", it: "Segui la tua direzione.", pt: "Segue a tua própria direção.", ru: "Иди в своём направлении.", sq: "Ndiq drejtimin tënd." },
   // 145
-  { de: "Mach heute zu deinem Tag.", en: "Make today your day.", fr: "Fais d'aujourd'hui ta journée.", pl: "Uczyń z dziś swój dzień.", es: "Haz de hoy tu día.", it: "Fai di oggi la tua giornata.", pt: "Faz de hoje o teu dia.", ru: "Сделай сегодняшний день своим." },
+  { de: "Mach heute zu deinem Tag.", en: "Make today your day.", fr: "Fais d'aujourd'hui ta journée.", pl: "Uczyń z dziś swój dzień.", es: "Haz de hoy tu día.", it: "Fai di oggi la tua giornata.", pt: "Faz de hoje o teu dia.", ru: "Сделай сегодняшний день своим.", sq: "Bëje sot ditën tënde." },
   // 146
-  { de: "Du verdienst deinen Erfolg.", en: "Your success is earned.", fr: "Ta réussite, tu l'as méritée.", pl: "Zasługujesz na swój sukces.", es: "Mereces tu éxito.", it: "Il tuo successo te lo sei guadagnato.", pt: "Mereces o teu sucesso.", ru: "Твой успех заслужен." },
+  { de: "Du verdienst deinen Erfolg.", en: "Your success is earned.", fr: "Ta réussite, tu l'as méritée.", pl: "Zasługujesz na swój sukces.", es: "Mereces tu éxito.", it: "Il tuo successo te lo sei guadagnato.", pt: "Mereces o teu sucesso.", ru: "Твой успех заслужен.", sq: "Suksesin e ke merituar." },
   // 147
-  { de: "Kleine Erfolge sind Erfolge.", en: "Small wins are wins.", fr: "Les petites victoires sont des victoires.", pl: "Małe sukcesy to też sukcesy.", es: "Los logros pequeños son logros.", it: "Le piccole vittorie sono vittorie.", pt: "As vitórias pequenas são vitórias.", ru: "Маленькие победы — тоже победы." },
+  { de: "Kleine Erfolge sind Erfolge.", en: "Small wins are wins.", fr: "Les petites victoires sont des victoires.", pl: "Małe sukcesy to też sukcesy.", es: "Los logros pequeños son logros.", it: "Le piccole vittorie sono vittorie.", pt: "As vitórias pequenas são vitórias.", ru: "Маленькие победы — тоже победы.", sq: "Edhe fitoret e vogla janë fitore." },
   // 148
-  { de: "Der nächste Schritt zählt.", en: "The next step is the one that counts.", fr: "C'est le pas suivant qui compte.", pl: "Liczy się następny krok.", es: "Lo que cuenta es el siguiente paso.", it: "Quello che conta è il passo successivo.", pt: "O que conta é o próximo passo.", ru: "Важен именно следующий шаг." },
+  { de: "Der nächste Schritt zählt.", en: "The next step is the one that counts.", fr: "C'est le pas suivant qui compte.", pl: "Liczy się następny krok.", es: "Lo que cuenta es el siguiente paso.", it: "Quello che conta è il passo successivo.", pt: "O que conta é o próximo passo.", ru: "Важен именно следующий шаг.", sq: "Rëndësi ka hapi i radhës." },
   // 149
-  { de: "Lass dich nicht entmutigen.", en: "Don't let it discourage you.", fr: "Ne te décourage pas.", pl: "Nie zniechęcaj się.", es: "No te desanimes.", it: "Non lasciarti scoraggiare.", pt: "Não te desanimes.", ru: "Пусть это тебя не обескуражит." },
+  { de: "Lass dich nicht entmutigen.", en: "Don't let it discourage you.", fr: "Ne te décourage pas.", pl: "Nie zniechęcaj się.", es: "No te desanimes.", it: "Non lasciarti scoraggiare.", pt: "Não te desanimes.", ru: "Пусть это тебя не обескуражит.", sq: "Mos e humb kurajën." },
   // 150
-  { de: "Du bist voller Möglichkeiten.", en: "You're full of possibility.", fr: "Les possibilités ne te manquent pas.", pl: "Jest w tobie mnóstwo możliwości.", es: "No te faltan posibilidades.", it: "Le possibilità non ti mancano.", pt: "Não te faltam possibilidades.", ru: "Ты полон возможностей." },
+  { de: "Du bist voller Möglichkeiten.", en: "You're full of possibility.", fr: "Les possibilités ne te manquent pas.", pl: "Jest w tobie mnóstwo możliwości.", es: "No te faltan posibilidades.", it: "Le possibilità non ti mancano.", pt: "Não te faltam possibilidades.", ru: "Ты полон возможностей.", sq: "Je plot mundësi." },
   // 151
-  { de: "Mehr steckt in dir.", en: "There's more in you.", fr: "Il y a plus en toi.", pl: "Jest w tobie więcej.", es: "Hay más dentro de ti.", it: "Dentro di te c'è di più.", pt: "Há mais dentro de ti.", ru: "В тебе есть больше." },
+  { de: "Mehr steckt in dir.", en: "There's more in you.", fr: "Il y a plus en toi.", pl: "Jest w tobie więcej.", es: "Hay más dentro de ti.", it: "Dentro di te c'è di più.", pt: "Há mais dentro de ti.", ru: "В тебе есть больше.", sq: "Ke më shumë për të dhënë." },
   // 152
-  { de: "Geduld bringt dich weiter.", en: "Patience takes you further.", fr: "La patience te mène plus loin.", pl: "Cierpliwość prowadzi cię dalej.", es: "La paciencia te lleva más lejos.", it: "La pazienza ti porta più lontano.", pt: "A paciência leva-te mais longe.", ru: "Терпение ведёт дальше." },
+  { de: "Geduld bringt dich weiter.", en: "Patience takes you further.", fr: "La patience te mène plus loin.", pl: "Cierpliwość prowadzi cię dalej.", es: "La paciencia te lleva más lejos.", it: "La pazienza ti porta più lontano.", pt: "A paciência leva-te mais longe.", ru: "Терпение ведёт дальше.", sq: "Me durim shkon larg." },
   // 153
-  { de: "Dein Ziel kommt näher.", en: "Your goal is getting closer.", fr: "Ton objectif se rapproche.", pl: "Twój cel jest coraz bliżej.", es: "Tu meta se acerca.", it: "Il traguardo si avvicina.", pt: "O teu objetivo está mais perto.", ru: "Твоя цель становится ближе." },
+  { de: "Dein Ziel kommt näher.", en: "Your goal is getting closer.", fr: "Ton objectif se rapproche.", pl: "Twój cel jest coraz bliżej.", es: "Tu meta se acerca.", it: "Il traguardo si avvicina.", pt: "O teu objetivo está mais perto.", ru: "Твоя цель становится ближе.", sq: "Qëllimi yt po afrohet." },
   // 154
-  { de: "Du bist stärker geworden.", en: "You've grown stronger.", fr: "Tu as gagné en force.", pl: "Twoja siła urosła.", es: "Has ganado fuerza.", it: "Hai preso forza.", pt: "Ganhaste força.", ru: "Ты стал сильнее." },
+  { de: "Du bist stärker geworden.", en: "You've grown stronger.", fr: "Tu as gagné en force.", pl: "Twoja siła urosła.", es: "Has ganado fuerza.", it: "Hai preso forza.", pt: "Ganhaste força.", ru: "Ты стал сильнее.", sq: "Je forcuar shumë." },
   // 155
-  { de: "Bewahre deinen Schwung.", en: "Keep your momentum.", fr: "Garde ton élan.", pl: "Nie trać rozpędu.", es: "No pierdas el impulso.", it: "Non perdere lo slancio.", pt: "Não percas o impulso.", ru: "Не теряй разгона." },
+  { de: "Bewahre deinen Schwung.", en: "Keep your momentum.", fr: "Garde ton élan.", pl: "Nie trać rozpędu.", es: "No pierdas el impulso.", it: "Non perdere lo slancio.", pt: "Não percas o impulso.", ru: "Не теряй разгона.", sq: "Ruaje vrullin." },
   // 156
-  { de: "Deine Reise zählt.", en: "Your journey matters.", fr: "Ton voyage compte.", pl: "Twoja podróż ma znaczenie.", es: "Tu viaje importa.", it: "Il tuo viaggio conta.", pt: "A tua viagem importa.", ru: "Твой путь важен." },
+  { de: "Deine Reise zählt.", en: "Your journey matters.", fr: "Ton voyage compte.", pl: "Twoja podróż ma znaczenie.", es: "Tu viaje importa.", it: "Il tuo viaggio conta.", pt: "A tua viagem importa.", ru: "Твой путь важен.", sq: "Rrugëtimi yt ka rëndësi." },
   // 157
-  { de: "Du kannst Grenzen verschieben.", en: "You can move your limits.", fr: "Tu peux repousser tes limites.", pl: "Możesz przesuwać granice.", es: "Puedes mover tus límites.", it: "Puoi spostare i tuoi limiti.", pt: "Podes empurrar os teus limites.", ru: "Ты можешь раздвинуть свои пределы." },
+  { de: "Du kannst Grenzen verschieben.", en: "You can move your limits.", fr: "Tu peux repousser tes limites.", pl: "Możesz przesuwać granice.", es: "Puedes mover tus límites.", it: "Puoi spostare i tuoi limiti.", pt: "Podes empurrar os teus limites.", ru: "Ты можешь раздвинуть свои пределы.", sq: "Kufijtë e tu mund t'i shtysh më tej." },
   // 158
-  { de: "Heute ist eine neue Seite.", en: "Today is a fresh page.", fr: "Aujourd'hui est une page blanche.", pl: "Dziś to nowa strona.", es: "Hoy es una página nueva.", it: "Oggi è una pagina nuova.", pt: "Hoje é uma página nova.", ru: "Сегодня — чистая страница." },
+  { de: "Heute ist eine neue Seite.", en: "Today is a fresh page.", fr: "Aujourd'hui est une page blanche.", pl: "Dziś to nowa strona.", es: "Hoy es una página nueva.", it: "Oggi è una pagina nuova.", pt: "Hoje é uma página nova.", ru: "Сегодня — чистая страница.", sq: "Sot është një faqe e re." },
   // 159
-  { de: "Schreib deine Geschichte.", en: "Write your own story.", fr: "Écris ton histoire.", pl: "Napisz swoją historię.", es: "Escribe tu historia.", it: "Scrivi la tua storia.", pt: "Escreve a tua história.", ru: "Напиши свою собственную историю." },
+  { de: "Schreib deine Geschichte.", en: "Write your own story.", fr: "Écris ton histoire.", pl: "Napisz swoją historię.", es: "Escribe tu historia.", it: "Scrivi la tua storia.", pt: "Escreve a tua história.", ru: "Напиши свою собственную историю.", sq: "Shkruaj historinë tënde." },
   // 160
-  { de: "Sei mutig genug anzufangen.", en: "Be brave enough to begin.", fr: "Aie le courage de commencer.", pl: "Miej odwagę zacząć.", es: "Ten el valor de empezar.", it: "Abbi il coraggio di cominciare.", pt: "Tem a coragem de começar.", ru: "Наберись смелости начать." },
+  { de: "Sei mutig genug anzufangen.", en: "Be brave enough to begin.", fr: "Aie le courage de commencer.", pl: "Miej odwagę zacząć.", es: "Ten el valor de empezar.", it: "Abbi il coraggio di cominciare.", pt: "Tem a coragem de começar.", ru: "Наберись смелости начать.", sq: "Guxo të fillosh." },
   // 161
-  { de: "Vor dir liegt dein Weg.", en: "Your path lies ahead.", fr: "C'est ton chemin qui s'ouvre devant toi.", pl: "Przed tobą twoja droga.", es: "Ante ti está tu camino.", it: "La tua strada è davanti a te.", pt: "À tua frente está o teu caminho.", ru: "Твой путь впереди." },
+  { de: "Vor dir liegt dein Weg.", en: "Your path lies ahead.", fr: "C'est ton chemin qui s'ouvre devant toi.", pl: "Przed tobą twoja droga.", es: "Ante ti está tu camino.", it: "La tua strada è davanti a te.", pt: "À tua frente está o teu caminho.", ru: "Твой путь впереди.", sq: "Rruga jote shtrihet para teje." },
   // 162
-  { de: "Entdecke, was in dir steckt.", en: "Find out what's in you.", fr: "Découvre ce que tu as en toi.", pl: "Odkryj, co w tobie drzemie.", es: "Descubre lo que llevas dentro.", it: "Scopri che cosa hai dentro.", pt: "Descobre o que tens dentro de ti.", ru: "Узнай, что в тебе есть." },
+  { de: "Entdecke, was in dir steckt.", en: "Find out what's in you.", fr: "Découvre ce que tu as en toi.", pl: "Odkryj, co w tobie drzemie.", es: "Descubre lo que llevas dentro.", it: "Scopri che cosa hai dentro.", pt: "Descobre o que tens dentro de ti.", ru: "Узнай, что в тебе есть.", sq: "Zbulo çfarë ke brenda vetes." },
   // 163
-  { de: "Du kannst dich entwickeln.", en: "You can develop.", fr: "Tu peux évoluer.", pl: "Możesz się rozwijać.", es: "Puedes evolucionar.", it: "Puoi evolvere.", pt: "Podes evoluir.", ru: "Ты можешь развиваться." },
+  { de: "Du kannst dich entwickeln.", en: "You can develop.", fr: "Tu peux évoluer.", pl: "Możesz się rozwijać.", es: "Puedes evolucionar.", it: "Puoi evolvere.", pt: "Podes evoluir.", ru: "Ты можешь развиваться.", sq: "Ti mund të zhvillohesh." },
   // 164
-  { de: "Jeder Morgen bringt Chancen.", en: "Every morning brings chances.", fr: "Chaque matin apporte des occasions.", pl: "Każdy poranek przynosi szanse.", es: "Cada mañana trae oportunidades.", it: "Ogni mattina porta occasioni.", pt: "Cada manhã traz oportunidades.", ru: "Всякое утро приносит возможности." },
+  { de: "Jeder Morgen bringt Chancen.", en: "Every morning brings chances.", fr: "Chaque matin apporte des occasions.", pl: "Każdy poranek przynosi szanse.", es: "Cada mañana trae oportunidades.", it: "Ogni mattina porta occasioni.", pt: "Cada manhã traz oportunidades.", ru: "Всякое утро приносит возможности.", sq: "Çdo mëngjes sjell mundësi." },
   // 165
-  { de: "Deine Ideen verdienen Raum.", en: "Your ideas deserve room.", fr: "Tes idées méritent de la place.", pl: "Twoje pomysły zasługują na miejsce.", es: "Tus ideas merecen espacio.", it: "Le tue idee meritano spazio.", pt: "As tuas ideias merecem espaço.", ru: "Твои замыслы заслуживают места." },
+  { de: "Deine Ideen verdienen Raum.", en: "Your ideas deserve room.", fr: "Tes idées méritent de la place.", pl: "Twoje pomysły zasługują na miejsce.", es: "Tus ideas merecen espacio.", it: "Le tue idee meritano spazio.", pt: "As tuas ideias merecem espaço.", ru: "Твои замыслы заслуживают места.", sq: "Idetë e tua meritojnë hapësirë." },
   // 166
-  { de: "Glaube an deine Fähigkeiten.", en: "Believe in what you can do.", fr: "Crois en tes capacités.", pl: "Uwierz w swoje możliwości.", es: "Cree en tus capacidades.", it: "Credi in quello che sai fare.", pt: "Acredita nas tuas capacidades.", ru: "Верь в то, что умеешь." },
+  { de: "Glaube an deine Fähigkeiten.", en: "Believe in what you can do.", fr: "Crois en tes capacités.", pl: "Uwierz w swoje możliwości.", es: "Cree en tus capacidades.", it: "Credi in quello che sai fare.", pt: "Acredita nas tuas capacidades.", ru: "Верь в то, что умеешь.", sq: "Beso në aftësitë e tua." },
   // 167
-  { de: "Lass dein Licht leuchten.", en: "Let your light shine.", fr: "Laisse briller ta lumière.", pl: "Niech twoje światło świeci.", es: "Deja brillar tu luz.", it: "Lascia brillare la tua luce.", pt: "Deixa a tua luz brilhar.", ru: "Дай своему свету светить." },
+  { de: "Lass dein Licht leuchten.", en: "Let your light shine.", fr: "Laisse briller ta lumière.", pl: "Niech twoje światło świeci.", es: "Deja brillar tu luz.", it: "Lascia brillare la tua luce.", pt: "Deixa a tua luz brilhar.", ru: "Дай своему свету светить.", sq: "Lëre dritën tënde të shkëlqejë." },
   // 168
-  { de: "Vertrauen lässt dich wachsen.", en: "Trust is what lets you grow.", fr: "La confiance te fait grandir.", pl: "Zaufanie pozwala ci rosnąć.", es: "La confianza te hace crecer.", it: "È la fiducia che ti fa crescere.", pt: "A confiança faz-te crescer.", ru: "Расти помогает доверие." },
+  { de: "Vertrauen lässt dich wachsen.", en: "Trust is what lets you grow.", fr: "La confiance te fait grandir.", pl: "Zaufanie pozwala ci rosnąć.", es: "La confianza te hace crecer.", it: "È la fiducia che ti fa crescere.", pt: "A confiança faz-te crescer.", ru: "Расти помогает доверие.", sq: "Besimi të ndihmon të rritesh." },
   // 169
-  { de: "Dein Mut kennt den Weg.", en: "Your courage knows the way.", fr: "Ton courage connaît le chemin.", pl: "Twoja odwaga zna drogę.", es: "Tu valor conoce el camino.", it: "Il tuo coraggio conosce la strada.", pt: "A tua coragem conhece o caminho.", ru: "Твоя смелость знает дорогу." },
+  { de: "Dein Mut kennt den Weg.", en: "Your courage knows the way.", fr: "Ton courage connaît le chemin.", pl: "Twoja odwaga zna drogę.", es: "Tu valor conoce el camino.", it: "Il tuo coraggio conosce la strada.", pt: "A tua coragem conhece o caminho.", ru: "Твоя смелость знает дорогу.", sq: "Guximi yt e di rrugën." },
   // 170
-  { de: "Du kannst Berge bewegen.", en: "You can move mountains.", fr: "Tu peux déplacer des montagnes.", pl: "Możesz przenosić góry.", es: "Puedes mover montañas.", it: "Puoi spostare le montagne.", pt: "Podes mover montanhas.", ru: "Ты можешь сдвинуть горы." },
+  { de: "Du kannst Berge bewegen.", en: "You can move mountains.", fr: "Tu peux déplacer des montagnes.", pl: "Możesz przenosić góry.", es: "Puedes mover montañas.", it: "Puoi spostare le montagne.", pt: "Podes mover montanhas.", ru: "Ты можешь сдвинуть горы.", sq: "Ti mund të lëvizësh malet." },
   // 171
-  { de: "Glaube macht vieles möglich.", en: "Belief makes a lot possible.", fr: "La foi rend bien des choses possibles.", pl: "Wiara wiele umożliwia.", es: "La fe hace posible mucho.", it: "Credere rende possibile molto.", pt: "A fé torna muita coisa possível.", ru: "Вера делает многое возможным." },
+  { de: "Glaube macht vieles möglich.", en: "Belief makes a lot possible.", fr: "La foi rend bien des choses possibles.", pl: "Wiara wiele umożliwia.", es: "La fe hace posible mucho.", it: "Credere rende possibile molto.", pt: "A fé torna muita coisa possível.", ru: "Вера делает многое возможным.", sq: "Besimi bën të mundur shumëçka." },
   // 172
-  { de: "Dein Traum ist es wert.", en: "Your dream is worth it.", fr: "Ton rêve en vaut la peine.", pl: "Twoje marzenie jest tego warte.", es: "Tu sueño lo vale.", it: "Il tuo sogno lo vale.", pt: "O teu sonho vale a pena.", ru: "Твоя мечта того стоит." },
+  { de: "Dein Traum ist es wert.", en: "Your dream is worth it.", fr: "Ton rêve en vaut la peine.", pl: "Twoje marzenie jest tego warte.", es: "Tu sueño lo vale.", it: "Il tuo sogno lo vale.", pt: "O teu sonho vale a pena.", ru: "Твоя мечта того стоит.", sq: "Ëndrra jote ia vlen." },
   // 173
-  { de: "Bleib deinem Herzen nah.", en: "Stay close to your heart.", fr: "Reste près de ton cœur.", pl: "Trzymaj się blisko serca.", es: "Mantente cerca de tu corazón.", it: "Resta in ascolto del tuo cuore.", pt: "Mantém-te perto do teu coração.", ru: "Держись ближе к сердцу." },
+  { de: "Bleib deinem Herzen nah.", en: "Stay close to your heart.", fr: "Reste près de ton cœur.", pl: "Trzymaj się blisko serca.", es: "Mantente cerca de tu corazón.", it: "Resta in ascolto del tuo cuore.", pt: "Mantém-te perto do teu coração.", ru: "Держись ближе к сердцу.", sq: "Mos u largo nga zemra jote." },
   // 174
-  { de: "Du bist bereit für mehr.", en: "You're ready for more.", fr: "Tu peux viser plus haut.", pl: "Możesz sięgnąć po więcej.", es: "Puedes aspirar a más.", it: "Puoi puntare più in alto.", pt: "Podes querer mais.", ru: "Ты готов к большему." },
+  { de: "Du bist bereit für mehr.", en: "You're ready for more.", fr: "Tu peux viser plus haut.", pl: "Możesz sięgnąć po więcej.", es: "Puedes aspirar a más.", it: "Puoi puntare più in alto.", pt: "Podes querer mais.", ru: "Ты готов к большему.", sq: "Je gati për më shumë." },
   // 175
-  { de: "Möglichkeiten warten überall.", en: "Chances are waiting everywhere.", fr: "Des occasions t'attendent partout.", pl: "Wszędzie czekają możliwości.", es: "Hay oportunidades por todas partes.", it: "Ci sono occasioni dappertutto.", pt: "Há oportunidades por todo o lado.", ru: "Возможности ждут повсюду." },
+  { de: "Möglichkeiten warten überall.", en: "Chances are waiting everywhere.", fr: "Des occasions t'attendent partout.", pl: "Wszędzie czekają możliwości.", es: "Hay oportunidades por todas partes.", it: "Ci sono occasioni dappertutto.", pt: "Há oportunidades por todo o lado.", ru: "Возможности ждут повсюду.", sq: "Mundësitë të presin kudo." },
   // 176
-  { de: "Gib deinem Traum eine Chance.", en: "Give your dream a chance.", fr: "Donne une chance à ton rêve.", pl: "Daj swojemu marzeniu szansę.", es: "Dale una oportunidad a tu sueño.", it: "Dai una possibilità al tuo sogno.", pt: "Dá uma oportunidade ao teu sonho.", ru: "Дай своей мечте случай." },
+  { de: "Gib deinem Traum eine Chance.", en: "Give your dream a chance.", fr: "Donne une chance à ton rêve.", pl: "Daj swojemu marzeniu szansę.", es: "Dale una oportunidad a tu sueño.", it: "Dai una possibilità al tuo sogno.", pt: "Dá uma oportunidade ao teu sonho.", ru: "Дай своей мечте случай.", sq: "Jepi një shans ëndrrës sate." },
   // 177
-  { de: "Dein Einsatz wird sichtbar.", en: "Your effort is starting to show.", fr: "Tes efforts commencent à se voir.", pl: "Twój wysiłek zaczyna być widoczny.", es: "Tu esfuerzo empieza a notarse.", it: "Il tuo impegno comincia a vedersi.", pt: "O teu esforço começa a notar-se.", ru: "Твои усилия начинают проступать." },
+  { de: "Dein Einsatz wird sichtbar.", en: "Your effort is starting to show.", fr: "Tes efforts commencent à se voir.", pl: "Twój wysiłek zaczyna być widoczny.", es: "Tu esfuerzo empieza a notarse.", it: "Il tuo impegno comincia a vedersi.", pt: "O teu esforço começa a notar-se.", ru: "Твои усилия начинают проступать.", sq: "Përpjekjet e tua kanë nisur të duken." },
   // 178
-  { de: "Bleib stark.", en: "Stay strong.", fr: "Garde ta force.", pl: "Nie trać siły.", es: "Mantente fuerte.", it: "Resta forte.", pt: "Mantém-te forte.", ru: "Оставайся сильным." },
+  { de: "Bleib stark.", en: "Stay strong.", fr: "Garde ta force.", pl: "Nie trać siły.", es: "Mantente fuerte.", it: "Resta forte.", pt: "Mantém-te forte.", ru: "Оставайся сильным.", sq: "Mbahu fort." },
   // 179
-  { de: "In dir steckt noch Wachstum.", en: "There's still growing in you.", fr: "Il te reste de la marge pour grandir.", pl: "Jest w tobie jeszcze przestrzeń na rozwój.", es: "Todavía te queda mucho por crecer.", it: "Hai ancora molto da crescere.", pt: "Ainda tens muito para crescer.", ru: "В тебе ещё есть куда расти." },
+  { de: "In dir steckt noch Wachstum.", en: "There's still growing in you.", fr: "Il te reste de la marge pour grandir.", pl: "Jest w tobie jeszcze przestrzeń na rozwój.", es: "Todavía te queda mucho por crecer.", it: "Hai ancora molto da crescere.", pt: "Ainda tens muito para crescer.", ru: "В тебе ещё есть куда расти.", sq: "Ke ende vend për t'u rritur." },
   // 180
-  { de: "Jeder Schritt bringt Erfahrung.", en: "Every step brings experience.", fr: "Chaque pas apporte de l'expérience.", pl: "Każdy krok przynosi doświadczenie.", es: "Cada paso trae experiencia.", it: "Ogni passo porta esperienza.", pt: "Cada passo traz experiência.", ru: "Всякий шаг приносит опыт." },
+  { de: "Jeder Schritt bringt Erfahrung.", en: "Every step brings experience.", fr: "Chaque pas apporte de l'expérience.", pl: "Każdy krok przynosi doświadczenie.", es: "Cada paso trae experiencia.", it: "Ogni passo porta esperienza.", pt: "Cada passo traz experiência.", ru: "Всякий шаг приносит опыт.", sq: "Çdo hap sjell përvojë." },
   // 181
-  { de: "Deine Zukunft ist offen.", en: "Your future is open.", fr: "Ton avenir est ouvert.", pl: "Twoja przyszłość jest otwarta.", es: "Tu futuro está abierto.", it: "Il tuo futuro è aperto.", pt: "O teu futuro está em aberto.", ru: "Твоё будущее открыто." },
+  { de: "Deine Zukunft ist offen.", en: "Your future is open.", fr: "Ton avenir est ouvert.", pl: "Twoja przyszłość jest otwarta.", es: "Tu futuro está abierto.", it: "Il tuo futuro è aperto.", pt: "O teu futuro está em aberto.", ru: "Твоё будущее открыто.", sq: "E ardhmja jote është e hapur." },
   // 182
-  { de: "Wage heute etwas Neues.", en: "Try something new today.", fr: "Ose du nouveau aujourd'hui.", pl: "Odważ się dziś na coś nowego.", es: "Atrévete hoy con algo nuevo.", it: "Oggi prova qualcosa di nuovo.", pt: "Arrisca hoje algo novo.", ru: "Попробуй сегодня что-то новое." },
+  { de: "Wage heute etwas Neues.", en: "Try something new today.", fr: "Ose du nouveau aujourd'hui.", pl: "Odważ się dziś na coś nowego.", es: "Atrévete hoy con algo nuevo.", it: "Oggi prova qualcosa di nuovo.", pt: "Arrisca hoje algo novo.", ru: "Попробуй сегодня что-то новое.", sq: "Provo sot diçka të re." },
   // 183
-  { de: "Lass deine Ideen fliegen.", en: "Let your ideas fly.", fr: "Laisse tes idées s'envoler.", pl: "Pozwól swoim pomysłom latać.", es: "Deja volar tus ideas.", it: "Lascia volare le tue idee.", pt: "Deixa as tuas ideias voar.", ru: "Дай своим мыслям взлететь." },
+  { de: "Lass deine Ideen fliegen.", en: "Let your ideas fly.", fr: "Laisse tes idées s'envoler.", pl: "Pozwól swoim pomysłom latać.", es: "Deja volar tus ideas.", it: "Lascia volare le tue idee.", pt: "Deixa as tuas ideias voar.", ru: "Дай своим мыслям взлететь.", sq: "Lëri idetë e tua të fluturojnë." },
   // 184
-  { de: "Ein Versuch kann alles ändern.", en: "One attempt can change everything.", fr: "Une tentative peut tout changer.", pl: "Jedna próba może wszystko zmienić.", es: "Un intento puede cambiarlo todo.", it: "Un tentativo può cambiare tutto.", pt: "Uma tentativa pode mudar tudo.", ru: "Одна попытка может изменить всё." },
+  { de: "Ein Versuch kann alles ändern.", en: "One attempt can change everything.", fr: "Une tentative peut tout changer.", pl: "Jedna próba może wszystko zmienić.", es: "Un intento puede cambiarlo todo.", it: "Un tentativo può cambiare tutto.", pt: "Uma tentativa pode mudar tudo.", ru: "Одна попытка может изменить всё.", sq: "Një përpjekje mund të ndryshojë gjithçka." },
   // 185
-  { de: "Mut macht dich stärker.", en: "Courage makes you stronger.", fr: "Le courage te donne de la force.", pl: "Odwaga daje ci siłę.", es: "El valor te hace más fuerte.", it: "Il coraggio ti rende più forte.", pt: "A coragem torna-te mais forte.", ru: "Смелость делает тебя сильнее." },
+  { de: "Mut macht dich stärker.", en: "Courage makes you stronger.", fr: "Le courage te donne de la force.", pl: "Odwaga daje ci siłę.", es: "El valor te hace más fuerte.", it: "Il coraggio ti rende più forte.", pt: "A coragem torna-te mais forte.", ru: "Смелость делает тебя сильнее.", sq: "Guximi të jep forcë." },
   // 186
-  { de: "Heute ist ein Geschenk.", en: "Today is a gift.", fr: "Aujourd'hui est un cadeau.", pl: "Dziś to prezent.", es: "Hoy es un regalo.", it: "Oggi è un regalo.", pt: "Hoje é um presente.", ru: "Сегодняшний день — подарок." },
+  { de: "Heute ist ein Geschenk.", en: "Today is a gift.", fr: "Aujourd'hui est un cadeau.", pl: "Dziś to prezent.", es: "Hoy es un regalo.", it: "Oggi è un regalo.", pt: "Hoje é um presente.", ru: "Сегодняшний день — подарок.", sq: "Sot është një dhuratë." },
   // 187
-  { de: "Nutze deine Chance.", en: "Take your chance.", fr: "Saisis ta chance.", pl: "Wykorzystaj swoją szansę.", es: "Aprovecha tu oportunidad.", it: "Cogli la tua occasione.", pt: "Aproveita a tua oportunidade.", ru: "Воспользуйся своим случаем." },
+  { de: "Nutze deine Chance.", en: "Take your chance.", fr: "Saisis ta chance.", pl: "Wykorzystaj swoją szansę.", es: "Aprovecha tu oportunidad.", it: "Cogli la tua occasione.", pt: "Aproveita a tua oportunidade.", ru: "Воспользуйся своим случаем.", sq: "Kape rastin." },
   // 188
-  { de: "Sei stolz auf deinen Weg.", en: "Be proud of your path.", fr: "Ton chemin mérite ta fierté.", pl: "Twoja droga to powód do dumy.", es: "Tu camino merece tu orgullo.", it: "La tua strada merita orgoglio.", pt: "O teu caminho merece o teu orgulho.", ru: "Гордись своим путём." },
+  { de: "Sei stolz auf deinen Weg.", en: "Be proud of your path.", fr: "Ton chemin mérite ta fierté.", pl: "Twoja droga to powód do dumy.", es: "Tu camino merece tu orgullo.", it: "La tua strada merita orgoglio.", pt: "O teu caminho merece o teu orgulho.", ru: "Гордись своим путём.", sq: "Krenohu me rrugën tënde." },
   // 189
-  { de: "Verlass dich auf dich.", en: "Rely on yourself.", fr: "Compte sur toi.", pl: "Polegaj na sobie.", es: "Cuenta contigo.", it: "Conta su di te.", pt: "Conta contigo.", ru: "Положись на себя." },
+  { de: "Verlass dich auf dich.", en: "Rely on yourself.", fr: "Compte sur toi.", pl: "Polegaj na sobie.", es: "Cuenta contigo.", it: "Conta su di te.", pt: "Conta contigo.", ru: "Положись на себя.", sq: "Mbështetu te vetja." },
   // 190
-  { de: "Dein Ziel verdient Geduld.", en: "Your goal deserves patience.", fr: "Ton objectif mérite de la patience.", pl: "Twój cel zasługuje na cierpliwość.", es: "Tu meta merece paciencia.", it: "Il tuo traguardo merita pazienza.", pt: "O teu objetivo merece paciência.", ru: "Твоя цель заслуживает терпения." },
+  { de: "Dein Ziel verdient Geduld.", en: "Your goal deserves patience.", fr: "Ton objectif mérite de la patience.", pl: "Twój cel zasługuje na cierpliwość.", es: "Tu meta merece paciencia.", it: "Il tuo traguardo merita pazienza.", pt: "O teu objetivo merece paciência.", ru: "Твоя цель заслуживает терпения.", sq: "Qëllimi yt meriton durim." },
   // 191
-  { de: "Finde deinen eigenen Rhythmus.", en: "Find your own rhythm.", fr: "Trouve ton propre rythme.", pl: "Znajdź własny rytm.", es: "Encuentra tu propio ritmo.", it: "Trova il tuo ritmo.", pt: "Encontra o teu próprio ritmo.", ru: "Найди свой собственный ритм." },
+  { de: "Finde deinen eigenen Rhythmus.", en: "Find your own rhythm.", fr: "Trouve ton propre rythme.", pl: "Znajdź własny rytm.", es: "Encuentra tu propio ritmo.", it: "Trova il tuo ritmo.", pt: "Encontra o teu próprio ritmo.", ru: "Найди свой собственный ритм.", sq: "Gjej ritmin tënd." },
   // 192
-  { de: "Du bestimmst dein Tempo.", en: "You set your own pace.", fr: "C'est toi qui fixes ton allure.", pl: "To ty ustalasz tempo.", es: "El ritmo lo pones tú.", it: "Il ritmo lo decidi tu.", pt: "O ritmo é decidido por ti.", ru: "Темп задаёшь ты сам." },
+  { de: "Du bestimmst dein Tempo.", en: "You set your own pace.", fr: "C'est toi qui fixes ton allure.", pl: "To ty ustalasz tempo.", es: "El ritmo lo pones tú.", it: "Il ritmo lo decidi tu.", pt: "O ritmo é decidido por ti.", ru: "Темп задаёшь ты сам.", sq: "Ti vendos sa shpejt ecën." },
   // 193
-  { de: "Jetzt kommt dein nächster Schritt.", en: "Here comes your next step.", fr: "Voici ton prochain pas.", pl: "Teraz twój następny krok.", es: "Ahora viene tu siguiente paso.", it: "Ecco il tuo passo successivo.", pt: "Agora vem o teu próximo passo.", ru: "Вот и твой следующий шаг." },
+  { de: "Jetzt kommt dein nächster Schritt.", en: "Here comes your next step.", fr: "Voici ton prochain pas.", pl: "Teraz twój następny krok.", es: "Ahora viene tu siguiente paso.", it: "Ecco il tuo passo successivo.", pt: "Agora vem o teu próximo passo.", ru: "Вот и твой следующий шаг.", sq: "Tani vjen hapi yt tjetër." },
   // 194
-  { de: "Zweifel bestimmen dich nicht.", en: "Your doubts don't define you.", fr: "Tes doutes ne te définissent pas.", pl: "Wątpliwości cię nie określają.", es: "Tus dudas no te definen.", it: "I tuoi dubbi non ti definiscono.", pt: "As tuas dúvidas não te definem.", ru: "Твои сомнения — это не ты." },
+  { de: "Zweifel bestimmen dich nicht.", en: "Your doubts don't define you.", fr: "Tes doutes ne te définissent pas.", pl: "Wątpliwości cię nie określają.", es: "Tus dudas no te definen.", it: "I tuoi dubbi non ti definiscono.", pt: "As tuas dúvidas não te definem.", ru: "Твои сомнения — это не ты.", sq: "Dyshimet nuk të përcaktojnë." },
   // 195
-  { de: "Lass dich vom Mut führen.", en: "Let courage lead.", fr: "Laisse le courage te guider.", pl: "Niech odwaga cię prowadzi.", es: "Deja que el valor te guíe.", it: "Lascia guidare il coraggio.", pt: "Deixa a coragem guiar-te.", ru: "Пусть смелость ведёт." },
+  { de: "Lass dich vom Mut führen.", en: "Let courage lead.", fr: "Laisse le courage te guider.", pl: "Niech odwaga cię prowadzi.", es: "Deja que el valor te guíe.", it: "Lascia guidare il coraggio.", pt: "Deixa a coragem guiar-te.", ru: "Пусть смелость ведёт.", sq: "Lëre guximin të prijë." },
   // 196
-  { de: "Dein Weg gehört dir.", en: "Your path is your own.", fr: "Ton chemin est à toi.", pl: "Twoja droga należy do ciebie.", es: "Tu camino es tuyo.", it: "La tua strada è tua.", pt: "O teu caminho é teu.", ru: "Твой путь — твой собственный." },
+  { de: "Dein Weg gehört dir.", en: "Your path is your own.", fr: "Ton chemin est à toi.", pl: "Twoja droga należy do ciebie.", es: "Tu camino es tuyo.", it: "La tua strada è tua.", pt: "O teu caminho é teu.", ru: "Твой путь — твой собственный.", sq: "Rruga jote të përket vetëm ty." },
   // 197
-  { de: "Möglichkeiten sind überall.", en: "There are chances all around.", fr: "Les occasions sont partout.", pl: "Możliwości są wszędzie.", es: "Las oportunidades están por todas partes.", it: "Le occasioni sono tutto intorno.", pt: "As oportunidades estão em todo o lado.", ru: "Возможности кругом." },
+  { de: "Möglichkeiten sind überall.", en: "There are chances all around.", fr: "Les occasions sont partout.", pl: "Możliwości są wszędzie.", es: "Las oportunidades están por todas partes.", it: "Le occasioni sono tutto intorno.", pt: "As oportunidades estão em todo o lado.", ru: "Возможности кругом.", sq: "Rreth teje ka plot mundësi." },
   // 198
-  { de: "Veränderung liegt in deiner Hand.", en: "Change is in your hands.", fr: "Le changement est entre tes mains.", pl: "Zmiana jest w twoich rękach.", es: "El cambio está en tus manos.", it: "Il cambiamento è nelle tue mani.", pt: "A mudança está nas tuas mãos.", ru: "Перемены в твоих руках." },
+  { de: "Veränderung liegt in deiner Hand.", en: "Change is in your hands.", fr: "Le changement est entre tes mains.", pl: "Zmiana jest w twoich rękach.", es: "El cambio está en tus manos.", it: "Il cambiamento è nelle tue mani.", pt: "A mudança está nas tuas mãos.", ru: "Перемены в твоих руках.", sq: "Ndryshimi është në dorën tënde." },
   // 199
-  { de: "Jeder Moment birgt einen Anfang.", en: "Every moment holds a beginning.", fr: "Chaque instant contient un début.", pl: "W każdej chwili kryje się początek.", es: "Cada momento guarda un comienzo.", it: "Ogni momento contiene un inizio.", pt: "Cada momento guarda um começo.", ru: "Во всякой минуте есть начало." },
+  { de: "Jeder Moment birgt einen Anfang.", en: "Every moment holds a beginning.", fr: "Chaque instant contient un début.", pl: "W każdej chwili kryje się początek.", es: "Cada momento guarda un comienzo.", it: "Ogni momento contiene un inizio.", pt: "Cada momento guarda um começo.", ru: "Во всякой минуте есть начало.", sq: "Çdo çast mund të jetë një fillim." },
   // 200
-  { de: "Deine Stärke liegt in dir.", en: "Your strength is inside you.", fr: "Ta force est en toi.", pl: "Twoja siła jest w tobie.", es: "Tu fuerza está dentro de ti.", it: "La tua forza è dentro di te.", pt: "A tua força está dentro de ti.", ru: "Твоя сила внутри тебя." },
+  { de: "Deine Stärke liegt in dir.", en: "Your strength is inside you.", fr: "Ta force est en toi.", pl: "Twoja siła jest w tobie.", es: "Tu fuerza está dentro de ti.", it: "La tua forza è dentro di te.", pt: "A tua força está dentro de ti.", ru: "Твоя сила внутри тебя.", sq: "Forca jote është brenda teje." },
   // 201
-  { de: "Deine Wahl macht den Unterschied.", en: "Your choice makes the difference.", fr: "Ton choix fait la différence.", pl: "Twój wybór robi różnicę.", es: "Tu elección marca la diferencia.", it: "La tua scelta fa la differenza.", pt: "A tua escolha faz a diferença.", ru: "Твой выбор решает дело." },
+  { de: "Deine Wahl macht den Unterschied.", en: "Your choice makes the difference.", fr: "Ton choix fait la différence.", pl: "Twój wybór robi różnicę.", es: "Tu elección marca la diferencia.", it: "La tua scelta fa la differenza.", pt: "A tua escolha faz a diferença.", ru: "Твой выбор решает дело.", sq: "Zgjedhja jote është vendimtare." },
   // 202
-  { de: "Gib deinem Ziel Zeit.", en: "Give your goal time.", fr: "Donne du temps à ton objectif.", pl: "Daj swojemu celowi czas.", es: "Dale tiempo a tu meta.", it: "Dai tempo al tuo traguardo.", pt: "Dá tempo ao teu objetivo.", ru: "Дай своей цели время." },
+  { de: "Gib deinem Ziel Zeit.", en: "Give your goal time.", fr: "Donne du temps à ton objectif.", pl: "Daj swojemu celowi czas.", es: "Dale tiempo a tu meta.", it: "Dai tempo al tuo traguardo.", pt: "Dá tempo ao teu objetivo.", ru: "Дай своей цели время.", sq: "Jepi kohë qëllimit tënd." },
   // 203
-  { de: "Halte deine Richtung.", en: "Hold your direction.", fr: "Tiens ta direction.", pl: "Trzymaj się swojego kierunku.", es: "Mantén tu dirección.", it: "Tieni la tua direzione.", pt: "Mantém a tua direção.", ru: "Держи направление." },
+  { de: "Halte deine Richtung.", en: "Hold your direction.", fr: "Tiens ta direction.", pl: "Trzymaj się swojego kierunku.", es: "Mantén tu dirección.", it: "Tieni la tua direzione.", pt: "Mantém a tua direção.", ru: "Держи направление.", sq: "Mbaje drejtimin tënd." },
   // 204
-  { de: "Wachse über dich hinaus.", en: "Outgrow yourself.", fr: "Dépasse-toi.", pl: "Przekrocz własne granice.", es: "Supérate.", it: "Superati.", pt: "Supera-te.", ru: "Перерасти самого себя." },
+  { de: "Wachse über dich hinaus.", en: "Outgrow yourself.", fr: "Dépasse-toi.", pl: "Przekrocz własne granice.", es: "Supérate.", it: "Superati.", pt: "Supera-te.", ru: "Перерасти самого себя.", sq: "Tejkalo veten." },
   // 205
-  { de: "Dein Morgen kann groß werden.", en: "Your tomorrow can be big.", fr: "Ton demain peut être grand.", pl: "Twoje jutro może być wielkie.", es: "Tu mañana puede ser grande.", it: "Il tuo domani può essere grande.", pt: "O teu amanhã pode ser grande.", ru: "Твоё завтра может быть большим." },
+  { de: "Dein Morgen kann groß werden.", en: "Your tomorrow can be big.", fr: "Ton demain peut être grand.", pl: "Twoje jutro może być wielkie.", es: "Tu mañana puede ser grande.", it: "Il tuo domani può essere grande.", pt: "O teu amanhã pode ser grande.", ru: "Твоё завтра может быть большим.", sq: "E nesërmja jote mund të sjellë gjëra të mëdha." },
   // 206
-  { de: "Träume brauchen Mut.", en: "Dreams need courage.", fr: "Les rêves ont besoin de courage.", pl: "Marzenia potrzebują odwagi.", es: "Los sueños necesitan valor.", it: "I sogni hanno bisogno di coraggio.", pt: "Os sonhos precisam de coragem.", ru: "Мечтам нужна смелость." },
+  { de: "Träume brauchen Mut.", en: "Dreams need courage.", fr: "Les rêves ont besoin de courage.", pl: "Marzenia potrzebują odwagi.", es: "Los sueños necesitan valor.", it: "I sogni hanno bisogno di coraggio.", pt: "Os sonhos precisam de coragem.", ru: "Мечтам нужна смелость.", sq: "Ëndrrat duan guxim." },
   // 207
-  { de: "Dein Einsatz zählt heute.", en: "Today your effort counts.", fr: "Aujourd'hui, tes efforts comptent.", pl: "Dziś liczy się twój wysiłek.", es: "Hoy cuenta tu esfuerzo.", it: "Oggi conta il tuo impegno.", pt: "Hoje conta o teu esforço.", ru: "Сегодня твои усилия важны." },
+  { de: "Dein Einsatz zählt heute.", en: "Today your effort counts.", fr: "Aujourd'hui, tes efforts comptent.", pl: "Dziś liczy się twój wysiłek.", es: "Hoy cuenta tu esfuerzo.", it: "Oggi conta il tuo impegno.", pt: "Hoje conta o teu esforço.", ru: "Сегодня твои усилия важны.", sq: "Sot përpjekja jote ka vlerë." },
   // 208
-  { de: "Chancen liegen vor dir.", en: "Chances lie ahead of you.", fr: "Des occasions s'ouvrent devant toi.", pl: "Przed tobą leżą szanse.", es: "Tienes oportunidades por delante.", it: "Hai occasioni davanti.", pt: "Tens oportunidades pela frente.", ru: "Возможности лежат впереди." },
+  { de: "Chancen liegen vor dir.", en: "Chances lie ahead of you.", fr: "Des occasions s'ouvrent devant toi.", pl: "Przed tobą leżą szanse.", es: "Tienes oportunidades por delante.", it: "Hai occasioni davanti.", pt: "Tens oportunidades pela frente.", ru: "Возможности лежат впереди.", sq: "Para teje hapen mundësi." },
   // 209
-  { de: "Entschlossenheit bringt dich weiter.", en: "Determination takes you further.", fr: "La détermination te mène plus loin.", pl: "Determinacja prowadzi cię dalej.", es: "La determinación te lleva más lejos.", it: "La determinazione ti porta più lontano.", pt: "A determinação leva-te mais longe.", ru: "Решимость ведёт дальше." },
+  { de: "Entschlossenheit bringt dich weiter.", en: "Determination takes you further.", fr: "La détermination te mène plus loin.", pl: "Determinacja prowadzi cię dalej.", es: "La determinación te lleva más lejos.", it: "La determinazione ti porta più lontano.", pt: "A determinação leva-te mais longe.", ru: "Решимость ведёт дальше.", sq: "Vendosmëria të çon më tej." },
   // 210
-  { de: "Deine Reise geht weiter.", en: "Your journey goes on.", fr: "Ton voyage continue.", pl: "Twoja podróż trwa.", es: "Tu viaje continúa.", it: "Il tuo viaggio continua.", pt: "A tua viagem continua.", ru: "Твой путь продолжается." },
+  { de: "Deine Reise geht weiter.", en: "Your journey goes on.", fr: "Ton voyage continue.", pl: "Twoja podróż trwa.", es: "Tu viaje continúa.", it: "Il tuo viaggio continua.", pt: "A tua viagem continua.", ru: "Твой путь продолжается.", sq: "Rrugëtimi yt vazhdon." },
   // 211
-  { de: "Du kannst immer dazulernen.", en: "There's always more to learn.", fr: "Il y a toujours à apprendre.", pl: "Zawsze można się czegoś nauczyć.", es: "Siempre se puede aprender más.", it: "C'è sempre altro da imparare.", pt: "Há sempre mais para aprender.", ru: "Всегда есть чему поучиться." },
+  { de: "Du kannst immer dazulernen.", en: "There's always more to learn.", fr: "Il y a toujours à apprendre.", pl: "Zawsze można się czegoś nauczyć.", es: "Siempre se puede aprender más.", it: "C'è sempre altro da imparare.", pt: "Há sempre mais para aprender.", ru: "Всегда есть чему поучиться.", sq: "Gjithmonë ka më shumë për të mësuar." },
   // 212
-  { de: "Heute darf etwas gelingen.", en: "Something is allowed to go right today.", fr: "Aujourd'hui, quelque chose a le droit de réussir.", pl: "Dziś coś może się udać.", es: "Hoy algo puede salir bien.", it: "Oggi qualcosa può andare bene.", pt: "Hoje algo pode correr bem.", ru: "Сегодня чему-то позволено удаться." },
+  { de: "Heute darf etwas gelingen.", en: "Something is allowed to go right today.", fr: "Aujourd'hui, quelque chose a le droit de réussir.", pl: "Dziś coś może się udać.", es: "Hoy algo puede salir bien.", it: "Oggi qualcosa può andare bene.", pt: "Hoje algo pode correr bem.", ru: "Сегодня чему-то позволено удаться.", sq: "Sot diçka mund të dalë mbarë." },
   // 213
-  { de: "Dein Mut öffnet Türen.", en: "Your courage opens doors.", fr: "Ton courage ouvre des portes.", pl: "Twoja odwaga otwiera drzwi.", es: "Tu valor abre puertas.", it: "Il tuo coraggio apre porte.", pt: "A tua coragem abre portas.", ru: "Твоя смелость открывает двери." },
+  { de: "Dein Mut öffnet Türen.", en: "Your courage opens doors.", fr: "Ton courage ouvre des portes.", pl: "Twoja odwaga otwiera drzwi.", es: "Tu valor abre puertas.", it: "Il tuo coraggio apre porte.", pt: "A tua coragem abre portas.", ru: "Твоя смелость открывает двери.", sq: "Guximi yt hap dyer." },
   // 214
-  { de: "Halte deinen Traum fest.", en: "Hold on to your dream.", fr: "Ne lâche pas ton rêve.", pl: "Trzymaj się swojego marzenia.", es: "No sueltes tu sueño.", it: "Non lasciare il tuo sogno.", pt: "Não largues o teu sonho.", ru: "Держись за свою мечту." },
+  { de: "Halte deinen Traum fest.", en: "Hold on to your dream.", fr: "Ne lâche pas ton rêve.", pl: "Trzymaj się swojego marzenia.", es: "No sueltes tu sueño.", it: "Non lasciare il tuo sogno.", pt: "Não largues o teu sonho.", ru: "Держись за свою мечту.", sq: "Mbaje fort ëndrrën tënde." },
   // 215
-  { de: "Entdecke neue Seiten an dir.", en: "Discover new sides of yourself.", fr: "Découvre de nouvelles facettes de toi.", pl: "Odkryj w sobie nowe strony.", es: "Descubre nuevas facetas de ti.", it: "Scopri lati nuovi di te.", pt: "Descobre novas facetas de ti.", ru: "Открой в себе новые стороны." },
+  { de: "Entdecke neue Seiten an dir.", en: "Discover new sides of yourself.", fr: "Découvre de nouvelles facettes de toi.", pl: "Odkryj w sobie nowe strony.", es: "Descubre nuevas facetas de ti.", it: "Scopri lati nuovi di te.", pt: "Descobre novas facetas de ti.", ru: "Открой в себе новые стороны.", sq: "Zbulo anë të panjohura të vetes." },
   // 216
-  { de: "Anfänge brauchen Vertrauen.", en: "Beginnings need trust.", fr: "Les débuts demandent de la confiance.", pl: "Początki potrzebują zaufania.", es: "Los comienzos necesitan confianza.", it: "Gli inizi hanno bisogno di fiducia.", pt: "Os começos precisam de confiança.", ru: "Началу нужно доверие." },
+  { de: "Anfänge brauchen Vertrauen.", en: "Beginnings need trust.", fr: "Les débuts demandent de la confiance.", pl: "Początki potrzebują zaufania.", es: "Los comienzos necesitan confianza.", it: "Gli inizi hanno bisogno di fiducia.", pt: "Os começos precisam de confiança.", ru: "Началу нужно доверие.", sq: "Çdo fillim kërkon besim." },
   // 217
-  { de: "Deine Möglichkeiten sind größer.", en: "Your options are bigger than you think.", fr: "Tes possibilités sont plus larges que tu ne crois.", pl: "Twoje możliwości są większe, niż sądzisz.", es: "Tus posibilidades son mayores de lo que crees.", it: "Le tue possibilità sono più grandi di quanto credi.", pt: "As tuas possibilidades são maiores do que pensas.", ru: "Твоих возможностей больше, чем тебе кажется." },
+  { de: "Deine Möglichkeiten sind größer.", en: "Your options are bigger than you think.", fr: "Tes possibilités sont plus larges que tu ne crois.", pl: "Twoje możliwości są większe, niż sądzisz.", es: "Tus posibilidades son mayores de lo que crees.", it: "Le tue possibilità sono più grandi di quanto credi.", pt: "As tuas possibilidades são maiores do que pensas.", ru: "Твоих возможностей больше, чем тебе кажется.", sq: "Mundësitë e tua janë më të mëdha se ç'mendon." },
   // 218
-  { de: "Überrasche dich heute selbst.", en: "Surprise yourself today.", fr: "Surprends-toi aujourd'hui.", pl: "Zaskocz dziś siebie.", es: "Sorpréndete hoy.", it: "Oggi sorprenditi.", pt: "Surpreende-te hoje.", ru: "Удиви себя сегодня." },
+  { de: "Überrasche dich heute selbst.", en: "Surprise yourself today.", fr: "Surprends-toi aujourd'hui.", pl: "Zaskocz dziś siebie.", es: "Sorpréndete hoy.", it: "Oggi sorprenditi.", pt: "Surpreende-te hoje.", ru: "Удиви себя сегодня.", sq: "Befasoje veten sot." },
   // 219
-  { de: "Geh weiter als gestern.", en: "Go further than yesterday.", fr: "Va plus loin que la veille.", pl: "Idź dalej niż wczoraj.", es: "Llega más lejos que ayer.", it: "Arriva più lontano di ieri.", pt: "Vai mais longe do que ontem.", ru: "Зайди дальше, чем вчера." },
+  { de: "Geh weiter als gestern.", en: "Go further than yesterday.", fr: "Va plus loin que la veille.", pl: "Idź dalej niż wczoraj.", es: "Llega más lejos que ayer.", it: "Arriva più lontano di ieri.", pt: "Vai mais longe do que ontem.", ru: "Зайди дальше, чем вчера.", sq: "Shko më larg se dje." },
   // 220
-  { de: "Du darfst deinen Weg ändern.", en: "You're allowed to change your path.", fr: "Tu as le droit de changer de chemin.", pl: "Masz prawo zmienić drogę.", es: "Tienes derecho a cambiar de camino.", it: "Hai il diritto di cambiare strada.", pt: "Tens o direito de mudar de caminho.", ru: "Тебе можно переменить путь." },
+  { de: "Du darfst deinen Weg ändern.", en: "You're allowed to change your path.", fr: "Tu as le droit de changer de chemin.", pl: "Masz prawo zmienić drogę.", es: "Tienes derecho a cambiar de camino.", it: "Hai il diritto di cambiare strada.", pt: "Tens o direito de mudar de caminho.", ru: "Тебе можно переменить путь.", sq: "S'ka gjë nëse ndryshon rrugë." },
   // 221
-  { de: "Zuversicht macht vieles leichter.", en: "Confidence makes a lot easier.", fr: "La confiance allège bien des choses.", pl: "Ufność wiele ułatwia.", es: "La confianza lo hace todo más llevadero.", it: "La fiducia rende molto più leggero.", pt: "A confiança torna tudo mais leve.", ru: "Уверенность многое облегчает." },
+  { de: "Zuversicht macht vieles leichter.", en: "Confidence makes a lot easier.", fr: "La confiance allège bien des choses.", pl: "Ufność wiele ułatwia.", es: "La confianza lo hace todo más llevadero.", it: "La fiducia rende molto più leggero.", pt: "A confiança torna tudo mais leve.", ru: "Уверенность многое облегчает.", sq: "Vetëbesimi lehtëson shumëçka." },
   // 222
-  { de: "Deine Ziele sind wichtig.", en: "Your goals matter.", fr: "Tes objectifs comptent.", pl: "Twoje cele są ważne.", es: "Tus metas importan.", it: "I tuoi traguardi contano.", pt: "Os teus objetivos importam.", ru: "Твои цели важны." },
+  { de: "Deine Ziele sind wichtig.", en: "Your goals matter.", fr: "Tes objectifs comptent.", pl: "Twoje cele są ważne.", es: "Tus metas importan.", it: "I tuoi traguardi contano.", pt: "Os teus objetivos importam.", ru: "Твои цели важны.", sq: "Qëllimet e tua kanë rëndësi." },
   // 223
-  { de: "Großes darf klein beginnen.", en: "Big things may start small.", fr: "Les grandes choses ont le droit de commencer petit.", pl: "Wielkie rzeczy mogą zacząć się od małego.", es: "Lo grande puede empezar pequeño.", it: "Le cose grandi possono cominciare piccole.", pt: "O que é grande pode começar pequeno.", ru: "Большому позволено начинаться с малого." },
+  { de: "Großes darf klein beginnen.", en: "Big things may start small.", fr: "Les grandes choses ont le droit de commencer petit.", pl: "Wielkie rzeczy mogą zacząć się od małego.", es: "Lo grande puede empezar pequeño.", it: "Le cose grandi possono cominciare piccole.", pt: "O que é grande pode começar pequeno.", ru: "Большому позволено начинаться с малого.", sq: "Gjërat e mëdha mund të nisin nga pak." },
   // 224
-  { de: "Ein neuer Versuch lohnt sich.", en: "Another try is worth it.", fr: "Un nouvel essai en vaut la peine.", pl: "Warto spróbować jeszcze raz.", es: "Vale la pena intentarlo otra vez.", it: "Vale la pena riprovare.", pt: "Vale a pena tentar outra vez.", ru: "Ещё одна попытка того стоит." },
+  { de: "Ein neuer Versuch lohnt sich.", en: "Another try is worth it.", fr: "Un nouvel essai en vaut la peine.", pl: "Warto spróbować jeszcze raz.", es: "Vale la pena intentarlo otra vez.", it: "Vale la pena riprovare.", pt: "Vale a pena tentar outra vez.", ru: "Ещё одна попытка того стоит.", sq: "Ia vlen të provosh sërish." },
   // 225
-  { de: "Vertraue deiner Stärke.", en: "Trust your strength.", fr: "Fais confiance à ta force.", pl: "Zaufaj swojej sile.", es: "Confía en tu fuerza.", it: "Fidati della tua forza.", pt: "Confia na tua força.", ru: "Доверься своей силе." },
+  { de: "Vertraue deiner Stärke.", en: "Trust your strength.", fr: "Fais confiance à ta force.", pl: "Zaufaj swojej sile.", es: "Confía en tu fuerza.", it: "Fidati della tua forza.", pt: "Confia na tua força.", ru: "Доверься своей силе.", sq: "Ki besim te forca jote." },
   // 226
-  { de: "Dein Weg muss nicht perfekt sein.", en: "Your path doesn't have to be perfect.", fr: "Ton chemin n'a pas besoin d'être parfait.", pl: "Twoja droga nie musi być idealna.", es: "Tu camino no tiene que ser perfecto.", it: "La tua strada non deve essere perfetta.", pt: "O teu caminho não tem de ser perfeito.", ru: "Твой путь не обязан быть безупречным." },
+  { de: "Dein Weg muss nicht perfekt sein.", en: "Your path doesn't have to be perfect.", fr: "Ton chemin n'a pas besoin d'être parfait.", pl: "Twoja droga nie musi być idealna.", es: "Tu camino no tiene que ser perfecto.", it: "La tua strada non deve essere perfetta.", pt: "O teu caminho não tem de ser perfeito.", ru: "Твой путь не обязан быть безупречным.", sq: "Rruga jote s'ka pse të jetë e përsosur." },
   // 227
-  { de: "Hab den Mut zu beginnen.", en: "Have the courage to begin.", fr: "Aie le courage de te lancer.", pl: "Miej odwagę, by zacząć.", es: "Ten el valor de lanzarte.", it: "Abbi il coraggio di buttarti.", pt: "Tem a coragem de te lançares.", ru: "Наберись смелости начать." },
+  { de: "Hab den Mut zu beginnen.", en: "Have the courage to begin.", fr: "Aie le courage de te lancer.", pl: "Miej odwagę, by zacząć.", es: "Ten el valor de lanzarte.", it: "Abbi il coraggio di buttarti.", pt: "Tem a coragem de te lançares.", ru: "Наберись смелости начать.", sq: "Mblidh guximin dhe fillo." },
   // 228
-  { de: "Ein Neustart ist immer möglich.", en: "A fresh start is always possible.", fr: "Un nouveau départ est toujours possible.", pl: "Nowy start jest zawsze możliwy.", es: "Siempre es posible empezar de nuevo.", it: "Ricominciare è sempre possibile.", pt: "Recomeçar é sempre possível.", ru: "Начать заново можно всегда." },
+  { de: "Ein Neustart ist immer möglich.", en: "A fresh start is always possible.", fr: "Un nouveau départ est toujours possible.", pl: "Nowy start jest zawsze możliwy.", es: "Siempre es posible empezar de nuevo.", it: "Ricominciare è sempre possibile.", pt: "Recomeçar é sempre possível.", ru: "Начать заново можно всегда.", sq: "Gjithmonë mund të nisësh nga e para." },
   // 229
-  { de: "Deine Gelegenheit wartet.", en: "Your opportunity is waiting.", fr: "Ton occasion t'attend.", pl: "Twoja okazja czeka.", es: "Tu ocasión te espera.", it: "La tua occasione ti aspetta.", pt: "A tua ocasião espera por ti.", ru: "Твоя возможность ждёт." },
+  { de: "Deine Gelegenheit wartet.", en: "Your opportunity is waiting.", fr: "Ton occasion t'attend.", pl: "Twoja okazja czeka.", es: "Tu ocasión te espera.", it: "La tua occasione ti aspetta.", pt: "A tua ocasião espera por ti.", ru: "Твоя возможность ждёт.", sq: "Rasti yt të pret." },
   // 230
-  { de: "Mut zahlt sich aus.", en: "Courage pays off.", fr: "Le courage paie.", pl: "Odwaga się opłaca.", es: "El valor da sus frutos.", it: "Il coraggio dà i suoi frutti.", pt: "A coragem compensa.", ru: "Смелость окупается." },
+  { de: "Mut zahlt sich aus.", en: "Courage pays off.", fr: "Le courage paie.", pl: "Odwaga się opłaca.", es: "El valor da sus frutos.", it: "Il coraggio dà i suoi frutti.", pt: "A coragem compensa.", ru: "Смелость окупается.", sq: "Guximi shpërblehet." },
   // 231
-  { de: "Mach Platz für Neues.", en: "Make room for something new.", fr: "Fais de la place au nouveau.", pl: "Zrób miejsce na nowe.", es: "Haz sitio a lo nuevo.", it: "Fai posto a qualcosa di nuovo.", pt: "Abre espaço para o novo.", ru: "Освободи место новому." },
+  { de: "Mach Platz für Neues.", en: "Make room for something new.", fr: "Fais de la place au nouveau.", pl: "Zrób miejsce na nowe.", es: "Haz sitio a lo nuevo.", it: "Fai posto a qualcosa di nuovo.", pt: "Abre espaço para o novo.", ru: "Освободи место новому.", sq: "Bëj vend për diçka të re." },
   // 232
-  { de: "Deine Träume dürfen bleiben.", en: "Your dreams are allowed to stay.", fr: "Tes rêves ont le droit de rester.", pl: "Twoje marzenia mogą zostać.", es: "Tus sueños pueden quedarse.", it: "I tuoi sogni possono restare.", pt: "Os teus sonhos podem ficar.", ru: "Твоим мечтам позволено остаться." },
+  { de: "Deine Träume dürfen bleiben.", en: "Your dreams are allowed to stay.", fr: "Tes rêves ont le droit de rester.", pl: "Twoje marzenia mogą zostać.", es: "Tus sueños pueden quedarse.", it: "I tuoi sogni possono restare.", pt: "Os teus sonhos podem ficar.", ru: "Твоим мечтам позволено остаться.", sq: "Ëndrrat e tua mund të mbeten me ty." },
   // 233
-  { de: "Jeder Schritt formt deinen Weg.", en: "Every step shapes your path.", fr: "Chaque pas façonne ton chemin.", pl: "Każdy krok kształtuje twoją drogę.", es: "Cada paso da forma a tu camino.", it: "Ogni passo dà forma alla tua strada.", pt: "Cada passo molda o teu caminho.", ru: "Всякий шаг лепит твой путь." },
+  { de: "Jeder Schritt formt deinen Weg.", en: "Every step shapes your path.", fr: "Chaque pas façonne ton chemin.", pl: "Każdy krok kształtuje twoją drogę.", es: "Cada paso da forma a tu camino.", it: "Ogni passo dà forma alla tua strada.", pt: "Cada passo molda o teu caminho.", ru: "Всякий шаг лепит твой путь.", sq: "Çdo hap i jep formë rrugës sate." },
   // 234
-  { de: "Nutze deinen Tatendrang.", en: "Use the drive you have.", fr: "Profite de ton élan.", pl: "Wykorzystaj swój zapał.", es: "Aprovecha tus ganas.", it: "Sfrutta la voglia che hai.", pt: "Aproveita a tua vontade de agir.", ru: "Используй тот запал, что есть." },
+  { de: "Nutze deinen Tatendrang.", en: "Use the drive you have.", fr: "Profite de ton élan.", pl: "Wykorzystaj swój zapał.", es: "Aprovecha tus ganas.", it: "Sfrutta la voglia che hai.", pt: "Aproveita a tua vontade de agir.", ru: "Используй тот запал, что есть.", sq: "Shfrytëzoje hovin që ke." },
   // 235
-  { de: "Gestalte deinen eigenen Weg.", en: "Shape your own path.", fr: "Trace ton propre chemin.", pl: "Kształtuj własną drogę.", es: "Traza tu propio camino.", it: "Traccia la tua strada.", pt: "Traça o teu próprio caminho.", ru: "Прокладывай свой путь сам." },
+  { de: "Gestalte deinen eigenen Weg.", en: "Shape your own path.", fr: "Trace ton propre chemin.", pl: "Kształtuj własną drogę.", es: "Traza tu propio camino.", it: "Traccia la tua strada.", pt: "Traça o teu próprio caminho.", ru: "Прокладывай свой путь сам.", sq: "Ndërto rrugën tënde." },
   // 236
-  { de: "Veränderung beginnt in dir.", en: "Change starts inside you.", fr: "Le changement commence en toi.", pl: "Zmiana zaczyna się w tobie.", es: "El cambio empieza dentro de ti.", it: "Il cambiamento comincia dentro di te.", pt: "A mudança começa dentro de ti.", ru: "Перемены начинаются внутри тебя." },
+  { de: "Veränderung beginnt in dir.", en: "Change starts inside you.", fr: "Le changement commence en toi.", pl: "Zmiana zaczyna się w tobie.", es: "El cambio empieza dentro de ti.", it: "Il cambiamento comincia dentro di te.", pt: "A mudança começa dentro de ti.", ru: "Перемены начинаются внутри тебя.", sq: "Ndryshimi nis brenda teje." },
   // 237
-  { de: "Dein Potenzial wächst mit dir.", en: "Your potential grows with you.", fr: "Ton potentiel grandit avec toi.", pl: "Twój potencjał rośnie razem z tobą.", es: "Tu potencial crece contigo.", it: "Il tuo potenziale cresce con te.", pt: "O teu potencial cresce contigo.", ru: "Твои задатки растут вместе с тобой." },
+  { de: "Dein Potenzial wächst mit dir.", en: "Your potential grows with you.", fr: "Ton potentiel grandit avec toi.", pl: "Twój potencjał rośnie razem z tobą.", es: "Tu potencial crece contigo.", it: "Il tuo potenziale cresce con te.", pt: "O teu potencial cresce contigo.", ru: "Твои задатки растут вместе с тобой.", sq: "Potenciali yt rritet bashkë me ty." },
   // 238
-  { de: "Feiere deinen Fortschritt.", en: "Celebrate your progress.", fr: "Célèbre tes progrès.", pl: "Świętuj swój postęp.", es: "Celebra tu avance.", it: "Festeggia i tuoi progressi.", pt: "Celebra o teu progresso.", ru: "Отпразднуй своё продвижение." },
+  { de: "Feiere deinen Fortschritt.", en: "Celebrate your progress.", fr: "Célèbre tes progrès.", pl: "Świętuj swój postęp.", es: "Celebra tu avance.", it: "Festeggia i tuoi progressi.", pt: "Celebra o teu progresso.", ru: "Отпразднуй своё продвижение.", sq: "Festoje përparimin tënd." },
   // 239
-  { de: "Das Ziel rückt näher.", en: "The goal is drawing closer.", fr: "Le but se rapproche.", pl: "Meta się zbliża.", es: "La meta está cada vez más cerca.", it: "Il traguardo si fa più vicino.", pt: "A meta está cada vez mais perto.", ru: "Цель приближается." },
+  { de: "Das Ziel rückt näher.", en: "The goal is drawing closer.", fr: "Le but se rapproche.", pl: "Meta się zbliża.", es: "La meta está cada vez más cerca.", it: "Il traguardo si fa più vicino.", pt: "A meta está cada vez mais perto.", ru: "Цель приближается.", sq: "Po i afrohesh qëllimit." },
   // 240
-  { de: "Bewahre deine Hoffnung.", en: "Keep hold of your hope.", fr: "Préserve ton espoir.", pl: "Zachowaj nadzieję.", es: "Conserva tu esperanza.", it: "Conserva la tua speranza.", pt: "Guarda a tua esperança.", ru: "Не выпускай надежду из рук." },
+  { de: "Bewahre deine Hoffnung.", en: "Keep hold of your hope.", fr: "Préserve ton espoir.", pl: "Zachowaj nadzieję.", es: "Conserva tu esperanza.", it: "Conserva la tua speranza.", pt: "Guarda a tua esperança.", ru: "Не выпускай надежду из рук.", sq: "Mbaje gjallë shpresën." },
   // 241
-  { de: "Viele Wege stehen dir offen.", en: "Many roads are open to you.", fr: "Bien des chemins s'offrent à toi.", pl: "Stoi przed tobą wiele dróg.", es: "Tienes muchos caminos abiertos.", it: "Hai molte strade aperte.", pt: "Tens muitos caminhos abertos.", ru: "Перед тобой открыто много дорог." },
+  { de: "Viele Wege stehen dir offen.", en: "Many roads are open to you.", fr: "Bien des chemins s'offrent à toi.", pl: "Stoi przed tobą wiele dróg.", es: "Tienes muchos caminos abiertos.", it: "Hai molte strade aperte.", pt: "Tens muitos caminhos abertos.", ru: "Перед тобой открыто много дорог.", sq: "Shumë rrugë të janë të hapura." },
   // 242
-  { de: "Leg einfach los.", en: "Just start.", fr: "Lance-toi, tout simplement.", pl: "Po prostu zacznij.", es: "Simplemente empieza.", it: "Comincia e basta.", pt: "Começa, simplesmente.", ru: "Просто начни." },
+  { de: "Leg einfach los.", en: "Just start.", fr: "Lance-toi, tout simplement.", pl: "Po prostu zacznij.", es: "Simplemente empieza.", it: "Comincia e basta.", pt: "Começa, simplesmente.", ru: "Просто начни.", sq: "Thjesht fillo." },
   // 243
-  { de: "Du kannst mehr erreichen.", en: "You can reach further.", fr: "Tu peux aller chercher davantage.", pl: "Możesz osiągnąć więcej.", es: "Puedes lograr más.", it: "Puoi arrivare più lontano.", pt: "Podes alcançar mais.", ru: "Ты можешь дотянуться дальше." },
+  { de: "Du kannst mehr erreichen.", en: "You can reach further.", fr: "Tu peux aller chercher davantage.", pl: "Możesz osiągnąć więcej.", es: "Puedes lograr más.", it: "Puoi arrivare più lontano.", pt: "Podes alcançar mais.", ru: "Ты можешь дотянуться дальше.", sq: "Ti mund të arrish më larg." },
   // 244
-  { de: "Lass deine Ziele wachsen.", en: "Let your goals grow.", fr: "Laisse tes objectifs grandir.", pl: "Pozwól swoim celom rosnąć.", es: "Deja crecer tus metas.", it: "Lascia crescere i tuoi traguardi.", pt: "Deixa os teus objetivos crescer.", ru: "Дай своим целям вырасти." },
+  { de: "Lass deine Ziele wachsen.", en: "Let your goals grow.", fr: "Laisse tes objectifs grandir.", pl: "Pozwól swoim celom rosnąć.", es: "Deja crecer tus metas.", it: "Lascia crescere i tuoi traguardi.", pt: "Deixa os teus objetivos crescer.", ru: "Дай своим целям вырасти.", sq: "Lëri qëllimet e tua të rriten." },
   // 245
-  { de: "Deine Stärke trägt dich.", en: "Your strength carries you.", fr: "Ta force te porte.", pl: "Twoja siła cię niesie.", es: "Tu fuerza te sostiene.", it: "La tua forza ti sostiene.", pt: "A tua força sustenta-te.", ru: "Твоя сила несёт тебя." },
+  { de: "Deine Stärke trägt dich.", en: "Your strength carries you.", fr: "Ta force te porte.", pl: "Twoja siła cię niesie.", es: "Tu fuerza te sostiene.", it: "La tua forza ti sostiene.", pt: "A tua força sustenta-te.", ru: "Твоя сила несёт тебя.", sq: "Forca jote të mban në këmbë." },
   // 246
-  { de: "Mut und Neugier bringen dich weiter.", en: "Courage and curiosity take you further.", fr: "Le courage et la curiosité te mènent plus loin.", pl: "Odwaga i ciekawość prowadzą cię dalej.", es: "El valor y la curiosidad te llevan más lejos.", it: "Coraggio e curiosità ti portano più lontano.", pt: "A coragem e a curiosidade levam-te mais longe.", ru: "Смелость и любопытство ведут дальше." },
+  { de: "Mut und Neugier bringen dich weiter.", en: "Courage and curiosity take you further.", fr: "Le courage et la curiosité te mènent plus loin.", pl: "Odwaga i ciekawość prowadzą cię dalej.", es: "El valor y la curiosidad te llevan más lejos.", it: "Coraggio e curiosità ti portano più lontano.", pt: "A coragem e a curiosidade levam-te mais longe.", ru: "Смелость и любопытство ведут дальше.", sq: "Guximi dhe kureshtja të çojnë më larg." },
   // 247
-  { de: "Jeder Tag kann überraschen.", en: "Any day can surprise you.", fr: "Chaque jour peut surprendre.", pl: "Każdy dzień może zaskoczyć.", es: "Cualquier día puede sorprender.", it: "Qualsiasi giorno può sorprenderti.", pt: "Qualquer dia pode surpreender.", ru: "Любой день может тебя удивить." },
+  { de: "Jeder Tag kann überraschen.", en: "Any day can surprise you.", fr: "Chaque jour peut surprendre.", pl: "Każdy dzień może zaskoczyć.", es: "Cualquier día puede sorprender.", it: "Qualsiasi giorno può sorprenderti.", pt: "Qualquer dia pode surpreender.", ru: "Любой день может тебя удивить.", sq: "Çdo ditë mund të të befasojë." },
   // 248
-  { de: "Denk auch mal anders.", en: "Try thinking differently.", fr: "Essaie de penser autrement.", pl: "Spróbuj pomyśleć inaczej.", es: "Prueba a pensar de otra manera.", it: "Prova a pensarla diversamente.", pt: "Experimenta pensar de outra maneira.", ru: "Попробуй подумать иначе." },
+  { de: "Denk auch mal anders.", en: "Try thinking differently.", fr: "Essaie de penser autrement.", pl: "Spróbuj pomyśleć inaczej.", es: "Prueba a pensar de otra manera.", it: "Prova a pensarla diversamente.", pt: "Experimenta pensar de outra maneira.", ru: "Попробуй подумать иначе.", sq: "Provo të mendosh ndryshe." },
   // 249
-  { de: "Erfolg wächst aus kleinen Schritten.", en: "Success grows out of small steps.", fr: "La réussite naît de petits pas.", pl: "Sukces rośnie z małych kroków.", es: "El éxito nace de pasos pequeños.", it: "Il successo nasce da passi piccoli.", pt: "O sucesso nasce de passos pequenos.", ru: "Успех вырастает из маленьких шагов." },
+  { de: "Erfolg wächst aus kleinen Schritten.", en: "Success grows out of small steps.", fr: "La réussite naît de petits pas.", pl: "Sukces rośnie z małych kroków.", es: "El éxito nace de pasos pequeños.", it: "Il successo nasce da passi piccoli.", pt: "O sucesso nasce de passos pequenos.", ru: "Успех вырастает из маленьких шагов.", sq: "Suksesi ndërtohet me hapa të vegjël." },
   // 250
-  { de: "Wage den Sprung.", en: "Take the leap.", fr: "Fais le saut.", pl: "Zrób ten skok.", es: "Da el salto.", it: "Fai il salto.", pt: "Dá o salto.", ru: "Решись и прыгни." },
+  { de: "Wage den Sprung.", en: "Take the leap.", fr: "Fais le saut.", pl: "Zrób ten skok.", es: "Da el salto.", it: "Fai il salto.", pt: "Dá o salto.", ru: "Решись и прыгни.", sq: "Guxo ta bësh hapin." },
   // 251
-  { de: "Vertraue deinen Fähigkeiten.", en: "Trust what you can do.", fr: "Fais confiance à tes capacités.", pl: "Zaufaj swoim umiejętnościom.", es: "Confía en tus capacidades.", it: "Fidati di quello che sai fare.", pt: "Confia nas tuas capacidades.", ru: "Доверяй тому, что умеешь." },
+  { de: "Vertraue deinen Fähigkeiten.", en: "Trust what you can do.", fr: "Fais confiance à tes capacités.", pl: "Zaufaj swoim umiejętnościom.", es: "Confía en tus capacidades.", it: "Fidati di quello che sai fare.", pt: "Confia nas tuas capacidades.", ru: "Доверяй тому, что умеешь.", sq: "Beso te aftësitë e tua." },
   // 252
-  { de: "Mit jedem Schritt wird es klarer.", en: "It gets clearer with every step.", fr: "Tout devient plus clair à chaque pas.", pl: "Z każdym krokiem robi się jaśniej.", es: "Con cada paso se ve más claro.", it: "A ogni passo si vede più chiaro.", pt: "A cada passo fica mais claro.", ru: "С каждым шагом становится яснее." },
+  { de: "Mit jedem Schritt wird es klarer.", en: "It gets clearer with every step.", fr: "Tout devient plus clair à chaque pas.", pl: "Z każdym krokiem robi się jaśniej.", es: "Con cada paso se ve más claro.", it: "A ogni passo si vede più chiaro.", pt: "A cada passo fica mais claro.", ru: "С каждым шагом становится яснее.", sq: "Me çdo hap, gjithçka bëhet më e qartë." },
   // 253
-  { de: "Möglichkeiten warten auf dich.", en: "Chances are waiting for you.", fr: "Des possibilités t'attendent.", pl: "Możliwości na ciebie czekają.", es: "Hay posibilidades esperándote.", it: "Ci sono occasioni che ti aspettano.", pt: "Há possibilidades à tua espera.", ru: "Возможности ждут тебя." },
+  { de: "Möglichkeiten warten auf dich.", en: "Chances are waiting for you.", fr: "Des possibilités t'attendent.", pl: "Możliwości na ciebie czekają.", es: "Hay posibilidades esperándote.", it: "Ci sono occasioni che ti aspettano.", pt: "Há possibilidades à tua espera.", ru: "Возможности ждут тебя.", sq: "Mundësitë të presin." },
   // 254
-  { de: "Erschaffe etwas Neues.", en: "Make something new.", fr: "Crée quelque chose de neuf.", pl: "Stwórz coś nowego.", es: "Crea algo nuevo.", it: "Crea qualcosa di nuovo.", pt: "Cria algo novo.", ru: "Создай что-нибудь новое." },
+  { de: "Erschaffe etwas Neues.", en: "Make something new.", fr: "Crée quelque chose de neuf.", pl: "Stwórz coś nowego.", es: "Crea algo nuevo.", it: "Crea qualcosa di nuovo.", pt: "Cria algo novo.", ru: "Создай что-нибудь новое.", sq: "Krijo diçka të re." },
   // 255
-  { de: "Sei stolz auf das Heute.", en: "Let today be something you're proud of.", fr: "Le jour d'aujourd'hui mérite ta fierté.", pl: "Dziś zasługuje na twoją dumę.", es: "El día de hoy merece tu orgullo.", it: "Che oggi ti dia motivo d'orgoglio.", pt: "O dia de hoje merece o teu orgulho.", ru: "Пусть сегодняшний день станет поводом для гордости." },
+  { de: "Sei stolz auf das Heute.", en: "Let today be something you're proud of.", fr: "Le jour d'aujourd'hui mérite ta fierté.", pl: "Dziś zasługuje na twoją dumę.", es: "El día de hoy merece tu orgullo.", it: "Che oggi ti dia motivo d'orgoglio.", pt: "O dia de hoje merece o teu orgulho.", ru: "Пусть сегодняшний день станет поводом для гордости.", sq: "Bëje të sotmen një ditë për t'u krenuar." },
   // 256
-  { de: "Mut ist ein guter Anfang.", en: "Courage is a good beginning.", fr: "Le courage est un bon début.", pl: "Odwaga to dobry początek.", es: "El valor es un buen comienzo.", it: "Il coraggio è un buon inizio.", pt: "A coragem é um bom começo.", ru: "Смелость — хорошее начало." },
+  { de: "Mut ist ein guter Anfang.", en: "Courage is a good beginning.", fr: "Le courage est un bon début.", pl: "Odwaga to dobry początek.", es: "El valor es un buen comienzo.", it: "Il coraggio è un buon inizio.", pt: "A coragem é um bom começo.", ru: "Смелость — хорошее начало.", sq: "Guximi është një fillim i mirë." },
   // 257
-  { de: "Geh mit Vertrauen voran.", en: "Move forward with trust.", fr: "Avance avec confiance.", pl: "Idź naprzód z ufnością.", es: "Avanza con confianza.", it: "Vai avanti con fiducia.", pt: "Avança com confiança.", ru: "Иди вперёд с доверием." },
+  { de: "Geh mit Vertrauen voran.", en: "Move forward with trust.", fr: "Avance avec confiance.", pl: "Idź naprzód z ufnością.", es: "Avanza con confianza.", it: "Vai avanti con fiducia.", pt: "Avança com confiança.", ru: "Иди вперёд с доверием.", sq: "Ec përpara me besim." },
   // 258
-  { de: "Lebe deinen Traum.", en: "Live your dream.", fr: "Vis ton rêve.", pl: "Żyj swoim marzeniem.", es: "Vive tu sueño.", it: "Vivi il tuo sogno.", pt: "Vive o teu sonho.", ru: "Живи своей мечтой." },
+  { de: "Lebe deinen Traum.", en: "Live your dream.", fr: "Vis ton rêve.", pl: "Żyj swoim marzeniem.", es: "Vive tu sueño.", it: "Vivi il tuo sogno.", pt: "Vive o teu sonho.", ru: "Живи своей мечтой.", sq: "Jetoje ëndrrën tënde." },
   // 259
-  { de: "Versuche machen dich stärker.", en: "Trying makes you stronger.", fr: "Essayer te renforce.", pl: "Próby dodają ci siły.", es: "Intentarlo te fortalece.", it: "Provarci ti rende più forte.", pt: "Tentar torna-te mais forte.", ru: "Попытки делают тебя сильнее." },
+  { de: "Versuche machen dich stärker.", en: "Trying makes you stronger.", fr: "Essayer te renforce.", pl: "Próby dodają ci siły.", es: "Intentarlo te fortalece.", it: "Provarci ti rende più forte.", pt: "Tentar torna-te mais forte.", ru: "Попытки делают тебя сильнее.", sq: "Çdo përpjekje të forcon." },
   // 260
-  { de: "Morgen wächst aus heute.", en: "Tomorrow grows out of today.", fr: "Demain naît d'aujourd'hui.", pl: "Jutro wyrasta z dziś.", es: "El mañana nace del hoy.", it: "Il domani nasce dall'oggi.", pt: "O amanhã nasce do hoje.", ru: "Завтра вырастает из сегодня." },
+  { de: "Morgen wächst aus heute.", en: "Tomorrow grows out of today.", fr: "Demain naît d'aujourd'hui.", pl: "Jutro wyrasta z dziś.", es: "El mañana nace del hoy.", it: "Il domani nasce dall'oggi.", pt: "O amanhã nasce do hoje.", ru: "Завтра вырастает из сегодня.", sq: "E nesërmja lind nga e sotmja." },
   // 261
-  { de: "Deine Ziele verdienen Einsatz.", en: "Your goals deserve the effort.", fr: "Tes objectifs méritent tes efforts.", pl: "Twoje cele zasługują na wysiłek.", es: "Tus metas merecen tu esfuerzo.", it: "I tuoi traguardi meritano l'impegno.", pt: "Os teus objetivos merecem o teu esforço.", ru: "Твои цели заслуживают усилий." },
+  { de: "Deine Ziele verdienen Einsatz.", en: "Your goals deserve the effort.", fr: "Tes objectifs méritent tes efforts.", pl: "Twoje cele zasługują na wysiłek.", es: "Tus metas merecen tu esfuerzo.", it: "I tuoi traguardi meritano l'impegno.", pt: "Os teus objetivos merecem o teu esforço.", ru: "Твои цели заслуживают усилий.", sq: "Qëllimet e tua e meritojnë përpjekjen." },
   // 262
-  { de: "Bleib dir selbst treu.", en: "Stay true to who you are.", fr: "Reste fidèle à ce que tu es.", pl: "Bądź w zgodzie ze sobą.", es: "Sé fiel a quien eres.", it: "Sii fedele a chi sei.", pt: "Sê fiel a quem és.", ru: "Оставайся верен себе." },
+  { de: "Bleib dir selbst treu.", en: "Stay true to who you are.", fr: "Reste fidèle à ce que tu es.", pl: "Bądź w zgodzie ze sobą.", es: "Sé fiel a quien eres.", it: "Sii fedele a chi sei.", pt: "Sê fiel a quem és.", ru: "Оставайся верен себе.", sq: "Ruaje atë që je." },
   // 263
-  { de: "Wachstum kennt keinen Stillstand.", en: "Growth never stands still.", fr: "Grandir ne s'arrête jamais.", pl: "Rozwój nie zna bezruchu.", es: "Crecer no conoce la quietud.", it: "Crescere non sta mai fermo.", pt: "Crescer não conhece paragens.", ru: "Рост не стоит на месте." },
+  { de: "Wachstum kennt keinen Stillstand.", en: "Growth never stands still.", fr: "Grandir ne s'arrête jamais.", pl: "Rozwój nie zna bezruchu.", es: "Crecer no conoce la quietud.", it: "Crescere non sta mai fermo.", pt: "Crescer não conhece paragens.", ru: "Рост не стоит на месте.", sq: "Rritja nuk ndalet kurrë." },
   // 264
-  { de: "Dein Weg führt weiter.", en: "Your road leads on.", fr: "Ton chemin continue.", pl: "Twoja droga prowadzi dalej.", es: "Tu camino sigue.", it: "La tua strada continua.", pt: "O teu caminho segue em frente.", ru: "Твоя дорога ведёт дальше." },
+  { de: "Dein Weg führt weiter.", en: "Your road leads on.", fr: "Ton chemin continue.", pl: "Twoja droga prowadzi dalej.", es: "Tu camino sigue.", it: "La tua strada continua.", pt: "O teu caminho segue em frente.", ru: "Твоя дорога ведёт дальше.", sq: "Rruga jote vazhdon më tej." },
   // 265
-  { de: "Jetzt ist Zeit für Mut.", en: "Now is the time for courage.", fr: "C'est le moment du courage.", pl: "Teraz czas na odwagę.", es: "Ahora es momento de valor.", it: "Adesso è il momento del coraggio.", pt: "Agora é tempo de coragem.", ru: "Сейчас время для смелости." },
+  { de: "Jetzt ist Zeit für Mut.", en: "Now is the time for courage.", fr: "C'est le moment du courage.", pl: "Teraz czas na odwagę.", es: "Ahora es momento de valor.", it: "Adesso è il momento del coraggio.", pt: "Agora é tempo de coragem.", ru: "Сейчас время для смелости.", sq: "Tani është koha për guxim." },
   // 266
-  { de: "Lass deine Stärke wachsen.", en: "Let your strength grow.", fr: "Laisse ta force grandir.", pl: "Pozwól swojej sile rosnąć.", es: "Deja crecer tu fuerza.", it: "Lascia crescere la tua forza.", pt: "Deixa a tua força crescer.", ru: "Дай своей силе вырасти." },
+  { de: "Lass deine Stärke wachsen.", en: "Let your strength grow.", fr: "Laisse ta force grandir.", pl: "Pozwól swojej sile rosnąć.", es: "Deja crecer tu fuerza.", it: "Lascia crescere la tua forza.", pt: "Deixa a tua força crescer.", ru: "Дай своей силе вырасти.", sq: "Lëre forcën tënde të rritet." },
   // 267
-  { de: "Wähle deine eigene Richtung.", en: "Choose your own direction.", fr: "Choisis ta propre direction.", pl: "Wybierz własny kierunek.", es: "Elige tu propia dirección.", it: "Scegli la tua direzione.", pt: "Escolhe a tua própria direção.", ru: "Выбери своё направление." },
+  { de: "Wähle deine eigene Richtung.", en: "Choose your own direction.", fr: "Choisis ta propre direction.", pl: "Wybierz własny kierunek.", es: "Elige tu propia dirección.", it: "Scegli la tua direzione.", pt: "Escolhe a tua própria direção.", ru: "Выбери своё направление.", sq: "Zgjidhe vetë drejtimin tënd." },
   // 268
-  { de: "Jeder kleine Sieg zählt.", en: "Every small win counts.", fr: "Chaque petite victoire compte.", pl: "Każde małe zwycięstwo się liczy.", es: "Cada pequeña victoria cuenta.", it: "Ogni piccola vittoria conta.", pt: "Cada pequena vitória conta.", ru: "Всякая маленькая победа важна." },
+  { de: "Jeder kleine Sieg zählt.", en: "Every small win counts.", fr: "Chaque petite victoire compte.", pl: "Każde małe zwycięstwo się liczy.", es: "Cada pequeña victoria cuenta.", it: "Ogni piccola vittoria conta.", pt: "Cada pequena vitória conta.", ru: "Всякая маленькая победа важна.", sq: "Çdo fitore e vogël ka rëndësi." },
   // 269
-  { de: "Gestalte deine Zukunft selbst.", en: "Shape your own future.", fr: "Construis toi-même ton avenir.", pl: "Kształtuj swoją przyszłość po swojemu.", es: "Construye tu futuro a tu manera.", it: "Costruisci il tuo futuro a modo tuo.", pt: "Constrói o teu futuro à tua maneira.", ru: "Строй своё будущее сам." },
+  { de: "Gestalte deine Zukunft selbst.", en: "Shape your own future.", fr: "Construis toi-même ton avenir.", pl: "Kształtuj swoją przyszłość po swojemu.", es: "Construye tu futuro a tu manera.", it: "Costruisci il tuo futuro a modo tuo.", pt: "Constrói o teu futuro à tua maneira.", ru: "Строй своё будущее сам.", sq: "E ardhmja jote është në duart e tua." },
   // 270
-  { de: "Erkenne deine Chancen.", en: "See the chances you have.", fr: "Repère tes occasions.", pl: "Dostrzeż swoje szanse.", es: "Reconoce tus oportunidades.", it: "Riconosci le occasioni che hai.", pt: "Repara nas tuas oportunidades.", ru: "Замечай свои возможности." },
+  { de: "Erkenne deine Chancen.", en: "See the chances you have.", fr: "Repère tes occasions.", pl: "Dostrzeż swoje szanse.", es: "Reconoce tus oportunidades.", it: "Riconosci le occasioni che hai.", pt: "Repara nas tuas oportunidades.", ru: "Замечай свои возможности.", sq: "Shiko mundësitë që ke." },
   // 271
-  { de: "Auch kleine Schritte bringen dich ans Ziel.", en: "Small steps get you there too.", fr: "Les petits pas mènent aussi au but.", pl: "Małe kroki też prowadzą do celu.", es: "Los pasos pequeños también llegan a la meta.", it: "Anche i passi piccoli arrivano.", pt: "Os passos pequenos também chegam à meta.", ru: "Маленькими шагами тоже доходят." },
+  { de: "Auch kleine Schritte bringen dich ans Ziel.", en: "Small steps get you there too.", fr: "Les petits pas mènent aussi au but.", pl: "Małe kroki też prowadzą do celu.", es: "Los pasos pequeños también llegan a la meta.", it: "Anche i passi piccoli arrivano.", pt: "Os passos pequenos também chegam à meta.", ru: "Маленькими шагами тоже доходят.", sq: "Edhe hapat e vegjël të çojnë te qëllimi." },
   // 272
-  { de: "Fang dort an, wo du bist.", en: "Start where you are.", fr: "Commence là où tu es.", pl: "Zacznij tam, gdzie jesteś.", es: "Empieza donde estás.", it: "Comincia da dove sei.", pt: "Começa onde estás.", ru: "Начни с того места, где ты есть." },
+  { de: "Fang dort an, wo du bist.", en: "Start where you are.", fr: "Commence là où tu es.", pl: "Zacznij tam, gdzie jesteś.", es: "Empieza donde estás.", it: "Comincia da dove sei.", pt: "Começa onde estás.", ru: "Начни с того места, где ты есть.", sq: "Fillo aty ku je." },
   // 273
-  { de: "Dein Ziel beginnt mit dir.", en: "Your goal starts with you.", fr: "Ton objectif commence par toi.", pl: "Twój cel zaczyna się od ciebie.", es: "Tu meta empieza en ti.", it: "Il tuo traguardo comincia da te.", pt: "O teu objetivo começa em ti.", ru: "Твоя цель начинается с тебя." },
+  { de: "Dein Ziel beginnt mit dir.", en: "Your goal starts with you.", fr: "Ton objectif commence par toi.", pl: "Twój cel zaczyna się od ciebie.", es: "Tu meta empieza en ti.", it: "Il tuo traguardo comincia da te.", pt: "O teu objetivo começa em ti.", ru: "Твоя цель начинается с тебя.", sq: "Qëllimi yt fillon me ty." },
   // 274
-  { de: "Lass dich von Hoffnung tragen.", en: "Let hope carry you.", fr: "Laisse l'espoir te porter.", pl: "Daj się nieść nadziei.", es: "Déjate llevar por la esperanza.", it: "Fatti portare dalla speranza.", pt: "Deixa-te levar pela esperança.", ru: "Пусть надежда тебя несёт." },
+  { de: "Lass dich von Hoffnung tragen.", en: "Let hope carry you.", fr: "Laisse l'espoir te porter.", pl: "Daj się nieść nadziei.", es: "Déjate llevar por la esperanza.", it: "Fatti portare dalla speranza.", pt: "Deixa-te levar pela esperança.", ru: "Пусть надежда тебя несёт.", sq: "Lëre shpresën të të çojë përpara." },
   // 275
-  { de: "Du kannst deine Geschichte verändern.", en: "You can change your story.", fr: "Tu peux changer ton histoire.", pl: "Możesz zmienić swoją historię.", es: "Puedes cambiar tu historia.", it: "Puoi cambiare la tua storia.", pt: "Podes mudar a tua história.", ru: "Ты можешь переписать свою историю." },
+  { de: "Du kannst deine Geschichte verändern.", en: "You can change your story.", fr: "Tu peux changer ton histoire.", pl: "Możesz zmienić swoją historię.", es: "Puedes cambiar tu historia.", it: "Puoi cambiare la tua storia.", pt: "Podes mudar a tua história.", ru: "Ты можешь переписать свою историю.", sq: "Mund ta ndryshosh historinë tënde." },
   // 276
-  { de: "Jeder Tag schenkt einen Neubeginn.", en: "Every day offers a fresh start.", fr: "Chaque jour offre un nouveau départ.", pl: "Każdy dzień daje nowy początek.", es: "Cada día regala un nuevo comienzo.", it: "Ogni giorno regala un nuovo inizio.", pt: "Cada dia oferece um novo começo.", ru: "Всякий день предлагает начать заново." },
+  { de: "Jeder Tag schenkt einen Neubeginn.", en: "Every day offers a fresh start.", fr: "Chaque jour offre un nouveau départ.", pl: "Każdy dzień daje nowy początek.", es: "Cada día regala un nuevo comienzo.", it: "Ogni giorno regala un nuovo inizio.", pt: "Cada dia oferece um novo começo.", ru: "Всякий день предлагает начать заново.", sq: "Çdo ditë të sjell një fillim të ri." },
   // 277
-  { de: "Gib deinen Träumen Raum.", en: "Give your dreams room.", fr: "Donne de la place à tes rêves.", pl: "Daj swoim marzeniom przestrzeń.", es: "Dales espacio a tus sueños.", it: "Dai spazio ai tuoi sogni.", pt: "Dá espaço aos teus sonhos.", ru: "Дай своим мечтам место." },
+  { de: "Gib deinen Träumen Raum.", en: "Give your dreams room.", fr: "Donne de la place à tes rêves.", pl: "Daj swoim marzeniom przestrzeń.", es: "Dales espacio a tus sueños.", it: "Dai spazio ai tuoi sogni.", pt: "Dá espaço aos teus sonhos.", ru: "Дай своим мечтам место.", sq: "Bëju vend ëndrrave të tua." },
   // 278
-  { de: "Verlier deinen Weg nicht aus den Augen.", en: "Don't lose sight of your path.", fr: "Ne perds pas ton chemin de vue.", pl: "Nie trać swojej drogi z oczu.", es: "No pierdas de vista tu camino.", it: "Non perdere di vista la tua strada.", pt: "Não percas o teu caminho de vista.", ru: "Не теряй свой путь из виду." },
+  { de: "Verlier deinen Weg nicht aus den Augen.", en: "Don't lose sight of your path.", fr: "Ne perds pas ton chemin de vue.", pl: "Nie trać swojej drogi z oczu.", es: "No pierdas de vista tu camino.", it: "Non perdere di vista la tua strada.", pt: "Não percas o teu caminho de vista.", ru: "Не теряй свой путь из виду.", sq: "Mos i hiq sytë nga rruga jote." },
   // 279
-  { de: "Stärke wächst durch Erfahrung.", en: "Strength grows through experience.", fr: "La force vient de l'expérience.", pl: "Siła rośnie przez doświadczenie.", es: "La fuerza crece con la experiencia.", it: "La forza cresce con l'esperienza.", pt: "A força cresce com a experiência.", ru: "Сила растёт из опыта." },
+  { de: "Stärke wächst durch Erfahrung.", en: "Strength grows through experience.", fr: "La force vient de l'expérience.", pl: "Siła rośnie przez doświadczenie.", es: "La fuerza crece con la experiencia.", it: "La forza cresce con l'esperienza.", pt: "A força cresce com a experiência.", ru: "Сила растёт из опыта.", sq: "Forca rritet me përvojën." },
   // 280
-  { de: "Einsatz bringt dich weiter.", en: "Effort takes you further.", fr: "L'effort te mène plus loin.", pl: "Wysiłek prowadzi cię dalej.", es: "El esfuerzo te lleva más lejos.", it: "L'impegno ti porta più lontano.", pt: "O esforço leva-te mais longe.", ru: "Усилия ведут дальше." },
+  { de: "Einsatz bringt dich weiter.", en: "Effort takes you further.", fr: "L'effort te mène plus loin.", pl: "Wysiłek prowadzi cię dalej.", es: "El esfuerzo te lleva más lejos.", it: "L'impegno ti porta più lontano.", pt: "O esforço leva-te mais longe.", ru: "Усилия ведут дальше.", sq: "Përpjekja të shtyn përpara." },
   // 281
-  { de: "Erschaffe etwas, das dich stolz macht.", en: "Make something you'll be proud of.", fr: "Crée quelque chose qui te fasse honneur.", pl: "Stwórz coś, co da ci powód do dumy.", es: "Crea algo que te dé orgullo.", it: "Crea qualcosa che ti dia orgoglio.", pt: "Cria algo que te dê orgulho.", ru: "Сделай то, чем будешь гордиться." },
+  { de: "Erschaffe etwas, das dich stolz macht.", en: "Make something you'll be proud of.", fr: "Crée quelque chose qui te fasse honneur.", pl: "Stwórz coś, co da ci powód do dumy.", es: "Crea algo que te dé orgullo.", it: "Crea qualcosa che ti dia orgoglio.", pt: "Cria algo que te dê orgulho.", ru: "Сделай то, чем будешь гордиться.", sq: "Krijo diçka që të mbush me krenari." },
   // 282
-  { de: "Vertraue deinem nächsten Schritt.", en: "Trust your next step.", fr: "Fais confiance à ton prochain pas.", pl: "Zaufaj swojemu następnemu krokowi.", es: "Confía en tu siguiente paso.", it: "Fidati del tuo prossimo passo.", pt: "Confia no teu próximo passo.", ru: "Доверься своему следующему шагу." },
+  { de: "Vertraue deinem nächsten Schritt.", en: "Trust your next step.", fr: "Fais confiance à ton prochain pas.", pl: "Zaufaj swojemu następnemu krokowi.", es: "Confía en tu siguiente paso.", it: "Fidati del tuo prossimo passo.", pt: "Confia no teu próximo passo.", ru: "Доверься своему следующему шагу.", sq: "Beso te hapi yt i radhës." },
   // 283
-  { de: "Veränderung kann etwas Schönes sein.", en: "Change can be a beautiful thing.", fr: "Le changement peut être une belle chose.", pl: "Zmiana może być czymś pięknym.", es: "El cambio puede ser algo hermoso.", it: "Il cambiamento può essere una cosa bella.", pt: "A mudança pode ser algo belo.", ru: "Перемены бывают прекрасны." },
+  { de: "Veränderung kann etwas Schönes sein.", en: "Change can be a beautiful thing.", fr: "Le changement peut être une belle chose.", pl: "Zmiana może być czymś pięknym.", es: "El cambio puede ser algo hermoso.", it: "Il cambiamento può essere una cosa bella.", pt: "A mudança pode ser algo belo.", ru: "Перемены бывают прекрасны.", sq: "Ndryshimi mund të jetë diçka e bukur." },
   // 284
-  { de: "Mut steht dir gut.", en: "Courage suits you.", fr: "Le courage te va bien.", pl: "Odwaga ci pasuje.", es: "El valor te queda bien.", it: "Il coraggio ti sta bene.", pt: "A coragem fica-te bem.", ru: "Смелость тебе к лицу." },
+  { de: "Mut steht dir gut.", en: "Courage suits you.", fr: "Le courage te va bien.", pl: "Odwaga ci pasuje.", es: "El valor te queda bien.", it: "Il coraggio ti sta bene.", pt: "A coragem fica-te bem.", ru: "Смелость тебе к лицу.", sq: "Guximi të ka hije." },
   // 285
-  { de: "Deine Reise ist voller Möglichkeiten.", en: "Your journey is full of possibility.", fr: "Ton voyage est plein de possibles.", pl: "Twoja podróż jest pełna możliwości.", es: "Tu viaje está lleno de posibilidades.", it: "Il tuo viaggio è pieno di possibilità.", pt: "A tua viagem está cheia de possibilidades.", ru: "Твой путь полон возможностей." },
+  { de: "Deine Reise ist voller Möglichkeiten.", en: "Your journey is full of possibility.", fr: "Ton voyage est plein de possibles.", pl: "Twoja podróż jest pełna możliwości.", es: "Tu viaje está lleno de posibilidades.", it: "Il tuo viaggio è pieno di possibilità.", pt: "A tua viagem está cheia de possibilidades.", ru: "Твой путь полон возможностей.", sq: "Udhëtimi yt është plot mundësi." },
   // 286
-  { de: "Entwicklung beginnt mit Neugier.", en: "Growth starts with curiosity.", fr: "Tout progrès commence par la curiosité.", pl: "Rozwój zaczyna się od ciekawości.", es: "El desarrollo empieza con la curiosidad.", it: "La crescita comincia dalla curiosità.", pt: "O desenvolvimento começa com curiosidade.", ru: "Рост начинается с любопытства." },
+  { de: "Entwicklung beginnt mit Neugier.", en: "Growth starts with curiosity.", fr: "Tout progrès commence par la curiosité.", pl: "Rozwój zaczyna się od ciekawości.", es: "El desarrollo empieza con la curiosidad.", it: "La crescita comincia dalla curiosità.", pt: "O desenvolvimento começa com curiosidade.", ru: "Рост начинается с любопытства.", sq: "Rritja fillon me kureshtjen." },
   // 287
-  { de: "Dein Wille bewegt dich.", en: "Your will moves you.", fr: "Ta volonté te met en mouvement.", pl: "Twoja wola cię napędza.", es: "Tu voluntad te mueve.", it: "La tua volontà ti muove.", pt: "A tua vontade move-te.", ru: "Твоя воля тебя движет." },
+  { de: "Dein Wille bewegt dich.", en: "Your will moves you.", fr: "Ta volonté te met en mouvement.", pl: "Twoja wola cię napędza.", es: "Tu voluntad te mueve.", it: "La tua volontà ti muove.", pt: "A tua vontade move-te.", ru: "Твоя воля тебя движет.", sq: "Vullneti yt të vë në lëvizje." },
   // 288
-  { de: "Dein Weg darf Zeit brauchen.", en: "Your path is allowed to take time.", fr: "Ton chemin a le droit de prendre du temps.", pl: "Twoja droga może potrzebować czasu.", es: "Tu camino puede tomarse su tiempo.", it: "La tua strada può prendersi il suo tempo.", pt: "O teu caminho pode levar o seu tempo.", ru: "Твоему пути позволено занять время." },
+  { de: "Dein Weg darf Zeit brauchen.", en: "Your path is allowed to take time.", fr: "Ton chemin a le droit de prendre du temps.", pl: "Twoja droga może potrzebować czasu.", es: "Tu camino puede tomarse su tiempo.", it: "La tua strada può prendersi il suo tempo.", pt: "O teu caminho pode levar o seu tempo.", ru: "Твоему пути позволено занять время.", sq: "Rruga jote le të marrë kohën që i duhet." },
   // 289
-  { de: "Erinnere dich an deine Stärke.", en: "Remember your strength.", fr: "Souviens-toi de ta force.", pl: "Przypomnij sobie swoją siłę.", es: "Acuérdate de tu fuerza.", it: "Ricordati della tua forza.", pt: "Lembra-te da tua força.", ru: "Вспомни о своей силе." },
+  { de: "Erinnere dich an deine Stärke.", en: "Remember your strength.", fr: "Souviens-toi de ta force.", pl: "Przypomnij sobie swoją siłę.", es: "Acuérdate de tu fuerza.", it: "Ricordati della tua forza.", pt: "Lembra-te da tua força.", ru: "Вспомни о своей силе.", sq: "Kujto forcën që ke." },
   // 290
-  { de: "Deine Entscheidung kann viel verändern.", en: "Your decision can change a lot.", fr: "Ta décision peut changer beaucoup.", pl: "Twoja decyzja może wiele zmienić.", es: "Tu decisión puede cambiar mucho.", it: "La tua decisione può cambiare molto.", pt: "A tua decisão pode mudar muito.", ru: "Твоё решение может многое изменить." },
+  { de: "Deine Entscheidung kann viel verändern.", en: "Your decision can change a lot.", fr: "Ta décision peut changer beaucoup.", pl: "Twoja decyzja może wiele zmienić.", es: "Tu decisión puede cambiar mucho.", it: "La tua decisione può cambiare molto.", pt: "A tua decisão pode mudar muito.", ru: "Твоё решение может многое изменить.", sq: "Vendimi yt mund të ndryshojë shumë." },
   // 291
-  { de: "In jedem Tag steckt eine Möglichkeit.", en: "There's a possibility in every day.", fr: "Chaque jour recèle une possibilité.", pl: "W każdym dniu kryje się możliwość.", es: "En cada día hay una posibilidad.", it: "In ogni giorno c'è una possibilità.", pt: "Em cada dia há uma possibilidade.", ru: "Во всяком дне есть возможность." },
+  { de: "In jedem Tag steckt eine Möglichkeit.", en: "There's a possibility in every day.", fr: "Chaque jour recèle une possibilité.", pl: "W każdym dniu kryje się możliwość.", es: "En cada día hay una posibilidad.", it: "In ogni giorno c'è una possibilità.", pt: "Em cada dia há uma possibilidade.", ru: "Во всяком дне есть возможность.", sq: "Çdo ditë fsheh një mundësi." },
   // 292
-  { de: "Mut zeigt dir neue Wege.", en: "Courage shows you new roads.", fr: "Le courage t'ouvre de nouveaux chemins.", pl: "Odwaga pokazuje ci nowe drogi.", es: "El valor te muestra caminos nuevos.", it: "Il coraggio ti mostra strade nuove.", pt: "A coragem mostra-te caminhos novos.", ru: "Смелость открывает тебе новые дороги." },
+  { de: "Mut zeigt dir neue Wege.", en: "Courage shows you new roads.", fr: "Le courage t'ouvre de nouveaux chemins.", pl: "Odwaga pokazuje ci nowe drogi.", es: "El valor te muestra caminos nuevos.", it: "Il coraggio ti mostra strade nuove.", pt: "A coragem mostra-te caminhos novos.", ru: "Смелость открывает тебе новые дороги.", sq: "Guximi të tregon rrugë të reja." },
   // 293
-  { de: "Neue Gedanken öffnen Türen.", en: "New thoughts open doors.", fr: "Les idées neuves ouvrent des portes.", pl: "Nowe myśli otwierają drzwi.", es: "Las ideas nuevas abren puertas.", it: "I pensieri nuovi aprono porte.", pt: "As ideias novas abrem portas.", ru: "Новые мысли открывают двери." },
+  { de: "Neue Gedanken öffnen Türen.", en: "New thoughts open doors.", fr: "Les idées neuves ouvrent des portes.", pl: "Nowe myśli otwierają drzwi.", es: "Las ideas nuevas abren puertas.", it: "I pensieri nuovi aprono porte.", pt: "As ideias novas abrem portas.", ru: "Новые мысли открывают двери.", sq: "Mendimet e reja hapin dyer." },
   // 294
-  { de: "Du bist stärker als deine Angst.", en: "You're stronger than your fear.", fr: "Tu as plus de force que de peur.", pl: "Masz w sobie więcej siły niż strachu.", es: "Eres más fuerte que tu miedo.", it: "Sei più forte della tua paura.", pt: "És mais forte do que o teu medo.", ru: "Ты сильнее своего страха." },
+  { de: "Du bist stärker als deine Angst.", en: "You're stronger than your fear.", fr: "Tu as plus de force que de peur.", pl: "Masz w sobie więcej siły niż strachu.", es: "Eres más fuerte que tu miedo.", it: "Sei più forte della tua paura.", pt: "És mais forte do que o teu medo.", ru: "Ты сильнее своего страха.", sq: "Ke më shumë forcë se frikë." },
   // 295
-  { de: "Halte deine Ziele im Blick.", en: "Keep your goals in sight.", fr: "Garde tes objectifs en vue.", pl: "Miej swoje cele przed oczami.", es: "No pierdas de vista tus metas.", it: "Non perdere di vista i tuoi traguardi.", pt: "Não percas os teus objetivos de vista.", ru: "Держи свои цели в поле зрения." },
+  { de: "Halte deine Ziele im Blick.", en: "Keep your goals in sight.", fr: "Garde tes objectifs en vue.", pl: "Miej swoje cele przed oczami.", es: "No pierdas de vista tus metas.", it: "Non perdere di vista i tuoi traguardi.", pt: "Não percas os teus objetivos de vista.", ru: "Держи свои цели в поле зрения.", sq: "Mbaji qëllimet e tua para syve." },
   // 296
-  { de: "Gib deinem Traum einen Anfang.", en: "Give your dream a start.", fr: "Donne un début à ton rêve.", pl: "Daj swojemu marzeniu początek.", es: "Dale un comienzo a tu sueño.", it: "Dai un inizio al tuo sogno.", pt: "Dá um começo ao teu sonho.", ru: "Дай своей мечте начало." },
+  { de: "Gib deinem Traum einen Anfang.", en: "Give your dream a start.", fr: "Donne un début à ton rêve.", pl: "Daj swojemu marzeniu początek.", es: "Dale un comienzo a tu sueño.", it: "Dai un inizio al tuo sogno.", pt: "Dá um começo ao teu sonho.", ru: "Дай своей мечте начало.", sq: "Jepi ëndrrës sate një fillim." },
   // 297
-  { de: "Du kannst Herausforderungen meistern.", en: "You can handle what comes.", fr: "Tu peux relever les défis.", pl: "Potrafisz sprostać wyzwaniom.", es: "Puedes con los retos.", it: "Puoi reggere quello che arriva.", pt: "És capaz de enfrentar os desafios.", ru: "Ты справишься с тем, что придёт." },
+  { de: "Du kannst Herausforderungen meistern.", en: "You can handle what comes.", fr: "Tu peux relever les défis.", pl: "Potrafisz sprostać wyzwaniom.", es: "Puedes con los retos.", it: "Puoi reggere quello che arriva.", pt: "És capaz de enfrentar os desafios.", ru: "Ты справишься с тем, что придёт.", sq: "Mund të përballosh çdo gjë që vjen." },
   // 298
-  { de: "Dein nächstes Kapitel wartet.", en: "Your next chapter is waiting.", fr: "Ton prochain chapitre t'attend.", pl: "Twój następny rozdział czeka.", es: "Tu próximo capítulo te espera.", it: "Il tuo prossimo capitolo aspetta.", pt: "O teu próximo capítulo espera por ti.", ru: "Твоя следующая глава ждёт." },
+  { de: "Dein nächstes Kapitel wartet.", en: "Your next chapter is waiting.", fr: "Ton prochain chapitre t'attend.", pl: "Twój następny rozdział czeka.", es: "Tu próximo capítulo te espera.", it: "Il tuo prossimo capitolo aspetta.", pt: "O teu próximo capítulo espera por ti.", ru: "Твоя следующая глава ждёт.", sq: "Kapitulli yt i radhës të pret." },
   // 299
-  { de: "Gib deinen Zielen eine Chance.", en: "Give your goals a chance.", fr: "Donne une chance à tes objectifs.", pl: "Daj swoim celom szansę.", es: "Dales una oportunidad a tus metas.", it: "Dai una possibilità ai tuoi traguardi.", pt: "Dá uma oportunidade aos teus objetivos.", ru: "Дай своим целям случай." },
+  { de: "Gib deinen Zielen eine Chance.", en: "Give your goals a chance.", fr: "Donne une chance à tes objectifs.", pl: "Daj swoim celom szansę.", es: "Dales una oportunidad a tus metas.", it: "Dai una possibilità ai tuoi traguardi.", pt: "Dá uma oportunidade aos teus objetivos.", ru: "Дай своим целям случай.", sq: "Jepu një shans qëllimeve të tua." },
   // 300
-  { de: "Mit jedem Schritt wirst du stärker.", en: "You get stronger with every step.", fr: "Chaque pas te renforce.", pl: "Z każdym krokiem masz więcej siły.", es: "Con cada paso te haces más fuerte.", it: "A ogni passo diventi più forte.", pt: "A cada passo ficas mais forte.", ru: "С каждым шагом ты становишься сильнее." },
+  { de: "Mit jedem Schritt wirst du stärker.", en: "You get stronger with every step.", fr: "Chaque pas te renforce.", pl: "Z każdym krokiem masz więcej siły.", es: "Con cada paso te haces más fuerte.", it: "A ogni passo diventi più forte.", pt: "A cada passo ficas mais forte.", ru: "С каждым шагом ты становишься сильнее.", sq: "Me çdo hap forcohesh më shumë." },
   // 301
-  { de: "Veränderung bringt neue Chancen.", en: "Change brings new chances.", fr: "Le changement apporte de nouvelles occasions.", pl: "Zmiana przynosi nowe szanse.", es: "El cambio trae nuevas oportunidades.", it: "Il cambiamento porta occasioni nuove.", pt: "A mudança traz novas oportunidades.", ru: "Перемены приносят новые возможности." },
+  { de: "Veränderung bringt neue Chancen.", en: "Change brings new chances.", fr: "Le changement apporte de nouvelles occasions.", pl: "Zmiana przynosi nowe szanse.", es: "El cambio trae nuevas oportunidades.", it: "Il cambiamento porta occasioni nuove.", pt: "A mudança traz novas oportunidades.", ru: "Перемены приносят новые возможности.", sq: "Ndryshimi sjell mundësi të reja." },
   // 302
-  { de: "Deine Taten können etwas bewegen.", en: "What you do can move things.", fr: "Ce que tu fais peut changer les choses.", pl: "Twoje czyny mogą coś zmienić.", es: "Lo que haces puede mover cosas.", it: "Quello che fai può smuovere le cose.", pt: "Aquilo que fazes pode mover as coisas.", ru: "То, что ты делаешь, может сдвинуть многое." },
+  { de: "Deine Taten können etwas bewegen.", en: "What you do can move things.", fr: "Ce que tu fais peut changer les choses.", pl: "Twoje czyny mogą coś zmienić.", es: "Lo que haces puede mover cosas.", it: "Quello che fai può smuovere le cose.", pt: "Aquilo que fazes pode mover as coisas.", ru: "То, что ты делаешь, может сдвинуть многое.", sq: "Ajo që bën ka peshë." },
   // 303
-  { de: "Entdecke die Chancen auf deinem Weg.", en: "Spot the chances along your path.", fr: "Repère les occasions sur ton chemin.", pl: "Odkryj szanse na swojej drodze.", es: "Descubre las oportunidades de tu camino.", it: "Scopri le occasioni lungo la tua strada.", pt: "Descobre as oportunidades no teu caminho.", ru: "Замечай возможности на своём пути." },
+  { de: "Entdecke die Chancen auf deinem Weg.", en: "Spot the chances along your path.", fr: "Repère les occasions sur ton chemin.", pl: "Odkryj szanse na swojej drodze.", es: "Descubre las oportunidades de tu camino.", it: "Scopri le occasioni lungo la tua strada.", pt: "Descobre as oportunidades no teu caminho.", ru: "Замечай возможности на своём пути.", sq: "Vëri re mundësitë gjatë rrugës sate." },
   // 304
-  { de: "Mut macht den Tag besonders.", en: "Courage makes the day special.", fr: "Le courage rend la journée particulière.", pl: "Odwaga czyni dzień wyjątkowym.", es: "El valor hace especial el día.", it: "Il coraggio rende speciale la giornata.", pt: "A coragem torna o dia especial.", ru: "Смелость делает день особенным." },
+  { de: "Mut macht den Tag besonders.", en: "Courage makes the day special.", fr: "Le courage rend la journée particulière.", pl: "Odwaga czyni dzień wyjątkowym.", es: "El valor hace especial el día.", it: "Il coraggio rende speciale la giornata.", pt: "A coragem torna o dia especial.", ru: "Смелость делает день особенным.", sq: "Guximi e bën ditën të veçantë." },
   // 305
-  { de: "Du kannst mehr als du denkst.", en: "You can do more than you think.", fr: "Tu peux plus que tu ne crois.", pl: "Potrafisz więcej, niż myślisz.", es: "Puedes más de lo que crees.", it: "Puoi più di quanto credi.", pt: "Consegues mais do que pensas.", ru: "Ты можешь больше, чем думаешь." },
+  { de: "Du kannst mehr als du denkst.", en: "You can do more than you think.", fr: "Tu peux plus que tu ne crois.", pl: "Potrafisz więcej, niż myślisz.", es: "Puedes más de lo que crees.", it: "Puoi più di quanto credi.", pt: "Consegues mais do que pensas.", ru: "Ты можешь больше, чем думаешь.", sq: "Mund të bësh më shumë sesa mendon." },
   // 306
-  { de: "Lass deinen Traum größer werden.", en: "Let your dream get bigger.", fr: "Laisse ton rêve grandir.", pl: "Pozwól swojemu marzeniu urosnąć.", es: "Deja que tu sueño crezca.", it: "Lascia crescere il tuo sogno.", pt: "Deixa o teu sonho crescer.", ru: "Дай своей мечте вырасти." },
+  { de: "Lass deinen Traum größer werden.", en: "Let your dream get bigger.", fr: "Laisse ton rêve grandir.", pl: "Pozwól swojemu marzeniu urosnąć.", es: "Deja que tu sueño crezca.", it: "Lascia crescere il tuo sogno.", pt: "Deixa o teu sonho crescer.", ru: "Дай своей мечте вырасти.", sq: "Bëje ëndrrën tënde më të madhe." },
   // 307
-  { de: "Jeder Schritt bringt dich weiter.", en: "Every step takes you further.", fr: "Chaque pas te mène plus loin.", pl: "Każdy krok prowadzi cię dalej.", es: "Cada paso te lleva más lejos.", it: "Ogni passo ti porta più lontano.", pt: "Cada passo leva-te mais longe.", ru: "Всякий шаг ведёт тебя дальше." },
+  { de: "Jeder Schritt bringt dich weiter.", en: "Every step takes you further.", fr: "Chaque pas te mène plus loin.", pl: "Każdy krok prowadzi cię dalej.", es: "Cada paso te lleva más lejos.", it: "Ogni passo ti porta più lontano.", pt: "Cada passo leva-te mais longe.", ru: "Всякий шаг ведёт тебя дальше.", sq: "Çdo hap të çon më tej." },
   // 308
-  { de: "Deine Zukunft entsteht heute.", en: "Your future is being made today.", fr: "Ton avenir se construit aujourd'hui.", pl: "Twoja przyszłość powstaje dziś.", es: "Tu futuro se hace hoy.", it: "Il tuo futuro si fa oggi.", pt: "O teu futuro constrói-se hoje.", ru: "Твоё будущее создаётся сегодня." },
+  { de: "Deine Zukunft entsteht heute.", en: "Your future is being made today.", fr: "Ton avenir se construit aujourd'hui.", pl: "Twoja przyszłość powstaje dziś.", es: "Tu futuro se hace hoy.", it: "Il tuo futuro si fa oggi.", pt: "O teu futuro constrói-se hoje.", ru: "Твоё будущее создаётся сегодня.", sq: "E ardhmja jote merr formë sot." },
   // 309
-  { de: "Dein Ziel verdient deine Aufmerksamkeit.", en: "Your goal deserves your attention.", fr: "Ton objectif mérite ton attention.", pl: "Twój cel zasługuje na twoją uwagę.", es: "Tu meta merece tu atención.", it: "Il tuo traguardo merita attenzione.", pt: "O teu objetivo merece a tua atenção.", ru: "Твоя цель заслуживает внимания." },
+  { de: "Dein Ziel verdient deine Aufmerksamkeit.", en: "Your goal deserves your attention.", fr: "Ton objectif mérite ton attention.", pl: "Twój cel zasługuje na twoją uwagę.", es: "Tu meta merece tu atención.", it: "Il tuo traguardo merita attenzione.", pt: "O teu objetivo merece a tua atenção.", ru: "Твоя цель заслуживает внимания.", sq: "Qëllimi yt meriton vëmendjen tënde." },
   // 310
-  { de: "Ein neuer Anfang ist immer möglich.", en: "A new beginning is always possible.", fr: "Un nouveau commencement est toujours possible.", pl: "Nowy początek jest zawsze możliwy.", es: "Un nuevo comienzo siempre es posible.", it: "Un nuovo inizio è sempre possibile.", pt: "Um novo começo é sempre possível.", ru: "Новое начало возможно всегда." },
+  { de: "Ein neuer Anfang ist immer möglich.", en: "A new beginning is always possible.", fr: "Un nouveau commencement est toujours possible.", pl: "Nowy początek jest zawsze możliwy.", es: "Un nuevo comienzo siempre es posible.", it: "Un nuovo inizio è sempre possibile.", pt: "Um novo começo é sempre possível.", ru: "Новое начало возможно всегда.", sq: "Gjithmonë mund të fillosh nga e para." },
   // 311
-  { de: "Öffne die Tür für Neues.", en: "Open the door to something new.", fr: "Ouvre la porte au nouveau.", pl: "Otwórz drzwi na nowe.", es: "Abre la puerta a lo nuevo.", it: "Apri la porta a qualcosa di nuovo.", pt: "Abre a porta ao novo.", ru: "Открой дверь новому." },
+  { de: "Öffne die Tür für Neues.", en: "Open the door to something new.", fr: "Ouvre la porte au nouveau.", pl: "Otwórz drzwi na nowe.", es: "Abre la puerta a lo nuevo.", it: "Apri la porta a qualcosa di nuovo.", pt: "Abre a porta ao novo.", ru: "Открой дверь новому.", sq: "Hap derën për diçka të re." },
   // 312
-  { de: "Mut kann deinen Weg verändern.", en: "Courage can change your path.", fr: "Le courage peut changer ton chemin.", pl: "Odwaga może zmienić twoją drogę.", es: "El valor puede cambiar tu camino.", it: "Il coraggio può cambiare la tua strada.", pt: "A coragem pode mudar o teu caminho.", ru: "Смелость может переменить твой путь." },
+  { de: "Mut kann deinen Weg verändern.", en: "Courage can change your path.", fr: "Le courage peut changer ton chemin.", pl: "Odwaga może zmienić twoją drogę.", es: "El valor puede cambiar tu camino.", it: "Il coraggio può cambiare la tua strada.", pt: "A coragem pode mudar o teu caminho.", ru: "Смелость может переменить твой путь.", sq: "Guximi mund ta ndryshojë rrugën tënde." },
   // 313
-  { de: "Lass deine Zweifel hinter dir.", en: "Leave your doubts behind.", fr: "Laisse tes doutes derrière toi.", pl: "Zostaw wątpliwości za sobą.", es: "Deja tus dudas atrás.", it: "Lascia i dubbi alle spalle.", pt: "Deixa as dúvidas para trás.", ru: "Оставь сомнения позади." },
+  { de: "Lass deine Zweifel hinter dir.", en: "Leave your doubts behind.", fr: "Laisse tes doutes derrière toi.", pl: "Zostaw wątpliwości za sobą.", es: "Deja tus dudas atrás.", it: "Lascia i dubbi alle spalle.", pt: "Deixa as dúvidas para trás.", ru: "Оставь сомнения позади.", sq: "Lëri pas dyshimet e tua." },
   // 314
-  { de: "Geh deinen eigenen Weg.", en: "Go your own way.", fr: "Va ton propre chemin.", pl: "Idź własną drogą.", es: "Ve por tu propio camino.", it: "Vai per la tua strada.", pt: "Vai pelo teu próprio caminho.", ru: "Иди своим путём." },
+  { de: "Geh deinen eigenen Weg.", en: "Go your own way.", fr: "Va ton propre chemin.", pl: "Idź własną drogą.", es: "Ve por tu propio camino.", it: "Vai per la tua strada.", pt: "Vai pelo teu próprio caminho.", ru: "Иди своим путём.", sq: "Ndiq rrugën që zgjedh vetë." },
   // 315
-  { de: "Jeder Tag lehrt dich etwas.", en: "Every day teaches you something.", fr: "Chaque jour t'apprend quelque chose.", pl: "Każdy dzień czegoś cię uczy.", es: "Cada día te enseña algo.", it: "Ogni giorno ti insegna qualcosa.", pt: "Cada dia ensina-te algo.", ru: "Всякий день чему-то тебя учит." },
+  { de: "Jeder Tag lehrt dich etwas.", en: "Every day teaches you something.", fr: "Chaque jour t'apprend quelque chose.", pl: "Każdy dzień czegoś cię uczy.", es: "Cada día te enseña algo.", it: "Ogni giorno ti insegna qualcosa.", pt: "Cada dia ensina-te algo.", ru: "Всякий день чему-то тебя учит.", sq: "Çdo ditë të mëson diçka." },
   // 316
-  { de: "Deine Ziele warten auf dich.", en: "Your goals are waiting for you.", fr: "Tes objectifs t'attendent.", pl: "Twoje cele na ciebie czekają.", es: "Tus metas te esperan.", it: "I tuoi traguardi ti aspettano.", pt: "Os teus objetivos esperam por ti.", ru: "Твои цели тебя ждут." },
+  { de: "Deine Ziele warten auf dich.", en: "Your goals are waiting for you.", fr: "Tes objectifs t'attendent.", pl: "Twoje cele na ciebie czekają.", es: "Tus metas te esperan.", it: "I tuoi traguardi ti aspettano.", pt: "Os teus objetivos esperam por ti.", ru: "Твои цели тебя ждут.", sq: "Qëllimet e tua të presin." },
   // 317
-  { de: "Hoffnung und Mut tragen weit.", en: "Hope and courage carry far.", fr: "L'espoir et le courage portent loin.", pl: "Nadzieja i odwaga niosą daleko.", es: "La esperanza y el valor llevan lejos.", it: "Speranza e coraggio portano lontano.", pt: "A esperança e a coragem levam longe.", ru: "Надежда и смелость несут далеко." },
+  { de: "Hoffnung und Mut tragen weit.", en: "Hope and courage carry far.", fr: "L'espoir et le courage portent loin.", pl: "Nadzieja i odwaga niosą daleko.", es: "La esperanza y el valor llevan lejos.", it: "Speranza e coraggio portano lontano.", pt: "A esperança e a coragem levam longe.", ru: "Надежда и смелость несут далеко.", sq: "Shpresa dhe guximi të çojnë larg." },
   // 318
-  { de: "Wachse in deinem eigenen Tempo.", en: "Grow at your own pace.", fr: "Grandis à ton rythme.", pl: "Rozwijaj się we własnym tempie.", es: "Crece a tu propio ritmo.", it: "Cresci al tuo ritmo.", pt: "Cresce ao teu próprio ritmo.", ru: "Расти в своём темпе." },
+  { de: "Wachse in deinem eigenen Tempo.", en: "Grow at your own pace.", fr: "Grandis à ton rythme.", pl: "Rozwijaj się we własnym tempie.", es: "Crece a tu propio ritmo.", it: "Cresci al tuo ritmo.", pt: "Cresce ao teu próprio ritmo.", ru: "Расти в своём темпе.", sq: "Rritu me ritmin tënd." },
   // 319
-  { de: "Dein Weg verdient Vertrauen.", en: "Your path deserves your trust.", fr: "Ton chemin mérite ta confiance.", pl: "Twoja droga zasługuje na zaufanie.", es: "Tu camino merece tu confianza.", it: "La tua strada merita la tua fiducia.", pt: "O teu caminho merece a tua confiança.", ru: "Твой путь заслуживает твоего доверия." },
+  { de: "Dein Weg verdient Vertrauen.", en: "Your path deserves your trust.", fr: "Ton chemin mérite ta confiance.", pl: "Twoja droga zasługuje na zaufanie.", es: "Tu camino merece tu confianza.", it: "La tua strada merita la tua fiducia.", pt: "O teu caminho merece a tua confiança.", ru: "Твой путь заслуживает твоего доверия.", sq: "Rruga jote meriton besimin tënd." },
   // 320
-  { de: "Entscheide dich für deinen Traum.", en: "Choose your dream.", fr: "Choisis ton rêve.", pl: "Zdecyduj się na swoje marzenie.", es: "Decídete por tu sueño.", it: "Decidi per il tuo sogno.", pt: "Decide-te pelo teu sonho.", ru: "Выбери свою мечту." },
+  { de: "Entscheide dich für deinen Traum.", en: "Choose your dream.", fr: "Choisis ton rêve.", pl: "Zdecyduj się na swoje marzenie.", es: "Decídete por tu sueño.", it: "Decidi per il tuo sogno.", pt: "Decide-te pelo teu sonho.", ru: "Выбери свою мечту.", sq: "Zgjidh ëndrrën tënde." },
   // 321
-  { de: "Sei stolz auf das Erreichte.", en: "Be proud of what you've reached.", fr: "Ce que tu as accompli mérite ta fierté.", pl: "To, co osiągnięte, to powód do dumy.", es: "Lo que has logrado merece tu orgullo.", it: "Quello che hai raggiunto merita orgoglio.", pt: "O que já alcançaste merece o teu orgulho.", ru: "Гордись тем, чего достиг." },
+  { de: "Sei stolz auf das Erreichte.", en: "Be proud of what you've reached.", fr: "Ce que tu as accompli mérite ta fierté.", pl: "To, co osiągnięte, to powód do dumy.", es: "Lo que has logrado merece tu orgullo.", it: "Quello che hai raggiunto merita orgoglio.", pt: "O que já alcançaste merece o teu orgulho.", ru: "Гордись тем, чего достиг.", sq: "Krenohu me atë që ke arritur." },
   // 322
-  { de: "Erweitere deine Grenzen.", en: "Widen your limits.", fr: "Élargis tes limites.", pl: "Poszerzaj swoje granice.", es: "Amplía tus límites.", it: "Allarga i tuoi limiti.", pt: "Alarga os teus limites.", ru: "Раздвинь свои пределы." },
+  { de: "Erweitere deine Grenzen.", en: "Widen your limits.", fr: "Élargis tes limites.", pl: "Poszerzaj swoje granice.", es: "Amplía tus límites.", it: "Allarga i tuoi limiti.", pt: "Alarga os teus limites.", ru: "Раздвинь свои пределы.", sq: "Zgjero kufijtë e tu." },
   // 323
-  { de: "Dein nächster Schritt wartet.", en: "Your next step is waiting.", fr: "Ton prochain pas t'attend.", pl: "Twój następny krok czeka.", es: "Tu siguiente paso te espera.", it: "Il tuo prossimo passo aspetta.", pt: "O teu próximo passo espera por ti.", ru: "Твой следующий шаг ждёт." },
+  { de: "Dein nächster Schritt wartet.", en: "Your next step is waiting.", fr: "Ton prochain pas t'attend.", pl: "Twój następny krok czeka.", es: "Tu siguiente paso te espera.", it: "Il tuo prossimo passo aspetta.", pt: "O teu próximo passo espera por ti.", ru: "Твой следующий шаг ждёт.", sq: "Hapi yt i radhës të pret." },
   // 324
-  { de: "Bleib neugierig auf morgen.", en: "Stay curious about tomorrow.", fr: "Garde ta curiosité pour demain.", pl: "Zachowaj ciekawość jutra.", es: "Mantén la curiosidad por el mañana.", it: "Mantieni la curiosità per il domani.", pt: "Mantém a curiosidade pelo amanhã.", ru: "Не теряй любопытства к завтрашнему дню." },
+  { de: "Bleib neugierig auf morgen.", en: "Stay curious about tomorrow.", fr: "Garde ta curiosité pour demain.", pl: "Zachowaj ciekawość jutra.", es: "Mantén la curiosidad por el mañana.", it: "Mantieni la curiosità per il domani.", pt: "Mantém a curiosidade pelo amanhã.", ru: "Не теряй любопытства к завтрашнему дню.", sq: "Ruaje kureshtjen për të nesërmen." },
   // 325
-  { de: "Nutze, was vor dir liegt.", en: "Use what's in front of you.", fr: "Sers-toi de ce qui est devant toi.", pl: "Wykorzystaj to, co przed tobą.", es: "Aprovecha lo que tienes delante.", it: "Sfrutta quello che hai davanti.", pt: "Aproveita o que tens à frente.", ru: "Пользуйся тем, что перед тобой." },
+  { de: "Nutze, was vor dir liegt.", en: "Use what's in front of you.", fr: "Sers-toi de ce qui est devant toi.", pl: "Wykorzystaj to, co przed tobą.", es: "Aprovecha lo que tienes delante.", it: "Sfrutta quello che hai davanti.", pt: "Aproveita o que tens à frente.", ru: "Пользуйся тем, что перед тобой.", sq: "Shfrytëzo atë që ke përpara." },
   // 326
-  { de: "Nimm dir Zeit für dich.", en: "Take some time for yourself.", fr: "Prends du temps pour toi.", pl: "Znajdź czas dla siebie.", es: "Tómate tiempo para ti.", it: "Prenditi del tempo per te.", pt: "Arranja tempo para ti.", ru: "Удели немного времени себе." },
+  { de: "Nimm dir Zeit für dich.", en: "Take some time for yourself.", fr: "Prends du temps pour toi.", pl: "Znajdź czas dla siebie.", es: "Tómate tiempo para ti.", it: "Prenditi del tempo per te.", pt: "Arranja tempo para ti.", ru: "Удели немного времени себе.", sq: "Merr pak kohë për veten." },
   // 327
-  { de: "Dein Mut bringt Veränderung.", en: "Your courage brings change.", fr: "Ton courage apporte du changement.", pl: "Twoja odwaga przynosi zmianę.", es: "Tu valor trae cambio.", it: "Il tuo coraggio porta cambiamento.", pt: "A tua coragem traz mudança.", ru: "Твоя смелость приносит перемены." },
+  { de: "Dein Mut bringt Veränderung.", en: "Your courage brings change.", fr: "Ton courage apporte du changement.", pl: "Twoja odwaga przynosi zmianę.", es: "Tu valor trae cambio.", it: "Il tuo coraggio porta cambiamento.", pt: "A tua coragem traz mudança.", ru: "Твоя смелость приносит перемены.", sq: "Guximi yt sjell ndryshim." },
   // 328
-  { de: "Jeder Anfang birgt Möglichkeiten.", en: "Every beginning holds possibility.", fr: "Chaque début recèle des possibles.", pl: "Każdy początek kryje możliwości.", es: "Cada comienzo guarda posibilidades.", it: "Ogni inizio contiene possibilità.", pt: "Cada começo guarda possibilidades.", ru: "Во всяком начале есть возможность." },
+  { de: "Jeder Anfang birgt Möglichkeiten.", en: "Every beginning holds possibility.", fr: "Chaque début recèle des possibles.", pl: "Każdy początek kryje możliwości.", es: "Cada comienzo guarda posibilidades.", it: "Ogni inizio contiene possibilità.", pt: "Cada começo guarda possibilidades.", ru: "Во всяком начале есть возможность.", sq: "Çdo fillim mbart mundësi." },
   // 329
-  { de: "Folge deinem Traum.", en: "Follow your dream.", fr: "Suis ton rêve.", pl: "Podążaj za swoim marzeniem.", es: "Sigue tu sueño.", it: "Segui il tuo sogno.", pt: "Segue o teu sonho.", ru: "Следуй за своей мечтой." },
+  { de: "Folge deinem Traum.", en: "Follow your dream.", fr: "Suis ton rêve.", pl: "Podążaj za swoim marzeniem.", es: "Sigue tu sueño.", it: "Segui il tuo sogno.", pt: "Segue o teu sonho.", ru: "Следуй за своей мечтой.", sq: "Ndiq ëndrrën tënde." },
   // 330
-  { de: "Bleib deinem Herzen treu.", en: "Stay true to your heart.", fr: "Reste fidèle à ton cœur.", pl: "Trzymaj się tego, co czujesz.", es: "Sé fiel a tu corazón.", it: "Sii fedele al tuo cuore.", pt: "Sê fiel ao teu coração.", ru: "Оставайся верен своему сердцу." },
+  { de: "Bleib deinem Herzen treu.", en: "Stay true to your heart.", fr: "Reste fidèle à ton cœur.", pl: "Trzymaj się tego, co czujesz.", es: "Sé fiel a tu corazón.", it: "Sii fedele al tuo cuore.", pt: "Sê fiel ao teu coração.", ru: "Оставайся верен своему сердцу.", sq: "Dëgjo zemrën tënde." },
   // 331
-  { de: "Geh mit Zuversicht weiter.", en: "Carry on with confidence.", fr: "Poursuis avec confiance.", pl: "Idź dalej z ufnością.", es: "Sigue adelante con confianza.", it: "Continua con fiducia.", pt: "Continua com confiança.", ru: "Продолжай с уверенностью." },
+  { de: "Geh mit Zuversicht weiter.", en: "Carry on with confidence.", fr: "Poursuis avec confiance.", pl: "Idź dalej z ufnością.", es: "Sigue adelante con confianza.", it: "Continua con fiducia.", pt: "Continua com confiança.", ru: "Продолжай с уверенностью.", sq: "Vazhdo me vetëbesim." },
   // 332
-  { de: "Deine Stärke kennt keine Eile.", en: "Your strength is in no hurry.", fr: "Ta force n'est pas pressée.", pl: "Twoja siła się nie spieszy.", es: "Tu fuerza no tiene prisa.", it: "La tua forza non ha fretta.", pt: "A tua força não tem pressa.", ru: "Твоей силе некуда спешить." },
+  { de: "Deine Stärke kennt keine Eile.", en: "Your strength is in no hurry.", fr: "Ta force n'est pas pressée.", pl: "Twoja siła się nie spieszy.", es: "Tu fuerza no tiene prisa.", it: "La tua forza non ha fretta.", pt: "A tua força não tem pressa.", ru: "Твоей силе некуда спешить.", sq: "Forca jote nuk nxiton." },
   // 333
-  { de: "Du kannst jeden Tag neu wählen.", en: "You can choose again every day.", fr: "Chaque jour, tu peux choisir à nouveau.", pl: "Każdego dnia możesz wybrać na nowo.", es: "Cada día puedes volver a elegir.", it: "Ogni giorno puoi scegliere di nuovo.", pt: "Todos os dias podes escolher de novo.", ru: "Ты можешь выбирать заново каждый день." },
+  { de: "Du kannst jeden Tag neu wählen.", en: "You can choose again every day.", fr: "Chaque jour, tu peux choisir à nouveau.", pl: "Każdego dnia możesz wybrać na nowo.", es: "Cada día puedes volver a elegir.", it: "Ogni giorno puoi scegliere di nuovo.", pt: "Todos os dias podes escolher de novo.", ru: "Ты можешь выбирать заново каждый день.", sq: "Çdo ditë mund të zgjedhësh sërish." },
   // 334
-  { de: "Ein Schritt kann viel verändern.", en: "One step can change a lot.", fr: "Un seul pas peut beaucoup changer.", pl: "Jeden krok może wiele zmienić.", es: "Un solo paso puede cambiar mucho.", it: "Un passo solo può cambiare molto.", pt: "Um só passo pode mudar muito.", ru: "Один шаг может многое изменить." },
+  { de: "Ein Schritt kann viel verändern.", en: "One step can change a lot.", fr: "Un seul pas peut beaucoup changer.", pl: "Jeden krok może wiele zmienić.", es: "Un solo paso puede cambiar mucho.", it: "Un passo solo può cambiare molto.", pt: "Um só passo pode mudar muito.", ru: "Один шаг может многое изменить.", sq: "Një hap mund të ndryshojë shumë." },
   // 335
-  { de: "Dein eigener Weg ist wertvoll.", en: "Your own path is worth something.", fr: "Ton chemin à toi a de la valeur.", pl: "Twoja własna droga ma wartość.", es: "Tu propio camino tiene valor.", it: "La tua strada ha valore.", pt: "O teu próprio caminho tem valor.", ru: "Твой собственный путь чего-то стоит." },
+  { de: "Dein eigener Weg ist wertvoll.", en: "Your own path is worth something.", fr: "Ton chemin à toi a de la valeur.", pl: "Twoja własna droga ma wartość.", es: "Tu propio camino tiene valor.", it: "La tua strada ha valore.", pt: "O teu próprio caminho tem valor.", ru: "Твой собственный путь чего-то стоит.", sq: "Rruga jote ka vlerën e vet." },
   // 336
-  { de: "Entdecke heute etwas Neues.", en: "Find something new today.", fr: "Découvre du nouveau aujourd'hui.", pl: "Odkryj dziś coś nowego.", es: "Descubre hoy algo nuevo.", it: "Oggi scopri qualcosa di nuovo.", pt: "Descobre hoje algo novo.", ru: "Найди сегодня что-нибудь новое." },
+  { de: "Entdecke heute etwas Neues.", en: "Find something new today.", fr: "Découvre du nouveau aujourd'hui.", pl: "Odkryj dziś coś nowego.", es: "Descubre hoy algo nuevo.", it: "Oggi scopri qualcosa di nuovo.", pt: "Descobre hoje algo novo.", ru: "Найди сегодня что-нибудь новое.", sq: "Zbulo sot diçka të re." },
   // 337
-  { de: "Du hast noch so viel vor dir.", en: "You have so much still ahead.", fr: "Il te reste tant devant toi.", pl: "Tak wiele jeszcze przed tobą.", es: "Te queda tantísimo por delante.", it: "Hai ancora tantissimo davanti.", pt: "Tens ainda tanto pela frente.", ru: "У тебя ещё столько впереди." },
+  { de: "Du hast noch so viel vor dir.", en: "You have so much still ahead.", fr: "Il te reste tant devant toi.", pl: "Tak wiele jeszcze przed tobą.", es: "Te queda tantísimo por delante.", it: "Hai ancora tantissimo davanti.", pt: "Tens ainda tanto pela frente.", ru: "У тебя ещё столько впереди.", sq: "Ke ende kaq shumë përpara." },
   // 338
-  { de: "Deine Mühe ist nicht umsonst.", en: "Your effort isn't wasted.", fr: "Tes efforts ne sont pas vains.", pl: "Twój trud nie idzie na marne.", es: "Tu esfuerzo no es en vano.", it: "Il tuo impegno non va perso.", pt: "O teu esforço não é em vão.", ru: "Твои усилия не пропадают." },
+  { de: "Deine Mühe ist nicht umsonst.", en: "Your effort isn't wasted.", fr: "Tes efforts ne sont pas vains.", pl: "Twój trud nie idzie na marne.", es: "Tu esfuerzo no es en vano.", it: "Il tuo impegno non va perso.", pt: "O teu esforço não é em vão.", ru: "Твои усилия не пропадают.", sq: "Mundi yt nuk shkon kot." },
   // 339
-  { de: "Gestalte die Zukunft nach deinen Vorstellungen.", en: "Shape the future the way you picture it.", fr: "Façonne l'avenir comme tu l'imagines.", pl: "Kształtuj przyszłość według swoich wyobrażeń.", es: "Da forma al futuro como lo imaginas.", it: "Dai al futuro la forma che immagini.", pt: "Molda o futuro como o imaginas.", ru: "Строй будущее таким, каким его видишь." },
+  { de: "Gestalte die Zukunft nach deinen Vorstellungen.", en: "Shape the future the way you picture it.", fr: "Façonne l'avenir comme tu l'imagines.", pl: "Kształtuj przyszłość według swoich wyobrażeń.", es: "Da forma al futuro como lo imaginas.", it: "Dai al futuro la forma che immagini.", pt: "Molda o futuro como o imaginas.", ru: "Строй будущее таким, каким его видишь.", sq: "Ndërtoje të ardhmen ashtu si e përfytyron." },
   // 340
-  { de: "Mut begleitet dich auf deinem Weg.", en: "Courage goes with you along the way.", fr: "Le courage t'accompagne en chemin.", pl: "Odwaga towarzyszy ci w drodze.", es: "El valor te acompaña en el camino.", it: "Il coraggio ti accompagna per strada.", pt: "A coragem acompanha-te no caminho.", ru: "Смелость идёт с тобой по дороге." },
+  { de: "Mut begleitet dich auf deinem Weg.", en: "Courage goes with you along the way.", fr: "Le courage t'accompagne en chemin.", pl: "Odwaga towarzyszy ci w drodze.", es: "El valor te acompaña en el camino.", it: "Il coraggio ti accompagna per strada.", pt: "A coragem acompanha-te no caminho.", ru: "Смелость идёт с тобой по дороге.", sq: "Guximi të shoqëron gjatë rrugës." },
   // 341
-  { de: "Dieser Tag steckt voller Möglichkeiten.", en: "This day is full of possibility.", fr: "Cette journée est pleine de possibles.", pl: "Ten dzień jest pełen możliwości.", es: "Este día está lleno de posibilidades.", it: "Questa giornata è piena di possibilità.", pt: "Este dia está cheio de possibilidades.", ru: "Этот день полон возможностей." },
+  { de: "Dieser Tag steckt voller Möglichkeiten.", en: "This day is full of possibility.", fr: "Cette journée est pleine de possibles.", pl: "Ten dzień jest pełen możliwości.", es: "Este día está lleno de posibilidades.", it: "Questa giornata è piena di possibilità.", pt: "Este dia está cheio de possibilidades.", ru: "Этот день полон возможностей.", sq: "Kjo ditë është plot mundësi." },
   // 342
-  { de: "Auch langsam führt ans Ziel.", en: "Slowly still gets you there.", fr: "Lentement mène aussi au but.", pl: "Powoli też prowadzi do celu.", es: "Despacio también se llega.", it: "Anche piano si arriva.", pt: "Devagar também se chega.", ru: "Медленно — тоже доходят." },
+  { de: "Auch langsam führt ans Ziel.", en: "Slowly still gets you there.", fr: "Lentement mène aussi au but.", pl: "Powoli też prowadzi do celu.", es: "Despacio también se llega.", it: "Anche piano si arriva.", pt: "Devagar também se chega.", ru: "Медленно — тоже доходят.", sq: "Edhe ngadalë, arrin aty ku do." },
   // 343
-  { de: "Neues Wissen bringt dich weiter.", en: "New knowledge takes you further.", fr: "Le savoir nouveau te mène plus loin.", pl: "Nowa wiedza prowadzi cię dalej.", es: "El conocimiento nuevo te lleva más lejos.", it: "Il sapere nuovo ti porta più lontano.", pt: "O saber novo leva-te mais longe.", ru: "Новое знание ведёт дальше." },
+  { de: "Neues Wissen bringt dich weiter.", en: "New knowledge takes you further.", fr: "Le savoir nouveau te mène plus loin.", pl: "Nowa wiedza prowadzi cię dalej.", es: "El conocimiento nuevo te lleva más lejos.", it: "Il sapere nuovo ti porta più lontano.", pt: "O saber novo leva-te mais longe.", ru: "Новое знание ведёт дальше.", sq: "Çdo gjë e re që mëson të çon përpara." },
   // 344
-  { de: "Erkenne den Wert jedes Schrittes.", en: "See the worth of every step.", fr: "Reconnais la valeur de chaque pas.", pl: "Dostrzeż wartość każdego kroku.", es: "Reconoce el valor de cada paso.", it: "Riconosci il valore di ogni passo.", pt: "Reconhece o valor de cada passo.", ru: "Замечай ценность каждого шага." },
+  { de: "Erkenne den Wert jedes Schrittes.", en: "See the worth of every step.", fr: "Reconnais la valeur de chaque pas.", pl: "Dostrzeż wartość każdego kroku.", es: "Reconoce el valor de cada paso.", it: "Riconosci il valore di ogni passo.", pt: "Reconhece o valor de cada passo.", ru: "Замечай ценность каждого шага.", sq: "Vlerëso çdo hap që hedh." },
   // 345
-  { de: "Deine Träume sind möglich.", en: "Your dreams are possible.", fr: "Tes rêves sont possibles.", pl: "Twoje marzenia są możliwe.", es: "Tus sueños son posibles.", it: "I tuoi sogni sono possibili.", pt: "Os teus sonhos são possíveis.", ru: "Твои мечты возможны." },
+  { de: "Deine Träume sind möglich.", en: "Your dreams are possible.", fr: "Tes rêves sont possibles.", pl: "Twoje marzenia są możliwe.", es: "Tus sueños son posibles.", it: "I tuoi sogni sono possibili.", pt: "Os teus sonhos são possíveis.", ru: "Твои мечты возможны.", sq: "Ëndrrat e tua mund të bëhen realitet." },
   // 346
-  { de: "Veränderung kann heute beginnen.", en: "Change can start today.", fr: "Le changement peut commencer aujourd'hui.", pl: "Zmiana może zacząć się dziś.", es: "El cambio puede empezar hoy.", it: "Il cambiamento può cominciare oggi.", pt: "A mudança pode começar hoje.", ru: "Перемены могут начаться сегодня." },
+  { de: "Veränderung kann heute beginnen.", en: "Change can start today.", fr: "Le changement peut commencer aujourd'hui.", pl: "Zmiana może zacząć się dziś.", es: "El cambio puede empezar hoy.", it: "Il cambiamento può cominciare oggi.", pt: "A mudança pode começar hoje.", ru: "Перемены могут начаться сегодня.", sq: "Ndryshimi mund të fillojë sot." },
   // 347
-  { de: "Vertraue auf das, was in dir steckt.", en: "Trust what's inside you.", fr: "Fais confiance à ce que tu as en toi.", pl: "Zaufaj temu, co w tobie jest.", es: "Confía en lo que llevas dentro.", it: "Fidati di quello che hai dentro.", pt: "Confia no que tens dentro de ti.", ru: "Доверяй тому, что внутри тебя." },
+  { de: "Vertraue auf das, was in dir steckt.", en: "Trust what's inside you.", fr: "Fais confiance à ce que tu as en toi.", pl: "Zaufaj temu, co w tobie jest.", es: "Confía en lo que llevas dentro.", it: "Fidati di quello che hai dentro.", pt: "Confia no que tens dentro de ti.", ru: "Доверяй тому, что внутри тебя.", sq: "Beso në atë që ke brenda vetes." },
   // 348
-  { de: "Dein Weg zeigt sich beim Gehen.", en: "Your path shows itself as you walk.", fr: "Ton chemin se révèle en marchant.", pl: "Twoja droga odsłania się w marszu.", es: "Tu camino se revela al andar.", it: "La tua strada si rivela camminando.", pt: "O teu caminho revela-se a caminhar.", ru: "Твой путь открывается по мере ходьбы." },
+  { de: "Dein Weg zeigt sich beim Gehen.", en: "Your path shows itself as you walk.", fr: "Ton chemin se révèle en marchant.", pl: "Twoja droga odsłania się w marszu.", es: "Tu camino se revela al andar.", it: "La tua strada si rivela camminando.", pt: "O teu caminho revela-se a caminhar.", ru: "Твой путь открывается по мере ходьбы.", sq: "Rruga jote zbulohet duke ecur." },
   // 349
-  { de: "Dein Mut überwindet Zweifel.", en: "Your courage outlasts your doubts.", fr: "Ton courage a raison de tes doutes.", pl: "Twoja odwaga pokonuje wątpliwości.", es: "Tu valor vence a las dudas.", it: "Il tuo coraggio dura più dei dubbi.", pt: "A tua coragem vence as dúvidas.", ru: "Твоя смелость переживёт твои сомнения." },
+  { de: "Dein Mut überwindet Zweifel.", en: "Your courage outlasts your doubts.", fr: "Ton courage a raison de tes doutes.", pl: "Twoja odwaga pokonuje wątpliwości.", es: "Tu valor vence a las dudas.", it: "Il tuo coraggio dura più dei dubbi.", pt: "A tua coragem vence as dúvidas.", ru: "Твоя смелость переживёт твои сомнения.", sq: "Guximi yt i mposht dyshimet." },
   // 350
-  { de: "Heute ist ein guter Tag.", en: "Today is a good day.", fr: "Aujourd'hui est une bonne journée.", pl: "Dziś jest dobry dzień.", es: "Hoy es un buen día.", it: "Oggi è una buona giornata.", pt: "Hoje é um bom dia.", ru: "Сегодня хороший день." },
+  { de: "Heute ist ein guter Tag.", en: "Today is a good day.", fr: "Aujourd'hui est une bonne journée.", pl: "Dziś jest dobry dzień.", es: "Hoy es un buen día.", it: "Oggi è una buona giornata.", pt: "Hoje é um bom dia.", ru: "Сегодня хороший день.", sq: "Sot është një ditë e mirë." },
   // 351
-  { de: "Du darfst stolz auf dich sein.", en: "You're allowed to be proud of yourself.", fr: "Tu as le droit d'en tirer de la fierté.", pl: "Masz prawo czuć dumę.", es: "Tienes derecho a sentir orgullo.", it: "Hai il diritto di provare orgoglio.", pt: "Tens o direito de sentir orgulho.", ru: "Тебе можно собой гордиться." },
+  { de: "Du darfst stolz auf dich sein.", en: "You're allowed to be proud of yourself.", fr: "Tu as le droit d'en tirer de la fierté.", pl: "Masz prawo czuć dumę.", es: "Tienes derecho a sentir orgullo.", it: "Hai il diritto di provare orgoglio.", pt: "Tens o direito de sentir orgulho.", ru: "Тебе можно собой гордиться.", sq: "Ke të drejtë të krenohesh me veten." },
   // 352
-  { de: "Mut bringt dich deinem Morgen näher.", en: "Courage brings your tomorrow closer.", fr: "Le courage rapproche ton demain.", pl: "Odwaga przybliża twoje jutro.", es: "El valor acerca tu mañana.", it: "Il coraggio avvicina il tuo domani.", pt: "A coragem aproxima o teu amanhã.", ru: "Смелость приближает твоё завтра." },
+  { de: "Mut bringt dich deinem Morgen näher.", en: "Courage brings your tomorrow closer.", fr: "Le courage rapproche ton demain.", pl: "Odwaga przybliża twoje jutro.", es: "El valor acerca tu mañana.", it: "Il coraggio avvicina il tuo domani.", pt: "A coragem aproxima o teu amanhã.", ru: "Смелость приближает твоё завтра.", sq: "Guximi ta afron të nesërmen." },
   // 353
-  { de: "Bleib dran, es lohnt sich.", en: "Stick with it, it's worth it.", fr: "Tiens bon, ça en vaut la peine.", pl: "Nie odpuszczaj, warto.", es: "No lo dejes, merece la pena.", it: "Non mollare, ne vale la pena.", pt: "Não desistas, vale a pena.", ru: "Держись, оно того стоит." },
+  { de: "Bleib dran, es lohnt sich.", en: "Stick with it, it's worth it.", fr: "Tiens bon, ça en vaut la peine.", pl: "Nie odpuszczaj, warto.", es: "No lo dejes, merece la pena.", it: "Non mollare, ne vale la pena.", pt: "Não desistas, vale a pena.", ru: "Держись, оно того стоит.", sq: "Mos hiq dorë, ia vlen." },
   // 354
-  { de: "Du kannst Großes erreichen.", en: "You can reach great things.", fr: "Tu peux accomplir de grandes choses.", pl: "Możesz osiągnąć wielkie rzeczy.", es: "Puedes lograr cosas grandes.", it: "Puoi raggiungere cose grandi.", pt: "Podes alcançar grandes coisas.", ru: "Ты можешь достичь большого." },
+  { de: "Du kannst Großes erreichen.", en: "You can reach great things.", fr: "Tu peux accomplir de grandes choses.", pl: "Możesz osiągnąć wielkie rzeczy.", es: "Puedes lograr cosas grandes.", it: "Puoi raggiungere cose grandi.", pt: "Podes alcançar grandes coisas.", ru: "Ты можешь достичь большого.", sq: "Mund të arrish gjëra të mëdha." },
   // 355
-  { de: "Dein Weg beginnt genau hier.", en: "Your path starts right here.", fr: "Ton chemin commence ici même.", pl: "Twoja droga zaczyna się właśnie tu.", es: "Tu camino empieza justo aquí.", it: "La tua strada comincia proprio qui.", pt: "O teu caminho começa mesmo aqui.", ru: "Твой путь начинается прямо здесь." },
+  { de: "Dein Weg beginnt genau hier.", en: "Your path starts right here.", fr: "Ton chemin commence ici même.", pl: "Twoja droga zaczyna się właśnie tu.", es: "Tu camino empieza justo aquí.", it: "La tua strada comincia proprio qui.", pt: "O teu caminho começa mesmo aqui.", ru: "Твой путь начинается прямо здесь.", sq: "Rruga jote nis pikërisht këtu." },
   // 356
-  { de: "Das Beste liegt noch vor dir.", en: "The best is still ahead.", fr: "Le meilleur est encore devant toi.", pl: "Najlepsze dopiero przed tobą.", es: "Lo mejor está por llegar.", it: "Il meglio deve ancora venire.", pt: "O melhor ainda está para vir.", ru: "Лучшее ещё впереди." },
+  { de: "Das Beste liegt noch vor dir.", en: "The best is still ahead.", fr: "Le meilleur est encore devant toi.", pl: "Najlepsze dopiero przed tobą.", es: "Lo mejor está por llegar.", it: "Il meglio deve ancora venire.", pt: "O melhor ainda está para vir.", ru: "Лучшее ещё впереди.", sq: "Më e mira ende s'ka ardhur." },
   // 357
-  { de: "In dir steckt etwas Besonderes.", en: "There's something special in you.", fr: "Il y a en toi quelque chose de rare.", pl: "Jest w tobie coś wyjątkowego.", es: "Hay algo especial en ti.", it: "C'è qualcosa di speciale in te.", pt: "Há algo de especial em ti.", ru: "В тебе есть что-то особенное." },
+  { de: "In dir steckt etwas Besonderes.", en: "There's something special in you.", fr: "Il y a en toi quelque chose de rare.", pl: "Jest w tobie coś wyjątkowego.", es: "Hay algo especial en ti.", it: "C'è qualcosa di speciale in te.", pt: "Há algo de especial em ti.", ru: "В тебе есть что-то особенное.", sq: "Brenda teje ka diçka të veçantë." },
   // 358
-  { de: "Heute darf Leichtigkeit gewinnen.", en: "Let today be light.", fr: "Aujourd'hui, laisse la légèreté l'emporter.", pl: "Niech dziś wygra lekkość.", es: "Hoy que gane la ligereza.", it: "Che oggi vinca la leggerezza.", pt: "Hoje que ganhe a leveza.", ru: "Пусть сегодняшний день будет лёгким." },
+  { de: "Heute darf Leichtigkeit gewinnen.", en: "Let today be light.", fr: "Aujourd'hui, laisse la légèreté l'emporter.", pl: "Niech dziś wygra lekkość.", es: "Hoy que gane la ligereza.", it: "Che oggi vinca la leggerezza.", pt: "Hoje que ganhe a leveza.", ru: "Пусть сегодняшний день будет лёгким.", sq: "Sot merre me lehtësi." },
   // 359
-  { de: "Folge dem, was dich begeistert.", en: "Follow what lights you up.", fr: "Suis ce qui t'enthousiasme.", pl: "Podążaj za tym, co cię zachwyca.", es: "Sigue lo que te entusiasma.", it: "Segui quello che ti accende.", pt: "Segue aquilo que te entusiasma.", ru: "Иди за тем, что тебя зажигает." },
+  { de: "Folge dem, was dich begeistert.", en: "Follow what lights you up.", fr: "Suis ce qui t'enthousiasme.", pl: "Podążaj za tym, co cię zachwyca.", es: "Sigue lo que te entusiasma.", it: "Segui quello che ti accende.", pt: "Segue aquilo que te entusiasma.", ru: "Иди за тем, что тебя зажигает.", sq: "Ndiq atë që të frymëzon." },
   // 360
-  { de: "Ein kleiner Schritt reicht manchmal.", en: "Sometimes one small step is enough.", fr: "Parfois, un petit pas suffit.", pl: "Czasem wystarczy mały krok.", es: "A veces basta un paso pequeño.", it: "A volte basta un passo piccolo.", pt: "Às vezes basta um passo pequeno.", ru: "Иногда довольно одного маленького шага." },
+  { de: "Ein kleiner Schritt reicht manchmal.", en: "Sometimes one small step is enough.", fr: "Parfois, un petit pas suffit.", pl: "Czasem wystarczy mały krok.", es: "A veces basta un paso pequeño.", it: "A volte basta un passo piccolo.", pt: "Às vezes basta um passo pequeno.", ru: "Иногда довольно одного маленького шага.", sq: "Ndonjëherë mjafton një hap i vogël." },
   // 361
-  { de: "Schöne Dinge brauchen ihren Moment.", en: "Good things need their moment.", fr: "Les belles choses ont besoin de leur moment.", pl: "Piękne rzeczy potrzebują swojej chwili.", es: "Las cosas bellas necesitan su momento.", it: "Le cose belle vogliono il loro momento.", pt: "As coisas belas precisam do seu momento.", ru: "Хорошему нужен свой час." },
+  { de: "Schöne Dinge brauchen ihren Moment.", en: "Good things need their moment.", fr: "Les belles choses ont besoin de leur moment.", pl: "Piękne rzeczy potrzebują swojej chwili.", es: "Las cosas bellas necesitan su momento.", it: "Le cose belle vogliono il loro momento.", pt: "As coisas belas precisam do seu momento.", ru: "Хорошему нужен свой час.", sq: "Gjërat e mira kanë kohën e tyre." },
   // 362
-  { de: "Mach aus Hoffnung Zuversicht.", en: "Turn hope into confidence.", fr: "Transforme l'espoir en confiance.", pl: "Zamień nadzieję w pewność.", es: "Convierte la esperanza en confianza.", it: "Trasforma la speranza in fiducia.", pt: "Transforma a esperança em confiança.", ru: "Преврати надежду в уверенность." },
+  { de: "Mach aus Hoffnung Zuversicht.", en: "Turn hope into confidence.", fr: "Transforme l'espoir en confiance.", pl: "Zamień nadzieję w pewność.", es: "Convierte la esperanza en confianza.", it: "Trasforma la speranza in fiducia.", pt: "Transforma a esperança em confiança.", ru: "Преврати надежду в уверенность.", sq: "Ktheje shpresën në besim." },
   // 363
-  { de: "Lass dich vom Morgen überraschen.", en: "Let tomorrow surprise you.", fr: "Laisse demain te surprendre.", pl: "Daj się zaskoczyć jutru.", es: "Deja que el mañana te sorprenda.", it: "Lascia che il domani ti sorprenda.", pt: "Deixa o amanhã surpreender-te.", ru: "Пусть завтрашний день тебя удивит." },
+  { de: "Lass dich vom Morgen überraschen.", en: "Let tomorrow surprise you.", fr: "Laisse demain te surprendre.", pl: "Daj się zaskoczyć jutru.", es: "Deja que el mañana te sorprenda.", it: "Lascia che il domani ti sorprenda.", pt: "Deixa o amanhã surpreender-te.", ru: "Пусть завтрашний день тебя удивит.", sq: "Lëre të nesërmen të të befasojë." },
   // 364
-  { de: "Deine besten Momente kommen noch.", en: "Your best moments are still coming.", fr: "Tes plus beaux moments sont à venir.", pl: "Twoje najlepsze chwile dopiero nadejdą.", es: "Tus mejores momentos están por venir.", it: "I tuoi momenti migliori devono ancora arrivare.", pt: "Os teus melhores momentos ainda estão para vir.", ru: "Твои лучшие минуты ещё впереди." },
+  { de: "Deine besten Momente kommen noch.", en: "Your best moments are still coming.", fr: "Tes plus beaux moments sont à venir.", pl: "Twoje najlepsze chwile dopiero nadejdą.", es: "Tus mejores momentos están por venir.", it: "I tuoi momenti migliori devono ancora arrivare.", pt: "Os teus melhores momentos ainda estão para vir.", ru: "Твои лучшие минуты ещё впереди.", sq: "Çastet e tua më të mira ende do të vijnë." },
   // 365
-  { de: "Freu dich auf das, was kommt.", en: "Look forward to what's coming.", fr: "Réjouis-toi de ce qui vient.", pl: "Ciesz się na to, co nadchodzi.", es: "Ilusiónate con lo que viene.", it: "Aspetta con gioia quello che viene.", pt: "Anseia por aquilo que vem.", ru: "Радуйся тому, что впереди." },
+  { de: "Freu dich auf das, was kommt.", en: "Look forward to what's coming.", fr: "Réjouis-toi de ce qui vient.", pl: "Ciesz się na to, co nadchodzi.", es: "Ilusiónate con lo que viene.", it: "Aspetta con gioia quello che viene.", pt: "Anseia por aquilo que vem.", ru: "Радуйся тому, что впереди.", sq: "Prit me gëzim atë që vjen." },
 ];
 
 const DAY_MS = 24 * 60 * 60 * 1000;
