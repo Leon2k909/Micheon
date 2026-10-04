@@ -31,6 +31,7 @@ const LOADERS: Record<string, () => Promise<UsageNoteTable>> = {
   it: () => import("@/lib/usageNotesIt").then((m) => m.USE_IT),
   pt: () => import("@/lib/usageNotesPt").then((m) => m.USE_PT),
   ru: () => import("@/lib/usageNotesRu").then((m) => m.USE_RU),
+  el: () => import("@/lib/usageNotesEl").then((m) => m.USE_EL),
 };
 
 const USAGE_NOTES_READY_EVENT = "gl-usage-notes-ready";
