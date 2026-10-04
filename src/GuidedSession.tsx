@@ -2524,6 +2524,17 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     if (!moveToStep(step + 1)) finishOrFrench();
   };
 
+  // A press of Next, not a timer: it always moves. The position guard above
+  // is for late ticks; a learner pressing Next on a stage they can see must
+  // never get nothing back, whether the stage is last in the route or the
+  // step counter has drifted from the stage shown. So the position comes from
+  // the route itself, and the end of the route finishes the phrase.
+  const advanceFromHere = () => {
+    const route = phaseRoute();
+    const at = route[stepRef.current] === phase ? stepRef.current : route.indexOf(phase);
+    if (at < 0 || !moveToStep(at + 1)) finishOrFrench();
+  };
+
   // The second Type / Translate rounds reuse the first round's input state, so
   // clear it when the round begins — otherwise it shows the previous answer as
   // already-correct.
@@ -2868,7 +2879,7 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     reactToAnswer(result.ok, !!result.phrasingNote);
     lessonSpeak(item.de, result.ok ? 0.88 : 0.75, targetLang);
     if (result.ok) {
-      setTimeout(advance, 900);
+      setTimeout(advanceOrFinish, 900);
     } else {
     }
   };
@@ -4560,10 +4571,10 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
                   spellCheck={false}
                   value={input}
                   onChange={e => { setInput(e.target.value); if (checked) setChecked(false); }}
-                  onKeyDown={e => e.key === "Enter" && (checked && result.ok ? advance() : checkAnswer())}
+                  onKeyDown={e => e.key === "Enter" && (checked && result.ok ? advanceFromHere() : checkAnswer())}
                   disabled={checked && result.ok}
                 />
-                <button type="button" className="fs-check" onClick={checked && result.ok ? advance : checkAnswer}>
+                <button type="button" className="fs-check" onClick={checked && result.ok ? advanceFromHere : checkAnswer}>
                   <span className="fs-check-label">{checked && result.ok ? ui("Next") : ui("Check")}</span>
                   <ArrowRight className="h-4 w-4" />
                 </button>
