@@ -1967,10 +1967,13 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // they start in, so dragging them "in order" tests nothing — drop the
   // stage rather than ship a one-move formality.
   const isOrderable = String(item?.de ?? "").trim().split(/\s+/).filter(Boolean).length > 2;
-  const phaseRoute = (): Phase[] => buildSentencePhaseRoute({
+  // Everything that decides the route except the sound. The muted-stage
+  // replacement below reads the same set: when it was handed its own shorter
+  // list it judged a chained or failed-typing phrase against the lean route,
+  // found Translate missing there, and sent every Next on Type back to Read.
+  const routeOptions = () => ({
     mastered: masteredRoute,
     bilingual: hasFr,
-    audioMuted: audioMutedRef.current,
     word: isWordItem,
     orderable: isOrderable,
     // Set by the lesson builder when this sentence extends one served a few
@@ -1979,6 +1982,10 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
     typingFailed,
     custom: customRoute,
     secondShowing: isSecondShowing,
+  });
+  const phaseRoute = (): Phase[] => buildSentencePhaseRoute({
+    ...routeOptions(),
+    audioMuted: audioMutedRef.current,
   });
   // True while the app voice is actually speaking — drives the waveform accent.
   const [ttsOn, setTtsOn] = useState(false);
@@ -2419,18 +2426,13 @@ function SentenceExercise({ item, listeningChoicePool, translationChoicePool = [
   // be done without sound instead of leaving an impossible stage active.
   useEffect(() => {
     if (!audioMuted) return;
-    const replacement = replacementSentencePhaseWhenMuted(phase, {
-      mastered: masteredRoute,
-      bilingual: hasFr,
-      word: isWordItem,
-      orderable: isOrderable,
-      custom: customRoute,
-      secondShowing: isSecondShowing,
-      });
+    const replacement = replacementSentencePhaseWhenMuted(phase, routeOptions());
     if (!replacement || replacement === phase) return;
     currentPhaseRef.current = replacement;
     setPhase(replacement);
-  }, [audioMuted, hasFr, masteredRoute, phase]);
+    // routeOptions derives from these and from values fixed for the card.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [audioMuted, hasFr, masteredRoute, typingFailed, phase]);
 
   useEffect(() => {
     const route = phaseRoute();

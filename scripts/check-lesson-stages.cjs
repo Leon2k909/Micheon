@@ -258,6 +258,33 @@ check(
     && guided.includes("key={`${p}-${i}`}")
     && guided.includes('uiFmt("{stage} again", { stage: name })')
 );
+// With the sound off, a stage the muted route contains must stay where it is.
+// The lesson asks twice — once to build the route, once to ask whether the
+// stage on screen still belongs — and when the second question was asked with
+// fewer of the route's inputs, a chained or failed-typing phrase was judged
+// against the lean route: Translate was missing there, so it went back to
+// Read, Read led on to Type, and Next on Type never got past it.
+const mutedStays = [];
+for (const options of combinations) for (const custom of [undefined, longRoute]) {
+  const rest = { ...options, custom };
+  delete rest.audioMuted;
+  for (const stage of buildSentencePhaseRoute({ ...rest, audioMuted: true })) {
+    const moved = replacementSentencePhaseWhenMuted(stage, rest);
+    if (moved !== stage) mutedStays.push(`${JSON.stringify(rest)}: ${stage} -> ${moved}`);
+  }
+}
+check(
+  "with the sound off, no stage in the muted route is sent anywhere else",
+  mutedStays.length === 0,
+  mutedStays.slice(0, 2).join(" | ")
+);
+check(
+  "the muted-stage replacement is told everything the route is built from",
+  /const phaseRoute = \(\): Phase\[\] => buildSentencePhaseRoute\(\{\s*\.\.\.routeOptions\(\),/u.test(guided)
+    && guided.includes("replacementSentencePhaseWhenMuted(phase, routeOptions())")
+    && (guided.match(/replacementSentencePhaseWhenMuted\(/gu) ?? []).length === 1,
+  "a separate, shorter list of route inputs sends Translate on a chained phrase back to Read"
+);
 check(
   "the setting is read once per card, so a change never lands half way through one",
   /const customRoute = useMemo\(\(\) => customStageRoute\(getLessonStages\(\)\), \[\]\);/u.test(guided)

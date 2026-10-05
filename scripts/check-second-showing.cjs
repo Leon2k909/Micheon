@@ -115,12 +115,15 @@ check("nothing that is not a phrase is repeated",
     .filter((s) => s.secondShowing).every((s) => s.item?.id));
 
 // ── the lesson runs it ────────────────────────────────────────────────────
-// Twice: once for the route the lesson runs, once for the route it falls back
-// to when the sound is turned off mid-stage. Missing either one hands the
-// return the closed-book typing test.
+// Both the route the lesson runs and the one it falls back to when the sound
+// is turned off mid-stage read it, from the one set of route inputs they
+// share, so neither can be asked without it. Missing it hands the return the
+// closed-book typing test.
 check("the lesson asks for the return route by the stamp on the item",
   guided.includes("const isSecondShowing = Boolean(item?.secondShowing);")
-    && (guided.match(/secondShowing: isSecondShowing,/g) ?? []).length >= 2);
+    && /const routeOptions = \(\) => \(\{[^}]*secondShowing: isSecondShowing,/u.test(guided)
+    && guided.includes("...routeOptions(),")
+    && guided.includes("replacementSentencePhaseWhenMuted(phase, routeOptions())"));
 check("a return opens on its first stage rather than the closed-book one",
   /item\?\.secondShowing\s*\n?\s*\? SECOND_SHOWING_PHASES\[0\]/.test(guided));
 check("a return skips the typed French companion too",
