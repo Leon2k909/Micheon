@@ -83,7 +83,8 @@ const start = lab.indexOf("const withSecondShowing = (dealt: any[]): any[] => {"
 const end = lab.indexOf("\n  const logActivity", start);
 check("the weave can be found", start >= 0 && end > start);
 const woven = bundle(
-  `const withSpellingMemory = (steps: any[]): any[] => steps;\n`
+  `import { secondShowingOf } from "./src/lib/secondShowing.ts";\n`
+  + `const withSpellingMemory = (steps: any[]): any[] => steps;\n`
   + lab.slice(start, end).replace("const withSecondShowing", "export const withSecondShowing"),
   "weave"
 ).withSecondShowing;
@@ -113,6 +114,29 @@ check("a return is never dealt straight after the phrase it repeats",
 check("nothing that is not a phrase is repeated",
   woven([phrase("a"), { type: "register" }, phrase("b"), { type: "complete" }])
     .filter((s) => s.secondShowing).every((s) => s.item?.id));
+
+// ── a phrase swapped out of the preview takes its return with it ───────────
+// Know it, a finishing level, or putting it off in the preview hands the slot
+// to a fresh phrase. The phrase is in the sitting twice, and the preview shows
+// each phrase where it first appears: swapping out only the first copy left
+// the return behind, which then surfaced as a later preview card and would
+// have been drilled in the lesson too.
+const { replacePhraseSteps } = bundle('export { replacePhraseSteps } from "./src/lib/secondShowing.ts";', "swap");
+const swapped = replacePhraseSteps(woven(dealt), "a", phrase("x"));
+const swappedLaid = swapped.map((step) => step.type === "complete" ? "end" : `${step.item.id}${step.secondShowing ? "'" : ""}`);
+check("a phrase swapped out of the sitting leaves no copy behind",
+  !swapped.some((step) => step.item?.id === "a"), swappedLaid.join(" "));
+check(`its replacement is taught in its place and comes back on the same beat (${swappedLaid.join(" ")})`,
+  JSON.stringify(swappedLaid) === JSON.stringify(["x", "b", "c", "x'", "d", "b'", "c'", "d'", "end"]));
+const replacementReturn = swapped.find((step) => step.item?.id === "x" && step.secondShowing);
+check("the replacement's return is a return: tap-only, and practice rather than a review",
+  replacementReturn?.item?.secondShowing === true
+    && replacementReturn?.item?.mastery === "strong"
+    && replacementReturn?.reinforcement === true
+    && swapped.find((step) => step.item?.id === "x" && !step.secondShowing)?.item?.secondShowing === undefined);
+check("the preview swap replaces every copy, not the first one found",
+  lab.includes("return replacePhraseSteps(current, itemId, replacementStep);")
+    && !/next\[replaceAt\] = replacementStep;/.test(lab));
 
 // ── the lesson runs it ────────────────────────────────────────────────────
 // Both the route the lesson runs and the one it falls back to when the sound

@@ -449,6 +449,8 @@ check(
 );
 
 const labSource = fs.readFileSync(path.join(root, "src/guided_learning_session.tsx"), "utf8");
+// The copy that comes back is made in one place, shared with the preview swap.
+const secondShowingSource = fs.readFileSync(path.join(root, "src/lib/secondShowing.ts"), "utf8");
 const guidedSource = fs.readFileSync(path.join(root, "src/GuidedSession.tsx"), "utf8");
 const petProviderSource = fs.readFileSync(
   path.join(root, "src/components/codexPets/CodexPetProvider.tsx"),
@@ -502,11 +504,12 @@ check(
 // phrase has to come back in the next sitting exactly when it always would.
 check(
   "the second showing is reinforcement, so it moves no due date",
-  /reinforcement: true,\s*\n\s*secondShowing: true,/.test(labSource)
+  /reinforcement: true,\s*\n\s*secondShowing: true,/.test(secondShowingSource)
+    && labSource.includes('import { replacePhraseSteps, secondShowingOf } from "@/lib/secondShowing";')
 );
 check(
   "...and is routed to its own short return rather than taught again",
-  /item: \{ \.\.\.step\.item, mastery: "strong", secondShowing: true \}/.test(labSource),
+  /item: \{ \.\.\.step\.item, mastery: "strong", secondShowing: true \}/.test(secondShowingSource),
   "the second showing repeats the whole teaching route instead of coming back for a check"
 );
 

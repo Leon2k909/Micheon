@@ -12,6 +12,7 @@ import { allPartBlueprints } from "@/lib/data";
 import { getAuthUser, getScopedKey, loadScopedJson, saveScopedJson } from "@/lib/profileStorage";
 import { Blueprint, Part } from "@/lib/types";
 import { sentenceIdentityKey } from "@/lib/germanTextMatch";
+import { replacePhraseSteps, secondShowingOf } from "@/lib/secondShowing";
 import { buildCatalog, buildSession, deriveImplicitChains, dialogueIsEarned, isReinforcementEligible, lessonMixForBacklog, orderWithChains, pickPreviewReplacement, rankReinforcementCandidates, resolveChainScores, selectContinueLearningMix } from "@/session";
 import { getLessonContent } from "@/lib/lessonContent";
 import { buildWordCatalog, buildWordSitting, rankWordCatalog } from "@/lib/wordSession";
@@ -774,9 +775,9 @@ export default function GuidedLearningSession() {
       if (!directed) return current;
       replacementStep = directed;
 
-      const next = [...current];
-      next[replaceAt] = replacementStep;
-      return next;
+      // Every copy of it, not just the first: the return two phrases later
+      // would otherwise bring back the phrase that was just swapped out.
+      return replacePhraseSteps(current, itemId, replacementStep);
     });
   };
 
@@ -1662,14 +1663,6 @@ export default function GuidedLearningSession() {
     const steps: any[] = withSpellingMemory(dealt);
     const endsOnComplete = steps[steps.length - 1]?.type === "complete";
     const body = endsOnComplete ? steps.slice(0, -1) : steps;
-    const secondShowingOf = (step: any) => ({
-      ...step,
-      reinforcement: true,
-      secondShowing: true,
-      reviewReason: "second-showing",
-      item: { ...step.item, mastery: "strong", secondShowing: true },
-    });
-
     /**
      * How many further phrases are met before the first one comes back.
      *
